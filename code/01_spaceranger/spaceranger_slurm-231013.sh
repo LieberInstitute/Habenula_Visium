@@ -34,7 +34,7 @@ SAM=$(paste <(echo ${SLIDE}) <(echo "-") <(echo ${CAPTUREAREA}) -d '')
 echo "Slide: ${SLIDE}, capture area: ${CAPTUREAREA}"
 
 ## Find FASTQ file path
-FASTQPATH=$(ls -d /dcs04/lieber/lcolladotor/rawDataTDSC_LIBD001/raw-data/2023-05-04_SPag041423/${SAMPLE}/)
+FASTQPATH=$(ls -d /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/raw-data/fastqs/)
 
 ## Hank from 10x Genomics recommended setting this environment
 export NUMBA_NUM_THREADS=1
