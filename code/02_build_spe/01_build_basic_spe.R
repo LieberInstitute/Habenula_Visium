@@ -12,22 +12,13 @@ dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 ## Define some info for the samples
 sample_info <- data.frame(
     sample_id = c(
-        "V10A27004_A1_Br3874",
-        "V10A27004_D1_Br3880",
-        "V10A27106_A1_Br3874",
-        "V10A27106_B1_Br3854",
-        "V10A27106_C1_Br3873",
-        "V10A27106_D1_Br3880",
-        "V10T31036_A1_Br3874",
-        "V10T31036_B1_Br3854",
-        "V10T31036_C1_Br3873",
-        "V10T31036_D1_Br3880"
+        "V12D07-075_C1"
     )
 )
-sample_info$subject <- gsub(".*_", "", sample_info$sample_id)
+sample_info$subject <- "Br3854"
 sample_info$sample_path <-
     file.path(
-        here::here("processed-data", "spaceranger"),
+        here::here("processed-data", "01_spaceranger"),
         sample_info$sample_id,
         "outs"
     )
@@ -36,16 +27,13 @@ stopifnot(all(file.exists(sample_info$sample_path)))
 ## Define the donor info using information from
 ## https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/raw-data/Visium_SPG_AD_ITG_MasterExcelSummarySheet.xlsx
 donor_info <- data.frame(
-    subject = c("Br3854", "Br3873", "Br3880", "Br3874"),
-    age = c(65.75, 88.78, 90.47, 73.05),
-    sex = c("F", "F", "M", "M"),
+    subject = c("Br3854"),
+    age = c(65.75),
+    sex = c("F"),
     race = "EA/CAUC",
-    pmi = c(31.5, 29, 35, 13.5),
-    diagnosis = c("AD", "AD", "AD", "Control"),
-    rin = c(7, 7.2, 7.1, 7.2),
-    BCrating = c("Def AD", "Def AD", "Prob AD", "No AP"),
-    braak = c("B3", "B3", "B3", "B2"),
-    cerad = c("C3", "C3", "C3", "C0")
+    pmi = c(31.5),
+    diagnosis = c("Control"),
+    rin = c(7)
 )
 
 ## Combine sample info with the donor info
@@ -54,31 +42,31 @@ sample_info <- merge(sample_info, donor_info)
 
 ## Build basic SPE
 Sys.time()
-spe_wholegenome <- read10xVisiumWrapper(
+spe <- read10xVisiumWrapper(
     sample_info$sample_path,
     sample_info$sample_id,
     type = "sparse",
     data = "raw",
     images = c("lowres", "hires", "detected", "aligned"),
-    load = TRUE
+    load = TRUE,
+    reference_gtf = here("raw-data", "genes.gtf") ## Not needed at JHPCE
 )
 Sys.time()
-# [1] "2021-12-01 14:07:32 EST"
-# 2021-12-01 14:07:32 SpatialExperiment::read10xVisium: reading basic data from SpaceRanger
-# 2021-12-01 14:09:36 read10xVisiumAnalysis: reading analysis output from SpaceRanger
-# 2021-12-01 14:09:42 add10xVisiumAnalysis: adding analysis output from SpaceRanger
-# 2021-12-01 14:09:45 rtracklayer::import: reading the reference GTF file
-# 2021-12-01 14:10:44 adding gene information to the SPE object
-# 2021-12-01 14:10:44 adding information used by spatialLIBD
-# [1] "2021-12-01 14:10:52 EST"
+# 2024-02-22 14:43:49.823746 SpatialExperiment::read10xVisium: reading basic data from SpaceRanger
+# 2024-02-22 14:43:56.531453 read10xVisiumAnalysis: reading analysis output from SpaceRanger
+# 2024-02-22 14:43:56.687378 add10xVisiumAnalysis: adding analysis output from SpaceRanger
+# 2024-02-22 14:43:56.86425 rtracklayer::import: reading the reference GTF file
+# 2024-02-22 14:44:28.499147 adding gene information to the SPE object
+# 2024-02-22 14:44:28.523581 adding information used by spatialLIBD
+# [1] "2024-02-22 14:44:28 EST"
 
 ## Add images created by Madhavi Tippani
 image_types <- c("Abeta", "Abeta_seg", "pTau", "pTau_seg", "DAPI", "DAPI_seg", "merge", "merge_seg")
 
 for (img in image_types) {
     for (res in c("lowres")) {
-        spe_wholegenome <- add_images(
-            spe = spe_wholegenome,
+        spe <- add_images(
+            spe = spe,
             image_dir = here("processed-data", "Images", "spatialLIBD_images"),
             image_pattern = paste0(img, "_", res),
             image_id_current = res
@@ -97,7 +85,7 @@ add_design <- function(spe) {
         new_col[, -which(colnames(new_col) == "sample_path")]
     return(spe)
 }
-spe_wholegenome <- add_design(spe_wholegenome)
+spe <- add_design(spe)
 
 ## Read in cell counts and segmentation results
 segmentations_list <-
@@ -125,27 +113,27 @@ segmentations <-
     }, segmentations_list[lengths(segmentations_list) > 0])
 
 ## Add the information
-segmentation_match <- match(spe_wholegenome$key, segmentations$key)
+segmentation_match <- match(spe$key, segmentations$key)
 segmentation_info <-
     segmentations[segmentation_match, -which(
         colnames(segmentations) %in% c("barcode", "tissue", "row", "col", "imagerow", "imagecol", "key")
     )]
-colData(spe_wholegenome) <- cbind(colData(spe_wholegenome), segmentation_info)
+colData(spe) <- cbind(colData(spe), segmentation_info)
 
 ## Remove genes with no data
-no_expr <- which(rowSums(counts(spe_wholegenome)) == 0)
+no_expr <- which(rowSums(counts(spe)) == 0)
 length(no_expr)
 # [1] 8748
-length(no_expr) / nrow(spe_wholegenome) * 100
+length(no_expr) / nrow(spe) * 100
 # [1] 23.90099
-spe_wholegenome <- spe_wholegenome[-no_expr, ]
+spe <- spe[-no_expr, ]
 
 ## For visualizing this later with spatialLIBD
-spe_wholegenome$overlaps_tissue <-
-    factor(ifelse(spe_wholegenome$in_tissue, "in", "out"))
+spe$overlaps_tissue <-
+    factor(ifelse(spe$in_tissue, "in", "out"))
 
 ## Save with and without dropping spots outside of the tissue
-spe_raw_wholegenome <- spe_wholegenome
+spe_raw_wholegenome <- spe
 
 saveRDS(spe_raw_wholegenome, file.path(dir_rdata, "spe_raw_wholegenome.rds"))
 
@@ -154,21 +142,21 @@ lobstr::obj_size(spe_raw_wholegenome)
 # 1.651702
 
 ## Now drop the spots outside the tissue
-spe_wholegenome <- spe_raw_wholegenome[, spe_raw_wholegenome$in_tissue]
-dim(spe_wholegenome)
+spe <- spe_raw_wholegenome[, spe_raw_wholegenome$in_tissue]
+dim(spe)
 # [1] 27853 38287
 ## Remove spots without counts
-if (any(colSums(counts(spe_wholegenome)) == 0)) {
-    message("removing spots without counts for spe_wholegenome")
-    spe_wholegenome <- spe_wholegenome[, -which(colSums(counts(spe_wholegenome)) == 0)]
-    dim(spe_wholegenome)
+if (any(colSums(counts(spe)) == 0)) {
+    message("removing spots without counts for spe")
+    spe <- spe[, -which(colSums(counts(spe)) == 0)]
+    dim(spe)
 }
 
 
-lobstr::obj_size(spe_wholegenome)
+lobstr::obj_size(spe)
 # 1.534376
 
-saveRDS(spe_wholegenome, file.path(dir_rdata, "spe_wholegenome.rds"))
+saveRDS(spe, file.path(dir_rdata, "spe.rds"))
 
 ## Reproducibility information
 print("Reproducibility information:")
