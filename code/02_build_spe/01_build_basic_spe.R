@@ -110,9 +110,9 @@ spe <- add_design(spe)
 ## Remove genes with no data
 no_expr <- which(rowSums(counts(spe)) == 0)
 length(no_expr)
-# [1] 8748
+# [1] 13162
 length(no_expr) / nrow(spe) * 100
-# [1] 23.90099
+# [1] 35.96077
 spe <- spe[-no_expr, ]
 
 ## For visualizing this later with spatialLIBD
@@ -120,18 +120,18 @@ spe$overlaps_tissue <-
     factor(ifelse(spe$in_tissue, "in", "out"))
 
 ## Save with and without dropping spots outside of the tissue
-spe_raw_wholegenome <- spe
+spe_raw <- spe
 
-saveRDS(spe_raw_wholegenome, file.path(dir_rdata, "spe_raw_wholegenome.rds"))
+saveRDS(spe_raw, file.path(dir_rdata, "spe_raw.rds"))
 
 ## Size in Gb
-lobstr::obj_size(spe_raw_wholegenome)
-# 1.651702
+lobstr::obj_size(spe_raw)
+# 206.32 MB
 
 ## Now drop the spots outside the tissue
-spe <- spe_raw_wholegenome[, spe_raw_wholegenome$in_tissue]
+spe <- spe_raw[, spe_raw$in_tissue]
 dim(spe)
-# [1] 27853 38287
+# [1] 23439  3615
 ## Remove spots without counts
 if (any(colSums(counts(spe)) == 0)) {
     message("removing spots without counts for spe")
@@ -141,9 +141,22 @@ if (any(colSums(counts(spe)) == 0)) {
 
 
 lobstr::obj_size(spe)
-# 1.534376
+# 194.23 MB
 
 saveRDS(spe, file.path(dir_rdata, "spe.rds"))
+
+## Quickly explore the data
+# vars <- colnames(colData(spe))
+# spatialLIBD::run_app(
+#     spe = spe,
+#     sce_layer = NULL,
+#     modeling_results = NULL,
+#     sig_genes = NULL,
+#     spe_discrete_vars = vars[grep("^10x_", vars)],
+#     spe_continuous_vars = c("sum_umi", "sum_gene",
+#         "expr_chrM", "expr_chrM_ratio"),
+#     default_cluster = "10x_graphclust"
+# )
 
 ## Reproducibility information
 print("Reproducibility information:")
