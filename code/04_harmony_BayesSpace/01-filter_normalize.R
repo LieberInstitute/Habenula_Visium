@@ -2,42 +2,46 @@ library("spatialLIBD")
 library("here")
 library("tidyverse")
 library("scran")
+library("BiocParallel")
+library("scater")
+library("scry")
+library("BiocSingular")
 library("sessioninfo")
 
 
 
 library(jaffelab)
-library(BiocParallel)
-library(BiocSingular)
+
 library(spatialNAcUtils)
-library(scran)
-library(scater)
-library(scry)
 library(HDF5Array)
 library(bluster)
 
-processed_dir = here("processed-data", "04_harmony_BayesSpace")
+dir_rdata = here("processed-data", "04_harmony_BayesSpace")
 raw_in_path = here('processed-data', '02_build_spe', 'spe.rds')
-filtered_ordinary_path = file.path(processed_dir, 'spe_filtered.rds')
-filtered_hdf5_dir = file.path(processed_dir, 'spe_filtered_hdf5')
-plot_dir = here('plots', '04_harmony_BayesSpace')
+filtered_ordinary_path = file.path(dir_rdata, 'spe_filtered.rds')
+filtered_hdf5_dir = file.path(dir_rdata, 'spe_filtered_hdf5')
+dir_plots = here('plots', '04_harmony_BayesSpace')
 num_red_dims = 50
 
-num_cores = 1 # Sys.getenv('SLURM_CPUS_ON_NODE')
+num_cores = 2 # Sys.getenv('SLURM_CPUS_ON_NODE')
 set.seed(20240223)
+
+## Create output directories
+dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
+dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 
 ################################################################################
 #   Read in the data and add additional QC metrics, followed by filtering data
 ################################################################################
 spe = readRDS(raw_in_path)
 cat("Initial number of spots:", dim(spe)[2], "\n")
-# # Preliminary QC
-# spe <- spe[
-#     rowSums(assays(spe)$counts) > 0,
-#     (colSums(assays(spe)$counts) > 0) & spe$in_tissue
-# ]
-#
-# cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
+# Preliminary QC
+spe <- spe[
+    rowSums(assays(spe)$counts) > 0,
+    (colSums(assays(spe)$counts) > 0) & spe$in_tissue
+]
+
+cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
 ## Metrics QC
 metrics_qc <- function(spe) {
 
@@ -102,6 +106,13 @@ metrics_qc <- function(spe) {
 
 spe <- metrics_qc(spe)
 
+## Save object with metrics_qc()
+# saveRDS(spe, file.path(dir_rdata, "spe_with_scran_low_lib_size_edge.rds"))
+
+## Drop spots with a low library size that are on the edge
+spe <- spe[, spe$scran_low_lib_size_edge == "FALSE"]
+cat("Number of spots after removed low library size spots on the tissue edge:", dim(spe)[2], "\n")
+
 ################################################################################
 #   Compute log-normalized counts
 ################################################################################
@@ -116,7 +127,7 @@ Sys.time()
 spe$scran_quick_cluster <- quickCluster(
     spe,
     BPPARAM = MulticoreParam(num_cores),
-    block = spe$sample_id_original,
+    block = spe$sample_id,
     block.BPPARAM = MulticoreParam(num_cores)
 )
 Sys.time()
@@ -125,7 +136,7 @@ message(Sys.time(), " - Running computeSumFactors()")
 Sys.time()
 spe <- computeSumFactors(
     spe,
-    clusters = spe$scran_quick_cluster,
+    # clusters = spe$scran_quick_cluster,
     BPPARAM = MulticoreParam(num_cores)
 )
 Sys.time()
@@ -139,13 +150,13 @@ summary(sizeFactors(spe))
 message(Sys.time(), " - Running logNormCounts()")
 spe <- logNormCounts(spe)
 
-#   Save a copy of the SPE with HDF5-backed assays, which will be important to
-#   control memory consumption later
-message(Sys.time(), " - Saving HDF5-backed object to control memory later")
-spe = saveHDF5SummarizedExperiment(
-    spe, dir = paste0(filtered_hdf5_dir, '_temp'), replace = TRUE
-)
-gc()
+# #   Save a copy of the SPE with HDF5-backed assays, which will be important to
+# #   control memory consumption later
+# message(Sys.time(), " - Saving HDF5-backed object to control memory later")
+# spe = saveHDF5SummarizedExperiment(
+#     spe, dir = paste0(filtered_hdf5_dir, '_temp'), replace = TRUE
+# )
+# gc()
 
 ################################################################################
 #   Compute PCA
@@ -156,11 +167,11 @@ message(Sys.time(), " - Running modelGeneVar()")
 ## http://bioconductor.org/packages/release/bioc/vignettes/scran/inst/doc/scran.html#4_variance_modelling
 dec <- modelGeneVar(
     spe,
-    block = spe$sample_id_original,
+    block = spe$sample_id,
     BPPARAM = MulticoreParam(num_cores)
 )
 
-pdf(file.path(plot_dir, "scran_modelGeneVar.pdf"), useDingbats = FALSE)
+pdf(file.path(dir_plots, "scran_modelGeneVar.pdf"), useDingbats = FALSE)
 mapply(function(block, blockname) {
     plot(
         block$mean,
@@ -178,8 +189,11 @@ dev.off()
 
 message(Sys.time(), " - Running getTopHVGs()")
 top.hvgs.p1 <- getTopHVGs(dec, prop = 0.1)
+print(paste("Num HVGs for top 10% prop:", length(top.hvgs.p1)))
 top.hvgs.p2 <- getTopHVGs(dec, prop = 0.2)
+print(paste("Num HVGs for top 20% prop:", length(top.hvgs.p2)))
 top.hvgs.p5 <- getTopHVGs(dec, prop = 0.5)
+print(paste("Num HVGs for top 50% prop:", length(top.hvgs.p5)))
 
 top.hvgs.fdr5 <- getTopHVGs(dec, fdr.threshold = 0.05)
 print(paste("Num HVGs at FDR = 0.05:", length(top.hvgs.fdr5)))
@@ -189,7 +203,7 @@ print(paste("Num HVGs at FDR = 0.01:", length(top.hvgs.fdr1)))
 
 save(
     top.hvgs.p1, top.hvgs.p2, top.hvgs.p5, top.hvgs.fdr5, top.hvgs.fdr1,
-    file = file.path(processed_dir, "top.hvgs.Rdata")
+    file = file.path(dir_rdata, "top.hvgs.Rdata")
 )
 
 message(Sys.time(), " - Running runPCA()")
@@ -202,17 +216,17 @@ Sys.time()
 
 #   Plot variance explained
 percent.var <- attr(reducedDim(spe, "PCA_p1"), "percentVar")
-pdf(file.path(plot_dir, "pca_elbow_p1.pdf"), useDingbats = FALSE)
+pdf(file.path(dir_plots, "pca_elbow_p1.pdf"), useDingbats = FALSE)
 plot(percent.var, xlab = "PC_p1", ylab = "Variance explained (%)")
 dev.off()
 
 percent.var <- attr(reducedDim(spe, "PCA_p2"), "percentVar")
-pdf(file.path(plot_dir, "pca_elbow_p2.pdf"), useDingbats = FALSE)
+pdf(file.path(dir_plots, "pca_elbow_p2.pdf"), useDingbats = FALSE)
 plot(percent.var, xlab = "PC_p2", ylab = "Variance explained (%)")
 dev.off()
 
 percent.var <- attr(reducedDim(spe, "PCA_p5"), "percentVar")
-pdf(file.path(plot_dir, "pca_elbow_p5.pdf"), useDingbats = FALSE)
+pdf(file.path(dir_plots, "pca_elbow_p5.pdf"), useDingbats = FALSE)
 plot(percent.var, xlab = "PC_p5", ylab = "Variance explained (%)")
 dev.off()
 
@@ -224,10 +238,10 @@ dev.off()
 message(Sys.time(), " - Running devianceFeatureSelection()")
 spe <- devianceFeatureSelection(
     spe, assay = "counts", fam = "binomial", sorted = FALSE,
-    batch = as.factor(spe$sample_id_original)
+    batch = as.factor(spe$sample_id)
 )
 
-pdf(file.path(plot_dir, "binomial_deviance.pdf"))
+pdf(file.path(dir_plots, "binomial_deviance.pdf"))
 plot(sort(rowData(spe)$binomial_deviance, decreasing = T),
     type = "l", xlab = "ranked genes",
     ylab = "binomial deviance", main = "Feature Selection with Deviance"
@@ -248,7 +262,7 @@ hdgs.hb.10000 <- rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing 
 
 save(
     hdgs.hb.2000, hdgs.hb.5000, hdgs.hb.10000,
-    file = file.path(processed_dir, "hdgs.hb.Rdata")
+    file = file.path(dir_rdata, "hdgs.hb.Rdata")
 )
 
 message(Sys.time(), " - Running GLM-PCA")
@@ -294,13 +308,18 @@ spe$leiden20_GLMPCA <- clusterCells(spe,
 #   Save the processed SPE object
 ################################################################################
 
-message(Sys.time(), " - Saving HDF5-backed filtered spe")
-spe = saveHDF5SummarizedExperiment(
-    spe, dir = filtered_hdf5_dir, replace = TRUE
-)
+# message(Sys.time(), " - Saving HDF5-backed filtered spe")
+# spe = saveHDF5SummarizedExperiment(
+#     spe, dir = filtered_hdf5_dir, replace = TRUE
+# )
+# spe = realize(spe)
 
 message(Sys.time(), " - Saving ordinary filtered spe")
-spe = realize(spe)
 saveRDS(spe, filtered_ordinary_path)
 
+## Reproducibility information
+print("Reproducibility information:")
+Sys.time()
+proc.time()
+options(width = 120)
 session_info()
