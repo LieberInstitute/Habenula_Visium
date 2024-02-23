@@ -1,7 +1,5 @@
-library("SpatialExperiment")
 library("spatialLIBD")
 library("here")
-library("rtracklayer")
 library("lobstr")
 library("sessioninfo")
 
@@ -15,7 +13,7 @@ sample_info <- data.frame(
         "V12D07-075_C1"
     )
 )
-sample_info$subject <- "Br3854"
+sample_info$subject <- "Br8112"
 sample_info$sample_path <-
     file.path(
         here::here("processed-data", "01_spaceranger"),
@@ -25,10 +23,10 @@ sample_info$sample_path <-
 stopifnot(all(file.exists(sample_info$sample_path)))
 
 ## Define the donor info using information from
-## https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/raw-data/Visium_SPG_AD_ITG_MasterExcelSummarySheet.xlsx
+## the habenulaPilot paper
 ## TODO Update this info!
 donor_info <- data.frame(
-    subject = c("Br3854"),
+    subject = c("Br8112"),
     age = c(65.75),
     sex = c("F"),
     race = "EA/CAUC",
@@ -152,7 +150,7 @@ saveRDS(spe, file.path(dir_rdata, "spe.rds"))
 #     sce_layer = NULL,
 #     modeling_results = NULL,
 #     sig_genes = NULL,
-#     spe_discrete_vars = vars[grep("^10x_", vars)],
+#     spe_discrete_vars = c("ManualAnnotation", "overlaps_tissue", vars[grep("^10x_", vars)]),
 #     spe_continuous_vars = c("sum_umi", "sum_gene",
 #         "expr_chrM", "expr_chrM_ratio"),
 #     default_cluster = "10x_graphclust"
