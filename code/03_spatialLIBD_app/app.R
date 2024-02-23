@@ -17,8 +17,19 @@ spatialLIBD::run_app(
     sce_layer = NULL,
     modeling_results = NULL,
     sig_genes = NULL,
-    spe_discrete_vars = c("ManualAnnotation", "overlaps_tissue", vars[grep("^10x_", vars)]),
-    spe_continuous_vars = c("sum_umi", "sum_gene",
-        "expr_chrM", "expr_chrM_ratio"),
+    spe_discrete_vars = c(
+        "ManualAnnotation",
+        "overlaps_tissue",
+        vars[grep("^10x_", vars)],
+        vars[grep("^scran_", vars)],
+        "edge_spots"
+    ),
+    spe_continuous_vars = c(
+        "sum_umi",
+        "sum_gene",
+        "expr_chrM",
+        "expr_chrM_ratio",
+        "edge_distance"
+    ),
     default_cluster = "10x_graphclust"
 )

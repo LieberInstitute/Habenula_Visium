@@ -1,10 +1,12 @@
-library(spatialLIBD)
-library(SpatialExperiment)
-library(here)
-library(tidyverse)
+library("spatialLIBD")
+library("here")
+library("tidyverse")
+library("scran")
+library("sessioninfo")
+
+
+
 library(jaffelab)
-library(sessioninfo)
-library(scran)
 library(BiocParallel)
 library(BiocSingular)
 library(spatialNAcUtils)
@@ -14,32 +16,28 @@ library(scry)
 library(HDF5Array)
 library(bluster)
 
-processed_dir = here("processed-data", "05_harmony_BayesSpace")
-raw_in_path = here('processed-data', '05_harmony_BayesSpace', 'spe_raw.rds')
-filtered_ordinary_path = here(
-    'processed-data', '05_harmony_BayesSpace', 'spe_filtered.rds'
-)
-filtered_hdf5_dir = here(
-    'processed-data', '05_harmony_BayesSpace', 'spe_filtered_hdf5'
-)
-plot_dir = here('plots', '05_harmony_BayesSpace')
+processed_dir = here("processed-data", "04_harmony_BayesSpace")
+raw_in_path = here('processed-data', '02_build_spe', 'spe.rds')
+filtered_ordinary_path = file.path(processed_dir, 'spe_filtered.rds')
+filtered_hdf5_dir = file.path(processed_dir, 'spe_filtered_hdf5')
+plot_dir = here('plots', '04_harmony_BayesSpace')
 num_red_dims = 50
 
-num_cores = Sys.getenv('SLURM_CPUS_ON_NODE')
-set.seed(0)
+num_cores = 1 # Sys.getenv('SLURM_CPUS_ON_NODE')
+set.seed(20240223)
 
 ################################################################################
 #   Read in the data and add additional QC metrics, followed by filtering data
 ################################################################################
 spe = readRDS(raw_in_path)
 cat("Initial number of spots:", dim(spe)[2], "\n")
-# Preliminary QC
-spe <- spe[
-    rowSums(assays(spe)$counts) > 0,
-    (colSums(assays(spe)$counts) > 0) & spe$in_tissue
-]
-
-cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
+# # Preliminary QC
+# spe <- spe[
+#     rowSums(assays(spe)$counts) > 0,
+#     (colSums(assays(spe)$counts) > 0) & spe$in_tissue
+# ]
+#
+# cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
 ## Metrics QC
 metrics_qc <- function(spe) {
 
@@ -47,7 +45,7 @@ metrics_qc <- function(spe) {
         log2sum = log2(spe$sum_umi),
         log2detected = log2(spe$sum_gene),
         subsets_Mito_percent = spe$expr_chrM_ratio*100,
-        sample_id = spe$sample_id_original
+        sample_id = spe$sample_id
     )
 
     qcfilter <- DataFrame(
@@ -74,7 +72,7 @@ metrics_qc <- function(spe) {
     spots <- data.frame(
         row = spe$array_row,
         col = spe$array_col,
-        sample_id = spe$sample_id_original
+        sample_id = spe$sample_id
     )
 
     edge_spots_row <- group_by(spots, sample_id, row) %>% summarize(min_col = min(col), max_col = max(col))
