@@ -7,14 +7,7 @@ library("scater")
 library("scry")
 library("BiocSingular")
 library("sessioninfo")
-
-
-
-library(jaffelab)
-
-library(spatialNAcUtils)
-library(HDF5Array)
-library(bluster)
+# library("HDF5Array")
 
 dir_rdata = here("processed-data", "04_harmony_BayesSpace")
 raw_in_path = here('processed-data', '02_build_spe', 'spe.rds')
