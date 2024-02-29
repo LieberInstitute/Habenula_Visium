@@ -13,20 +13,19 @@ library("sessioninfo")
 
 # Define harmony function that would allow us to specify which reduction to use with SingleCellExperiment object
 RunHarmony_mod <- function(
-    object,
-    group.by.vars,
-    reduction.use = "PCA",
-    dims.use = NULL,
-    verbose = TRUE,
-    reduction.save = "HARMONY",
-    ...
-) {
-
+        object,
+        group.by.vars,
+        reduction.use = "PCA",
+        dims.use = NULL,
+        verbose = TRUE,
+        reduction.save = "HARMONY",
+        ...) {
     ## Get PCA embeddings
     if (!"PCA" %in% SingleCellExperiment::reducedDimNames(object)) {
         stop("PCA must be computed before running Harmony.")
     }
-    pca_embedding <- SingleCellExperiment::reducedDim(object, reduction.use)
+    pca_embedding <-
+        SingleCellExperiment::reducedDim(object, reduction.use)
     if (is.null(dims.use)) {
         dims.use <- seq_len(ncol(pca_embedding))
     }
@@ -36,13 +35,15 @@ RunHarmony_mod <- function(
     }
     dims_avail <- seq_len(ncol(pca_embedding))
     if (!all(dims.use %in% dims_avail)) {
-        stop("trying to use more dimensions than computed with PCA. Rerun
-            PCA with more dimensions or use fewer PCs")
+        stop(
+            "trying to use more dimensions than computed with PCA. Rerun
+            PCA with more dimensions or use fewer PCs"
+        )
     }
 
     metavars_df <- SingleCellExperiment::colData(object)
     if (!all(group.by.vars %in% colnames(metavars_df))) {
-        stop('Trying to integrate over variables missing in colData')
+        stop("Trying to integrate over variables missing in colData")
     }
 
     harmonyEmbed <- RunHarmony(
@@ -56,14 +57,16 @@ RunHarmony_mod <- function(
 
 
     rownames(harmonyEmbed) <- row.names(metavars_df)
-    colnames(harmonyEmbed) <- paste0(reduction.save, "_", seq_len(ncol(harmonyEmbed)))
-    SingleCellExperiment::reducedDim(object, reduction.save) <- harmonyEmbed
+    colnames(harmonyEmbed) <-
+        paste0(reduction.save, "_", seq_len(ncol(harmonyEmbed)))
+    SingleCellExperiment::reducedDim(object, reduction.save) <-
+        harmonyEmbed
 
     return(object)
 }
 
-tsne_perplex_vals = c("05", "20", "50", "80")
-num_cores = detectCores() - 1
+tsne_perplex_vals <- c("05", "20", "50", "80")
+num_cores <- detectCores() - 1
 
 ## Create output directories
 dir_plots <- here("plots", "04_harmony_BayesSpace")
@@ -79,7 +82,9 @@ dir.create(dir_plots, showWarnings = FALSE)
 dir.create(dir_rdata, showWarnings = FALSE)
 
 dir.create(file.path(dir_rdata, "clusters_graphbased"), showWarnings = FALSE)
-dir.create(file.path(dir_rdata, "clusters_graphbased_cut_at"), showWarnings = FALSE)
+dir.create(file.path(dir_rdata, "clusters_graphbased_cut_at"),
+    showWarnings = FALSE
+)
 
 set.seed(20240229)
 
@@ -88,15 +93,34 @@ set.seed(20240229)
 spe <- readRDS(file.path(dir_rdata, "spe_filtered.rds"))
 
 ## Plot initial low-dimensional representations prior to batch correction
-plotReducedDim(spe, dimred = "PCA", ncomponents = 3, colour_by = "subject")
-plotReducedDim(spe, dimred = "GLMPCA_approx", ncomponents = 3, colour_by = "subject")
-plotReducedDim(spe, dimred = "PCA", ncomponents = 3, colour_by = "scran_discard")
-plotReducedDim(spe, dimred = "GLMPCA_approx", ncomponents = 3, colour_by = "scran_discard")
+plotReducedDim(spe,
+    dimred = "PCA",
+    ncomponents = 3,
+    colour_by = "subject"
+)
+plotReducedDim(spe,
+    dimred = "GLMPCA_approx",
+    ncomponents = 3,
+    colour_by = "subject"
+)
+plotReducedDim(spe,
+    dimred = "PCA",
+    ncomponents = 3,
+    colour_by = "scran_discard"
+)
+plotReducedDim(spe,
+    dimred = "GLMPCA_approx",
+    ncomponents = 3,
+    colour_by = "scran_discard"
+)
 
-ggcells(spe, aes(x = GLMPCA_approx.1, y = GLMPCA_approx.2, colour = scran_discard)) +
-  geom_point(size = 0.5) +
-  facet_wrap(~ sample_id) +
-  labs(x = "GLMPC1", y = "GLMPC2", colour = "Discard") + theme_classic()
+ggcells(
+    spe,
+    aes(x = GLMPCA_approx.1, y = GLMPCA_approx.2, colour = scran_discard)
+) +
+    geom_point(size = 0.5) +
+    facet_wrap(~sample_id) +
+    labs(x = "GLMPC1", y = "GLMPC2", colour = "Discard") + theme_classic()
 
 ## Perform harmony batch correction
 message("Running RunHarmony()")
@@ -138,7 +162,8 @@ for (dimred_var in c("PCA", "HARMONY")) {
         message(
             sprintf(
                 "Running runTSNE() perplexity %s on %s dimensions",
-                perplex, dimred_var
+                perplex,
+                dimred_var
             )
         )
         Sys.time()
@@ -154,12 +179,15 @@ for (dimred_var in c("PCA", "HARMONY")) {
 
         #   Explore TSNE results via plots
         p_tsne <- ggplot(
-            data.frame(
-                reducedDim(
-                    spe, sprintf("TSNE_perplexity%s.%s", perplex, dimred_var)
-                )
-            ),
-            aes(x = TSNE1, y = TSNE2, color = factor(spe$sample_id))
+            data.frame(reducedDim(
+                spe,
+                sprintf("TSNE_perplexity%s.%s", perplex, dimred_var)
+            )),
+            aes(
+                x = TSNE1,
+                y = TSNE2,
+                color = factor(spe$sample_id)
+            )
         ) +
             geom_point() +
             labs(color = "sample_id") +
@@ -167,7 +195,11 @@ for (dimred_var in c("PCA", "HARMONY")) {
         pdf(
             file = file.path(
                 dir_plots,
-                sprintf("tSNE_perplexity%s_%s_sample_id.pdf", perplex, dimred_var)
+                sprintf(
+                    "tSNE_perplexity%s_%s_sample_id.pdf",
+                    perplex,
+                    dimred_var
+                )
             ),
             width = 9
         )
@@ -180,7 +212,9 @@ for (dimred_var in c("PCA", "HARMONY")) {
     Sys.time()
     set.seed(20240229)
     spe <- runUMAP(
-        spe, dimred = dimred_var, name = sprintf("UMAP.%s", dimred_var),
+        spe,
+        dimred = dimred_var,
+        name = sprintf("UMAP.%s", dimred_var),
         BPPARAM = MulticoreParam(num_cores)
     )
     Sys.time()
@@ -188,18 +222,23 @@ for (dimred_var in c("PCA", "HARMONY")) {
     #   Explore UMAP results, coloring by both subject and sample ID
     for (color_var in c("sample_id")) {
         p_umap <- ggplot(
-            data.frame(reducedDim(spe, sprintf("UMAP.%s", dimred_var))),
-            aes(x = UMAP1, y = UMAP2, color = factor(spe[[color_var]]))
+            data.frame(reducedDim(
+                spe, sprintf("UMAP.%s", dimred_var)
+            )),
+            aes(
+                x = UMAP1,
+                y = UMAP2,
+                color = factor(spe[[color_var]])
+            )
         ) +
             geom_point() +
             labs(color = color_var) +
             theme_bw()
 
-        pdf(
-            file = file.path(
-                dir_plots, sprintf("UMAP_%s_%s.pdf", color_var, dimred_var)
-            )
-        )
+        pdf(file = file.path(
+            dir_plots,
+            sprintf("UMAP_%s_%s.pdf", color_var, dimred_var)
+        ))
         print(p_umap)
         dev.off()
     }
@@ -221,8 +260,7 @@ save(g_walk_k10, file = file.path(dir_rdata, "g_walk_k10_harmony.Rdata"))
 clust_k10 <- sort_clusters(g_walk_k10$membership)
 spe$SNN_k10 <- clust_k10 ## Add this one to the SPE too
 ## Export for later use
-cluster_export(
-    spe,
+cluster_export(spe,
     "SNN_k10",
     cluster_dir = file.path(dir_rdata, "clusters_graphbased"),
 )
@@ -238,7 +276,8 @@ names(clust_k5_list) <- paste0("SNN_k10_k", 4:28)
 for (i in seq_along(names(clust_k5_list))) {
     colData(spe) <- cbind(colData(spe), clust_k5_list[i])
     ## Add proper name
-    colnames(colData(spe))[ncol(colData(spe))] <- names(clust_k5_list)[i]
+    colnames(colData(spe))[ncol(colData(spe))] <-
+        names(clust_k5_list)[i]
 
     ## Export for later use outside the SPE object
     cluster_export(
@@ -263,7 +302,7 @@ for (i in seq_along(sample_ids)) {
             sampleid = sample_ids[i],
             colors = cols,
             auto_crop = FALSE,
-            assayname = 'counts',
+            assayname = "counts",
             ... = paste0(" ", names(clust_k5_list)[j])
         )
         print(my_plot)
@@ -274,7 +313,8 @@ dev.off()
 #   Do offset so we can run BayesSpace. Not here that 'array_row' is not
 #   constrained to have max value 77; we instead find the largest 'array_row'
 #   value of any sample, and use it to ensure samples are at least 5 rows apart
-auto_offset_row <- as.numeric(factor(unique(spe$sample_id))) * (max(spe$array_row) + 5)
+auto_offset_row <-
+    as.numeric(factor(unique(spe$sample_id))) * (max(spe$array_row) + 5)
 names(auto_offset_row) <- unique(spe$sample_id)
 spe$row <- spe$array_row + auto_offset_row[spe$sample_id]
 spe$col <- spe$array_col
