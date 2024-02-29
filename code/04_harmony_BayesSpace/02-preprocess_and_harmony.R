@@ -1,20 +1,14 @@
 ## Required libraries
-library(here)
-library(SpatialExperiment)
-library(spatialLIBD)
-library(tidyverse)
-library(sessioninfo)
-library(scran) ## requires uwot for UMAP
-library(uwot)
-library(scater)
-library(BiocParallel)
-library(parallel)
-library(PCAtools)
-library(ggplot2)
-library(Polychrome)
-library(harmony)
-library(HDF5Array)
-library(spatialNAcUtils)
+library("spatialLIBD")
+library("here")
+library("harmony")
+library("parallel")
+library("scater")
+library("BiocParallel")
+library("ggplot2")
+library("scran")
+library("Polychrome")
+library("sessioninfo")
 
 
 # Define harmony function that would allow us to specify which reduction to use with SingleCellExperiment object
@@ -72,14 +66,14 @@ tsne_perplex_vals = c("05", "20", "50", "80")
 num_cores = detectCores() - 1
 
 ## Create output directories
-dir_plots <- here("plots", "05_harmony_BayesSpace")
-dir_rdata <- here("processed-data", "05_harmony_BayesSpace")
-filtered_hdf5_dir = here(
-    'processed-data', '05_harmony_BayesSpace', 'spe_filtered_hdf5'
-)
-harmony_hdf5_dir = here(
-    'processed-data', '05_harmony_BayesSpace', 'spe_harmony'
-)
+dir_plots <- here("plots", "04_harmony_BayesSpace")
+dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
+# filtered_hdf5_dir <- here(
+#     "processed-data", "04_harmony_BayesSpace", "spe_filtered_hdf5"
+# )
+# harmony_hdf5_dir <- here(
+#     "processed-data", "04_harmony_BayesSpace", "spe_harmony"
+# )
 
 dir.create(dir_plots, showWarnings = FALSE)
 dir.create(dir_rdata, showWarnings = FALSE)
@@ -87,37 +81,52 @@ dir.create(dir_rdata, showWarnings = FALSE)
 dir.create(file.path(dir_rdata, "clusters_graphbased"), showWarnings = FALSE)
 dir.create(file.path(dir_rdata, "clusters_graphbased_cut_at"), showWarnings = FALSE)
 
-set.seed(20230712)
+set.seed(20240229)
 
 ## Load the data
-spe = loadHDF5SummarizedExperiment(filtered_hdf5_dir)
+# spe <- loadHDF5SummarizedExperiment(filtered_hdf5_dir)
+spe <- readRDS(file.path(dir_rdata, "spe_filtered.rds"))
 
 ## Plot initial low-dimensional representations prior to batch correction
-plotReducedDim(spe, dimred = "PCA", ncomponents = 3, colour_by = "donor")
-plotReducedDim(spe, dimred = "GLMPCA_approx", ncomponents = 3, colour_by = "donor")
+plotReducedDim(spe, dimred = "PCA", ncomponents = 3, colour_by = "subject")
+plotReducedDim(spe, dimred = "GLMPCA_approx", ncomponents = 3, colour_by = "subject")
 plotReducedDim(spe, dimred = "PCA", ncomponents = 3, colour_by = "scran_discard")
 plotReducedDim(spe, dimred = "GLMPCA_approx", ncomponents = 3, colour_by = "scran_discard")
 
 ggcells(spe, aes(x = GLMPCA_approx.1, y = GLMPCA_approx.2, colour = scran_discard)) +
   geom_point(size = 0.5) +
-  facet_wrap(~ slide_num) +
+  facet_wrap(~ sample_id) +
   labs(x = "GLMPC1", y = "GLMPC2", colour = "Discard") + theme_classic()
-
-ggcells(spe, aes(x = GLMPCA_approx.1, y = GLMPCA_approx.2, colour = scran_discard)) +
-  geom_point(size = 0.5) +
-  facet_wrap(~ sample_id_original) +
-  labs(x = "GLMPC1", y = "GLMPC2", colour = "Discard") + theme_classic()
-
-
 
 ## Perform harmony batch correction
 message("Running RunHarmony()")
 Sys.time()
-spe <- RunHarmony_mod(spe, group.by.vars = c("donor", "slide_num"), verbose = TRUE, plot_convergence = TRUE, kmeans_init_nstart=100, kmeans_init_iter_max=1000)
+# spe <-
+#     RunHarmony_mod(
+#         spe,
+#         "subject",
+#         verbose = TRUE,
+#         plot_convergence = TRUE,
+#         reduction.use = "PCA",
+#         reduction.save = "HARMONY",
+#         kmeans_init_nstart = 100,
+#         kmeans_init_iter_max = 1000
+#     )
 
-spe <- RunHarmony_mod(spe, "donor", verbose = TRUE, plot_convergence = TRUE, reduction.use = "PCA", reduction.save = "harmony_donor", kmeans_init_nstart=100, kmeans_init_iter_max=1000)
-spe <- RunHarmony_mod(spe, group.by.vars = c("donor", "slide_num"), verbose = TRUE, reduction.save = "harmony_donor_slide")
-#spe <- RunHarmony_mod(spe, group.by.vars = c("donor", "sample_id_original"), verbose = TRUE, reduction.save = "HARMONY", plot_convergence = TRUE, lambda = NULL, max_iter = 30)
+## As we only have 1 sample, RunHarmony doesn't work
+reducedDim(spe, "HARMONY") <- reducedDim(spe, "PCA")
+
+# spe <-
+#     RunHarmony_mod(
+#         spe,
+#         group.by.vars = "subject",
+#         verbose = TRUE,
+#         reduction.use = "PCA",
+#         reduction.save = "harmony_subject_no_lambda",
+#         plot_convergence = TRUE,
+#         lambda = NULL,
+#         max_iter = 30
+#     )
 Sys.time()
 
 #   Perform dimensionality reduction using both PCA and harmony's reduced
@@ -140,17 +149,9 @@ for (dimred_var in c("PCA", "HARMONY")) {
                 perplexity = as.integer(perplex)
             )
         Sys.time()
-    }
 
-    #   Explore TSNE results via plots
-    pdf(
-        file = file.path(
-            dir_plots,
-            sprintf("tSNE_perplexity%s_%s_sample_id.pdf", perplex, dimred_var)
-        ),
-        width = 9
-    )
-    ggplot(
+        #   Explore TSNE results via plots
+        p_tsne <- ggplot(
             data.frame(
                 reducedDim(
                     spe, sprintf("TSNE_perplexity%s.%s", perplex, dimred_var)
@@ -158,10 +159,19 @@ for (dimred_var in c("PCA", "HARMONY")) {
             ),
             aes(x = TSNE1, y = TSNE2, color = factor(spe$sample_id))
         ) +
-        geom_point() +
-        labs(color = "sample_id") +
-        theme_bw()
-    dev.off()
+            geom_point() +
+            labs(color = "sample_id") +
+            theme_bw()
+        pdf(
+            file = file.path(
+                dir_plots,
+                sprintf("tSNE_perplexity%s_%s_sample_id.pdf", perplex, dimred_var)
+            ),
+            width = 9
+        )
+        print(p_tsne)
+        dev.off()
+    }
 
     #   Also run UMAP
     message(sprintf("Running runUMAP() on %s dimensions", dimred_var))
@@ -172,20 +182,22 @@ for (dimred_var in c("PCA", "HARMONY")) {
     )
     Sys.time()
 
-    #   Explore UMAP results, coloring by both donor and sample ID
-    for (color_var in c("sample_id", "donor")) {
-        pdf(
-            file = file.path(
-                dir_plots, sprintf("UMAP_%s_%s.pdf", color_var, dimred_var)
-            )
-        )
-        ggplot(
+    #   Explore UMAP results, coloring by both subject and sample ID
+    for (color_var in c("sample_id")) {
+        p_umap <- ggplot(
             data.frame(reducedDim(spe, sprintf("UMAP.%s", dimred_var))),
             aes(x = UMAP1, y = UMAP2, color = factor(spe[[color_var]]))
         ) +
             geom_point() +
             labs(color = color_var) +
             theme_bw()
+
+        pdf(
+            file = file.path(
+                dir_plots, sprintf("UMAP_%s_%s.pdf", color_var, dimred_var)
+            )
+        )
+        print(p_umap)
         dev.off()
     }
 }
