@@ -20,7 +20,7 @@ if (is.na(k)) {
 k_nice <- sprintf("%02d", k)
 
 ## Create output directories
-dir_plots <- here("plots", "04_harmony_BayesSpace", k)
+dir_plots <- here("plots", "04_harmony_BayesSpace", "BayesSpace")
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 spe_in <- file.path(dir_rdata, "spe_harmony.rds")
 
