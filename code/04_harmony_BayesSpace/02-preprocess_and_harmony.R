@@ -101,6 +101,7 @@ ggcells(spe, aes(x = GLMPCA_approx.1, y = GLMPCA_approx.2, colour = scran_discar
 ## Perform harmony batch correction
 message("Running RunHarmony()")
 Sys.time()
+# set.seed(20240229)
 # spe <-
 #     RunHarmony_mod(
 #         spe,
@@ -141,6 +142,7 @@ for (dimred_var in c("PCA", "HARMONY")) {
             )
         )
         Sys.time()
+        set.seed(20240229)
         spe <-
             runTSNE(
                 spe,
@@ -176,6 +178,7 @@ for (dimred_var in c("PCA", "HARMONY")) {
     #   Also run UMAP
     message(sprintf("Running runUMAP() on %s dimensions", dimred_var))
     Sys.time()
+    set.seed(20240229)
     spe <- runUMAP(
         spe, dimred = dimred_var, name = sprintf("UMAP.%s", dimred_var),
         BPPARAM = MulticoreParam(num_cores)
