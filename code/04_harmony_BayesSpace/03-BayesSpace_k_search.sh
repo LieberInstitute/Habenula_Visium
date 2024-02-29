@@ -1,43 +1,36 @@
 #!/bin/bash
-
-#$ -cwd
-#$ -l mem_free=32G,h_vmem=32G,h_fsize=100G
-#$ -N BayesSpace_k_search
-#$ -o ../../processed-data/04_harmony_BayesSpace/logs/03-BayesSpace_k_search.log
-#$ -e ../../processed-data/04_harmony_BayesSpace/logs/03-BayesSpace_k_search.log
-#$ -t 2-28
-#$ -tc 15
-
-#SBATCH -q bluejay
+#SBATCH -p bluejay
 #SBATCH --mem=32G
 #SBATCH --job-name=BayesSpace_k_search
-#SBATCH -o ../../processed-data/04_harmony_BayesSpace/logs/03-BayesSpace_k_search.log
-#SBATCH -e ../../processed-data/04_harmony_BayesSpace/logs/03-BayesSpace_k_search.log
-#SBATCH --array=2-3%15
+#SBATCH -c 1
+#SBATCH -t 1-00:00:00
+#SBATCH -o logs/03-BayesSpace_k_search.%a.txt
+#SBATCH -e logs/03-BayesSpace_k_search.%a.txt
+#SBATCH --mail-type=ALL
+#SBATCH --array=2-28%20
 
-if [[ ! -z $SLURMD_NODENAME ]]; then
-    job_id=$SLURM_JOB_ID
-    job_name=$SLURM_JOB_NAME
-    node_name=$SLURMD_NODENAME
-else
-    job_id=$JOB_ID
-    job_name=$JOB_NAME
-    node_name=$HOSTNAME
-fi
+set -e
 
 echo "**** Job starts ****"
 date
+
 echo "**** JHPCE info ****"
 echo "User: ${USER}"
-echo "Job id: ${job_id}"
-echo "Job name: ${job_name}"
-echo "Node name: ${node_name}"
+echo "Job id: ${SLURM_JOB_ID}"
+echo "Job name: ${SLURM_JOB_NAME}"
+echo "Node name: ${SLURMD_NODENAME}"
+echo "Task id: ${SLURM_ARRAY_TASK_ID}"
+
+## Load the R module
+module load conda_R/4.3.x
 
 ## List current modules for reproducibility
-module load conda_R/4.3.x
 module list
 
 Rscript 03-BayesSpace_k_search.R
 
 echo "**** Job ends ****"
 date
+
+## This script was made using slurmjobs version 1.2.0
+## available from http://research.libd.org/slurmjobs/
