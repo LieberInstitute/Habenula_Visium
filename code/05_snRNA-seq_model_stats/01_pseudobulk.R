@@ -31,3 +31,26 @@ input_sce_path <-
     )
 load(input_sce_path, verbose = TRUE)
 
+sce_pseudo <-
+    registration_pseudobulk(
+        sce,
+        var_registration = var_registration,
+        var_sample_id = var_sample_id,
+        min_ncells = min_ncells,
+        pseudobulk_rds_file = pseudobulk_rds_file
+    )
+
+registration_mod <-
+    registration_model(sce_pseudo, covars = covars)
+
+block_cor <-
+    registration_block_cor(sce_pseudo, registration_model = registration_mod)
+
+results_enrichment <-
+    registration_stats_enrichment(
+        sce_pseudo,
+        block_cor = block_cor,
+        covars = covars,
+        gene_ensembl = gene_ensembl,
+        gene_name = gene_name
+    )
