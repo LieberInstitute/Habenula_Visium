@@ -40,5 +40,6 @@ spatialLIBD::run_app(
         "expr_chrM_ratio",
         "edge_distance"
     ),
-    default_cluster = "BayesSpace_harmony_k08"
+    default_cluster = "BayesSpace_harmony_k08",
+    docs_path = "www"
 )
