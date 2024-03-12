@@ -50,6 +50,25 @@ compute_cor <- function(current_var) {
 cor_fine <- compute_cor("final_Annotations")
 cor_broad <- compute_cor("final_Annotations_broad")
 
+## Annotate clusters
+annotated_clusters_fine <-
+    lapply(cor_fine, annotate_registered_clusters, cutoff_merge_ratio = 0.1)
+annotated_clusters_broad <-
+    lapply(cor_broad, annotate_registered_clusters, cutoff_merge_ratio = 0.1)
+
+## Use annotation labels on the correlation matrices
+cor_fine <- mapply(function(cor, label_data) {
+    rownames(cor) <-
+        paste0(rownames(cor), " ~ ", label_data$layer_label[match(rownames(cor), label_data$cluster)])
+    return(cor)
+}, cor_fine, annotated_clusters_fine)
+
+cor_broad <- mapply(function(cor, label_data) {
+    rownames(cor) <-
+        paste0(rownames(cor), " ~ ", label_data$layer_label[match(rownames(cor), label_data$cluster)])
+    return(cor)
+}, cor_broad, annotated_clusters_broad)
+
 save(cor_fine,
     cor_broad,
     file = file.path(dir_rdata, "cor_BayesSpace_vs_snRNA-seq.Rdata")
