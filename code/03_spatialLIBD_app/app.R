@@ -16,9 +16,9 @@ spe <- cluster_import(spe,
     prefix = ""
 )
 
-
 ## Quickly explore the data
 vars <- colnames(colData(spe))
+colnames(colData(spe)) <- vars <- gsub("X10x", "10x", vars)
 spatialLIBD::run_app(
     spe = spe,
     sce_layer = NULL,
