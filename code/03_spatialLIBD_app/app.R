@@ -8,10 +8,17 @@ options("golem.app.prod" = TRUE)
 ## You need this to enable shinyapps to install Bioconductor packages
 options(repos = BiocManager::repositories())
 
-spe <- readRDS("spe.rds")
+spe <- readRDS("spe_harmony.rds")
+
+## Import BayesSpace clusters
+spe <- cluster_import(spe,
+    cluster_dir = "clusters_BayesSpace",
+    prefix = ""
+)
 
 ## Quickly explore the data
 vars <- colnames(colData(spe))
+colnames(colData(spe)) <- vars <- gsub("X10x", "10x", vars)
 spatialLIBD::run_app(
     spe = spe,
     sce_layer = NULL,
@@ -22,7 +29,9 @@ spatialLIBD::run_app(
         "overlaps_tissue",
         vars[grep("^10x_", vars)],
         vars[grep("^scran_", vars)],
-        "edge_spots"
+        "edge_spots",
+        vars[grep("^SNN_k10", vars)],
+        vars[grep("^BayesSpace_harmony_", vars)]
     ),
     spe_continuous_vars = c(
         "sum_umi",
@@ -31,5 +40,6 @@ spatialLIBD::run_app(
         "expr_chrM_ratio",
         "edge_distance"
     ),
-    default_cluster = "10x_graphclust"
+    default_cluster = "BayesSpace_harmony_k08",
+    docs_path = "www"
 )
