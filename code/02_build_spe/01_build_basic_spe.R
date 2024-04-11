@@ -144,6 +144,112 @@ lobstr::obj_size(spe)
 saveRDS(spe, file.path(dir_rdata, "spe.rds"))
 
 
+# ==============================================================================
+
+# copied from https://github.com/LieberInstitute/spatialDLPFC/blob/14a1f253a92e43c01fec3cc3077a9b2cf9ce9fc0/code/analysis/01_build_spe/01_build_spe.R#L216-L221
+
+## Inspect in vs outside of tissue
+
+vis_grid_clus(
+  spe = spe_raw,
+  clustervar = "in_tissue",
+  pdf = here::here("plots", "01_build_spe", "in_tissue_grid.pdf"),
+  sort_clust = FALSE,
+  colors = c("TRUE" = "grey90", "FALSE" = "orange")
+)
+
+summary(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)])
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+# 0.0    66.0   170.0   291.6   326.0 39053.0
+
+head(table(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)]))
+# 0  1  2  3  4  5
+# 12 17 50 59 65 81
+
+vis_grid_gene(
+  spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
+  geneid = "sum_umi",
+  pdf = here::here("plots", "01_build_spe", "out_tissue_sum_umi_all.pdf"),
+  assayname = "counts"
+)
+
+summary(spe_raw$sum_gene[which(!colData(spe_raw)$in_tissue)])
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+# 0.0    55.0   133.0   206.6   249.0  7956.0
+
+vis_grid_gene(
+  spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
+  geneid = "sum_gene",
+  pdf = here::here("plots", "01_build_spe", "out_tissue_sum_gene_all.pdf"),
+  assayname = "counts"
+)
+
+summary(spe_raw$expr_chrM_ratio[which(!colData(spe_raw)$in_tissue)])
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's
+#  0.0000  0.1500  0.1947  0.2072  0.2500  1.0000      12
+
+vis_grid_gene(
+  spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
+  geneid = "expr_chrM_ratio",
+  pdf = here::here("plots", "01_build_spe", "out_tissue_expr_chrM_ratio_all.pdf"),
+  assayname = "counts"
+)
+
+summary(spe$sum_umi)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+# 1    1358    2310    2674    3540   46881
+vis_grid_gene(
+  spe = spe,
+  geneid = "sum_umi",
+  pdf = here::here("plots", "01_build_spe", "in_tissue_sum_umi_all.pdf"),
+  assayname = "counts"
+)
+
+summary(spe$sum_gene)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+# 1     910    1426    1508    1999    8344
+
+vis_grid_gene(
+  spe = spe,
+  geneid = "sum_gene",
+  pdf = here::here("plots", "01_build_spe", "in_tissue_sum_gene_all.pdf"),
+  assayname = "counts"
+)
+
+summary(spe$expr_chrM_ratio)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+# 0.00000 0.07279 0.10440 0.12106 0.15513 1.00000
+vis_grid_gene(
+  spe = spe,
+  geneid = "expr_chrM_ratio",
+  pdf = here::here("plots", "01_build_spe", "in_tissue_expr_chrM_ratio_all.pdf"),
+  assayname = "counts"
+)
+
+vis_grid_gene(
+  spe = spe_raw,
+  geneid = "sum_umi",
+  pdf = here::here("plots", "01_build_spe", "all_sum_umi.pdf"),
+  assayname = "counts"
+)
+
+vis_grid_gene(
+  spe = spe_raw,
+  geneid = "sum_gene",
+  pdf = here::here("plots", "01_build_spe", "all_sum_gene.pdf"),
+  assayname = "counts"
+)
+vis_grid_gene(
+  spe = spe_raw,
+  geneid = "expr_chrM_ratio",
+  pdf = here::here("plots", "01_build_spe", "all_expr_chrM_ratio.pdf"),
+  assayname = "counts"
+)
+
+
+# ==============================================================================
+
+
 
 ## Reproducibility information
 print("Reproducibility information:")
