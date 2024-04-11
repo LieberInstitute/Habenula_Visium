@@ -7,6 +7,9 @@ library("sessioninfo")
 dir_rdata <- here::here("processed-data", "02_build_spe")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 
+dir_rdata <- here::here("plots", "02_build_spe")
+dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
+
 ## Define some info for the samples
 sample_info <- data.frame(
     sample_id = c(
