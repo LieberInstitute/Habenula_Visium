@@ -432,7 +432,8 @@ vis_grid_gene(
   geneid = "edge_distance",
   pdf = file.path(dir_plots, "in_tissue_egde_distance.pdf"),
   spatial = FALSE,
-  point_size = 2
+  point_size = 2,
+  minCount = -1
 )
 
 
