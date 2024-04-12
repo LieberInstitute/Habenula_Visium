@@ -1,4 +1,5 @@
 library("spatialLIBD")
+library("scran")
 library("here")
 library("lobstr")
 library("sessioninfo")
@@ -283,7 +284,8 @@ vis_grid_gene(
 ## Read in the data and add additional QC metrics, followed by filtering data
 ## Adapting code from https://github.com/LieberInstitute/Habenula_Visium/blob/0e020dd1a580b2bcea130057a2d7c01e5f928001/code/04_harmony_BayesSpace/01-filter_normalize.R#L29C1-L150C1
 
-spe <- readRDS(raw_in_path)
+library("tidyverse")
+
 cat("Initial number of spots:", dim(spe)[2], "\n")
 # Preliminary QC
 spe <- spe[
@@ -392,7 +394,8 @@ metrics_qc <- function(spe) {
   return(spe)
 }
 
-spe <- metrics_qc(spe)
+spe1 <- metrics_qc(spe)
+colnames(colData(spe))
 
 ## Save object with metrics_qc()
 # saveRDS(spe, file.path(dir_rdata, "spe_with_scran_low_lib_size_edge.rds"))
