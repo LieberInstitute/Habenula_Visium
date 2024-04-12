@@ -430,7 +430,7 @@ addmargins(table("Low_libsize_edge" = spe$scran_low_lib_size_edge))
 vis_grid_gene(
   spe = spe,
   geneid = "edge_distance",
-  pdf = file.path(dir_plots, "egde_distance.pdf"),
+  pdf = file.path(dir_plots, "in_tissue_egde_distance.pdf"),
   spatial = FALSE,
   point_size = 2
 )
