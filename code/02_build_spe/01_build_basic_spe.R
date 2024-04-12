@@ -422,6 +422,19 @@ addmargins(table("Low_libsize_edge" = spe$scran_low_lib_size_edge))
 
 # ==============================================================================
 ## plot edge empty spots
+## egde_distance sample plots
+# edge_distance https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/plots/07_spot_qc/egde_distance_wholegenome.pdf
+# https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/plots/07_spot_qc/scran_targeted_low_lib_size_vs_edge_distance.pdf
+# https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/plots/07_spot_qc/scran_targeted_low_lib_size.pdf
+
+vis_grid_gene(
+  spe = spe,
+  geneid = "edge_distance",
+  pdf = file.path(dir_plots, "egde_distance.pdf"),
+  spatial = FALSE,
+  point_size = 2
+)
+
 
 # spe_wholegenome$quality_groups <- "Pass"
 # spe_wholegenome$quality_groups[spe_wholegenome$scran_discard == "TRUE"] <- "LQ: retained"
