@@ -10,13 +10,19 @@ library("sessioninfo")
 
 ## Create output directories
 dir_rdata <- here::here("processed-data", "02_build_spe")
-if (!dir.exists(dir_rdata)) { dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE) }
+if (!dir.exists(dir_rdata)) {
+    dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
+}
 
 dir_txtdata <- here::here("processed-data", "02_build_spe/cvs_files")
-if (!dir.exists(dir_txtdata)) { dir.create(dir_txtdata, showWarnings = FALSE, recursive = TRUE) }
+if (!dir.exists(dir_txtdata)) {
+    dir.create(dir_txtdata, showWarnings = FALSE, recursive = TRUE)
+}
 
 dir_plots <- here::here("plots", "02_build_spe")
-if (!dir.exists(dir_plots)) { dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE) }
+if (!dir.exists(dir_plots)) {
+    dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
+}
 
 ## Define some info for the samples
 sample_info <- data.frame(
@@ -58,8 +64,8 @@ spe <- read10xVisiumWrapper(
     type = "sparse",
     data = "raw",
     images = c("lowres", "hires", "detected", "aligned"),
-    load = TRUE#,
-    #reference_gtf = here("raw-data", "genes.gtf") ## Not needed at JHPCE
+    load = TRUE # ,
+    # reference_gtf = here("raw-data", "genes.gtf") ## Not needed at JHPCE
 )
 Sys.time()
 # 2024-02-22 14:43:49.823746 SpatialExperiment::read10xVisium: reading basic data from SpaceRanger
@@ -131,7 +137,7 @@ cat("Initial number of spots:", dim(spe)[2], "\n")
 
 expr <- which(rowSums(counts(spe)) > 0)
 cat("Number of genes with counts:", length(expr))
-#23439
+# 23439
 no_expr <- which(rowSums(counts(spe)) == 0)
 cat("Number of genes with no counts:", length(no_expr))
 # [1] 13162
@@ -181,11 +187,11 @@ saveRDS(spe, file.path(dir_rdata, "spe.rds"))
 ## Inspect in vs outside of tissue
 
 vis_grid_clus(
-  spe = spe_raw,
-  clustervar = "in_tissue",
-  pdf = here(dir_plots, "all_in_tissue_grid.pdf"),
-  sort_clust = FALSE,
-  colors = c("TRUE" = "grey90", "FALSE" = "orange")
+    spe = spe_raw,
+    clustervar = "in_tissue",
+    pdf = here(dir_plots, "all_in_tissue_grid.pdf"),
+    sort_clust = FALSE,
+    colors = c("TRUE" = "grey90", "FALSE" = "orange")
 )
 
 summary(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)])
@@ -200,10 +206,10 @@ head(table(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)]))
 # 1   1   1   1   1   1  csc?
 
 vis_grid_gene(
-  spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
-  geneid = "sum_umi",
-  pdf = here::here("plots", "02_build_spe", "out_tissue_sum_umi.pdf"),
-  assayname = "counts"
+    spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
+    geneid = "sum_umi",
+    pdf = here::here("plots", "02_build_spe", "out_tissue_sum_umi.pdf"),
+    assayname = "counts"
 )
 
 summary(spe_raw$sum_gene[which(!colData(spe_raw)$in_tissue)])
@@ -211,10 +217,10 @@ summary(spe_raw$sum_gene[which(!colData(spe_raw)$in_tissue)])
 # 118.0   423.0   532.0   694.5   848.0  2915.0
 
 vis_grid_gene(
-  spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
-  geneid = "sum_gene",
-  pdf = here::here("plots", "02_build_spe", "out_tissue_sum_gene.pdf"),
-  assayname = "counts"
+    spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
+    geneid = "sum_gene",
+    pdf = here::here("plots", "02_build_spe", "out_tissue_sum_gene.pdf"),
+    assayname = "counts"
 )
 
 summary(spe_raw$expr_chrM_ratio[which(!colData(spe_raw)$in_tissue)])
@@ -222,10 +228,10 @@ summary(spe_raw$expr_chrM_ratio[which(!colData(spe_raw)$in_tissue)])
 # 0.1246  0.2205  0.3227  0.3048  0.3711  0.5323
 
 vis_grid_gene(
-  spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
-  geneid = "expr_chrM_ratio",
-  pdf = here::here("plots", "02_build_spe", "out_tissue_expr_chrM_ratio.pdf"),
-  assayname = "counts"
+    spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
+    geneid = "expr_chrM_ratio",
+    pdf = here::here("plots", "02_build_spe", "out_tissue_expr_chrM_ratio.pdf"),
+    assayname = "counts"
 )
 
 summary(spe$sum_umi)
@@ -233,10 +239,10 @@ summary(spe$sum_umi)
 # 61    2365    3873    4340    5527   27840
 
 vis_grid_gene(
-  spe = spe,
-  geneid = "sum_umi",
-  pdf = here::here("plots", "02_build_spe", "in_tissue_sum_umi.pdf"),
-  assayname = "counts"
+    spe = spe,
+    geneid = "sum_umi",
+    pdf = here::here("plots", "02_build_spe", "in_tissue_sum_umi.pdf"),
+    assayname = "counts"
 )
 
 summary(spe$sum_gene)
@@ -244,10 +250,10 @@ summary(spe$sum_gene)
 # 56    1179    1734    1824    2290    6520
 
 vis_grid_gene(
-  spe = spe,
-  geneid = "sum_gene",
-  pdf = here::here("plots", "02_build_spe", "in_tissue_sum_gene.pdf"),
-  assayname = "counts"
+    spe = spe,
+    geneid = "sum_gene",
+    pdf = here::here("plots", "02_build_spe", "in_tissue_sum_gene.pdf"),
+    assayname = "counts"
 )
 
 summary(spe$expr_chrM_ratio)
@@ -255,31 +261,31 @@ summary(spe$expr_chrM_ratio)
 # 0.08964 0.21649 0.24801 0.24684 0.27610 0.42706
 
 vis_grid_gene(
-  spe = spe,
-  geneid = "expr_chrM_ratio",
-  pdf = here::here("plots", "02_build_spe", "in_tissue_expr_chrM_ratio.pdf"),
-  assayname = "counts"
+    spe = spe,
+    geneid = "expr_chrM_ratio",
+    pdf = here::here("plots", "02_build_spe", "in_tissue_expr_chrM_ratio.pdf"),
+    assayname = "counts"
 )
 
 vis_grid_gene(
-  spe = spe_raw,
-  geneid = "sum_umi",
-  pdf = here::here("plots", "02_build_spe", "all_sum_umi.pdf"),
-  assayname = "counts"
+    spe = spe_raw,
+    geneid = "sum_umi",
+    pdf = here::here("plots", "02_build_spe", "all_sum_umi.pdf"),
+    assayname = "counts"
 )
 
 vis_grid_gene(
-  spe = spe_raw,
-  geneid = "sum_gene",
-  pdf = here::here("plots", "02_build_spe", "all_sum_gene.pdf"),
-  assayname = "counts"
+    spe = spe_raw,
+    geneid = "sum_gene",
+    pdf = here::here("plots", "02_build_spe", "all_sum_gene.pdf"),
+    assayname = "counts"
 )
 
 vis_grid_gene(
-  spe = spe_raw,
-  geneid = "expr_chrM_ratio",
-  pdf = here::here("plots", "02_build_spe", "all_expr_chrM_ratio.pdf"),
-  assayname = "counts"
+    spe = spe_raw,
+    geneid = "expr_chrM_ratio",
+    pdf = here::here("plots", "02_build_spe", "all_expr_chrM_ratio.pdf"),
+    assayname = "counts"
 )
 
 
@@ -291,123 +297,123 @@ vis_grid_gene(
 cat("Initial number of spots:", dim(spe)[2], "\n")
 # Preliminary QC
 spe <- spe[
-  rowSums(assays(spe)$counts) > 0,
-  (colSums(assays(spe)$counts) > 0) & spe$in_tissue
+    rowSums(assays(spe)$counts) > 0,
+    (colSums(assays(spe)$counts) > 0) & spe$in_tissue
 ]
 
 cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
 ## Metrics QC
 metrics_qc <- function(spe) {
-  qc_df <- data.frame(
-    log2sum = log2(spe$sum_umi),
-    log2detected = log2(spe$sum_gene),
-    subsets_Mito_percent = spe$expr_chrM_ratio * 100,
-    sample_id = spe$sample_id
-  )
-
-  qcfilter <- DataFrame(
-    low_lib_size = isOutlier(
-      qc_df$log2sum,
-      type = "lower",
-      log = TRUE,
-      batch = qc_df$sample_id
-    ),
-    low_n_features = isOutlier(
-      qc_df$log2detected,
-      type = "lower",
-      log = TRUE,
-      batch = qc_df$sample_id
-    ),
-    high_subsets_Mito_percent = isOutlier(
-      qc_df$subsets_Mito_percent,
-      type = "higher",
-      batch = qc_df$sample_id
-    )
-  )
-  qcfilter$discard <-
-    (qcfilter$low_lib_size |
-       qcfilter$low_n_features) | qcfilter$high_subsets_Mito_percent
-
-
-  spe$scran_low_lib_size_low_mito <-
-    factor(
-      qcfilter$low_lib_size &
-        qc_df$subsets_Mito_percent < 0.5,
-      levels = c("TRUE", "FALSE")
+    qc_df <- data.frame(
+        log2sum = log2(spe$sum_umi),
+        log2detected = log2(spe$sum_gene),
+        subsets_Mito_percent = spe$expr_chrM_ratio * 100,
+        sample_id = spe$sample_id
     )
 
+    qcfilter <- DataFrame(
+        low_lib_size = isOutlier(
+            qc_df$log2sum,
+            type = "lower",
+            log = TRUE,
+            batch = qc_df$sample_id
+        ),
+        low_n_features = isOutlier(
+            qc_df$log2detected,
+            type = "lower",
+            log = TRUE,
+            batch = qc_df$sample_id
+        ),
+        high_subsets_Mito_percent = isOutlier(
+            qc_df$subsets_Mito_percent,
+            type = "higher",
+            batch = qc_df$sample_id
+        )
+    )
+    qcfilter$discard <-
+        (qcfilter$low_lib_size |
+            qcfilter$low_n_features) | qcfilter$high_subsets_Mito_percent
 
-  spe$scran_discard <-
-    factor(qcfilter$discard, levels = c("TRUE", "FALSE"))
-  spe$scran_low_lib_size <-
-    factor(qcfilter$low_lib_size, levels = c("TRUE", "FALSE"))
-  spe$scran_low_n_features <-
-    factor(qcfilter$low_n_features, levels = c("TRUE", "FALSE"))
-  spe$scran_high_subsets_Mito_percent <-
-    factor(qcfilter$high_subsets_Mito_percent,
-           levels = c("TRUE", "FALSE")
+
+    spe$scran_low_lib_size_low_mito <-
+        factor(
+            qcfilter$low_lib_size &
+                qc_df$subsets_Mito_percent < 0.5,
+            levels = c("TRUE", "FALSE")
+        )
+
+
+    spe$scran_discard <-
+        factor(qcfilter$discard, levels = c("TRUE", "FALSE"))
+    spe$scran_low_lib_size <-
+        factor(qcfilter$low_lib_size, levels = c("TRUE", "FALSE"))
+    spe$scran_low_n_features <-
+        factor(qcfilter$low_n_features, levels = c("TRUE", "FALSE"))
+    spe$scran_high_subsets_Mito_percent <-
+        factor(qcfilter$high_subsets_Mito_percent,
+            levels = c("TRUE", "FALSE")
+        )
+
+    ## Find edge spots
+    spots <- data.frame(
+        row = spe$array_row,
+        col = spe$array_col,
+        sample_id = spe$sample_id
     )
 
-  ## Find edge spots
-  spots <- data.frame(
-    row = spe$array_row,
-    col = spe$array_col,
-    sample_id = spe$sample_id
-  )
+    # edge_spots_row <-
+    #   group_by(spots, sample_id, row) %>% summarize(min_col = min(col), max_col = max(col))
+    edge_spots_row <-
+        group_by(spots, sample_id, row) %>% mutate(min_col = min(col), max_col = max(col))
+    # edge_spots_col <-
+    #   group_by(spots, sample_id, col) %>% summarize(min_row = min(row), max_row = max(row))
+    edge_spots_col <-
+        group_by(spots, sample_id, col) %>% mutate(min_row = min(row), max_row = max(row))
 
-  # edge_spots_row <-
-  #   group_by(spots, sample_id, row) %>% summarize(min_col = min(col), max_col = max(col))
-  edge_spots_row <-
-    group_by(spots, sample_id, row) %>% mutate(min_col = min(col), max_col = max(col))
-  # edge_spots_col <-
-  #   group_by(spots, sample_id, col) %>% summarize(min_row = min(row), max_row = max(row))
-  edge_spots_col <-
-    group_by(spots, sample_id, col) %>% mutate(min_row = min(row), max_row = max(row))
+    spots <-
+        left_join(spots, edge_spots_row) %>% left_join(edge_spots_col)
+    spots$edge_spots <-
+        with(
+            spots,
+            row == min_row | row == max_row | col == min_col | col == max_col
+        )
 
-  spots <-
-    left_join(spots, edge_spots_row) %>% left_join(edge_spots_col)
-  spots$edge_spots <-
-    with(
-      spots,
-      row == min_row | row == max_row | col == min_col | col == max_col
-    )
+    head(spots, n = 3)
+    # row col     sample_id min_col max_col min_row max_row edge_spots
+    # 1  50 102 V12D07-075_C1      34     126       6      72      FALSE
+    # 2  14  94 V12D07-075_C1       0     120       6      70      FALSE
+    # 3  61  97 V12D07-075_C1      43     127       5      71      FALSE
 
-  head(spots, n=3)
-  # row col     sample_id min_col max_col min_row max_row edge_spots
-  # 1  50 102 V12D07-075_C1      34     126       6      72      FALSE
-  # 2  14  94 V12D07-075_C1       0     120       6      70      FALSE
-  # 3  61  97 V12D07-075_C1      43     127       5      71      FALSE
-
-  spots$row_distance <-
-    with(spots, pmin(abs(row - min_row), abs(row - max_row)))
-  spots$col_distance <-
-    with(spots, pmin(abs(col - min_col), abs(col - max_col)))
-  ## spots$edge_distance <- with(spots, sqrt(row_distance^2 + col_distance^2))
-  ## The above is from:
-  ## sqrt((x_1 - x_2)^2 + (y_1 - y_2)^2)
-  ## but it was wrong, here's a case the the smallest distance is on the column:
-  ## sqrt(0^2 + col_distance^2) = col_distance
-  spots$edge_distance <-
-    with(spots, pmin(row_distance, col_distance))
+    spots$row_distance <-
+        with(spots, pmin(abs(row - min_row), abs(row - max_row)))
+    spots$col_distance <-
+        with(spots, pmin(abs(col - min_col), abs(col - max_col)))
+    ## spots$edge_distance <- with(spots, sqrt(row_distance^2 + col_distance^2))
+    ## The above is from:
+    ## sqrt((x_1 - x_2)^2 + (y_1 - y_2)^2)
+    ## but it was wrong, here's a case the the smallest distance is on the column:
+    ## sqrt(0^2 + col_distance^2) = col_distance
+    spots$edge_distance <-
+        with(spots, pmin(row_distance, col_distance))
 
 
-  spe$edge_spots <-
-    factor(spots$edge_spots, levels = c("TRUE", "FALSE"))
-  spe$edge_distance <- spots$edge_distance
+    spe$edge_spots <-
+        factor(spots$edge_spots, levels = c("TRUE", "FALSE"))
+    spe$edge_distance <- spots$edge_distance
 
 
-  spe$scran_low_lib_size_edge <-
-    factor(
-      qcfilter$low_lib_size &
-        spots$edge_distance < 1,
-      levels = c("TRUE", "FALSE")
-    )
+    spe$scran_low_lib_size_edge <-
+        factor(
+            qcfilter$low_lib_size &
+                spots$edge_distance < 1,
+            levels = c("TRUE", "FALSE")
+        )
 
-  return(spe)
+    return(spe)
 }
 
 spe <- metrics_qc(spe)
-#head(spe$scran_low_lib_size_edge)
+# head(spe$scran_low_lib_size_edge)
 
 ## Save object with metrics_qc()
 saveRDS(spe, file.path(dir_rdata, "spe_with_scran_low_lib_size_edge.rds"))
@@ -428,13 +434,13 @@ addmargins(table("Low_libsize_edge" = spe$scran_low_lib_size_edge))
 # https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/plots/07_spot_qc/scran_targeted_low_lib_size.pdf
 
 vis_grid_gene(
-  spe = spe,
-  geneid = "edge_distance",
-  pdf = file.path(dir_plots, "in_tissue_egde_distance.pdf"),
-  spatial = FALSE,
-  point_size = 2,
-  minCount = -1,
-  cont_colors = viridisLite::viridis(21, direction = -1)
+    spe = spe,
+    geneid = "edge_distance",
+    pdf = file.path(dir_plots, "in_tissue_egde_distance.pdf"),
+    spatial = FALSE,
+    point_size = 2,
+    minCount = -1,
+    cont_colors = viridisLite::viridis(21, direction = -1)
 )
 
 
@@ -474,9 +480,9 @@ vis_grid_gene(
 
 spe <- spe[, spe$scran_low_lib_size_edge == "FALSE"]
 cat(
-  "Number of spots after removed low library size spots on the tissue edge:",
-  dim(spe)[2],
-  "\n"
+    "Number of spots after removed low library size spots on the tissue edge:",
+    dim(spe)[2],
+    "\n"
 )
 
 # Number of spots after removed low library size spots on the tissue edge: 3604
