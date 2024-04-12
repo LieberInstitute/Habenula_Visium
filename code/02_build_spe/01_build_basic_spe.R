@@ -5,10 +5,13 @@ library("sessioninfo")
 
 ## Create output directories
 dir_rdata <- here::here("processed-data", "02_build_spe")
-dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
+if (!dir.exists(dir_rdata)) { dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE) }
 
-dir_rdata <- here::here("plots", "02_build_spe")
-dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
+dir_txtdata <- here::here("processed-data", "02_build_spe/cvs_files")
+if (!dir.exists(dir_txtdata)) { dir.create(dir_txtdata, showWarnings = FALSE, recursive = TRUE) }
+
+dir_plots <- here::here("plots", "02_build_spe")
+if (!dir.exists(dir_plots)) { dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE) }
 
 ## Define some info for the samples
 sample_info <- data.frame(
@@ -50,8 +53,8 @@ spe <- read10xVisiumWrapper(
     type = "sparse",
     data = "raw",
     images = c("lowres", "hires", "detected", "aligned"),
-    load = TRUE,
-    reference_gtf = here("raw-data", "genes.gtf") ## Not needed at JHPCE
+    load = TRUE#,
+    #reference_gtf = here("raw-data", "genes.gtf") ## Not needed at JHPCE
 )
 Sys.time()
 # 2024-02-22 14:43:49.823746 SpatialExperiment::read10xVisium: reading basic data from SpaceRanger
@@ -61,6 +64,11 @@ Sys.time()
 # 2024-02-22 14:44:28.499147 adding gene information to the SPE object
 # 2024-02-22 14:44:28.523581 adding information used by spatialLIBD
 # [1] "2024-02-22 14:44:28 EST"
+
+# spe@int_colData$reducedDims
+# colnames(spe)
+# rownames(spe)
+colnames(colData(spe))
 
 ## Add the study design info
 add_design <- function(spe) {
@@ -74,6 +82,8 @@ add_design <- function(spe) {
     return(spe)
 }
 spe <- add_design(spe)
+
+# head(colData(spe))
 
 # ## Read in cell counts and segmentation results
 # segmentations_list <-
@@ -108,9 +118,17 @@ spe <- add_design(spe)
 #     )]
 # colData(spe) <- cbind(colData(spe), segmentation_info)
 
+
+cat("Initial number of spots:", dim(spe)[2], "\n")
+# Initial number of spots: 4992 
+
 ## Remove genes with no data
+
+expr <- which(rowSums(counts(spe)) > 0)
+cat("Number of genes with counts:", length(expr))
+#23439
 no_expr <- which(rowSums(counts(spe)) == 0)
-length(no_expr)
+cat("Number of genes with no counts:", length(no_expr))
 # [1] 13162
 length(no_expr) / nrow(spe) * 100
 # [1] 35.96077
@@ -133,6 +151,10 @@ lobstr::obj_size(spe_raw)
 spe <- spe_raw[, spe_raw$in_tissue]
 dim(spe)
 # [1] 23439  3615
+
+cat("Spots in tissue:", dim(spe)[2], "\n")
+# Initial number of spots: 3615 
+
 ## Remove spots without counts
 if (any(colSums(counts(spe)) == 0)) {
     message("removing spots without counts for spe")
@@ -156,7 +178,7 @@ saveRDS(spe, file.path(dir_rdata, "spe.rds"))
 vis_grid_clus(
   spe = spe_raw,
   clustervar = "in_tissue",
-  pdf = here::here("plots", "02_build_spe", "in_tissue_grid.pdf"),
+  pdf = here(dir_plots, "in_tissue_grid.pdf"),
   sort_clust = FALSE,
   colors = c("TRUE" = "grey90", "FALSE" = "orange")
 )
@@ -169,8 +191,8 @@ head(table(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)]))
 # 0  1  2  3  4  5
 # 12 17 50 59 65 81
 
-# 202 428 432 436 455 482 ? csc
-# 1   1   1   1   1   1 
+# 202 428 432 436 455 482 why only 1? csc
+# 1   1   1   1   1   1  csc?
 
 vis_grid_gene(
   spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
@@ -258,7 +280,137 @@ vis_grid_gene(
 
 # ==============================================================================
 
+## Read in the data and add additional QC metrics, followed by filtering data
+## Adapting code from https://github.com/LieberInstitute/Habenula_Visium/blob/0e020dd1a580b2bcea130057a2d7c01e5f928001/code/04_harmony_BayesSpace/01-filter_normalize.R#L29C1-L150C1
 
+spe <- readRDS(raw_in_path)
+cat("Initial number of spots:", dim(spe)[2], "\n")
+# Preliminary QC
+spe <- spe[
+  rowSums(assays(spe)$counts) > 0,
+  (colSums(assays(spe)$counts) > 0) & spe$in_tissue
+]
+
+cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
+## Metrics QC
+metrics_qc <- function(spe) {
+  qc_df <- data.frame(
+    log2sum = log2(spe$sum_umi),
+    log2detected = log2(spe$sum_gene),
+    subsets_Mito_percent = spe$expr_chrM_ratio * 100,
+    sample_id = spe$sample_id
+  )
+  
+  qcfilter <- DataFrame(
+    low_lib_size = isOutlier(
+      qc_df$log2sum,
+      type = "lower",
+      log = TRUE,
+      batch = qc_df$sample_id
+    ),
+    low_n_features = isOutlier(
+      qc_df$log2detected,
+      type = "lower",
+      log = TRUE,
+      batch = qc_df$sample_id
+    ),
+    high_subsets_Mito_percent = isOutlier(
+      qc_df$subsets_Mito_percent,
+      type = "higher",
+      batch = qc_df$sample_id
+    )
+  )
+  qcfilter$discard <-
+    (qcfilter$low_lib_size |
+       qcfilter$low_n_features) | qcfilter$high_subsets_Mito_percent
+  
+  
+  spe$scran_low_lib_size_low_mito <-
+    factor(
+      qcfilter$low_lib_size &
+        qc_df$subsets_Mito_percent < 0.5,
+      levels = c("TRUE", "FALSE")
+    )
+  
+  
+  spe$scran_discard <-
+    factor(qcfilter$discard, levels = c("TRUE", "FALSE"))
+  spe$scran_low_lib_size <-
+    factor(qcfilter$low_lib_size, levels = c("TRUE", "FALSE"))
+  spe$scran_low_n_features <-
+    factor(qcfilter$low_n_features, levels = c("TRUE", "FALSE"))
+  spe$scran_high_subsets_Mito_percent <-
+    factor(qcfilter$high_subsets_Mito_percent,
+           levels = c("TRUE", "FALSE")
+    )
+  
+  ## Find edge spots
+  spots <- data.frame(
+    row = spe$array_row,
+    col = spe$array_col,
+    sample_id = spe$sample_id
+  )
+  
+  edge_spots_row <-
+    group_by(spots, sample_id, row) %>% summarize(min_col = min(col), max_col = max(col))
+  edge_spots_col <-
+    group_by(spots, sample_id, col) %>% summarize(min_row = min(row), max_row = max(row))
+  
+  spots <-
+    left_join(spots, edge_spots_row) %>% left_join(edge_spots_col)
+  spots$edge_spots <-
+    with(
+      spots,
+      row == min_row | row == max_row | col == min_col | col == max_col
+    )
+  
+  spots$row_distance <-
+    with(spots, pmin(abs(row - min_row), abs(row - max_row)))
+  spots$col_distance <-
+    with(spots, pmin(abs(col - min_col), abs(col - max_col)))
+  ## spots$edge_distance <- with(spots, sqrt(row_distance^2 + col_distance^2))
+  ## The above is from:
+  ## sqrt((x_1 - x_2)^2 + (y_1 - y_2)^2)
+  ## but it was wrong, here's a case the the smallest distance is on the column:
+  ## sqrt(0^2 + col_distance^2) = col_distance
+  spots$edge_distance <-
+    with(spots, pmin(row_distance, col_distance))
+  
+  
+  spe$edge_spots <-
+    factor(spots$edge_spots, levels = c("TRUE", "FALSE"))
+  spe$edge_distance <- spots$edge_distance
+  
+  
+  spe$scran_low_lib_size_edge <-
+    factor(
+      qcfilter$low_lib_size &
+        spots$edge_distance < 1,
+      levels = c("TRUE", "FALSE")
+    )
+  
+  return(spe)
+}
+
+spe <- metrics_qc(spe)
+
+## Save object with metrics_qc()
+# saveRDS(spe, file.path(dir_rdata, "spe_with_scran_low_lib_size_edge.rds"))
+
+## Drop spots with a low library size that are on the edge
+spe <- spe[, spe$scran_low_lib_size_edge == "FALSE"]
+cat(
+  "Number of spots after removed low library size spots on the tissue edge:",
+  dim(spe)[2],
+  "\n"
+)
+
+
+
+
+
+
+# ==============================================================================
 
 ## Reproducibility information
 print("Reproducibility information:")
