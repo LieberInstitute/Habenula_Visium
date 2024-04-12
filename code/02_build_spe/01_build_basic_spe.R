@@ -353,10 +353,14 @@ metrics_qc <- function(spe) {
     sample_id = spe$sample_id
   )
   
+  # edge_spots_row <-
+  #   group_by(spots, sample_id, row) %>% summarize(min_col = min(col), max_col = max(col))
   edge_spots_row <-
-    group_by(spots, sample_id, row) %>% summarize(min_col = min(col), max_col = max(col))
+    group_by(spots, sample_id, row) %>% mutate(min_col = min(col), max_col = max(col))
+  # edge_spots_col <-
+  #   group_by(spots, sample_id, col) %>% summarize(min_row = min(row), max_row = max(row))
   edge_spots_col <-
-    group_by(spots, sample_id, col) %>% summarize(min_row = min(row), max_row = max(row))
+    group_by(spots, sample_id, col) %>% mutate(min_row = min(row), max_row = max(row))
   
   spots <-
     left_join(spots, edge_spots_row) %>% left_join(edge_spots_col)
@@ -365,6 +369,12 @@ metrics_qc <- function(spe) {
       spots,
       row == min_row | row == max_row | col == min_col | col == max_col
     )
+  
+  head(spots, n=3)
+  # row col     sample_id min_col max_col min_row max_row edge_spots
+  # 1  50 102 V12D07-075_C1      34     126       6      72      FALSE
+  # 2  14  94 V12D07-075_C1       0     120       6      70      FALSE
+  # 3  61  97 V12D07-075_C1      43     127       5      71      FALSE
   
   spots$row_distance <-
     with(spots, pmin(abs(row - min_row), abs(row - max_row)))
@@ -394,11 +404,12 @@ metrics_qc <- function(spe) {
   return(spe)
 }
 
-spe1 <- metrics_qc(spe)
+spe <- metrics_qc(spe)
 colnames(colData(spe))
+#head(spe$scran_low_lib_size_edge)
 
 ## Save object with metrics_qc()
-# saveRDS(spe, file.path(dir_rdata, "spe_with_scran_low_lib_size_edge.rds"))
+saveRDS(spe, file.path(dir_rdata, "spe_with_scran_low_lib_size_edge.rds"))
 
 ## Drop spots with a low library size that are on the edge
 spe <- spe[, spe$scran_low_lib_size_edge == "FALSE"]
