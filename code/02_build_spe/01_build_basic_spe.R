@@ -433,7 +433,8 @@ vis_grid_gene(
   pdf = file.path(dir_plots, "in_tissue_egde_distance.pdf"),
   spatial = FALSE,
   point_size = 2,
-  minCount = -1
+  minCount = -1,
+  cont_colors = viridisLite::viridis(21, direction = -1)
 )
 
 
