@@ -1,8 +1,12 @@
 library("spatialLIBD")
 library("scran")
+library("tidyverse")
 library("here")
 library("lobstr")
 library("sessioninfo")
+
+
+
 
 ## Create output directories
 dir_rdata <- here::here("processed-data", "02_build_spe")
@@ -281,10 +285,8 @@ vis_grid_gene(
 
 # ==============================================================================
 
-## Read in the data and add additional QC metrics, followed by filtering data
+## Read in the data and add additional QC metrics, followed by filtering data on edge spots
 ## Adapting code from https://github.com/LieberInstitute/Habenula_Visium/blob/0e020dd1a580b2bcea130057a2d7c01e5f928001/code/04_harmony_BayesSpace/01-filter_normalize.R#L29C1-L150C1
-
-library("tidyverse")
 
 cat("Initial number of spots:", dim(spe)[2], "\n")
 # Preliminary QC
@@ -405,13 +407,56 @@ metrics_qc <- function(spe) {
 }
 
 spe <- metrics_qc(spe)
-colnames(colData(spe))
 #head(spe$scran_low_lib_size_edge)
 
 ## Save object with metrics_qc()
 saveRDS(spe, file.path(dir_rdata, "spe_with_scran_low_lib_size_edge.rds"))
 
+colnames(colData(spe))
+
+## Locate low library size spots on the edge 
+addmargins(table("Low_libsize_edge" = spe$scran_low_lib_size_edge))
+# Low_libsize_edge
+# TRUE FALSE   Sum 
+# 11  3604  3615 
+
+# ==============================================================================
+## plot edge empty spots
+
+# spe_wholegenome$quality_groups <- "Pass"
+# spe_wholegenome$quality_groups[spe_wholegenome$scran_discard == "TRUE"] <- "LQ: retained"
+# spe_wholegenome$quality_groups[spe_wholegenome$glare] <- "LQ: glare"
+# spe_wholegenome$quality_groups[spe_wholegenome$drop_low_library_edge_either] <- "LQ: low lib size & edge"
+# table(spe_wholegenome$quality_groups)
+# # LQ: glare LQ: low lib size & edge            LQ: retained                    Pass
+# #        20                     152                     930                   37185
+# 
+# quality_groups_colors <- c("Pass" = "grey90", "LQ: retained" = "orange", "LQ: glare" = "steelblue3", "LQ: low lib size & edge" = "violetred")
+# p_list <- vis_grid_clus(
+#   spe = spe_wholegenome,
+#   clustervar = "quality_groups",
+#   sort_clust = FALSE,
+#   colors = quality_groups_colors,
+#   spatial = FALSE,
+#   point_size = 2,
+#   return_plots = TRUE
+# )
+# 
+# pdf(file.path(dir_plots, "scran_low_lib_size_edge.pdf"), useDingbats = FALSE, height = 8 * 4, width = 9 * 3)
+# print(cowplot::plot_grid(plotlist = p_list, ncol = 1, align = "hv"))
+# dev.off()
+
+# vis_grid_gene(
+#   spe = spe[, which(!colData(spe)$scran_low_lib_size_edge)],
+#   geneid = "edge_spots",
+#   pdf = here::here("plots", "02_build_spe", "out_tissue_sum_umi_all.pdf"),
+#   assayname = "counts"
+# )
+
+
+# ==============================================================================
 ## Drop spots with a low library size that are on the edge
+
 spe <- spe[, spe$scran_low_lib_size_edge == "FALSE"]
 cat(
   "Number of spots after removed low library size spots on the tissue edge:",
@@ -419,6 +464,7 @@ cat(
   "\n"
 )
 
+# Number of spots after removed low library size spots on the tissue edge: 3604 
 
 
 
