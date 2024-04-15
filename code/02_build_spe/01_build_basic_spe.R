@@ -151,11 +151,12 @@ spe$overlaps_tissue <-
 ## Save with and without dropping spots outside of the tissue
 spe_raw <- spe
 
-saveRDS(spe_raw, file.path(dir_rdata, "spe_raw.rds"))
-
 ## Size in Gb
 lobstr::obj_size(spe_raw)
 # 206.32 MB
+
+saveRDS(spe_raw, file.path(dir_rdata, "spe_raw.rds"))
+
 
 ## Now drop the spots outside the tissue
 spe <- spe_raw[, spe_raw$in_tissue]
