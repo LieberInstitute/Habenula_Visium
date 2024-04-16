@@ -1,5 +1,5 @@
 
-#library("spatialLIBD")
+library("spatialLIBD")
 library("scran")
 library("tidyverse")
 library("here")
@@ -10,7 +10,9 @@ library("sessioninfo")
 ## Set directory data
 
 dir_rdata <- here("processed-data", "02_build_spe")
-raw_in_path <- here("processed-data", "02_build_spe", "spe.rds")
+spe_in_path <- here("processed-data", "02_build_spe", "spe.rds")
+raw_in_path <- here("processed-data", "02_build_spe", "spe_raw.rds")
+
 # /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/02_build_spe/spe.rds
 
 ## Create output directories
@@ -20,9 +22,14 @@ if (!dir.exists(dir_plots)) { dir.create(dir_plots, showWarnings = FALSE, recurs
 
 ##  Read in the data and add additional QC metrics, followed by filtering data
 
-spe <- readRDS(raw_in_path)
+spe_raw <- readRDS(raw_in_path)
+cat("Initial number of spots:", dim(spe_raw)[2], "\n")
+# Initial number of spots: 4992
+
+spe <- readRDS(spe_in_path)
 cat("Initial number of spots:", dim(spe)[2], "\n")
 # Initial number of spots: 3615 
+
 
 
 
@@ -30,9 +37,10 @@ cat("Initial number of spots:", dim(spe)[2], "\n")
 
 ## Inspect in vs outside of tissue
 
-vis_grid_clus(
+p1 <- vis_grid_clus(
   spe = spe_raw,
   clustervar = "in_tissue",
+  return_plots = TRUE,
   pdf = here(dir_plots, "all_in_tissue_grid.pdf"),
   sort_clust = FALSE,
   colors = c("TRUE" = "grey90", "FALSE" = "orange")
