@@ -361,19 +361,14 @@ proc.time()
 options(width = 120)
 session_info()
 
-
-
-# > ## Reproducibility information
-#   > print("Reproducibility information:")
-# [1] "Reproducibility information:"
 # > Sys.time()
-# [1] "2024-04-15 13:19:43 EDT"
+# [1] "2024-04-16 16:06:31 EDT"
 # > proc.time()
 # user   system  elapsed 
-# 442.407   14.083 5695.556 
+# 69.713    2.288 3585.754 
 # > options(width = 120)
 # > session_info()
-# ─ Session info ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# ─ Session info ──────────────────────────────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.2 Patched (2024-02-08 r85876)
 # os       Rocky Linux 9.2 (Blue Onyx)
@@ -383,10 +378,10 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2024-04-15
+# date     2024-04-16
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3.x/bin/pandoc
 # 
-# ─ Packages ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# ─ Packages ──────────────────────────────────────────────────────────────────────────────────────────────
 # package                * version     date (UTC) lib source
 # abind                    1.4-5       2016-07-21 [2] CRAN (R 4.3.2)
 # AnnotationDbi            1.64.1      2023-11-03 [2] Bioconductor
@@ -431,7 +426,6 @@ session_info()
 # dotCall64                1.1-1       2023-11-28 [2] CRAN (R 4.3.2)
 # dplyr                  * 1.1.4       2023-11-17 [2] CRAN (R 4.3.2)
 # dqrng                    0.3.2       2023-11-29 [2] CRAN (R 4.3.2)
-# DropletUtils             1.22.0      2023-10-24 [2] Bioconductor
 # DT                       0.31        2023-12-09 [2] CRAN (R 4.3.2)
 # edgeR                    4.0.14      2024-01-29 [2] Bioconductor 3.18 (R 4.3.2)
 # ellipsis                 0.3.2       2021-04-29 [2] CRAN (R 4.3.2)
@@ -455,7 +449,6 @@ session_info()
 # golem                    0.4.1       2023-06-05 [2] CRAN (R 4.3.2)
 # gridExtra                2.3         2017-09-09 [2] CRAN (R 4.3.2)
 # gtable                   0.3.4       2023-08-21 [2] CRAN (R 4.3.2)
-# HDF5Array                1.30.0      2023-10-24 [2] Bioconductor
 # here                   * 1.0.1       2020-12-13 [2] CRAN (R 4.3.2)
 # hms                      1.1.3       2023-03-21 [2] CRAN (R 4.3.2)
 # htmltools                0.5.7       2023-11-03 [2] CRAN (R 4.3.2)
@@ -497,9 +490,6 @@ session_info()
 # prettyunits              1.2.0       2023-09-24 [2] CRAN (R 4.3.2)
 # promises                 1.2.1       2023-08-10 [2] CRAN (R 4.3.2)
 # purrr                  * 1.0.2       2023-08-10 [2] CRAN (R 4.3.2)
-# R.methodsS3              1.8.2       2022-06-13 [2] CRAN (R 4.3.2)
-# R.oo                     1.26.0      2024-01-24 [2] CRAN (R 4.3.2)
-# R.utils                  2.12.3      2023-11-18 [2] CRAN (R 4.3.2)
 # R6                       2.5.1       2021-08-19 [2] CRAN (R 4.3.2)
 # rappdirs                 0.3.3       2021-01-31 [2] CRAN (R 4.3.2)
 # RColorBrewer             1.1-3       2022-04-03 [2] CRAN (R 4.3.2)
@@ -508,9 +498,6 @@ session_info()
 # readr                  * 2.1.5       2024-01-10 [2] CRAN (R 4.3.2)
 # rematch2                 2.1.2       2020-05-01 [2] CRAN (R 4.3.2)
 # restfulr                 0.0.15      2022-06-16 [2] CRAN (R 4.3.2)
-# rhdf5                    2.46.1      2023-11-29 [2] Bioconductor 3.18 (R 4.3.2)
-# rhdf5filters             1.14.1      2023-11-06 [2] Bioconductor
-# Rhdf5lib                 1.24.2      2024-02-07 [2] Bioconductor 3.18 (R 4.3.2)
 # rjson                    0.2.21      2022-01-09 [2] CRAN (R 4.3.2)
 # rlang                    1.1.3       2024-01-10 [2] CRAN (R 4.3.2)
 # rprojroot                2.0.4       2023-11-05 [2] CRAN (R 4.3.2)
@@ -527,7 +514,7 @@ session_info()
 # scran                  * 1.30.2      2024-01-22 [2] Bioconductor 3.18 (R 4.3.2)
 # scuttle                * 1.12.0      2023-10-24 [2] Bioconductor
 # sessioninfo            * 1.2.2       2021-12-06 [2] CRAN (R 4.3.2)
-# shiny                  * 1.8.0       2023-11-17 [2] CRAN (R 4.3.2)
+# shiny                    1.8.0       2023-11-17 [2] CRAN (R 4.3.2)
 # shinyWidgets             0.8.1       2024-01-10 [2] CRAN (R 4.3.2)
 # SingleCellExperiment   * 1.24.0      2023-10-24 [2] Bioconductor
 # spam                     2.10-0      2023-10-23 [2] CRAN (R 4.3.2)
@@ -561,4 +548,5 @@ session_info()
 # [2] /jhpce/shared/community/core/conda_R/4.3.x/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3.x/R/lib64/R/library
 # 
-# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────
+
