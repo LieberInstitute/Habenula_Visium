@@ -171,8 +171,9 @@ plot_all_counts <- function(g, t) {
 map2(names(lst_all_counts), lst_all_counts, ~ plot_all_counts(g = .x, t = .y))
 
 
-
+## -----------------------------
 ## Add additional QC metrics, followed by filtering data on edge spots
+
 ## Adapting code from https://github.com/LieberInstitute/Habenula_Visium/blob/0e020dd1a580b2bcea130057a2d7c01e5f928001/code/04_harmony_BayesSpace/01-filter_normalize.R#L29C1-L150C1
 
 cat("Initial number of spots:", dim(spe)[2], "\n")
@@ -183,6 +184,7 @@ spe <- spe[
 ]
 
 cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
+
 ## Metrics QC
 metrics_qc <- function(spe) {
   qc_df <- data.frame(
@@ -319,9 +321,12 @@ addmargins(table("Low_libsize_edge" = spe$scran_low_lib_size_edge))
 vis_grid_gene(
   spe = spe,
   geneid = "edge_distance",
-  pdf = file.path(dir_plots, "in_tissue_egde_distance.pdf"),
+  height = var_height, 
+  width = var_width,   
+  point_size = 2.5,
+  #return_plots = TRUE,
+  pdf = here(dir_plots, "in_tissue_egde_distance.pdf"),
   spatial = FALSE,
-  point_size = 2,
   minCount = -1,
   cont_colors = viridisLite::viridis(21, direction = -1)
 )
