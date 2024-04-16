@@ -16,11 +16,8 @@ raw_in_path <- here("processed-data", "02_build_spe", "spe_raw.rds")
 # /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/02_build_spe/spe.rds
 
 ## Create output directories
-dir_plots <- here("plots", "02_build_spe")
-if (!dir.exists(dir_plots)) { dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE) }
 
-
-##  Read in the data and add additional QC metrics, followed by filtering data
+## load datasets
 
 spe_raw <- readRDS(raw_in_path)
 cat("Initial number of spots:", dim(spe_raw)[2], "\n")
@@ -31,111 +28,148 @@ cat("Initial number of spots:", dim(spe)[2], "\n")
 # Initial number of spots: 3615 
 
 
-
-
 # copied from https://github.com/LieberInstitute/spatialDLPFC/blob/14a1f253a92e43c01fec3cc3077a9b2cf9ce9fc0/code/analysis/01_build_spe/01_build_spe.R#L216-L221
 
 ## Inspect in vs outside of tissue
 
-p1 <- vis_grid_clus(
+#p1 <- vis_grid_clus(
+# cap <- summary(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)])
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+# 202     803    1023    1278    1499    6969
+# lab_cap <- paste('Min=', cap[[1]], ' Mean=', cap[[3]],  ' Max=', cap[[6]])                
+
+cluster_var <- 'in_tissue'
+vis_grid_clus(
   spe = spe_raw,
-  clustervar = "in_tissue",
-  return_plots = TRUE,
+  clustervar = cluster_var,
+  height = var_height, #8
+  width = var_width,   #9
+  point_size = var_point_size,  #1.5
   pdf = here(dir_plots, "all_in_tissue_grid.pdf"),
   sort_clust = FALSE,
   colors = c("TRUE" = "grey90", "FALSE" = "orange")
-)
+) 
+
+# plot the same but using vis_clus(), due I could not modify size nor add labs() with vis_grid_clus()
+p2 <- vis_clus(
+  spe = spe_raw,
+  clustervar = cluster_var,
+  point_size = var_point_size,
+  colors = c("TRUE" = "grey90", "FALSE" = "orange")
+) + labs(title = unique(spe$sample_id), subtitle = cluster_var) 
+png(filename = here(dir_plots, paste0('all_in_tissue_',unique(spe$sample_id)[1],'.png')))
+p2
+dev.off()
+
+## -----------------------------
+## Out-tissue metrics
+
+lst_out_counts <- c(sum_umi = 'out_tissue_sum_umi.pdf', 
+                       sum_gene = 'out_tissue_sum_gene.pdf', 
+                       expr_chrM_ratio = 'out_tissue_expr_chrM_ratio.pdf')
+
+plot_out_counts <- function(g, t) {
+  
+  message('Ploting ', g)
+  
+  vis_grid_gene(
+    spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
+    geneid = g,
+    height = var_height, #8
+    width = var_width,   #9
+    point_size = var_point_size,  #1.5  
+    #return_plots = TRUE,
+    pdf = here(dir_plots, t),
+    assayname = "counts"
+  )  
+  
+}
+
+map2(names(lst_out_counts), lst_out_counts, ~ plot_out_counts(g = .x, t = .y))
 
 summary(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)])
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
-# 202     803    1023    1278    1499    6969
-
-head(table(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)]))
-# 202 428 432 436 455 482
-# 1   1   1   1   1   1  
-
-vis_grid_gene(
-  spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
-  geneid = "sum_umi",
-  pdf = here::here("plots", "02_build_spe", "out_tissue_sum_umi.pdf"),
-  assayname = "counts"
-)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 202     803    1023    1278    1499    6969 
 
 summary(spe_raw$sum_gene[which(!colData(spe_raw)$in_tissue)])
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
-# 118.0   423.0   532.0   694.5   848.0  2915.0
-
-vis_grid_gene(
-  spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
-  geneid = "sum_gene",
-  pdf = here::here("plots", "02_build_spe", "out_tissue_sum_gene.pdf"),
-  assayname = "counts"
-)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 118.0   423.0   532.0   694.5   848.0  2915.0 
 
 summary(spe_raw$expr_chrM_ratio[which(!colData(spe_raw)$in_tissue)])
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 0.1246  0.2205  0.3227  0.3048  0.3711  0.5323
 
-vis_grid_gene(
-  spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
-  geneid = "expr_chrM_ratio",
-  pdf = here::here("plots", "02_build_spe", "out_tissue_expr_chrM_ratio.pdf"),
-  assayname = "counts"
-)
+# head(table(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)]))
+# # 202 428 432 436 455 482
+# # 1   1   1   1   1   1  
+
+
+## -----------------------------
+## in-tissue metrics
+
+lst_in_counts <- c(sum_umi = 'in_tissue_sum_umi.pdf', 
+                         sum_gene = 'in_tissue_sum_gene.pdf', 
+                         expr_chrM_ratio = 'in_tissue_expr_chrM_ratio.pdf')
+
+plot_in_counts <- function(g, t) {
+  
+  message('Ploting ', g)
+  
+  vis_grid_gene(
+    spe = spe,
+    geneid = g,
+    height = var_height, #8
+    width = var_width,   #9
+    point_size = var_point_size,  #1.5  
+    #return_plots = TRUE,  
+    pdf = here(dir_plots,t),
+    assayname = "counts"
+  )
+  
+}
+
+map2(names(lst_in_counts), lst_in_counts, ~ plot_in_counts(g = .x, t = .y))
 
 summary(spe$sum_umi)
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 61    2365    3873    4340    5527   27840
 
-vis_grid_gene(
-  spe = spe,
-  geneid = "sum_umi",
-  pdf = here::here("plots", "02_build_spe", "in_tissue_sum_umi.pdf"),
-  assayname = "counts"
-)
-
 summary(spe$sum_gene)
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 56    1179    1734    1824    2290    6520
-
-vis_grid_gene(
-  spe = spe,
-  geneid = "sum_gene",
-  pdf = here::here("plots", "02_build_spe", "in_tissue_sum_gene.pdf"),
-  assayname = "counts"
-)
 
 summary(spe$expr_chrM_ratio)
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 0.08964 0.21649 0.24801 0.24684 0.27610 0.42706
 
-vis_grid_gene(
-  spe = spe,
-  geneid = "expr_chrM_ratio",
-  pdf = here::here("plots", "02_build_spe", "in_tissue_expr_chrM_ratio.pdf"),
-  assayname = "counts"
-)
 
-vis_grid_gene(
-  spe = spe_raw,
-  geneid = "sum_umi",
-  pdf = here::here("plots", "02_build_spe", "all_sum_umi.pdf"),
-  assayname = "counts"
-)
 
-vis_grid_gene(
-  spe = spe_raw,
-  geneid = "sum_gene",
-  pdf = here::here("plots", "02_build_spe", "all_sum_gene.pdf"),
-  assayname = "counts"
-)
+## -----------------------------
+## All in and out tissue metrics
 
-vis_grid_gene(
-  spe = spe_raw,
-  geneid = "expr_chrM_ratio",
-  pdf = here::here("plots", "02_build_spe", "all_expr_chrM_ratio.pdf"),
-  assayname = "counts"
-)
+lst_all_counts <- c(sum_umi = 'all_sum_umi.pdf', 
+                       sum_gene = 'all_sum_gene.pdf', 
+                       expr_chrM_ratio = 'all_expr_chrM_ratio.pdf')
+
+plot_all_counts <- function(g, t) {
+  
+  message('Ploting ', g)
+  
+  vis_grid_gene(
+    spe = spe_raw,
+    geneid = g,
+    height = var_height, #8
+    width = var_width,   #9
+    point_size = var_point_size,  #1.5  
+    #return_plots = TRUE,  
+    pdf = here(dir_plots, t),
+    assayname = "counts"
+  )  
+  
+}
+
+map2(names(lst_all_counts), lst_all_counts, ~ plot_all_counts(g = .x, t = .y))
+
 
 
 ## Add additional QC metrics, followed by filtering data on edge spots
