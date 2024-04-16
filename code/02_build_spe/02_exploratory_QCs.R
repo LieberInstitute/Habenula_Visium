@@ -332,36 +332,6 @@ vis_grid_gene(
 )
 
 
-# spe_wholegenome$quality_groups <- "Pass"
-# spe_wholegenome$quality_groups[spe_wholegenome$scran_discard == "TRUE"] <- "LQ: retained"
-# spe_wholegenome$quality_groups[spe_wholegenome$glare] <- "LQ: glare"
-# spe_wholegenome$quality_groups[spe_wholegenome$drop_low_library_edge_either] <- "LQ: low lib size & edge"
-# table(spe_wholegenome$quality_groups)
-# # LQ: glare LQ: low lib size & edge            LQ: retained                    Pass
-# #        20                     152                     930                   37185
-#
-# quality_groups_colors <- c("Pass" = "grey90", "LQ: retained" = "orange", "LQ: glare" = "steelblue3", "LQ: low lib size & edge" = "violetred")
-# p_list <- vis_grid_clus(
-#   spe = spe_wholegenome,
-#   clustervar = "quality_groups",
-#   sort_clust = FALSE,
-#   colors = quality_groups_colors,
-#   spatial = FALSE,
-#   point_size = 2,
-#   return_plots = TRUE
-# )
-#
-# pdf(file.path(dir_plots, "scran_low_lib_size_edge.pdf"), useDingbats = FALSE, height = 8 * 4, width = 9 * 3)
-# print(cowplot::plot_grid(plotlist = p_list, ncol = 1, align = "hv"))
-# dev.off()
-
-# vis_grid_gene(
-#   spe = spe[, which(!colData(spe)$scran_low_lib_size_edge)],
-#   geneid = "edge_spots",
-#   pdf = here::here("plots", "02_build_spe", "out_tissue_sum_umi_all.pdf"),
-#   assayname = "counts"
-# )
-
 
 # ==============================================================================
 ## Drop spots with a low library size that are on the edge
