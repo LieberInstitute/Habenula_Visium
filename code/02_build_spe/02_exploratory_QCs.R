@@ -7,25 +7,39 @@ library("lobstr")
 library("sessioninfo")
 
 
+## Create directory plots
+
+dir_plots <- here::here("plots", "02_build_spe")
+if (!dir.exists(dir_plots)) { dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE) }
+
 ## Set directory data
 
 dir_rdata <- here("processed-data", "02_build_spe")
+
+## set path to raw and pre-filtered data
+
 spe_in_path <- here("processed-data", "02_build_spe", "spe.rds")
 raw_in_path <- here("processed-data", "02_build_spe", "spe_raw.rds")
 
 # /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/02_build_spe/spe.rds
 
-## Create output directories
 
 ## load datasets
 
 spe_raw <- readRDS(raw_in_path)
 cat("Initial number of spots:", dim(spe_raw)[2], "\n")
 # Initial number of spots: 4992
+# merged samples: Initial number of spots: 24960 
 
 spe <- readRDS(spe_in_path)
 cat("Initial number of spots:", dim(spe)[2], "\n")
 # Initial number of spots: 3615 
+# merged samples: Initial number of spots: 16928
+
+# Set some initials for manage plots
+var_height = 24  #24/3=8
+var_width = 26   #36/4=9
+var_point_size = 2.5  
 
 
 # copied from https://github.com/LieberInstitute/spatialDLPFC/blob/14a1f253a92e43c01fec3cc3077a9b2cf9ce9fc0/code/analysis/01_build_spe/01_build_spe.R#L216-L221
@@ -44,22 +58,29 @@ vis_grid_clus(
   clustervar = cluster_var,
   height = var_height, #8
   width = var_width,   #9
-  point_size = var_point_size,  #1.5
+  point_size = 3,  #1.5
   pdf = here(dir_plots, "all_in_tissue_grid.pdf"),
   sort_clust = FALSE,
   colors = c("TRUE" = "grey90", "FALSE" = "orange")
 ) 
 
-# plot the same but using vis_clus(), due I could not modify size nor add labs() with vis_grid_clus()
-p2 <- vis_clus(
-  spe = spe_raw,
-  clustervar = cluster_var,
-  point_size = var_point_size,
-  colors = c("TRUE" = "grey90", "FALSE" = "orange")
-) + labs(title = unique(spe$sample_id), subtitle = cluster_var) 
-png(filename = here(dir_plots, paste0('all_in_tissue_',unique(spe$sample_id)[1],'.png')))
-p2
-dev.off()
+## plot the same but using vis_clus(), due I could not modify size nor add labs() with vis_grid_clus()
+# for (x in 1:length(unique(spe_raw$sample_id))) {
+#   sample <- print(unique(spe_raw$sample_id)[x])
+#   se <- spe_raw[, spe_raw$sample_id == sample]
+#   print(head(se))
+#   p2 <- vis_clus(
+#     spe = se,
+#     clustervar = cluster_var,
+#     point_size = 1.5,
+#     colors = c("TRUE" = "grey90", "FALSE" = "orange")
+#   ) + labs(title = unique(se$sample_id), subtitle = cluster_var)
+#   png(filename = here(dir_plots, paste0('all_in_tissue_',unique(se$sample_id)[1],'.png')))
+#   p2
+#   dev.off()
+# }
+
+
 
 ## -----------------------------
 ## Out-tissue metrics
@@ -184,6 +205,7 @@ spe <- spe[
 ]
 
 cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
+# Number of spots after preliminary QC: 16928
 
 ## Metrics QC
 metrics_qc <- function(spe) {
@@ -299,6 +321,7 @@ spe <- metrics_qc(spe)
 # head(spe$scran_low_lib_size_edge)
 
 lobstr::obj_size(spe_raw)
+# merged samples: 757.13 MB
 
 ## Save object with metrics_qc()
 saveRDS(spe, file.path(dir_rdata, "spe_qc.rds"))
@@ -347,6 +370,7 @@ cat(
 
 lobstr::obj_size(spe)
 # 194.23 MB
+# merged samples: 718.52 MB
 
 ## Save object with metrics_qc()
 saveRDS(spe, file.path(dir_rdata, "spe_scran_low_lib_edge.rds"))

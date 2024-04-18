@@ -14,26 +14,21 @@ if (!dir.exists(dir_rdata)) {
 }
 
 
-
 ## Define some info for the samples
 sample_info <- data.frame(
   sample_id = c(
-    "V10A27004_A1_Br3874",
-    "V10A27004_D1_Br3880",
-    "V10A27106_A1_Br3874",
-    "V10A27106_B1_Br3854",
-    "V10A27106_C1_Br3873",
-    "V10A27106_D1_Br3880",
-    "V10T31036_A1_Br3874",
-    "V10T31036_B1_Br3854",
-    "V10T31036_C1_Br3873",
-    "V10T31036_D1_Br3880"
+    "V12D07-075_C1",
+    "V13B23-285_D1",
+    "V13B23-285_C1",
+    "V13B23-285_B1",
+    "V13B23-285_A1"
   )
 )
-sample_info$subject <- gsub(".*_", "", sample_info$sample_id)
+#sample_info$subject <- gsub(".*_", "", sample_info$sample_id)
+sample_info$subject <- c("Br8112", rep("Br8518", 4))
 sample_info$sample_path <-
   file.path(
-    here::here("processed-data", "spaceranger"),
+    here::here("processed-data", "01_spaceranger"),
     sample_info$sample_id,
     "outs"
   )
@@ -42,63 +37,52 @@ stopifnot(all(file.exists(sample_info$sample_path)))
 ## Define the donor info using information from
 ## https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/raw-data/Visium_SPG_AD_ITG_MasterExcelSummarySheet.xlsx
 donor_info <- data.frame(
-  subject = c("Br3854", "Br3873", "Br3880", "Br3874"),
-  age = c(65.75, 88.78, 90.47, 73.05),
-  sex = c("F", "F", "M", "M"),
-  race = "EA/CAUC",
-  pmi = c(31.5, 29, 35, 13.5),
-  diagnosis = c("AD", "AD", "AD", "Control"),
-  rin = c(7, 7.2, 7.1, 7.2),
-  BCrating = c("Def AD", "Def AD", "Prob AD", "No AP"),
-  braak = c("B3", "B3", "B3", "B2"),
-  cerad = c("C3", "C3", "C3", "C0")
+  #subject = c("Br8112", rep("Br8518", 4)), 
+  sample_id = c("V12D07-075_C1", "V13B23-285_D1", "V13B23-285_C1", "V13B23-285_B1", "V13B23-285_A1"),
+  age = c(65.75, rep(41.3, 4)),
+  sex = c("F", rep("F", 4)),
+  race = c("EA/CAUC", rep("EA/CAUC", 4)),
+  pmi = c(31.5, rep(10.5, 4)),
+  diagnosis = c("Pilot", rep("Control", 4)),
+  rin = c(7, rep(6.3, 4)) #,
+  #BCrating = c("Def AD", "Def AD", "Prob AD", "No AP"),
+  #braak = c("B3", "B3", "B3", "B2"),
+  #cerad = c("C3", "C3", "C3", "C0")
 )
 
 
+# ## Define some info for the samples
+# sample_info <- data.frame(
+#     sample_id = c(
+#         "V12D07-075_C1"
+#     )
+# )
+# sample_info$subject <- "Br8112"
+# sample_info$sample_path <-
+#     file.path(
+#         here::here("processed-data", "01_spaceranger"),
+#         sample_info$sample_id,
+#         "outs"
+#     )
+# stopifnot(all(file.exists(sample_info$sample_path)))
+# 
+# # ## Define the donor info using information from
+# # ## the habenulaPilot paper
+# # ## TODO Update this info!
+# donor_info <- data.frame(
+#     subject = c("Br8112"),
+#     age = c(65.75),
+#     sex = c("F"),
+#     race = "EA/CAUC",
+#     pmi = c(31.5),
+#     diagnosis = c("Control"),
+#     rin = c(7)
+# )
 
-
-
-
-## Define some info for the samples
-sample_info <- data.frame(
-    sample_id = c(
-        "V12D07-075_C1"
-    )
-)
-sample_info$subject <- "Br8112"
-sample_info$sample_path <-
-    file.path(
-        here::here("processed-data", "01_spaceranger"),
-        sample_info$sample_id,
-        "outs"
-    )
-stopifnot(all(file.exists(sample_info$sample_path)))
-
-## Define the donor info using information from
-## the habenulaPilot paper
-## TODO Update this info!
-donor_info <- data.frame(
-    subject = c("Br8112"),
-    age = c(65.75),
-    sex = c("F"),
-    race = "EA/CAUC",
-    pmi = c(31.5),
-    diagnosis = c("Control"),
-    rin = c(7)
-)
-
-
-# Donor Br8518 (new samples)
-# age = 41.3
-# sex = female
-# race = EA/CAUC
-# pmi = 10.5
-# diagnosis = control
-# rin = 6.3 
 
 ## Combine sample info with the donor info
 sample_info <- merge(sample_info, donor_info)
-
+head(sample_info)
 
 ## Build basic SPE
 Sys.time()
@@ -120,10 +104,16 @@ Sys.time()
 # 2024-02-22 14:44:28.523581 adding information used by spatialLIBD
 # [1] "2024-02-22 14:44:28 EST"
 
+# class: SpatialExperiment 
+# dim: 36601 24960 
+
 # spe@int_colData$reducedDims
 # colnames(spe)
 # rownames(spe)
 colnames(colData(spe))
+head(spe$sample_id)
+tail(spe$sample_id)
+head(assays(spe)$counts[,1:10]) #colnames=samples; rownames=genes
 
 ## Add the study design info
 add_design <- function(spe) {
@@ -176,17 +166,23 @@ spe <- add_design(spe)
 
 cat("Initial number of spots:", dim(spe)[2], "\n")
 # Initial number of spots: 4992
+# Merged samples: Initial number of spots: 24960
 
 ## Remove genes with no data
 
 expr <- which(rowSums(counts(spe)) > 0)
 cat("Number of genes with counts:", length(expr))
-# 23439
+# Number of genes with counts: 23439
+# Merged samples: Number of genes with counts: 26286
+
 no_expr <- which(rowSums(counts(spe)) == 0)
 cat("Number of genes with no counts:", length(no_expr))
-# [1] 13162
+# Number of genes with no counts: 13162
+# Merged samples: Number of genes with no counts: 10315
+
 length(no_expr) / nrow(spe) * 100
 # [1] 35.96077
+# Merged samples: 28.18229
 spe <- spe[-no_expr, ]
 
 ## For visualizing this later with spatialLIBD
@@ -199,17 +195,20 @@ spe_raw <- spe
 ## Size in Gb
 lobstr::obj_size(spe_raw)
 # 206.32 MB
+# Merged samples: 756.82 MB
 
-saveRDS(spe_raw, file.path(dir_rdata, "spe_raw.rds"))
+saveRDS(spe_raw, file.path(dir_rdata, "spe_raw_all.rds"))
 
 
 ## Now drop the spots outside the tissue
 spe <- spe_raw[, spe_raw$in_tissue]
 dim(spe)
 # [1] 23439  3615
+# Merged samples: [1] 26286 16928
 
 cat("Spots in tissue:", dim(spe)[2], "\n")
-# Initial number of spots: 3615
+# Spots in tissue: 3615
+# Merged samples: Spots in tissue: 16928
 
 ## Remove spots without counts
 if (any(colSums(counts(spe)) == 0)) {
@@ -221,8 +220,9 @@ if (any(colSums(counts(spe)) == 0)) {
 
 lobstr::obj_size(spe)
 # 194.23 MB
+# Merged samples: 718.16 MB
 
-saveRDS(spe, file.path(dir_rdata, "spe.rds"))
+saveRDS(spe, file.path(dir_rdata, "spe_all.rds"))
 
 
 
