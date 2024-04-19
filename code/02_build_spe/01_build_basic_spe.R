@@ -81,7 +81,9 @@ donor_info <- data.frame(
 
 
 ## Combine sample info with the donor info
+
 sample_info <- merge(sample_info, donor_info)
+
 head(sample_info)
 
 ## Build basic SPE
