@@ -197,7 +197,7 @@ lobstr::obj_size(spe_raw)
 # 206.32 MB
 # Merged samples: 756.82 MB
 
-saveRDS(spe_raw, file.path(dir_rdata, "spe_raw_all.rds"))
+saveRDS(spe_raw, file.path(dir_rdata, "spe_raw.rds"))
 
 
 ## Now drop the spots outside the tissue
@@ -222,7 +222,7 @@ lobstr::obj_size(spe)
 # 194.23 MB
 # Merged samples: 718.16 MB
 
-saveRDS(spe, file.path(dir_rdata, "spe_all.rds"))
+saveRDS(spe, file.path(dir_rdata, "spe.rds"))
 
 
 
