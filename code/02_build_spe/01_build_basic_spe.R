@@ -51,35 +51,6 @@ donor_info <- data.frame(
 )
 
 
-# ## Define some info for the samples
-# sample_info <- data.frame(
-#     sample_id = c(
-#         "V12D07-075_C1"
-#     )
-# )
-# sample_info$subject <- "Br8112"
-# sample_info$sample_path <-
-#     file.path(
-#         here::here("processed-data", "01_spaceranger"),
-#         sample_info$sample_id,
-#         "outs"
-#     )
-# stopifnot(all(file.exists(sample_info$sample_path)))
-# 
-# # ## Define the donor info using information from
-# # ## the habenulaPilot paper
-# # ## TODO Update this info!
-# donor_info <- data.frame(
-#     subject = c("Br8112"),
-#     age = c(65.75),
-#     sex = c("F"),
-#     race = "EA/CAUC",
-#     pmi = c(31.5),
-#     diagnosis = c("Control"),
-#     rin = c(7)
-# )
-
-
 ## Combine sample info with the donor info
 
 sample_info <- merge(sample_info, donor_info)
