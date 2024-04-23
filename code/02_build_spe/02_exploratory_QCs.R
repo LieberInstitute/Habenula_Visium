@@ -45,7 +45,7 @@ var_point_size = 2.5
 ## Inspect in vs outside of tissue
 
 #p1 <- vis_grid_clus(
-# cap <- summary(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)])
+# summary(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)])
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 202     803    1023    1278    1499    6969
 # lab_cap <- paste('Min=', cap[[1]], ' Mean=', cap[[3]],  ' Max=', cap[[6]])                
@@ -61,23 +61,6 @@ vis_grid_clus(
   sort_clust = FALSE,
   colors = c("TRUE" = "grey90", "FALSE" = "orange")
 ) 
-
-## plot the same but using vis_clus(), due I could not modify size nor add labs() with vis_grid_clus()
-# for (x in 1:length(unique(spe_raw$sample_id))) {
-#   sample <- print(unique(spe_raw$sample_id)[x])
-#   se <- spe_raw[, spe_raw$sample_id == sample]
-#   print(head(se))
-#   p2 <- vis_clus(
-#     spe = se,
-#     clustervar = cluster_var,
-#     point_size = 1.5,
-#     colors = c("TRUE" = "grey90", "FALSE" = "orange")
-#   ) + labs(title = unique(se$sample_id), subtitle = cluster_var)
-#   png(filename = here(dir_plots, paste0('all_in_tissue_',unique(se$sample_id)[1],'.png')))
-#   p2
-#   dev.off()
-# }
-
 
 
 ## -----------------------------
