@@ -49,6 +49,7 @@ var_point_size = 2.5
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 202     803    1023    1278    1499    6969
 # lab_cap <- paste('Min=', cap[[1]], ' Mean=', cap[[3]],  ' Max=', cap[[6]])                
+map(unique(spe_raw$sample_id), ~ summary( spe_raw$in_tissue[spe_raw$sample_id == .x] == TRUE))
 
 cluster_var <- 'in_tissue'
 vis_grid_clus(
@@ -311,6 +312,23 @@ addmargins(table("Low_libsize_edge" = spe$scran_low_lib_size_edge))
 # https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/plots/07_spot_qc/scran_targeted_low_lib_size_vs_edge_distance.pdf
 # https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/plots/07_spot_qc/scran_targeted_low_lib_size.pdf
 
+
+## get summary for chrM ratio versus high_subsets_Mito_percent detected by scran
+map(unique(spe$sample_id), ~ summary(spe$expr_chrM_ratio[spe$sample_id == .x]))
+map(unique(spe$sample_id), ~ summary(spe$scran_high_subsets_Mito_percent[spe$sample_id == .x]))
+vis_grid_clus(
+  spe = spe,
+  clustervar = 'scran_high_subsets_Mito_percent', #'scran_low_lib_size_edge',
+  height = var_height, #8
+  width = var_width,   #9
+  point_size = 4, 
+  pdf = here(dir_plots, "scran_high_subsets_Mito_percent.pdf"), #"in_tissue_low_lib_size_edge.pdf"),
+  sort_clust = FALSE,
+  colors = c("TRUE" = "blue", "FALSE" = "grey90")
+) 
+
+## get summary for chrM ratio versus high_subsets_Mito_percent detected by scran
+map(unique(spe$sample_id), ~ summary(spe$scran_low_lib_size_edge[spe$sample_id == .x]))
 vis_grid_gene(
   spe = spe,
   geneid = "edge_distance",
