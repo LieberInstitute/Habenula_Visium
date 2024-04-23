@@ -24,16 +24,14 @@ raw_in_path <- here("processed-data", "02_build_spe", "spe_raw.rds")
 # /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/02_build_spe/spe.rds
 
 
-## load datasets
+## load Datasets
 
 spe_raw <- readRDS(raw_in_path)
 cat("Initial number of spots:", dim(spe_raw)[2], "\n")
-# Initial number of spots: 4992
 # merged samples: Initial number of spots: 24960 
 
 spe <- readRDS(spe_in_path)
 cat("Initial number of spots:", dim(spe)[2], "\n")
-# Initial number of spots: 3615 
 # merged samples: Initial number of spots: 16928
 
 # Set some initials for manage plots
@@ -89,24 +87,22 @@ lst_out_counts <- c(sum_umi = 'out_tissue_sum_umi.pdf',
                        sum_gene = 'out_tissue_sum_gene.pdf', 
                        expr_chrM_ratio = 'out_tissue_expr_chrM_ratio.pdf')
 
-plot_out_counts <- function(g, t) {
-  
-  message('Ploting ', g)
-  
-  vis_grid_gene(
-    spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
-    geneid = g,
-    height = var_height, #8
-    width = var_width,   #9
-    point_size = var_point_size,  #1.5  
-    #return_plots = TRUE,
-    pdf = here(dir_plots, t),
-    assayname = "counts"
-  )  
-  
-}
+print('Ploting out-tissues plots')
 
-map2(names(lst_out_counts), lst_out_counts, ~ plot_out_counts(g = .x, t = .y))
+map2(as.vector(names(lst_out_counts)), as.vector(lst_out_counts), ~ vis_grid_gene(
+        spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
+        geneid = .x,
+        height = var_height, #8
+        width = var_width,   #9
+        point_size = var_point_size,   
+        #return_plots = TRUE,
+        pdf = here(dir_plots, .y),
+        assayname = "counts"
+     )  
+)
+
+
+print('Plots done!')
 
 summary(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)])
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
@@ -132,24 +128,20 @@ lst_in_counts <- c(sum_umi = 'in_tissue_sum_umi.pdf',
                          sum_gene = 'in_tissue_sum_gene.pdf', 
                          expr_chrM_ratio = 'in_tissue_expr_chrM_ratio.pdf')
 
-plot_in_counts <- function(g, t) {
-  
-  message('Ploting ', g)
-  
-  vis_grid_gene(
+print('Ploting in-tissues plots')
+
+map2(as.vector(names(lst_in_counts)), as.vector(lst_in_counts), ~ vis_grid_gene(
     spe = spe,
-    geneid = g,
+    geneid = .x,
     height = var_height, #8
     width = var_width,   #9
-    point_size = var_point_size,  #1.5  
+    point_size = var_point_size,   
     #return_plots = TRUE,  
-    pdf = here(dir_plots,t),
+    pdf = here(dir_plots, .y),
     assayname = "counts"
-  )
-  
-}
+  )  
+)
 
-map2(names(lst_in_counts), lst_in_counts, ~ plot_in_counts(g = .x, t = .y))
 
 summary(spe$sum_umi)
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
@@ -172,24 +164,19 @@ lst_all_counts <- c(sum_umi = 'all_sum_umi.pdf',
                        sum_gene = 'all_sum_gene.pdf', 
                        expr_chrM_ratio = 'all_expr_chrM_ratio.pdf')
 
-plot_all_counts <- function(g, t) {
-  
-  message('Ploting ', g)
-  
-  vis_grid_gene(
+print('Ploting ALL in and out tissues plots')
+
+map2(as.vector(names(lst_all_counts)), as.vector(lst_all_counts), ~ vis_grid_gene(
     spe = spe_raw,
-    geneid = g,
+    geneid = .x,
     height = var_height, #8
     width = var_width,   #9
-    point_size = var_point_size,  #1.5  
+    point_size = var_point_size,   
     #return_plots = TRUE,  
-    pdf = here(dir_plots, t),
+    pdf = here(dir_plots, .y),
     assayname = "counts"
   )  
-  
-}
-
-map2(names(lst_all_counts), lst_all_counts, ~ plot_all_counts(g = .x, t = .y))
+)
 
 
 ## -----------------------------
