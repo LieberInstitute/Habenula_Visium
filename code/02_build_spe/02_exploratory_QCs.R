@@ -297,11 +297,10 @@ metrics_qc <- function(spe) {
 spe <- metrics_qc(spe)
 # head(spe$scran_low_lib_size_edge)
 
-lobstr::obj_size(spe_raw)
-# merged samples: 757.13 MB
+lobstr::obj_size(spe)
 
-## Save object with metrics_qc()
-saveRDS(spe, file.path(dir_rdata, "spe_qc.rds"))
+# ## Save object with metrics_qc()
+# saveRDS(spe, file.path(dir_rdata, "spe_qc.rds"))
 
 colnames(colData(spe))
 
