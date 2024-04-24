@@ -44,17 +44,16 @@ var_point_size = 2.5
 
 ## Inspect in vs outside of tissue
 
-#p1 <- vis_grid_clus(
-# summary(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)])
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
-# 202     803    1023    1278    1499    6969
-# lab_cap <- paste('Min=', cap[[1]], ' Mean=', cap[[3]],  ' Max=', cap[[6]])                
-map(unique(spe_raw$sample_id), ~ summary( spe_raw$in_tissue[spe_raw$sample_id == .x] == TRUE))
+## Get number of TRUE spots in tissue
+in_tissue_spots <- map(unique(spe_raw$sample_id), ~ summary( spe_raw$in_tissue[spe_raw$sample_id == .x] == TRUE))
+in_tissue_spots_F <- sum(as.numeric(sapply(in_tissue_spots,"[[",2)))
+in_tissue_spots_T <- sum(as.numeric(sapply(in_tissue_spots,"[[",3)))
 
-cluster_var <- 'in_tissue'
+print(paste0('Spots in tissue FALSE: ', in_tissue_spots_F, ' TRUE: ', in_tissue_spots_T))
+
 vis_grid_clus(
   spe = spe_raw,
-  clustervar = cluster_var,
+  clustervar = 'in_tissue',
   height = var_height, #8
   width = var_width,   #9
   point_size = 3,  #1.5
@@ -91,14 +90,18 @@ print('Plots done!')
 summary(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)])
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 # 202     803    1023    1278    1499    6969 
+map(unique(spe_raw$sample_id), ~ summary( spe_raw$sum_umi[spe_raw$sample_id == .x]))
 
 summary(spe_raw$sum_gene[which(!colData(spe_raw)$in_tissue)])
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 # 118.0   423.0   532.0   694.5   848.0  2915.0 
+## Get number of TRUE spots in tissue
+map(unique(spe_raw$sample_id), ~ summary( spe_raw$sum_gene[spe_raw$sample_id == .x]))
 
 summary(spe_raw$expr_chrM_ratio[which(!colData(spe_raw)$in_tissue)])
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 0.1246  0.2205  0.3227  0.3048  0.3711  0.5323
+map(unique(spe_raw$sample_id), ~ summary( spe_raw$expr_chrM_ratio[spe_raw$sample_id == .x]))
 
 # head(table(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)]))
 # # 202 428 432 436 455 482
@@ -130,14 +133,17 @@ map2(as.vector(names(lst_in_counts)), as.vector(lst_in_counts), ~ vis_grid_gene(
 summary(spe$sum_umi)
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 61    2365    3873    4340    5527   27840
+map(unique(spe$sample_id), ~ summary( spe$sum_umi[spe$sample_id == .x]))
 
 summary(spe$sum_gene)
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 56    1179    1734    1824    2290    6520
+map(unique(spe$sample_id), ~ summary( spe$sum_gene[spe$sample_id == .x]))
 
 summary(spe$expr_chrM_ratio)
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 0.08964 0.21649 0.24801 0.24684 0.27610 0.42706
+map(unique(spe$sample_id), ~ summary( spe$expr_chrM_ratio[spe$sample_id == .x]))
 
 
 
@@ -313,16 +319,19 @@ addmargins(table("Low_libsize_edge" = spe$scran_low_lib_size_edge))
 # https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/plots/07_spot_qc/scran_targeted_low_lib_size.pdf
 
 
-## get summary for chrM ratio versus high_subsets_Mito_percent detected by scran
-map(unique(spe$sample_id), ~ summary(spe$expr_chrM_ratio[spe$sample_id == .x]))
-map(unique(spe$sample_id), ~ summary(spe$scran_high_subsets_Mito_percent[spe$sample_id == .x]))
+low_library_edge <- map(unique(spe$sample_id), ~ summary(spe$scran_low_lib_size_edge[spe$sample_id == .x]))
+low_library_edge_F <- sum(as.numeric(sapply(low_library_edge,"[[",1)))
+low_library_edge_T <- sum(as.numeric(sapply(low_library_edge,"[[",2)))
+
+print(paste0('Spots with low library size at edge FALSE: ', low_library_edge_F, ' TRUE: ', low_library_edge_T))
+
 vis_grid_clus(
   spe = spe,
-  clustervar = 'scran_high_subsets_Mito_percent', #'scran_low_lib_size_edge',
+  clustervar = 'scran_low_lib_size_edge',
   height = var_height, #8
   width = var_width,   #9
-  point_size = 4, 
-  pdf = here(dir_plots, "scran_high_subsets_Mito_percent.pdf"), #"in_tissue_low_lib_size_edge.pdf"),
+  point_size = 5, 
+  pdf = here(dir_plots, "in_tissue_low_lib_size_edge.pdf"), 
   sort_clust = FALSE,
   colors = c("TRUE" = "blue", "FALSE" = "grey90")
 ) 
@@ -342,8 +351,6 @@ vis_grid_gene(
   cont_colors = viridisLite::viridis(21, direction = -1)
 )
 
-
-
 # ==============================================================================
 ## Drop spots with a low library size that are on the edge
 
@@ -361,7 +368,40 @@ lobstr::obj_size(spe)
 # merged samples: 718.52 MB
 
 ## Save object with metrics_qc()
-saveRDS(spe, file.path(dir_rdata, "spe_scran_low_lib_edge.rds"))
+saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge.rds"))
+
+
+# ==============================================================================
+## plot high mito percentages
+
+## get summary for chrM ratio versus high_subsets_Mito_percent detected by scran
+map(unique(spe$sample_id), ~ summary(spe$expr_chrM_ratio[spe$sample_id == .x]))
+map(unique(spe$sample_id), ~ summary(spe$scran_high_subsets_Mito_percent[spe$sample_id == .x]))
+vis_grid_clus(
+  spe = spe,
+  clustervar = 'scran_high_subsets_Mito_percent', 
+  height = var_height, #8
+  width = var_width,   #9
+  point_size = 3.5, 
+  pdf = here(dir_plots, "in_tissue_high_Mito_percent.pdf"), 
+  sort_clust = FALSE,
+  colors = c("TRUE" = "blue", "FALSE" = "grey90")
+) 
+
+# ==============================================================================
+## Drop spots with high chrM percentage marked as outlier by scran
+
+spe <- spe[, spe$scran_high_subsets_Mito_percent == "FALSE"]
+cat(
+  "Number of spots after removed low library size spots on the tissue edge:",
+  dim(spe)[2],
+  "\n"
+)
+
+map(unique(spe$sample_id), ~ summary(spe$expr_chrM_ratio[spe$sample_id == .x]))
+
+## Save object with metrics_qc()
+saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge_HighM.rds"))
 
 
 # ==============================================================================
