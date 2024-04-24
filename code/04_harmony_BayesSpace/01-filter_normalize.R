@@ -10,7 +10,8 @@ library("sessioninfo")
 # library("HDF5Array")
 
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
-raw_in_path <- here("processed-data", "02_build_spe", "spe.rds")
+# raw_in_path <- here("processed-data", "02_build_spe", "spe.rds")
+filtered_in_path <- here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds") # this is a filtered spe object
 filtered_ordinary_path <- file.path(dir_rdata, "spe_filtered.rds")
 filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
@@ -22,6 +23,13 @@ set.seed(20240223)
 ## Create output directories
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
+
+## load a filtered spe object
+spe <- readRDS(filtered_in_path)
+## Verified number of TRUE spots in tissue
+in_tissue_spots <- sum(as.numeric(map(unique(spe$sample_id), ~ sum( spe$in_tissue[spe$sample_id == .x]))))
+print(paste0(' Spots in tissue: ', in_tissue_spots))
+
 
 ################################################################################
 #   Read in the data and add additional QC metrics, followed by filtering data
