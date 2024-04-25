@@ -11,7 +11,7 @@ library("sessioninfo")
 
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 # raw_in_path <- here("processed-data", "02_build_spe", "spe.rds")
-filtered_in_path <- here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds") # this is a filtered spe object
+filtered_in_path <- here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds")
 filtered_ordinary_path <- file.path(dir_rdata, "spe_filtered.rds")
 filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
@@ -185,9 +185,17 @@ Sys.time()
 
 print("Quick cluster table:")
 table(spe$scran_quick_cluster)
+#  1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 308  427  307  427  308  130  559  174  236  255  118  220  135  191  720  372 
+# 17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32 
+# 193 1157  815  367  242  312  182  876 1187  343  386  750  280 1011  788  488 
+# 33   34   35   36   37 
+# 261  950  475  143  804 
 
 message(Sys.time(), " - Running checking sizeFactors()")
 summary(sizeFactors(spe))
+# Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+# 0.000083  0.179578  0.612649  1.000000  1.394761 14.853742 
 
 message(Sys.time(), " - Running logNormCounts()")
 spe <- logNormCounts(spe)
@@ -212,6 +220,9 @@ dec <- modelGeneVar(spe,
     BPPARAM = MulticoreParam(num_cores)
 )
 
+#plot(dec$mean, dec$total, xlab="Mean log-expression", ylab="Variance")
+#curve(metadata(dec)$trend(x), col="blue", add=TRUE)
+
 pdf(file.path(dir_plots, "scran_modelGeneVar.pdf"), useDingbats = FALSE)
 mapply(function(block, blockname) {
     plot(
@@ -221,6 +232,7 @@ mapply(function(block, blockname) {
         ylab = "Variance",
         main = blockname
     )
+    #points(metadata(block)$mean, metadata(block)$var, col="red")
     curve(metadata(block)$trend(x),
         col = "blue",
         add = TRUE
@@ -253,31 +265,43 @@ save(
 
 message(Sys.time(), " - Running runPCA()")
 Sys.time()
-spe <-
-    runPCA(spe,
-        subset_row = top.hvgs.fdr5,
-        ncomponents = num_red_dims,
-        name = "PCA"
-    )
-spe <-
-    runPCA(spe,
-        subset_row = top.hvgs.p1,
-        ncomponents = num_red_dims,
-        name = "PCA_p1"
-    )
-spe <-
-    runPCA(spe,
-        subset_row = top.hvgs.p2,
-        ncomponents = num_red_dims,
-        name = "PCA_p2"
-    )
-spe <-
-    runPCA(spe,
-        subset_row = top.hvgs.p5,
-        ncomponents = num_red_dims,
-        name = "PCA_p5"
-    )
-Sys.time()
+
+#length(top.hvgs.fdr5)
+lst_top_hvgs <- list(PCA = top.hvgs.fdr5, PCA_p1 = top.hvgs.p1, PCA_p2 = top.hvgs.p2, PCA_p5 = top.hvgs.p5)
+#length(lst_top_hvgs$PCA)
+
+map2(lst_top_hvgs, as.vector(names(lst_top_hvgs)), ~ runPCA(
+  spe,
+  subset_row = .x,
+  ncomponents = num_red_dims,
+  name = .y)
+)
+
+# spe <-
+#     runPCA(spe,
+#         subset_row = top.hvgs.fdr5,
+#         ncomponents = num_red_dims,
+#         name = "PCA"
+#     )
+# spe <-
+#     runPCA(spe,
+#         subset_row = top.hvgs.p1,
+#         ncomponents = num_red_dims,
+#         name = "PCA_p1"
+#     )
+# spe <-
+#     runPCA(spe,
+#         subset_row = top.hvgs.p2,
+#         ncomponents = num_red_dims,
+#         name = "PCA_p2"
+#     )
+# spe <-
+#     runPCA(spe,
+#         subset_row = top.hvgs.p5,
+#         ncomponents = num_red_dims,
+#         name = "PCA_p5"
+#     )
+# Sys.time()
 
 #   Plot variance explained
 percent.var <- attr(reducedDim(spe, "PCA_p1"), "percentVar")
@@ -339,7 +363,7 @@ hdgs.hb.10000 <-
 save(hdgs.hb.2000,
     hdgs.hb.5000,
     hdgs.hb.10000,
-    file = file.path(dir_rdata, "hdgs.hb.Rdata")
+    file = file.path(dir_rdata, "hdgs.hb_2.Rdata")
 )
 
 message(Sys.time(), " - Running GLM-PCA")
