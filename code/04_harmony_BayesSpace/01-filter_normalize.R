@@ -266,54 +266,64 @@ save(
 message(Sys.time(), " - Running runPCA()")
 Sys.time()
 
-#length(top.hvgs.fdr5)
-lst_top_hvgs <- list(PCA = top.hvgs.fdr5, PCA_p1 = top.hvgs.p1, PCA_p2 = top.hvgs.p2, PCA_p5 = top.hvgs.p5)
-#length(lst_top_hvgs$PCA)
+# lst_top_hvgs <- list(PCA = top.hvgs.fdr5, PCA_p1 = top.hvgs.p1, PCA_p2 = top.hvgs.p2, PCA_p5 = top.hvgs.p5)
+# for (x in 1:length(lst_top_hvgs)) {
+#   message(' Processing ', names(lst_top_hvgs[x]))
+#   spe <- runPCA(spe,
+#       subset_row = hvgs,
+#       ncomponents = num_red_dims,
+#       name = names(lst_top_hvgs[x])
+#   )
+# }
 
-map2(lst_top_hvgs, as.vector(names(lst_top_hvgs)), ~ runPCA(
-  spe,
-  subset_row = .x,
-  ncomponents = num_red_dims,
-  name = .y)
-)
-
-# spe <-
-#     runPCA(spe,
-#         subset_row = top.hvgs.fdr5,
-#         ncomponents = num_red_dims,
-#         name = "PCA"
-#     )
-# spe <-
-#     runPCA(spe,
-#         subset_row = top.hvgs.p1,
-#         ncomponents = num_red_dims,
-#         name = "PCA_p1"
-#     )
-# spe <-
-#     runPCA(spe,
-#         subset_row = top.hvgs.p2,
-#         ncomponents = num_red_dims,
-#         name = "PCA_p2"
-#     )
-# spe <-
-#     runPCA(spe,
-#         subset_row = top.hvgs.p5,
-#         ncomponents = num_red_dims,
-#         name = "PCA_p5"
-#     )
-# Sys.time()
+spe <-
+    runPCA(spe,
+        subset_row = top.hvgs.fdr5,
+        ncomponents = num_red_dims,
+        name = "PCA"
+    )
+spe <-
+    runPCA(spe,
+        subset_row = top.hvgs.p1,
+        ncomponents = num_red_dims,
+        name = "PCA_p1"
+    )
+spe <-
+    runPCA(spe,
+        subset_row = top.hvgs.p2,
+        ncomponents = num_red_dims,
+        name = "PCA_p2"
+    )
+spe <-
+    runPCA(spe,
+        subset_row = top.hvgs.p5,
+        ncomponents = num_red_dims,
+        name = "PCA_p5"
+    )
+Sys.time()
 
 #   Plot variance explained
+
+# lst_PCA_elbow <- list(PCA_p1 = 'pca_elbow_p1.pdf', PCA_p2 = 'pca_elbow_p2.pdf', PCA_p5 = 'pca_elbow_p5.pdf')
+# plt_elbow <- function(dim_n, plt_name) {
+#   percent.var <- attr(reducedDim(spe, dim_n), "percentVar")
+#   pdf(file.path(dir_plots, plt_name), useDingbats = FALSE)
+#   plot(percent.var, xlab = gsub("^PCA_", "PC_", dim_n), ylab = "Variance explained (%)")
+#   dev.off()
+# }
+# 
+# map2(names(lst_PCA_elbow), lst_PCA_elbow, ~ plt_elbow(.x, .y))
+
 percent.var <- attr(reducedDim(spe, "PCA_p1"), "percentVar")
 pdf(file.path(dir_plots, "pca_elbow_p1.pdf"), useDingbats = FALSE)
 plot(percent.var, xlab = "PC_p1", ylab = "Variance explained (%)")
 dev.off()
-
+#
 percent.var <- attr(reducedDim(spe, "PCA_p2"), "percentVar")
 pdf(file.path(dir_plots, "pca_elbow_p2.pdf"), useDingbats = FALSE)
 plot(percent.var, xlab = "PC_p2", ylab = "Variance explained (%)")
 dev.off()
-
+#
 percent.var <- attr(reducedDim(spe, "PCA_p5"), "percentVar")
 pdf(file.path(dir_plots, "pca_elbow_p5.pdf"), useDingbats = FALSE)
 plot(percent.var, xlab = "PC_p5", ylab = "Variance explained (%)")
