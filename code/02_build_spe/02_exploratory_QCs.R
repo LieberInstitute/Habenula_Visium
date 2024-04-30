@@ -34,13 +34,13 @@ spe <- readRDS(spe_in_path)
 cat("Initial number of spots:", dim(spe)[2], "\n")
 # merged samples: Initial number of spots: 16928
 
-# Set some initials for manage plots
+## Set some initials for manage spot size in the plots
 var_height = 24  #24/3=8
 var_width = 26   #36/4=9
 var_point_size = 2.5  
 
 
-# copied from https://github.com/LieberInstitute/spatialDLPFC/blob/14a1f253a92e43c01fec3cc3077a9b2cf9ce9fc0/code/analysis/01_build_spe/01_build_spe.R#L216-L221
+# origin code copied from https://github.com/LieberInstitute/spatialDLPFC/blob/14a1f253a92e43c01fec3cc3077a9b2cf9ce9fc0/code/analysis/01_build_spe/01_build_spe.R#L216-L221
 
 ## Inspect in vs outside of tissue
 
@@ -184,6 +184,7 @@ spe <- spe[
 cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
 # Number of spots after preliminary QC: 16928
 
+
 ## Metrics QC
 metrics_qc <- function(spe) {
   qc_df <- data.frame(
@@ -192,7 +193,7 @@ metrics_qc <- function(spe) {
     subsets_Mito_percent = spe$expr_chrM_ratio * 100,
     sample_id = spe$sample_id
   )
-  
+  head(qc_df)
   qcfilter <- DataFrame(
     low_lib_size = isOutlier(
       qc_df$log2sum,
@@ -299,44 +300,30 @@ spe <- metrics_qc(spe)
 
 lobstr::obj_size(spe)
 
-# ## Save object with metrics_qc()
-# saveRDS(spe, file.path(dir_rdata, "spe_qc.rds"))
 
-colnames(colData(spe))
+## Save object with metrics_qc()
+saveRDS(spe, file.path(dir_rdata, "spe_qc.rds"))
 
 ## Locate low library size spots on the edge
 addmargins(table("Low_libsize_edge" = spe$scran_low_lib_size_edge))
 # Low_libsize_edge
-# TRUE FALSE   Sum
-# 11  3604  3615
+# TRUE FALSE   Sum 
+# 31 16897 16928 
 
 # ==============================================================================
-## plot edge empty spots
+## plot low library size spots in-tissues & in the edge 
 ## egde_distance sample plots
 # edge_distance https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/plots/07_spot_qc/egde_distance_wholegenome.pdf
 # https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/plots/07_spot_qc/scran_targeted_low_lib_size_vs_edge_distance.pdf
 # https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/plots/07_spot_qc/scran_targeted_low_lib_size.pdf
 
 
-low_library_edge <- map(unique(spe$sample_id), ~ summary(spe$scran_low_lib_size_edge[spe$sample_id == .x]))
-low_library_edge_F <- sum(as.numeric(sapply(low_library_edge,"[[",1)))
-low_library_edge_T <- sum(as.numeric(sapply(low_library_edge,"[[",2)))
+## -----------------------------
+## scran in-tissue metrics
 
-print(paste0('Spots with low library size at edge FALSE: ', low_library_edge_F, ' TRUE: ', low_library_edge_T))
 
-vis_grid_clus(
-  spe = spe,
-  clustervar = 'scran_low_lib_size_edge',
-  height = var_height, #8
-  width = var_width,   #9
-  point_size = 5, 
-  pdf = here(dir_plots, "in_tissue_low_lib_size_edge.pdf"), 
-  sort_clust = FALSE,
-  colors = c("TRUE" = "blue", "FALSE" = "grey90")
-) 
+## low library size in-tissue edge distance
 
-## get summary for chrM ratio versus high_subsets_Mito_percent detected by scran
-map(unique(spe$sample_id), ~ summary(spe$scran_low_lib_size_edge[spe$sample_id == .x]))
 vis_grid_gene(
   spe = spe,
   geneid = "edge_distance",
@@ -350,8 +337,55 @@ vis_grid_gene(
   cont_colors = viridisLite::viridis(21, direction = -1)
 )
 
+
+
+print('Ploting in tissue scran plots')
+
+lst_in_scran_counts <- c(scran_low_lib_size = 'in_tissue_scran_low_lib_size.pdf', 
+                    scran_low_lib_size_edge = 'in_tissue_scran_low_lib_size_edge.pdf', 
+                    scran_high_subsets_Mito_percent = 'in_tissue_scran_high_Mito_percent.pdf')
+lst_size_spot <- c((var_point_size + 1), (var_point_size + 2.5), (var_point_size + 1))
+lst_scran_vars <- list((names(lst_in_scran_counts)), (lst_in_scran_counts), lst_size_spot) 
+
+plt_scran_func <- function(idvar, pdf_name, spot_s) {
+  vis_grid_clus(spe = spe,
+                  clustervar = idvar,
+                  height = var_height, #8
+                  width = var_width,   #9
+                  point_size = spot_s,
+                  pdf = here(dir_plots, pdf_name),
+                  sort_clust = FALSE,
+                  colors = c("TRUE" = "blue", "FALSE" = "grey90"))  
+}
+
+pmap(lst_scran_vars, plt_scran_func)
+
+
+## low library size and chrM rates
+
+low_library <- map(unique(spe$sample_id), ~ summary(spe$scran_low_lib_size[spe$sample_id == .x]))
+low_library_T <- sum(as.numeric(sapply(low_library,"[[",1)))
+# 327
+
+low_library_edge <- map(unique(spe$sample_id), ~ summary(spe$scran_low_lib_size_edge[spe$sample_id == .x]))
+low_library_edge_T <- sum(as.numeric(sapply(low_library_edge,"[[",1)))
+# 31
+low_library_edge_F <- sum(as.numeric(sapply(low_library_edge,"[[",2)))
+
+
+## get summary for chrM ratio versus high_subsets_Mito_percent detected by scran
+
+map(unique(spe$sample_id), ~ summary(spe$expr_chrM[spe$sample_id == .x]))
+#map(unique(spe$sample_id), ~ sum(spe$expr_chrM[spe$sample_id == .x]))
+map(unique(spe$sample_id), ~ summary(spe$expr_chrM_ratio[spe$sample_id == .x]))
+map(unique(spe$sample_id), ~ summary(spe$scran_high_subsets_Mito_percent[spe$sample_id == .x]))
+
+
+
 # ==============================================================================
 ## Drop spots with a low library size that are on the edge
+
+# Note: save here the object to use in the app
 
 spe <- spe[, spe$scran_low_lib_size_edge == "FALSE"]
 cat(
@@ -366,26 +400,6 @@ lobstr::obj_size(spe)
 # 194.23 MB
 # merged samples: 718.52 MB
 
-## Save object with metrics_qc()
-saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge.rds"))
-
-
-# ==============================================================================
-## plot high mito percentages
-
-## get summary for chrM ratio versus high_subsets_Mito_percent detected by scran
-map(unique(spe$sample_id), ~ summary(spe$expr_chrM_ratio[spe$sample_id == .x]))
-map(unique(spe$sample_id), ~ summary(spe$scran_high_subsets_Mito_percent[spe$sample_id == .x]))
-vis_grid_clus(
-  spe = spe,
-  clustervar = 'scran_high_subsets_Mito_percent', 
-  height = var_height, #8
-  width = var_width,   #9
-  point_size = 3.5, 
-  pdf = here(dir_plots, "in_tissue_high_Mito_percent.pdf"), 
-  sort_clust = FALSE,
-  colors = c("TRUE" = "blue", "FALSE" = "grey90")
-) 
 
 # ==============================================================================
 ## Drop spots with high chrM percentage marked as outlier by scran
@@ -397,7 +411,6 @@ cat(
   "\n"
 )
 
-map(unique(spe$sample_id), ~ summary(spe$expr_chrM_ratio[spe$sample_id == .x]))
 
 ## Save object with metrics_qc()
 saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge_HighM.rds"))
