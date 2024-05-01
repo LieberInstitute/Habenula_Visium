@@ -1,16 +1,22 @@
+
 library("spatialLIBD")
 library("markdown") ## Hm... to avoid this error
 # 2021-11-11T05:30:50.218127+00:00 shinyapps[5096402]: Warning: Error in loadNamespace: there is no package called ‘markdown’
 
-## spatialLIBD uses golem
+## To install new spatialLIBD 1.15.4 (development version): 
+##.    https://bioconductor.org/packages/devel/data/experiment/html/spatialLIBD.html 
+
+## spatialLIBD uses golem. 
+## Golem is a framework for building production-grade shiny applications
 options("golem.app.prod" = TRUE)
 
 ## You need this to enable shinyapps to install Bioconductor packages
 options(repos = BiocManager::repositories())
 
+setwd('/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/code/03_spatialLIBD_app/')
 
-## I added the symbolic link in the root directory. Fails to read it in the current directory
-spe <- readRDS("spe_qc_low_lib_edge.rds") # Note: poner el objeto con los QCs, spe_qc_low_lib_edge.rds / 
+## I added a symbolic link to point the spe.rds object to wrap.
+spe <- readRDS("spe_qc_low_lib_edge.rds") 
 
 # ## Import BayesSpace clusters
 # spe <- cluster_import(spe,
