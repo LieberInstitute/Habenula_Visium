@@ -50,8 +50,8 @@ spaceranger count \
     --loupe-alignment=/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/Images/loupe-alignment/${SAM}.json \
     --jobmode=local \
     --localcores=8 \
-    --localmem=64 \
-    --r1-length=26
+    --localmem=64 #\
+#    --r1-length=26
 
 ## Move output
 echo "Moving results to new location"

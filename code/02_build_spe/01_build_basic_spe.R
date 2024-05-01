@@ -53,9 +53,7 @@ donor_info <- data.frame(
 
 ## Combine sample info with the donor info
 
-sample_info <- merge(sample_info, donor_info)
-
-head(sample_info)
+sample_info[c("sample_id", "subject", "age", "sex", "race", "pmi", "diagnosis", "rin")]
 
 ## Build basic SPE
 Sys.time()
@@ -153,7 +151,7 @@ cat("Number of genes with no counts:", length(no_expr))
 # Number of genes with no counts: 13162
 # Merged samples: Number of genes with no counts: 10315
 
-length(no_expr) / nrow(spe) * 100
+(length(no_expr) / nrow(spe)) * 100
 # [1] 35.96077
 # Merged samples: 28.18229
 spe <- spe[-no_expr, ]
@@ -189,6 +187,7 @@ if (any(colSums(counts(spe)) == 0)) {
     spe <- spe[, -which(colSums(counts(spe)) == 0)]
     dim(spe)
 }
+dim(spe)
 
 
 lobstr::obj_size(spe)
