@@ -1,4 +1,3 @@
-
 library("spatialLIBD")
 library("here")
 library("lobstr")
@@ -16,38 +15,38 @@ if (!dir.exists(dir_rdata)) {
 
 ## Define some info for the samples
 sample_info <- data.frame(
-  sample_id = c(
-    "V12D07-075_C1",
-    "V13B23-285_D1",
-    "V13B23-285_C1",
-    "V13B23-285_B1",
-    "V13B23-285_A1"
-  )
+    sample_id = c(
+        "V12D07-075_C1",
+        "V13B23-285_D1",
+        "V13B23-285_C1",
+        "V13B23-285_B1",
+        "V13B23-285_A1"
+    )
 )
-#sample_info$subject <- gsub(".*_", "", sample_info$sample_id)
+# sample_info$subject <- gsub(".*_", "", sample_info$sample_id)
 sample_info$subject <- c("Br8112", rep("Br8518", 4))
 sample_info$sample_path <-
-  file.path(
-    here::here("processed-data", "01_spaceranger"),
-    sample_info$sample_id,
-    "outs"
-  )
+    file.path(
+        here::here("processed-data", "01_spaceranger"),
+        sample_info$sample_id,
+        "outs"
+    )
 stopifnot(all(file.exists(sample_info$sample_path)))
 
 ## Define the donor info using information from
 ## https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/raw-data/Visium_SPG_AD_ITG_MasterExcelSummarySheet.xlsx
 donor_info <- data.frame(
-  #subject = c("Br8112", rep("Br8518", 4)), 
-  sample_id = c("V12D07-075_C1", "V13B23-285_D1", "V13B23-285_C1", "V13B23-285_B1", "V13B23-285_A1"),
-  age = c(65.75, rep(41.3, 4)),
-  sex = c("F", rep("F", 4)),
-  race = c("EA/CAUC", rep("EA/CAUC", 4)),
-  pmi = c(31.5, rep(10.5, 4)),
-  diagnosis = c("Pilot", rep("Control", 4)),
-  rin = c(7, rep(6.3, 4)) #,
-  #BCrating = c("Def AD", "Def AD", "Prob AD", "No AP"),
-  #braak = c("B3", "B3", "B3", "B2"),
-  #cerad = c("C3", "C3", "C3", "C0")
+    # subject = c("Br8112", rep("Br8518", 4)),
+    sample_id = c("V12D07-075_C1", "V13B23-285_D1", "V13B23-285_C1", "V13B23-285_B1", "V13B23-285_A1"),
+    age = c(65.75, rep(41.3, 4)),
+    sex = c("F", rep("F", 4)),
+    race = c("EA/CAUC", rep("EA/CAUC", 4)),
+    pmi = c(31.5, rep(10.5, 4)),
+    diagnosis = c("Pilot", rep("Control", 4)),
+    rin = c(7, rep(6.3, 4)) # ,
+    # BCrating = c("Def AD", "Def AD", "Prob AD", "No AP"),
+    # braak = c("B3", "B3", "B3", "B2"),
+    # cerad = c("C3", "C3", "C3", "C0")
 )
 
 
@@ -75,8 +74,8 @@ Sys.time()
 # 2024-02-22 14:44:28.523581 adding information used by spatialLIBD
 # [1] "2024-02-22 14:44:28 EST"
 
-# class: SpatialExperiment 
-# dim: 36601 24960 
+# class: SpatialExperiment
+# dim: 36601 24960
 
 # spe@int_colData$reducedDims
 # colnames(spe)
@@ -84,7 +83,7 @@ Sys.time()
 colnames(colData(spe))
 head(spe$sample_id)
 tail(spe$sample_id)
-head(assays(spe)$counts[,1:10]) #colnames=samples; rownames=genes
+head(assays(spe)$counts[, 1:10]) # colnames=samples; rownames=genes
 
 ## Add the study design info
 add_design <- function(spe) {
@@ -214,8 +213,8 @@ session_info()
 # > Sys.time()
 # [1] "2024-04-15 12:33:49 EDT"
 # > proc.time()
-# user   system  elapsed 
-# 272.976   11.774 2942.272 
+# user   system  elapsed
+# 272.976   11.774 2942.272
 # > options(width = 120)
 # > session_info()
 # 1.0.4       2020-04-23 [2] CRAN (R 4.3.2)
@@ -365,7 +364,7 @@ session_info()
 # XVector                  0.42.0      2023-10-24 [2] Bioconductor
 # yaml                     2.3.8       2023-12-11 [2] CRAN (R 4.3.2)
 # zlibbioc                 1.48.0      2023-10-24 [2] Bioconductor
-# 
+#
 # [1] /users/csoto/R/4.3.x
 # [2] /jhpce/shared/community/core/conda_R/4.3.x/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3.x/R/lib64/R/library

@@ -1,4 +1,3 @@
-
 library("spatialLIBD")
 library("scran")
 library("tidyverse")
@@ -10,7 +9,9 @@ library("sessioninfo")
 ## Create directory plots
 
 dir_plots <- here::here("plots", "02_build_spe")
-if (!dir.exists(dir_plots)) { dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE) }
+if (!dir.exists(dir_plots)) {
+    dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
+}
 
 ## Set directory data
 
@@ -28,16 +29,16 @@ raw_in_path <- here("processed-data", "02_build_spe", "spe_raw.rds")
 
 spe_raw <- readRDS(raw_in_path)
 cat("Initial number of spots:", dim(spe_raw)[2], "\n")
-# merged samples: Initial number of spots: 24960 
+# merged samples: Initial number of spots: 24960
 
 spe <- readRDS(spe_in_path)
 cat("Initial number of spots:", dim(spe)[2], "\n")
 # merged samples: Initial number of spots: 16928
 
 ## Set some initials for manage spot size in the plots
-var_height = 24  #24/3=8
-var_width = 26   #36/4=9
-var_point_size = 2.5  
+var_height <- 24 # 24/3=8
+var_width <- 26 # 36/4=9
+var_point_size <- 2.5
 
 set.seed(20240330)
 
@@ -46,127 +47,130 @@ set.seed(20240330)
 ## Inspect in vs outside of tissue
 
 ## Get number of TRUE spots in tissue
-in_tissue_spots <- map(unique(spe_raw$sample_id), ~ summary( spe_raw$in_tissue[spe_raw$sample_id == .x] == TRUE))
-in_tissue_spots_F <- sum(as.numeric(sapply(in_tissue_spots,"[[",2)))
-in_tissue_spots_T <- sum(as.numeric(sapply(in_tissue_spots,"[[",3)))
+in_tissue_spots <- map(unique(spe_raw$sample_id), ~ summary(spe_raw$in_tissue[spe_raw$sample_id == .x] == TRUE))
+in_tissue_spots_F <- sum(as.numeric(sapply(in_tissue_spots, "[[", 2)))
+in_tissue_spots_T <- sum(as.numeric(sapply(in_tissue_spots, "[[", 3)))
 
-print(paste0('Spots in tissue FALSE: ', in_tissue_spots_F, ' TRUE: ', in_tissue_spots_T))
+print(paste0("Spots in tissue FALSE: ", in_tissue_spots_F, " TRUE: ", in_tissue_spots_T))
 
 vis_grid_clus(
-  spe = spe_raw,
-  clustervar = 'in_tissue',
-  height = var_height, #8
-  width = var_width,   #9
-  point_size = 3,  #1.5
-  pdf = here(dir_plots, "all_in_tissue_grid.pdf"),
-  sort_clust = FALSE,
-  colors = c("TRUE" = "grey90", "FALSE" = "orange")
-) 
+    spe = spe_raw,
+    clustervar = "in_tissue",
+    height = var_height, # 8
+    width = var_width, # 9
+    point_size = 3, # 1.5
+    pdf = here(dir_plots, "all_in_tissue_grid.pdf"),
+    sort_clust = FALSE,
+    colors = c("TRUE" = "grey90", "FALSE" = "orange")
+)
 
 
 ## -----------------------------
 ## Out-tissue metrics
 
-lst_out_counts <- c(sum_umi = 'out_tissue_sum_umi.pdf', 
-                       sum_gene = 'out_tissue_sum_gene.pdf', 
-                       expr_chrM_ratio = 'out_tissue_expr_chrM_ratio.pdf')
-
-print('Ploting out-tissues metrics')
-
-map2(as.vector(names(lst_out_counts)), as.vector(lst_out_counts), ~ vis_grid_gene(
-        spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
-        geneid = .x,
-        height = var_height, #8
-        width = var_width,   #9
-        point_size = var_point_size,   
-        #return_plots = TRUE,
-        pdf = here(dir_plots, .y),
-        assayname = "counts"
-     )  
+lst_out_counts <- c(
+    sum_umi = "out_tissue_sum_umi.pdf",
+    sum_gene = "out_tissue_sum_gene.pdf",
+    expr_chrM_ratio = "out_tissue_expr_chrM_ratio.pdf"
 )
 
+print("Ploting out-tissues metrics")
 
-print('Plots done!')
+map2(as.vector(names(lst_out_counts)), as.vector(lst_out_counts), ~ vis_grid_gene(
+    spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
+    geneid = .x,
+    height = var_height, # 8
+    width = var_width, # 9
+    point_size = var_point_size,
+    # return_plots = TRUE,
+    pdf = here(dir_plots, .y),
+    assayname = "counts"
+))
+
+
+print("Plots done!")
 
 summary(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)])
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-# 42.0   323.0   513.0   715.6   869.2 33776.0 
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+# 42.0   323.0   513.0   715.6   869.2 33776.0
 map(unique(spe_raw$sample_id), ~ summary(spe_raw$sum_umi[spe_raw$sample_id == .x]))
 
 summary(spe_raw$sum_gene[which(!colData(spe_raw)$in_tissue)])
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-# 23.0   170.0   266.0   367.6   450.0  6109.0 
-map(unique(spe_raw$sample_id), ~ summary( spe_raw$sum_gene[spe_raw$sample_id == .x]))
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+# 23.0   170.0   266.0   367.6   450.0  6109.0
+map(unique(spe_raw$sample_id), ~ summary(spe_raw$sum_gene[spe_raw$sample_id == .x]))
 
 summary(spe_raw$expr_chrM_ratio[which(!colData(spe_raw)$in_tissue)])
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 0.1246  0.2205  0.3227  0.3048  0.3711  0.5323
-map(unique(spe_raw$sample_id), ~ summary( spe_raw$expr_chrM_ratio[spe_raw$sample_id == .x]))
+map(unique(spe_raw$sample_id), ~ summary(spe_raw$expr_chrM_ratio[spe_raw$sample_id == .x]))
 
 # head(table(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)]))
 # # 202 428 432 436 455 482
-# # 1   1   1   1   1   1  
+# # 1   1   1   1   1   1
 
 
 ## -----------------------------
 ## in-tissue metrics
 
-lst_in_counts <- c(sum_umi = 'in_tissue_sum_umi.pdf', 
-                         sum_gene = 'in_tissue_sum_gene.pdf', 
-                         expr_chrM_ratio = 'in_tissue_expr_chrM_ratio.pdf')
+lst_in_counts <- c(
+    sum_umi = "in_tissue_sum_umi.pdf",
+    sum_gene = "in_tissue_sum_gene.pdf",
+    expr_chrM_ratio = "in_tissue_expr_chrM_ratio.pdf"
+)
 
-print('Ploting in-tissues plots')
+print("Ploting in-tissues plots")
 
 map2(as.vector(names(lst_in_counts)), as.vector(lst_in_counts), ~ vis_grid_gene(
     spe = spe,
     geneid = .x,
-    height = var_height, #8
-    width = var_width,   #9
-    point_size = var_point_size,   
-    #return_plots = TRUE,  
+    height = var_height, # 8
+    width = var_width, # 9
+    point_size = var_point_size,
+    # return_plots = TRUE,
     pdf = here(dir_plots, .y),
     assayname = "counts"
-  )  
-)
+))
 
 
 summary(spe$sum_umi)
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 61    2365    3873    4340    5527   27840
-map(unique(spe$sample_id), ~ summary( spe$sum_umi[spe$sample_id == .x]))
+map(unique(spe$sample_id), ~ summary(spe$sum_umi[spe$sample_id == .x]))
 
 summary(spe$sum_gene)
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 56    1179    1734    1824    2290    6520
-map(unique(spe$sample_id), ~ summary( spe$sum_gene[spe$sample_id == .x]))
+map(unique(spe$sample_id), ~ summary(spe$sum_gene[spe$sample_id == .x]))
 
 summary(spe$expr_chrM_ratio)
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-# 0.0674  0.3036  0.4946  0.4533  0.5762  0.8571 
-map(unique(spe$sample_id), ~ summary( spe$expr_chrM_ratio[spe$sample_id == .x]))
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+# 0.0674  0.3036  0.4946  0.4533  0.5762  0.8571
+map(unique(spe$sample_id), ~ summary(spe$expr_chrM_ratio[spe$sample_id == .x]))
 
 
 
 ## -----------------------------
 ## All in and out tissue metrics
 
-lst_all_counts <- c(sum_umi = 'all_sum_umi.pdf', 
-                       sum_gene = 'all_sum_gene.pdf', 
-                       expr_chrM_ratio = 'all_expr_chrM_ratio.pdf')
+lst_all_counts <- c(
+    sum_umi = "all_sum_umi.pdf",
+    sum_gene = "all_sum_gene.pdf",
+    expr_chrM_ratio = "all_expr_chrM_ratio.pdf"
+)
 
-print('Ploting ALL in and out tissues plots')
+print("Ploting ALL in and out tissues plots")
 
 map2(as.vector(names(lst_all_counts)), as.vector(lst_all_counts), ~ vis_grid_gene(
     spe = spe_raw,
     geneid = .x,
-    height = var_height, #8
-    width = var_width,   #9
-    point_size = var_point_size,   
-    #return_plots = TRUE,  
+    height = var_height, # 8
+    width = var_width, # 9
+    point_size = var_point_size,
+    # return_plots = TRUE,
     pdf = here(dir_plots, .y),
     assayname = "counts"
-  )  
-)
+))
 
 
 ## -----------------------------
@@ -177,8 +181,8 @@ map2(as.vector(names(lst_all_counts)), as.vector(lst_all_counts), ~ vis_grid_gen
 cat("Initial number of spots:", dim(spe)[2], "\n")
 # Preliminary QC
 spe <- spe[
-  rowSums(assays(spe)$counts) > 0,
-  (colSums(assays(spe)$counts) > 0) & spe$in_tissue
+    rowSums(assays(spe)$counts) > 0,
+    (colSums(assays(spe)$counts) > 0) & spe$in_tissue
 ]
 
 cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
@@ -187,111 +191,111 @@ cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
 
 ## Metrics QC
 metrics_qc <- function(spe) {
-  qc_df <- data.frame(
-    log2sum = log2(spe$sum_umi),
-    log2detected = log2(spe$sum_gene),
-    subsets_Mito_percent = spe$expr_chrM_ratio * 100,
-    sample_id = spe$sample_id
-  )
-  head(qc_df)
-  qcfilter <- DataFrame(
-    low_lib_size = isOutlier(
-      qc_df$log2sum,
-      type = "lower",
-      log = TRUE,
-      batch = qc_df$sample_id
-    ),
-    low_n_features = isOutlier(
-      qc_df$log2detected,
-      type = "lower",
-      log = TRUE,
-      batch = qc_df$sample_id
-    ),
-    high_subsets_Mito_percent = isOutlier(
-      qc_df$subsets_Mito_percent,
-      type = "higher",
-      batch = qc_df$sample_id
+    qc_df <- data.frame(
+        log2sum = log2(spe$sum_umi),
+        log2detected = log2(spe$sum_gene),
+        subsets_Mito_percent = spe$expr_chrM_ratio * 100,
+        sample_id = spe$sample_id
     )
-  )
-  qcfilter$discard <-
-    (qcfilter$low_lib_size |
-       qcfilter$low_n_features) | qcfilter$high_subsets_Mito_percent
-  
-  
-  spe$scran_low_lib_size_low_mito <-
-    factor(
-      qcfilter$low_lib_size &
-        qc_df$subsets_Mito_percent < 0.5,
-      levels = c("TRUE", "FALSE")
+    head(qc_df)
+    qcfilter <- DataFrame(
+        low_lib_size = isOutlier(
+            qc_df$log2sum,
+            type = "lower",
+            log = TRUE,
+            batch = qc_df$sample_id
+        ),
+        low_n_features = isOutlier(
+            qc_df$log2detected,
+            type = "lower",
+            log = TRUE,
+            batch = qc_df$sample_id
+        ),
+        high_subsets_Mito_percent = isOutlier(
+            qc_df$subsets_Mito_percent,
+            type = "higher",
+            batch = qc_df$sample_id
+        )
     )
-  
-  spe$scran_discard <-
-    factor(qcfilter$discard, levels = c("TRUE", "FALSE"))
-  spe$scran_low_lib_size <-
-    factor(qcfilter$low_lib_size, levels = c("TRUE", "FALSE"))
-  spe$scran_low_n_features <-
-    factor(qcfilter$low_n_features, levels = c("TRUE", "FALSE"))
-  spe$scran_high_subsets_Mito_percent <-
-    factor(qcfilter$high_subsets_Mito_percent,
-           levels = c("TRUE", "FALSE")
+    qcfilter$discard <-
+        (qcfilter$low_lib_size |
+            qcfilter$low_n_features) | qcfilter$high_subsets_Mito_percent
+
+
+    spe$scran_low_lib_size_low_mito <-
+        factor(
+            qcfilter$low_lib_size &
+                qc_df$subsets_Mito_percent < 0.5,
+            levels = c("TRUE", "FALSE")
+        )
+
+    spe$scran_discard <-
+        factor(qcfilter$discard, levels = c("TRUE", "FALSE"))
+    spe$scran_low_lib_size <-
+        factor(qcfilter$low_lib_size, levels = c("TRUE", "FALSE"))
+    spe$scran_low_n_features <-
+        factor(qcfilter$low_n_features, levels = c("TRUE", "FALSE"))
+    spe$scran_high_subsets_Mito_percent <-
+        factor(qcfilter$high_subsets_Mito_percent,
+            levels = c("TRUE", "FALSE")
+        )
+
+    ## Find edge spots
+    spots <- data.frame(
+        row = spe$array_row,
+        col = spe$array_col,
+        sample_id = spe$sample_id
     )
-  
-  ## Find edge spots
-  spots <- data.frame(
-    row = spe$array_row,
-    col = spe$array_col,
-    sample_id = spe$sample_id
-  )
-  
-  # edge_spots_row <-
-  #   group_by(spots, sample_id, row) %>% summarize(min_col = min(col), max_col = max(col))
-  edge_spots_row <-
-    group_by(spots, sample_id, row) %>% mutate(min_col = min(col), max_col = max(col))
-  # edge_spots_col <-
-  #   group_by(spots, sample_id, col) %>% summarize(min_row = min(row), max_row = max(row))
-  edge_spots_col <-
-    group_by(spots, sample_id, col) %>% mutate(min_row = min(row), max_row = max(row))
-  
-  spots <-
-    left_join(spots, edge_spots_row) %>% left_join(edge_spots_col)
-  spots$edge_spots <-
-    with(
-      spots,
-      row == min_row | row == max_row | col == min_col | col == max_col
-    )
-  
-  head(spots, n = 3)
-  # row col     sample_id min_col max_col min_row max_row edge_spots
-  # 1  50 102 V12D07-075_C1      34     126       6      72      FALSE
-  # 2  14  94 V12D07-075_C1       0     120       6      70      FALSE
-  # 3  61  97 V12D07-075_C1      43     127       5      71      FALSE
-  
-  spots$row_distance <-
-    with(spots, pmin(abs(row - min_row), abs(row - max_row)))
-  spots$col_distance <-
-    with(spots, pmin(abs(col - min_col), abs(col - max_col)))
-  ## spots$edge_distance <- with(spots, sqrt(row_distance^2 + col_distance^2))
-  ## The above is from:
-  ## sqrt((x_1 - x_2)^2 + (y_1 - y_2)^2)
-  ## but it was wrong, here's a case the the smallest distance is on the column:
-  ## sqrt(0^2 + col_distance^2) = col_distance
-  spots$edge_distance <-
-    with(spots, pmin(row_distance, col_distance))
-  
-  
-  spe$edge_spots <-
-    factor(spots$edge_spots, levels = c("TRUE", "FALSE"))
-  spe$edge_distance <- spots$edge_distance
-  
-  
-  spe$scran_low_lib_size_edge <-
-    factor(
-      qcfilter$low_lib_size &
-        spots$edge_distance < 1,
-      levels = c("TRUE", "FALSE")
-    )
-  
-  return(spe)
+
+    # edge_spots_row <-
+    #   group_by(spots, sample_id, row) %>% summarize(min_col = min(col), max_col = max(col))
+    edge_spots_row <-
+        group_by(spots, sample_id, row) %>% mutate(min_col = min(col), max_col = max(col))
+    # edge_spots_col <-
+    #   group_by(spots, sample_id, col) %>% summarize(min_row = min(row), max_row = max(row))
+    edge_spots_col <-
+        group_by(spots, sample_id, col) %>% mutate(min_row = min(row), max_row = max(row))
+
+    spots <-
+        left_join(spots, edge_spots_row) %>% left_join(edge_spots_col)
+    spots$edge_spots <-
+        with(
+            spots,
+            row == min_row | row == max_row | col == min_col | col == max_col
+        )
+
+    head(spots, n = 3)
+    # row col     sample_id min_col max_col min_row max_row edge_spots
+    # 1  50 102 V12D07-075_C1      34     126       6      72      FALSE
+    # 2  14  94 V12D07-075_C1       0     120       6      70      FALSE
+    # 3  61  97 V12D07-075_C1      43     127       5      71      FALSE
+
+    spots$row_distance <-
+        with(spots, pmin(abs(row - min_row), abs(row - max_row)))
+    spots$col_distance <-
+        with(spots, pmin(abs(col - min_col), abs(col - max_col)))
+    ## spots$edge_distance <- with(spots, sqrt(row_distance^2 + col_distance^2))
+    ## The above is from:
+    ## sqrt((x_1 - x_2)^2 + (y_1 - y_2)^2)
+    ## but it was wrong, here's a case the the smallest distance is on the column:
+    ## sqrt(0^2 + col_distance^2) = col_distance
+    spots$edge_distance <-
+        with(spots, pmin(row_distance, col_distance))
+
+
+    spe$edge_spots <-
+        factor(spots$edge_spots, levels = c("TRUE", "FALSE"))
+    spe$edge_distance <- spots$edge_distance
+
+
+    spe$scran_low_lib_size_edge <-
+        factor(
+            qcfilter$low_lib_size &
+                spots$edge_distance < 1,
+            levels = c("TRUE", "FALSE")
+        )
+
+    return(spe)
 }
 
 spe <- metrics_qc(spe)
@@ -305,11 +309,11 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc.rds"))
 ## Locate low library size spots on the edge
 addmargins(table("Low_libsize_edge" = spe$scran_low_lib_size_edge))
 # Low_libsize_edge
-# TRUE FALSE   Sum 
-# 31 16897 16928 
+# TRUE FALSE   Sum
+# 31 16897 16928
 
 # ==============================================================================
-## plot low library size spots in-tissues & in the edge 
+## plot low library size spots in-tissues & in the edge
 ## egde_distance sample plots
 # edge_distance https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/plots/07_spot_qc/egde_distance_wholegenome.pdf
 # https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/plots/07_spot_qc/scran_targeted_low_lib_size_vs_edge_distance.pdf
@@ -323,64 +327,68 @@ addmargins(table("Low_libsize_edge" = spe$scran_low_lib_size_edge))
 ## low library size in-tissue edge distance
 
 vis_grid_gene(
-  spe = spe,
-  geneid = "edge_distance",
-  height = var_height, 
-  width = var_width,   
-  point_size = 2.5,
-  #return_plots = TRUE,
-  pdf = here(dir_plots, "in_tissue_egde_distance.pdf"),
-  spatial = FALSE,
-  minCount = -1,
-  cont_colors = viridisLite::viridis(21, direction = -1)
+    spe = spe,
+    geneid = "edge_distance",
+    height = var_height,
+    width = var_width,
+    point_size = 2.5,
+    # return_plots = TRUE,
+    pdf = here(dir_plots, "in_tissue_egde_distance.pdf"),
+    spatial = FALSE,
+    minCount = -1,
+    cont_colors = viridisLite::viridis(21, direction = -1)
 )
 
 
 
-print('Ploting in tissue scran metrics')
+print("Ploting in tissue scran metrics")
 
-lst_in_scran_counts <- c(scran_low_lib_size = 'in_tissue_scran_low_lib_size.pdf', 
-                    scran_low_lib_size_edge = 'in_tissue_scran_low_lib_size_edge.pdf', 
-                    scran_high_subsets_Mito_percent = 'in_tissue_scran_high_Mito_percent.pdf')
+lst_in_scran_counts <- c(
+    scran_low_lib_size = "in_tissue_scran_low_lib_size.pdf",
+    scran_low_lib_size_edge = "in_tissue_scran_low_lib_size_edge.pdf",
+    scran_high_subsets_Mito_percent = "in_tissue_scran_high_Mito_percent.pdf"
+)
 lst_size_spot <- c((var_point_size + 1), (var_point_size + 2.5), (var_point_size + 1))
-lst_scran_vars <- list((names(lst_in_scran_counts)), (lst_in_scran_counts), lst_size_spot) 
+lst_scran_vars <- list((names(lst_in_scran_counts)), (lst_in_scran_counts), lst_size_spot)
 
 plt_scran_func <- function(idvar, pdf_name, spot_s) {
-  vis_grid_clus(spe = spe,
-                  clustervar = idvar,
-                  height = var_height, #8
-                  width = var_width,   #9
-                  point_size = spot_s,
-                  pdf = here(dir_plots, pdf_name),
-                  sort_clust = FALSE,
-                  colors = c("TRUE" = "blue", "FALSE" = "grey90"))  
+    vis_grid_clus(
+        spe = spe,
+        clustervar = idvar,
+        height = var_height, # 8
+        width = var_width, # 9
+        point_size = spot_s,
+        pdf = here(dir_plots, pdf_name),
+        sort_clust = FALSE,
+        colors = c("TRUE" = "blue", "FALSE" = "grey90")
+    )
 }
 
 pmap(lst_scran_vars, plt_scran_func)
 
 
-## low library size and chrM ratios 
+## low library size and chrM ratios
 
 low_library <- map(unique(spe$sample_id), ~ summary(spe$scran_low_lib_size[spe$sample_id == .x]))
-low_library_T <- sum(as.numeric(sapply(low_library,"[[",1)))
+low_library_T <- sum(as.numeric(sapply(low_library, "[[", 1)))
 # 327
 
 low_library_edge <- map(unique(spe$sample_id), ~ summary(spe$scran_low_lib_size_edge[spe$sample_id == .x]))
-low_library_edge_T <- sum(as.numeric(sapply(low_library_edge,"[[",1)))
+low_library_edge_T <- sum(as.numeric(sapply(low_library_edge, "[[", 1)))
 # 31
-low_library_edge_F <- sum(as.numeric(sapply(low_library_edge,"[[",2)))
+low_library_edge_F <- sum(as.numeric(sapply(low_library_edge, "[[", 2)))
 
 
-## Get summary for chrM ratio versus high_subsets_Mito_percent detected by scran for reference 
+## Get summary for chrM ratio versus high_subsets_Mito_percent detected by scran for reference
 
 map(unique(spe$sample_id), ~ summary(spe$expr_chrM[spe$sample_id == .x]))
 map(unique(spe$sample_id), ~ sum(spe$expr_chrM[spe$sample_id == .x]))
 
-map(unique(spe$sample_id), ~ summary(spe$expr_chrM_ratio[spe$sample_id == .x]*100))
+map(unique(spe$sample_id), ~ summary(spe$expr_chrM_ratio[spe$sample_id == .x] * 100))
 map(unique(spe$sample_id), ~ summary(spe$scran_high_subsets_Mito_percent[spe$sample_id == .x]))
-map(unique(spe$sample_id), ~ head(spe$scran_high_subsets_Mito_percent[spe$sample_id == .x])) #boolean
-#map(unique(spe$sample_id), ~ (spe$expr_chrM_ratio * 100))
-#colnames(colData(spe))
+map(unique(spe$sample_id), ~ head(spe$scran_high_subsets_Mito_percent[spe$sample_id == .x])) # boolean
+# map(unique(spe$sample_id), ~ (spe$expr_chrM_ratio * 100))
+# colnames(colData(spe))
 
 
 # ==============================================================================
@@ -390,9 +398,9 @@ cat("Initial number of spots:", dim(spe)[2], "\n")
 
 spe <- spe[, spe$scran_low_lib_size_edge == "FALSE"]
 cat(
-  "Number of spots after removed low library size spots on the tissue edge:",
-  dim(spe)[2],
-  "\n"
+    "Number of spots after removed low library size spots on the tissue edge:",
+    dim(spe)[2],
+    "\n"
 )
 
 
@@ -404,10 +412,10 @@ lobstr::obj_size(spe)
 ## Second round to remove any remaining empty spots and/or genes with zero counts
 
 spe <- spe[
-  rowSums(assays(spe)$counts) > 0,
-  (colSums(assays(spe)$counts) > 0) & spe$in_tissue
+    rowSums(assays(spe)$counts) > 0,
+    (colSums(assays(spe)$counts) > 0) & spe$in_tissue
 ]
-#spe1 <- spe$in_tissue[ (rowSums(assays(spe)$counts) > 0), (colSums(assays(spe)$counts) > 0) ]
+# spe1 <- spe$in_tissue[ (rowSums(assays(spe)$counts) > 0), (colSums(assays(spe)$counts) > 0) ]
 
 cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
 # Number of spots after preliminary QC: 16897
@@ -423,9 +431,9 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge.rds"))
 
 spe <- spe[, spe$scran_high_subsets_Mito_percent == "FALSE"]
 cat(
-  "Number of spots after removed low library size spots on the tissue edge:",
-  dim(spe)[2],
-  "\n"
+    "Number of spots after removed low library size spots on the tissue edge:",
+    dim(spe)[2],
+    "\n"
 )
 
 
@@ -445,8 +453,8 @@ session_info()
 # > Sys.time()
 # [1] "2024-04-16 16:06:31 EDT"
 # > proc.time()
-# user   system  elapsed 
-# 69.713    2.288 3585.754 
+# user   system  elapsed
+# 69.713    2.288 3585.754
 # > options(width = 120)
 # > session_info()
 # ─ Session info ──────────────────────────────────────────────────────────────────────────────────────────
@@ -461,7 +469,7 @@ session_info()
 # tz       US/Eastern
 # date     2024-04-16
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3.x/bin/pandoc
-# 
+#
 # ─ Packages ──────────────────────────────────────────────────────────────────────────────────────────────
 # package                * version     date (UTC) lib source
 # abind                    1.4-5       2016-07-21 [2] CRAN (R 4.3.2)
@@ -624,10 +632,9 @@ session_info()
 # XVector                  0.42.0      2023-10-24 [2] Bioconductor
 # yaml                     2.3.8       2023-12-11 [2] CRAN (R 4.3.2)
 # zlibbioc                 1.48.0      2023-10-24 [2] Bioconductor
-# 
+#
 # [1] /users/csoto/R/4.3.x
 # [2] /jhpce/shared/community/core/conda_R/4.3.x/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3.x/R/lib64/R/library
-# 
+#
 # ─────────────────────────────────────────────────────────────────────────────────────────────────────────
-
