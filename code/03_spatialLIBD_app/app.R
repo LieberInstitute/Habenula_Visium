@@ -1,6 +1,8 @@
 library("spatialLIBD")
+library("markdown")
 library("here")
-library("markdown") ## Hm... to avoid this error
+
+
 # 2021-11-11T05:30:50.218127+00:00 shinyapps[5096402]: Warning: Error in loadNamespace: there is no package called ‘markdown’
 
 ## To install new spatialLIBD 1.15.4 (development version):
@@ -16,7 +18,8 @@ options(repos = BiocManager::repositories())
 here("code", "03_spatialLIBD_app")
 
 ## I added a symbolic link to point the spe.rds object to wrap.
-spe <- readRDS(here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds"))
+#spe <- readRDS(here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds"))
+spe <- readRDS("spe_qc_low_lib_edge.rds")
 
 # ## Import BayesSpace clusters
 # spe <- cluster_import(spe,
@@ -51,3 +54,6 @@ spatialLIBD::run_app(
     default_cluster = "10x_graphclust",
     docs_path = "www"
 )
+
+
+## Note. If fails to read the rds object, go to Session Menu -> Set Working Directory -> To source File location

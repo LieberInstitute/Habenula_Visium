@@ -12,6 +12,7 @@ library("here")
 
 ## You need this to enable shinyapps to install Bioconductor packages
 options(repos = BiocManager::repositories())
+#getOption("repos") # 'getOption("repos")' replaces Bioconductor standard repositories
 
 ## Deploy the app, that is, upload it to shinyapps.io
 rsconnect::deployApp(
