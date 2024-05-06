@@ -27,8 +27,8 @@ dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 ## load a filtered spe object
 spe <- readRDS(filtered_in_path)
 ## Verified number of TRUE spots in tissue
-in_tissue_spots <- sum(as.numeric(map(unique(spe$sample_id), ~ sum( spe$in_tissue[spe$sample_id == .x]))))
-print(paste0(' Spots in tissue: ', in_tissue_spots))
+in_tissue_spots <- sum(as.numeric(map(unique(spe$sample_id), ~ sum(spe$in_tissue[spe$sample_id == .x]))))
+print(paste0(" Spots in tissue: ", in_tissue_spots))
 
 
 
@@ -61,17 +61,17 @@ Sys.time()
 
 print("Quick cluster table:")
 table(spe$scran_quick_cluster)
-#  1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 308  427  307  427  308  130  559  174  236  255  118  220  135  191  720  372 
-# 17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32 
-# 193 1157  815  367  242  312  182  876 1187  343  386  750  280 1011  788  488 
-# 33   34   35   36   37 
-# 261  950  475  143  804 
+#  1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16
+# 308  427  307  427  308  130  559  174  236  255  118  220  135  191  720  372
+# 17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32
+# 193 1157  815  367  242  312  182  876 1187  343  386  750  280 1011  788  488
+# 33   34   35   36   37
+# 261  950  475  143  804
 
 message(Sys.time(), " - Running checking sizeFactors()")
 summary(sizeFactors(spe))
-# Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
-# 0.000083  0.179578  0.612649  1.000000  1.394761 14.853742 
+# Min.   1st Qu.    Median      Mean   3rd Qu.      Max.
+# 0.000083  0.179578  0.612649  1.000000  1.394761 14.853742
 
 message(Sys.time(), " - Running logNormCounts()")
 spe <- logNormCounts(spe)
@@ -96,8 +96,8 @@ dec <- modelGeneVar(spe,
     BPPARAM = MulticoreParam(num_cores)
 )
 
-#plot(dec$mean, dec$total, xlab="Mean log-expression", ylab="Variance")
-#curve(metadata(dec)$trend(x), col="blue", add=TRUE)
+# plot(dec$mean, dec$total, xlab="Mean log-expression", ylab="Variance")
+# curve(metadata(dec)$trend(x), col="blue", add=TRUE)
 
 pdf(file.path(dir_plots, "scran_modelGeneVar.pdf"), useDingbats = FALSE)
 mapply(function(block, blockname) {
@@ -108,7 +108,7 @@ mapply(function(block, blockname) {
         ylab = "Variance",
         main = blockname
     )
-    #points(metadata(block)$mean, metadata(block)$var, col="red")
+    # points(metadata(block)$mean, metadata(block)$var, col="red")
     curve(metadata(block)$trend(x),
         col = "blue",
         add = TRUE
@@ -187,7 +187,7 @@ Sys.time()
 #   plot(percent.var, xlab = gsub("^PCA_", "PC_", dim_n), ylab = "Variance explained (%)")
 #   dev.off()
 # }
-# 
+#
 # map2(names(lst_PCA_elbow), lst_PCA_elbow, ~ plt_elbow(.x, .y))
 
 percent.var <- attr(reducedDim(spe, "PCA_p1"), "percentVar")
