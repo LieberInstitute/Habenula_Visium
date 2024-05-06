@@ -12,14 +12,13 @@ library("sessioninfo")
 
 
 # Define harmony function that would allow us to specify which reduction to use with SingleCellExperiment object
-RunHarmony_mod <- function(
-        object,
-        group.by.vars,
-        reduction.use = "PCA",
-        dims.use = NULL,
-        verbose = TRUE,
-        reduction.save = "HARMONY",
-        ...) {
+RunHarmony_mod <- function(object,
+    group.by.vars,
+    reduction.use = "PCA",
+    dims.use = NULL,
+    verbose = TRUE,
+    reduction.save = "HARMONY",
+    ...) {
     ## Get PCA embeddings
     if (!"PCA" %in% SingleCellExperiment::reducedDimNames(object)) {
         stop("PCA must be computed before running Harmony.")
