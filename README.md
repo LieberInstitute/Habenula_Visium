@@ -27,19 +27,20 @@ Script directory: *code/02_build_spe/*
 
 ### code/03_spatialLIBD_app/ Directory
 
-Notes: *spatialLIBD* version 1.15.4 is available on bioc-devel, not on bioc-release.
-Aka via https://bioconductor.org/packages/devel/data/experiment/html/spatialLIBD.html + the installation instructions listed there.
+Notes: 
+
+
+1. *spatialLIBD* version 1.15.4 is available on bioc-devel, not on bioc-release.
+Aka via https://bioconductor.org/packages/devel/data/experiment/html/spatialLIBD.html + the installation instructions listed there. Be sure to have the correct credential access to install the devel version. This link has help resources to setup the PAT access https://usethis.r-lib.org/articles/git-credentials.html
 <br>
 
+2. The new *spatialLIBD* new version app start R (version “4.4”). Thus, if you are working in the *JHPCE* you we need to update your *bashrc* profile for JHPCE to load the proper R module. Ex. $ vim ~/.bashrc; Replace conda_R/4.3.x with conda_R/4.4
 
-1. The new *spatialLIBD* new version app start R (version “4.4”). Thus, if you are working in the *JHPCE* you we need to update your *bashrc* profile for JHPCE to load the proper R module. Ex. $ vim ~/.bashrc; Replace conda_R/4.3.x with conda_R/4.4
+3. Working directory need to be on the current directory. 
 
-2. Working directory need to be on the current directory. 
-
-3. Before running the *app.R* script, you need to create a symbolic link in the current directory pointing to the *spe.R* object to wrap in the *spatialLIBD* app.
+4. Before running the *app.R* script, you need to create a symbolic link in the current directory pointing to the *spe.R* object to wrap in the *spatialLIBD* app.
 
 
-This is a test from local
 
 <br><br>
 
