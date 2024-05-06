@@ -40,7 +40,7 @@ Aka via https://bioconductor.org/packages/devel/data/experiment/html/spatialLIBD
 
 4. Before running the *app.R* script, you need to create a symbolic link in the current directory pointing to the *spe.R* object to wrap in the *spatialLIBD* app.
 
-
+Test of access to github
 
 <br><br>
 
