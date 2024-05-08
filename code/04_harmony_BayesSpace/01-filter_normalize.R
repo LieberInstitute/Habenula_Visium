@@ -39,13 +39,22 @@ print(paste0(' Spots in tissue: ', in_tissue_spots))
 
 #  Re-upload the spots manually annotated to resume the work as noted here https://github.com/LieberInstitute/spatialLIBD/blob/77a5303f91edb7b9ffb1ce00b4193dae5d16a8a1/R/app_server.R#L1118-L1152)
 
+spatialLIBD_ann_file <- here("processed-data", "03_spatialLIBD_app", 
+                             "spatialLIBD_ManualAnnotation_All_roll_tissues_edge_2024-05-08_18.csv")
+
 previous_work <-
   read.csv(
-    input$priorGuesses$datapath,
+    spatialLIBD_ann_file,
     header = TRUE,
     stringsAsFactors = FALSE,
     na.strings = ""
   )
+
+# sample_id          spot_name     ManualAnnotation
+# 1  V13B23-285_B1 AACGAAAGTCGTCCCA-1 Tissue_rolls_low_lib
+# 2  V13B23-285_B1 AACGTTATCAGCACCT-1 Tissue_rolls_low_lib
+# 3  V13B23-285_B1 ACATAAGTCGTGGTGA-1 Tissue_rolls_low_lib
+
 ## Update the non-NA
 previous_work <-
   subset(previous_work, ManualAnnotation != "NA")
@@ -56,24 +65,25 @@ previous_work$key <-
     previous_work$sample_id
   )
 m <- match(previous_work$key, spe$key)
-if (all(is.na(m))) {
-  ## For backwards compatibility with older versions of spatialLIBD
-  previous_work$key <-
-    paste0(
-      previous_work$sample_id,
-      "_",
-      previous_work$spot_name
-    )
-  m <- match(previous_work$key, spe$key)
-  if (all(is.na(m))) {
-    stop("Cannot use previous manual annotations.",
-         call. = FALSE
-    )
-  }
-}
-rv$ManualAnnotation[m[!is.na(m)]] <-
-  previous_work$ManualAnnotation[!is.na(m)]
 
+# For older spatialLIBD versions. 
+# if (all(is.na(m))) {
+#   ## For backwards compatibility with older versions of spatialLIBD
+#   previous_work$key <-
+#     paste0(
+#       previous_work$sample_id,
+#       "_",
+#       previous_work$spot_name
+#     )
+#   m <- match(previous_work$key, spe$key)
+#   if (all(is.na(m))) {
+#     stop("Cannot use previous manual annotations.",
+#          call. = FALSE
+#     )
+#   }
+# }
+# rv$ManualAnnotation[m[!is.na(m)]] <-
+#   previous_work$ManualAnnotation[!is.na(m)]
 
 
 
