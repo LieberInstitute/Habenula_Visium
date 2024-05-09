@@ -1,7 +1,7 @@
 library("spatialLIBD")
 library("here")
 library("tidyverse")
-library("scran")
+#library("scran")
 library("BiocParallel")
 library("scater")
 library("scry")
@@ -42,6 +42,23 @@ print(paste0(' Spots in tissue: ', in_tissue_spots))
 spatialLIBD_ann_file <- here("processed-data", "03_spatialLIBD_app", 
                              "spatialLIBD_ManualAnnotation_All_roll_tissues_edge_2024-05-08_18.csv")
 
+spe_x <- spe
+
+# rv <- reactiveValues(ManualAnnotation = rep("NA", ncol(spe)), ContCount = data.frame(key = spe$key, COUNT = NA))
+rv <- list(ManualAnnotation = rep("NA", ncol(spe)), key = spe$key)
+names(rv)
+head(rv$ManualAnnotation) # NA
+tail(rv$key)
+# key COUNT
+# 16892 TTGTTAGCAAATTCGA-1_V13B23-285_D1    NA
+# 16893 TTGTTCAGTGTGCTAC-1_V13B23-285_D1    NA
+# 16894 TTGTTGTGTGTCAAGA-1_V13B23-285_D1    NA
+
+unique(rv$ManualAnnotation) # NA
+unique(rv$key) # NA
+length(rv$ManualAnnotation) #  16897
+
+# read the annotation file made with the spatialLIBD shiny app  
 previous_work <-
   read.csv(
     spatialLIBD_ann_file,
@@ -50,6 +67,7 @@ previous_work <-
     na.strings = ""
   )
 
+head(previous_work) #list
 # sample_id          spot_name     ManualAnnotation
 # 1  V13B23-285_B1 AACGAAAGTCGTCCCA-1 Tissue_rolls_low_lib
 # 2  V13B23-285_B1 AACGTTATCAGCACCT-1 Tissue_rolls_low_lib
@@ -58,34 +76,61 @@ previous_work <-
 ## Update the non-NA
 previous_work <-
   subset(previous_work, ManualAnnotation != "NA")
+
+previous_work['sample_id']
+
+# add a unique keys identificator 
 previous_work$key <-
   paste0(
     previous_work$spot_name,
     "_",
     previous_work$sample_id
   )
+previous_work['key']
+# 1  AACGAAAGTCGTCCCA-1_V13B23-285_B1
+# 2  AACGTTATCAGCACCT-1_V13B23-285_B1
+# 3  ACATAAGTCGTGGTGA-1_V13B23-285_B1
+
+# match de unique IDs and get the index row from spe
 m <- match(previous_work$key, spe$key)
+m
+# [1]  7490  7503  7644  7667  7758  7770  7788  7792  7803  7943  7983  7984
+# [13]  8033  8179  8229  8284  8402  8478  8526  8539  8568  8596  8626  8925
+# [25]  8952  9012  9083  9201  9332  9620  9840  9865  9904  9930 10109 10110
+# [37] 10175 10181 10195 10210 10292 10304 10450 10489 10725 10831 10936 11272
+# [49] 11387 11637 11682 11686 11700 11795 11819 12108 12818 12928 13066 13491
+# [61] 13493 13702 13763
 
-# For older spatialLIBD versions. 
-# if (all(is.na(m))) {
-#   ## For backwards compatibility with older versions of spatialLIBD
-#   previous_work$key <-
-#     paste0(
-#       previous_work$sample_id,
-#       "_",
-#       previous_work$spot_name
-#     )
-#   m <- match(previous_work$key, spe$key)
-#   if (all(is.na(m))) {
-#     stop("Cannot use previous manual annotations.",
-#          call. = FALSE
-#     )
-#   }
-# }
-# rv$ManualAnnotation[m[!is.na(m)]] <-
-#   previous_work$ManualAnnotation[!is.na(m)]
+# set the custom label
+rv$ManualAnnotation[m[!is.na(m)]] <- previous_work$ManualAnnotation[!is.na(m)]
+spe$ManualAnnotation[m[!is.na(m)]] <- previous_work$ManualAnnotation[!is.na(m)]
+spe$key[m[!is.na(m)]] 
+# [1] "AACGAAAGTCGTCCCA-1_V13B23-285_B1" "AACGTTATCAGCACCT-1_V13B23-285_B1"
+# [3] "ACATAAGTCGTGGTGA-1_V13B23-285_B1" "ACCATCCGCCAACTAG-1_V13B23-285_B1"
+# [5] "ACTCGATGTATTTCAT-1_V13B23-285_B1" "ACTGCTCGGAAGGATG-1_V13B23-285_B1"
+
+unique(rv$ManualAnnotation)
+unique(spe$ManualAnnotation)
+# [1] "NA"                   "Tissue_rolls_low_lib"
+
+# length(rv[rv$ManualAnnotation == 'Tissue_rolls_low_lib'])
+# length(spe@colData@rownames[c(m)])
+# key_bc <- rv$key[m[63]] #TTGTGAGGCATGACGC-1_V13B23-285_C1
+# sample_id <-gsub("^[^.V]*", "", key_bc) #V13B23-285_C1
+# key_id <- unlist(strsplit(key_bc, split = "_"))[[1]]
 
 
+## Additional QC. Drop spots with manual annotations 
+
+#spe$key[m[63]] # TTGTGAGGCATGACGC-1_V13B23-285_C1
+colnames(colData(spe))
+sub <- spe[, !spe$ManualAnnotation == "Tissue_rolls_low_lib"]
+unique(sub$ManualAnnotation)
+cat(
+  "Number of spots after removed low library size spots on the tissue edge:",
+  dim(sub)[2],
+  "\n"
+)
 
 
 
