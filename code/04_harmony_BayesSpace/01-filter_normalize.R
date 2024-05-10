@@ -42,8 +42,6 @@ print(paste0(' Spots in tissue: ', in_tissue_spots))
 spatialLIBD_ann_file <- here("processed-data", "03_spatialLIBD_app", 
                              "spatialLIBD_ManualAnnotation_All_roll_tissues_edge_2024-05-08_18.csv")
 
-spe_x <- spe
-
 # rv <- reactiveValues(ManualAnnotation = rep("NA", ncol(spe)), ContCount = data.frame(key = spe$key, COUNT = NA))
 rv <- list(ManualAnnotation = rep("NA", ncol(spe)), key = spe$key)
 names(rv)
@@ -55,7 +53,7 @@ tail(rv$key)
 # 16894 TTGTTGTGTGTCAAGA-1_V13B23-285_D1    NA
 
 unique(rv$ManualAnnotation) # NA
-unique(rv$key) # NA
+#unique(rv$key) # NA
 length(rv$ManualAnnotation) #  16897
 
 # read the annotation file made with the spatialLIBD shiny app  
@@ -77,7 +75,7 @@ head(previous_work) #list
 previous_work <-
   subset(previous_work, ManualAnnotation != "NA")
 
-previous_work['sample_id']
+unique(previous_work['sample_id'])
 
 # add a unique keys identificator 
 previous_work$key <-
@@ -101,7 +99,7 @@ m
 # [49] 11387 11637 11682 11686 11700 11795 11819 12108 12818 12928 13066 13491
 # [61] 13493 13702 13763
 
-# set the custom label
+# set and trasnfer the label
 rv$ManualAnnotation[m[!is.na(m)]] <- previous_work$ManualAnnotation[!is.na(m)]
 spe$ManualAnnotation[m[!is.na(m)]] <- previous_work$ManualAnnotation[!is.na(m)]
 spe$key[m[!is.na(m)]] 
@@ -112,6 +110,7 @@ spe$key[m[!is.na(m)]]
 unique(rv$ManualAnnotation)
 unique(spe$ManualAnnotation)
 # [1] "NA"                   "Tissue_rolls_low_lib"
+# manual_ann <- cluster_export(spe, "ManualAnnotation")  Note.Other alternative
 
 # length(rv[rv$ManualAnnotation == 'Tissue_rolls_low_lib'])
 # length(spe@colData@rownames[c(m)])
@@ -124,14 +123,16 @@ unique(spe$ManualAnnotation)
 
 #spe$key[m[63]] # TTGTGAGGCATGACGC-1_V13B23-285_C1
 colnames(colData(spe))
-sub <- spe[, !spe$ManualAnnotation == "Tissue_rolls_low_lib"]
-unique(sub$ManualAnnotation)
+spe <- spe[, !spe$ManualAnnotation == "Tissue_rolls_low_lib"]
+unique(spe$ManualAnnotation)
 cat(
   "Number of spots after removed low library size spots on the tissue edge:",
-  dim(sub)[2],
+  dim(spe)[2],
   "\n"
 )
 
+## Save new spe object with spots manually annotated drop
+saveRDS(sub, file.path(dir_rdata, "spe_qc_low_spatialLIBD.rds"))
 
 
 
