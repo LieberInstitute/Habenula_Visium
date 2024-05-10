@@ -1,31 +1,20 @@
 library("spatialLIBD")
-packageVersion("spatialLIBD") # ‘1.15.4’
-library("SpatialExperiment")
-? # library("scran")
+# packageVersion("spatialLIBD") # ‘1.15.4’
+# library("SpatialExperiment")
+# library("scran")
 library("tidyverse")
 library("here")
 library("lobstr")
 library("sessioninfo")
 
 
-
-# load libraries
-library(tidyverse)
-library(dplyr)
-library(here)
-
-here::here()
-
-# Check if processed_data directory exists, if not create it
-if (!dir.exists(here("processed-data/05_DiffExpr_Clustering_CellrangerARC/"))) {
-    dir.create(here("processed-data/05_DiffExpr_Clustering_CellrangerARC/"))
-}
-
-source(here("code/functions_custom", "remote_DGE_marker_gene_lists.R"))       # Call functions to read paths
+#library(dplyr)
 
 
-#############################           Initials        ################################
-############################# Pickup a Marker gene list ################################
+source(here("code/04_harmony_BayesSpace", "func_DGE_marker_gene_lists.R"))       # Call functions to read paths
+
+
+############################# Load the marker gene list ################################
 
 # We have access to 3 gene markers lists:
 
@@ -66,36 +55,21 @@ markers.custom$MHb_putative
 # markers.custom$MHb 
 
 # set the number of top DGE rows to consider for looking gene markers in the cellranger-arc clusters
-n_match_slice <- 20   #10
-prefix_name <- paste0(prefix_name, n_match_slice, '.csv')
-
-#############################  Set the DGE list to parse  ################################
-
-## commandArgs scans the arguments which have been supplied when the current R script was invoked (from shell sh)
-sample_tmp <- commandArgs(trailingOnly = TRUE)
-#sample_tmp <- args[1]
-# testing
-#sample_tmp <- 'S1_Hb_KDM,human'  # testing HUMAN tissue
-#sample_tmp <- 'S2_Hb_KDM,human'  # testing HUMAN tissue
-#sample_tmp <- '2_HPC_KDM,human'  # testing HUMAN tissue
-#sample_tmp <- '2_HPC_KDM,human'  # testing HUMAN tissue
-sample_data = unlist(strsplit(sample_tmp,","))
-
-s_sample <- sample_data[[1]]
-s_tissue <- sample_data[[2]]
-message('Processing sample: ',s_sample, ' from ', s_tissue, ' tissue.')
+prefix_name <- paste0(prefix_name, '.csv')
 
 
 
+####################### Run multi_gene analysis for exploratory purposes ###########################
 
-## Set directory for data amd plots
+## Set directory for data and plots
 
-dir_plots <- here("plots", "02_build_spe")
-dir_rdata <- here("processed-data", "02_build_spe")
+dir_plots <- here("plots", "04_harmony_BayesSpace")
+dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 
-## set path to raw and pre-filtered data
 
-spe_in_path <- here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds")
+## set path to filtered data
+
+spe_in_path <- here("processed-data", "04_harmony_BayesSpace", "spe_qc_low_spatialLIBD.rds")
 
 
 ## load Datasets
@@ -105,7 +79,7 @@ unique(spe$sample_id)
 # [1] "V12D07-075_C1" "V13B23-285_A1" "V13B23-285_B1" "V13B23-285_C1"
 # [5] "V13B23-285_D1"
 
-cat("Initial number of spots:", dim(spe)[2], "\n")
+cat(" Number of spots:", dim(spe)[2], "\n")
 
 ## Set some initials for manage plots
 var_height <- 8 # 24/3=8
@@ -113,11 +87,12 @@ var_width <- 9 # 36/4=9
 var_point_size <- 1.5
 
 
-## Inspect WM genes (track) tissue
+#######################  Inspect WM genes (track) with z-scores  ####################### 
 
-white_matter_genes <- c("GFAP", "AQP4", "MBP", "PLP1")
+lst_white_matter_genes <- c("GFAP", "AQP4", "MBP", "PLP1")
+
 white_matter_genes <- rowData(spe)$gene_search[
-    rowData(spe)$gene_name %in% white_matter_genes
+    rowData(spe)$gene_name %in% lst_white_matter_genes
 ]
 
 ## Our list of white matter genes
@@ -125,18 +100,19 @@ white_matter_genes
 # [1] "GFAP; ENSG00000131095" "AQP4; ENSG00000171885" "MBP; ENSG00000197971"
 # [4] "PLP1; ENSG00000123560"
 
-imgData(spe)
-spi <- getImg(spe[18])
-str(spi)
-identical(spi, imgData(spe)$data[[1]])
-plot(imgRaster(spi))
+# imgData(spe)
+# spi <- getImg(spe[18])
+# str(spi)
+# identical(spi, imgData(spe)$data[[1]])
+# plot(imgRaster(spi))
 
 
 ## plot 1 gene for 1 sample
+
 vis_gene(
     spe = spe,
     # spe = spe_one,
-    sampleid = unique(spe$sample_id)[4],
+    sampleid = unique(spe$sample_id)[1],   # unique(spe$sample_id)[4]
     geneid = white_matter_genes[1],
     spatial = TRUE,
     height = var_height,
@@ -147,11 +123,12 @@ vis_gene(
     assayname = "counts"
 )
 
-## plot n=4 genea for 1 sample
-pdf_file <- "in_tissue_multi_genes_WM.pdf"
+## plot the n=4 genes for 1 sample
+
+pdf_file <- "multi_genes_WM.pdf"
 vis_gene(
     spe = spe,
-    sampleid = unique(spe$sample_id)[4],
+    sampleid = unique(spe$sample_id)[1],
     geneid = white_matter_genes,
     multi_gene_method = "z_score",
     spatial = TRUE,
@@ -159,23 +136,41 @@ vis_gene(
     width = var_width,
     point_size = var_point_size,
     return_plots = TRUE,
-    # pdf = here(dir_plots, pdf_file),
+    pdf = here(dir_plots, pdf_file),
     assayname = "counts"
 )
 
+
+#######################  Inspect LH genes (track) with z-scores  ####################### 
+
+lst_genes <- markers.custom$LHb_putative 
+
+lst_genes <- rowData(spe)$gene_search[
+  rowData(spe)$gene_name %in% lst_genes
+]
+
+slide <- unique(spe$sample_id)[5]
+
+## Our list of LH genes
+lst_genes
+
 vis_gene(
-    spe = spe,
-    sampleid = unique(spe$sample_id)[4],
-    geneid = white_matter_genes,
-    multi_gene_method = "pca",
-    spatial = TRUE,
-    height = var_height,
-    width = var_width,
-    point_size = var_point_size,
-    return_plots = TRUE,
-    # pdf = here(dir_plots, pdf_file),
-    assayname = "counts"
+  spe = spe,
+  sampleid = slide,
+  geneid = lst_genes,
+  multi_gene_method = "z_score", #pca
+  spatial = TRUE,
+  height = var_height,
+  width = var_width,
+  point_size = var_point_size,
+  return_plots = TRUE,
+  # pdf = here(dir_plots, pdf_file),
+  assayname = "counts"
 )
+
+
+## ====================================================
+
 
 vis_gene(
     spe = spe,
