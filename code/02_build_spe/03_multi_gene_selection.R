@@ -8,6 +8,86 @@ library("lobstr")
 library("sessioninfo")
 
 
+
+# load libraries
+library(tidyverse)
+library(dplyr)
+library(here)
+
+here::here()
+
+# Check if processed_data directory exists, if not create it
+if (!dir.exists(here("processed-data/05_DiffExpr_Clustering_CellrangerARC/"))) {
+    dir.create(here("processed-data/05_DiffExpr_Clustering_CellrangerARC/"))
+}
+
+source(here("code/functions_custom", "remote_DGE_marker_gene_lists.R"))       # Call functions to read paths
+
+
+#############################           Initials        ################################
+############################# Pickup a Marker gene list ################################
+
+# We have access to 3 gene markers lists:
+
+# Erik and Top50r putative marker genes merged
+markers.custom <- get_erik_and_Hb_markers_genes()          # merged lists
+prefix_name <- 'all_gm'                                    # prefix to save matched markers found in the clusters
+#markers.custom <- get_bukola_markers_genes_Hb()           # Bukola lists
+#prefix_name <- 'erik_gm'  
+#markers.custom <- get_Top50r_markers_genes_Hb()           # Top50r lists (putative Hb)
+#prefix_name <- 'Top50r_gm'  
+
+# str(markers.custom)
+# List of 14
+# $ neuron                   : chr [1:2] "SYT1" "SNAP25"
+# $ excitatory_neuron        : chr [1:2] "SLC17A6" "SLC17A7"
+# $ inhibitory_neuron        : chr [1:2] "GAD1" "GAD2"
+# $ mediodorsal thalamus     : chr [1:10] "EPHA4" "PDYN" "LYPD6B" "LYPD6" ...
+# $ Hb neuron specific       : chr [1:4] "POU2F2" "POU4F1" "GPR151" "CALB2"
+# $ MHB neuron specific      : chr [1:3] "TAC1" "CHAT" "CHRNB4"
+# $ LHB neuron specific      : chr [1:2] "HTR2C" "MMRN1"
+# $ oligodendrocyte          : chr [1:2] "MOBP" "MBP"
+# $ oligodendrocyte_precursor: chr [1:2] "PDGFRA" "VCAN"
+# $ microglia                : chr [1:2] "C3" "CSF1R"
+# $ astrocyte                : chr [1:2] "GFAP" "AQP4"
+# $ Endo/CP                  : chr [1:4] "TTR" "FOLR1" "FLT1" "CLDN5"
+# $ MHb_putative             : chr [1:50] "CHAT" "LINC01307" "NEUROD1" "CHRNB4" ...
+# $ LHb_putative             : chr [1:50] "HTR4" "BVES" "NRP1" "HTR2C" ...
+
+
+markers.custom$MHb_putative
+# [1] "CHAT"       "LINC01307"  "NEUROD1"    "CHRNB4"     "LINC02143" 
+# [6] "AC114321.1" "AC104170.1" "AC079760.2" "AC024610.2" "AC022382.2"
+# ...
+
+# # markers manually added for testing functions 
+# new_gm <- c('AQP4', 'MT-ND2')
+# markers.custom$MHb <- append(markers.custom$MHb, new_gm)
+# markers.custom$MHb 
+
+# set the number of top DGE rows to consider for looking gene markers in the cellranger-arc clusters
+n_match_slice <- 20   #10
+prefix_name <- paste0(prefix_name, n_match_slice, '.csv')
+
+#############################  Set the DGE list to parse  ################################
+
+## commandArgs scans the arguments which have been supplied when the current R script was invoked (from shell sh)
+sample_tmp <- commandArgs(trailingOnly = TRUE)
+#sample_tmp <- args[1]
+# testing
+#sample_tmp <- 'S1_Hb_KDM,human'  # testing HUMAN tissue
+#sample_tmp <- 'S2_Hb_KDM,human'  # testing HUMAN tissue
+#sample_tmp <- '2_HPC_KDM,human'  # testing HUMAN tissue
+#sample_tmp <- '2_HPC_KDM,human'  # testing HUMAN tissue
+sample_data = unlist(strsplit(sample_tmp,","))
+
+s_sample <- sample_data[[1]]
+s_tissue <- sample_data[[2]]
+message('Processing sample: ',s_sample, ' from ', s_tissue, ' tissue.')
+
+
+
+
 ## Set directory for data amd plots
 
 dir_plots <- here("plots", "02_build_spe")
