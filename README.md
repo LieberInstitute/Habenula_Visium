@@ -11,7 +11,7 @@ JHPCE location: `/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium
 
 <br><br>
 
-Script directory: *code/02_build_spe/*
+Script directory: *02_build_spe/*
 <br>
 
 | File name | Description     |
@@ -25,7 +25,18 @@ Script directory: *code/02_build_spe/*
 
 <br><br>
 
+Script directory: *04_harmony_BayesSpace/*
+<br>
+
+| File name | Description     |
+|:------------|:----------------|
+| spe_qc_low_spatialLIBD.rds | *spe* object removed low-library spots manually annotated with the *spatialLIBD* app  |
+
+<br><br>
+
+
 ### code/03_spatialLIBD_app/ Directory
+
 
 Notes: 
 
