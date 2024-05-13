@@ -89,7 +89,7 @@ var_point_size <- 3.5
 # plot(imgRaster(spi))
 
 
-#######################  Inspect WM genes (track)   ####################### 
+#######################  Inspect WM genes gene markers   ####################### 
 
 lst_WM <- c("GFAP", "AQP4", "MBP", "PLP1")
 
@@ -131,7 +131,115 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
 
 
 
-#######################  Inspect Lateral Habenula genes markers ####################### 
+#######################  Inspect `Hb neuron specific` genes marker ####################### 
+
+## -----------------------------
+# markers.custom$`Hb neuron specific` 
+
+suffix_name <- "Hb_neuron_specific.pdf"
+
+# Extract Ensembl ID
+lst_Habenula <- rowData(spe)$gene_search[
+  rowData(spe)$gene_name %in% markers.custom$`Hb neuron specific`
+]
+
+lst_multi_g <- c(
+  z_score = paste0("multi_genes_Zs_", suffix_name),
+  pca = paste0("multi_genes_PCA_", suffix_name),
+  sparsity = paste0("multi_genes_Sp_", suffix_name)
+)
+
+print("Ploting multi-gene model for habenula neuron specific gene markers")
+
+map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
+  spe = spe,
+  geneid = lst_Habenula,
+  multi_gene_method = .x, 
+  height = var_height, 
+  width = var_width,
+  point_size = var_point_size,
+  #cont_colors = viridisLite::turbo(21, direction = 1),  
+  cont_colors = viridisLite::viridis(21, direction = 1),
+  #return_plots = TRUE,
+  pdf = here(dir_plots, .y),
+  assayname = "counts"
+))
+
+
+
+#######################  Inspect `MHB neuron specific` genes marker ####################### 
+
+## -----------------------------
+# markers.custom$`MHB neuron specific` / `LHB neuron specific` / `mediodorsal thalamus`
+
+suffix_name <- "MHB_neuron_specific.pdf"
+
+# Extract Ensembl ID
+lst_Habenula <- rowData(spe)$gene_search[
+  rowData(spe)$gene_name %in% markers.custom$`MHB neuron specific`
+]
+
+lst_multi_g <- c(
+  z_score = paste0("multi_genes_Zs_", suffix_name),
+  pca = paste0("multi_genes_PCA_", suffix_name),
+  sparsity = paste0("multi_genes_Sp_", suffix_name)
+)
+
+print("Ploting multi-gene model for Medial Habenula neuron specific gene markers")
+
+map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
+  spe = spe,
+  geneid = lst_Habenula,
+  multi_gene_method = .x, 
+  height = var_height, 
+  width = var_width,
+  point_size = var_point_size,
+  #cont_colors = viridisLite::turbo(21, direction = 1),  
+  cont_colors = viridisLite::viridis(21, direction = 1),
+  #return_plots = TRUE,
+  pdf = here(dir_plots, .y),
+  assayname = "counts"
+))
+
+
+
+#######################  Inspect `LHB neuron specific` genes marker ####################### 
+
+## -----------------------------
+# markers.custom$`LHB neuron specific` / `mediodorsal thalamus`
+
+suffix_name <- "LHB_neuron_specific.pdf"
+
+# Extract Ensembl ID
+lst_Habenula <- rowData(spe)$gene_search[
+  rowData(spe)$gene_name %in% markers.custom$`LHB neuron specific`
+]
+
+lst_multi_g <- c(
+  z_score = paste0("multi_genes_Zs_", suffix_name),
+  pca = paste0("multi_genes_PCA_", suffix_name),
+  sparsity = paste0("multi_genes_Sp_", suffix_name)
+)
+
+print("Ploting multi-gene model for Lateral Habenula neuron specific gene markers")
+
+map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
+  spe = spe,
+  geneid = lst_Habenula,
+  multi_gene_method = .x, 
+  height = var_height, 
+  width = var_width,
+  point_size = var_point_size,
+  #cont_colors = viridisLite::turbo(21, direction = 1),  
+  cont_colors = viridisLite::viridis(21, direction = 1),
+  #return_plots = TRUE,
+  pdf = here(dir_plots, .y),
+  assayname = "counts"
+))
+
+
+
+#######################  Inspect Lateral Habenula genes marker ####################### 
 
 ## -----------------------------
 ## ALL 50 genes markers
@@ -269,7 +377,14 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
 ))
 
 
+
 ## =============================================================================
+
+
+
+
+
+
 
 
 modeling_results <- fetch_data(type = "modeling_results")
