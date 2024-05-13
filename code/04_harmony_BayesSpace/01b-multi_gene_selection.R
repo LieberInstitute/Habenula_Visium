@@ -54,10 +54,8 @@ markers.custom$MHb_putative
 # markers.custom$MHb <- append(markers.custom$MHb, new_gm)
 # markers.custom$MHb 
 
-# set the number of top DGE rows to consider for looking gene markers in the cellranger-arc clusters
-prefix_name <- paste0(prefix_name, '.csv')
-
-
+# set the number of top genes selected for the multi gene analysis
+prefix_name <- 'ALL'
 
 ####################### Run multi_gene analysis for exploratory purposes ###########################
 
@@ -67,13 +65,11 @@ dir_plots <- here("plots", "04_harmony_BayesSpace")
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 
 
-## set path to filtered data
-
+## set path to read RDS object
 spe_in_path <- here("processed-data", "04_harmony_BayesSpace", "spe_qc_low_spatialLIBD.rds")
 
 
 ## load Datasets
-
 spe <- readRDS(spe_in_path)
 unique(spe$sample_id)
 # [1] "V12D07-075_C1" "V13B23-285_A1" "V13B23-285_B1" "V13B23-285_C1"
@@ -82,23 +78,9 @@ unique(spe$sample_id)
 cat(" Number of spots:", dim(spe)[2], "\n")
 
 ## Set some initials for manage plots
-var_height <- 8 # 24/3=8
-var_width <- 9 # 36/4=9
-var_point_size <- 1.5
-
-
-#######################  Inspect WM genes (track) with z-scores  ####################### 
-
-lst_white_matter_genes <- c("GFAP", "AQP4", "MBP", "PLP1")
-
-white_matter_genes <- rowData(spe)$gene_search[
-    rowData(spe)$gene_name %in% lst_white_matter_genes
-]
-
-## Our list of white matter genes
-white_matter_genes
-# [1] "GFAP; ENSG00000131095" "AQP4; ENSG00000171885" "MBP; ENSG00000197971"
-# [4] "PLP1; ENSG00000123560"
+var_height <- 24 # 24/3=8
+var_width <- 36 # 36/4=9
+var_point_size <- 3.5
 
 # imgData(spe)
 # spi <- getImg(spe[18])
@@ -107,38 +89,46 @@ white_matter_genes
 # plot(imgRaster(spi))
 
 
-## plot 1 gene for 1 sample
+#######################  Inspect WM genes (track) with z-scores  ####################### 
 
-vis_gene(
-    spe = spe,
-    # spe = spe_one,
-    sampleid = unique(spe$sample_id)[1],   # unique(spe$sample_id)[4]
-    geneid = white_matter_genes[1],
-    spatial = TRUE,
-    height = var_height,
-    width = var_width,
-    point_size = var_point_size,
-    return_plots = TRUE,
-    # pdf = here(dir_plots, .y),
-    assayname = "counts"
+lst_WM <- c("GFAP", "AQP4", "MBP", "PLP1")
+
+# Extract Ensembl ID
+lst_WM <- rowData(spe)$gene_search[
+    rowData(spe)$gene_name %in% lst_white_matter_genes
+]
+
+## Our list of white matter genes
+lstID_WM
+# [1] "GFAP; ENSG00000131095" "AQP4; ENSG00000171885" "MBP; ENSG00000197971"
+# [4] "PLP1; ENSG00000123560"
+
+## -----------------------------
+## in-tissue metrics
+
+lst_multi_g <- c(
+  z_score = paste0("multi_genes_Zs_WM_", prefix_name, ".pdf"),
+  pca = paste0("multi_genes_PCA_WM_", prefix_name, ".pdf"),
+  sparsity = paste0("multi_genes_Sp_WM_", prefix_name, ".pdf")
 )
 
-## plot the n=4 genes for 1 sample
+print("Ploting multi-genes for WM gene markers")
 
-pdf_file <- "multi_genes_WM.pdf"
-vis_gene(
-    spe = spe,
-    sampleid = unique(spe$sample_id)[1],
-    geneid = white_matter_genes,
-    multi_gene_method = "z_score",
-    spatial = TRUE,
-    height = var_height,
-    width = var_width,
-    point_size = var_point_size,
-    return_plots = TRUE,
-    pdf = here(dir_plots, pdf_file),
-    assayname = "counts"
-)
+map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
+  spe = spe,
+  geneid = lst_WM,
+  multi_gene_method = .x, # z-score, pca, sparcity
+  height = var_height, 
+  width = var_width,
+  point_size = 3.5,
+  #cont_colors = viridisLite::turbo(21, direction = 1),  
+  cont_colors = viridisLite::viridis(21, direction = 1),
+  #return_plots = TRUE,
+  pdf = here(dir_plots, .y),
+  assayname = "counts"
+))
+
+
 
 
 #######################  Inspect LH genes (track) with z-scores  ####################### 
