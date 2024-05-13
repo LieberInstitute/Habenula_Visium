@@ -239,7 +239,7 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
 
 
 
-#######################  Inspect Lateral Habenula genes marker ####################### 
+#######################  Inspect Lateral Habenula genes marker from top50r ####################### 
 
 ## -----------------------------
 ## ALL 50 genes markers
@@ -309,7 +309,7 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
 ))
 
 
-#######################  Inspect Medial Habenula gene markers ####################### 
+#######################  Inspect Medial Habenula gene markers from top 50r ####################### 
 
 ## -----------------------------
 ## ALL 50 genes markers
@@ -378,113 +378,39 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
 
 
 
-## =============================================================================
+#######################  Inspect `mediodorsal thalamus` genes marker ####################### 
 
+## -----------------------------
+# markers.custom$`mediodorsal thalamus`
 
+suffix_name <- "thalamus.pdf"
 
-
-
-
-
-
-modeling_results <- fetch_data(type = "modeling_results")
-sce_layer <- fetch_data(type = "sce_layer")
-sig_genes <- sig_genes_extract_all(
-    n = 400,
-    modeling_results = modeling_results,
-    sce_layer = sce_layer
-)
-i_gfap <- subset(sig_genes, gene == "GFAP" &
-    test == "WM")$top
-i_gfap
-set.seed(20200206)
-layer_boxplot(
-    i = i_gfap,
-    sig_genes = sig_genes,
-    sce_layer = sce_layer
-)
-
-
-
-## =============================================================================
-
-
-
-## Test white matter (WM) genes
-
-# Define some genes known to be markers for white matter (Tran, Maynard, Spangler, Huuki, Montgomery, Sadashivaiah, Tippani, Barry, Hancock, Hicks, Kleinman, Hyde, Collado-Torres, Jaffe, and Martinowich, 2021). Across five human brain reward circuitry: nucleus accumbens, amygdala, subgenual anterior cingulate cortex, hippocampus, and dorsolateral prefrontal cortex
-
-white_matter_genes <- c("GFAP", "AQP4", "MBP", "PLP1")
-white_matter_genes <- rowData(spe)$gene_search[
-    rowData(spe)$gene_name %in% white_matter_genes
+# Extract Ensembl ID
+lst_thalamus <- rowData(spe)$gene_search[
+  rowData(spe)$gene_name %in% markers.custom$`mediodorsal thalamus`
 ]
 
-## Our list of white matter genes
-white_matter_genes
-
-## WM: Astrocytes and Oligodendrocytes
-
-WM_astro <- c(
-    "ENSG00000142611", "ENSG0 0000177133", # PRDM16
-    "ENSG00000234377", # OBI1-AS1
-    "ENSG00000147509", # RGS20
-    "ENSG00000138696", # BMPR1B
-    "ENSG00000182902", # SLC25A18
-    "ENSG00000164199", # ADGRV1
-    "ENSG00000068078", # FGFR3
-    "ENSG00000149090", # PAMR1
-    "ENSG00000197360", # ZNF98
-    "ENSG00000135063"
-) # ENTREP1
-
-WM_Oligo <- c(
-    "ENSG00000086205", # FOLH1
-    "ENSG00000012124", # CD22
-    "ENSG00000253877", # LINC01608
-    "ENSG00000158865", # SLC5A11
-    "ENSG00000105695", # MAG
-    # AC012494.1,
-    "ENSG00000124920", # MYRF
-    "ENSG00000011426", # ANLN
-    "ENSG00000204655", # MOG
-    "ENSG00000122367"
-) # LDB3
-
-
-WM_genes <- c(WM_astro, WM_Oligo)
-
-# genes = rownames(spe)
-# rowData(spe)$gene_search[1:10]
-
-print("Ploting WM pattern in-tissues plot")
-sampleID <- unique(spe$sample_id)[3]
-# # Subset a specific
-# spe_one <- spe[,spe$sample_id == sampleID]
-# unique(spe_one$sample_id)
-
-p1 <- vis_gene(
-    spe = spe,
-    # spe = spe_one,
-    sampleid = unique(spe$sample_id)[3],
-    geneid = WM_astro, #' MBP',
-    spatial = TRUE,
-    height = var_height, # 8
-    width = var_width, # 9
-    point_size = var_point_size,
-    return_plots = TRUE,
-    # pdf = here(dir_plots, .y),
-    assayname = "counts"
+lst_multi_g <- c(
+  z_score = paste0("multi_genes_Zs_", suffix_name),
+  pca = paste0("multi_genes_PCA_", suffix_name),
+  sparsity = paste0("multi_genes_Sp_", suffix_name)
 )
-p1
 
-lobstr::obj_size(spe)
+print("Ploting multi-gene model for thalamus gene markers")
 
-# ## Save object with metrics_qc()
-# saveRDS(spe, file.path(dir_rdata, "spe_qc.rds"))
-
-
-## Save object with metrics_qc()
-# saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge_HighM.rds"))
+map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
+  spe = spe,
+  geneid = lst_thalamus,
+  multi_gene_method = .x, 
+  height = var_height, 
+  width = var_width,
+  point_size = var_point_size,
+  #cont_colors = viridisLite::turbo(21, direction = 1),  
+  cont_colors = viridisLite::viridis(21, direction = 1),
+  #return_plots = TRUE,
+  pdf = here(dir_plots, .y),
+  assayname = "counts"
+))
 
 
 # ==============================================================================
