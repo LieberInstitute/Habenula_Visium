@@ -131,7 +131,7 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
 
 
 
-#######################  Inspect LH genes (track) ####################### 
+#######################  Inspect Lateral Habenula genes markers ####################### 
 
 ## -----------------------------
 ## ALL 50 genes markers
@@ -189,6 +189,74 @@ print("Ploting multi-gene model for the top 25 Lateral Habenula gene markers")
 map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
   spe = spe,
   geneid = lst_LH,
+  multi_gene_method = .x, 
+  height = var_height, 
+  width = var_width,
+  point_size = var_point_size,
+  #cont_colors = viridisLite::turbo(21, direction = 1),  
+  cont_colors = viridisLite::viridis(21, direction = 1),
+  #return_plots = TRUE,
+  pdf = here(dir_plots, .y),
+  assayname = "counts"
+))
+
+
+#######################  Inspect Medial Habenula gene markers ####################### 
+
+## -----------------------------
+## ALL 50 genes markers
+#markers.custom$MHb_putative 
+
+suffix_name <- "MH_ALL.pdf"
+
+# Extract Ensembl ID
+lst_MH <- rowData(spe)$gene_search[
+  rowData(spe)$gene_name %in% markers.custom$MHb_putative
+]
+
+lst_multi_g <- c(
+  z_score = paste0("multi_genes_Zs_", suffix_name),
+  pca = paste0("multi_genes_PCA_", suffix_name),
+  sparsity = paste0("multi_genes_Sp_", suffix_name)
+)
+
+print("Ploting multi-gene model for ALL Medial Habenula gene markers")
+
+map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
+  spe = spe,
+  geneid = lst_MH,
+  multi_gene_method = .x, 
+  height = var_height, 
+  width = var_width,
+  point_size = var_point_size,
+  #cont_colors = viridisLite::turbo(21, direction = 1),  
+  cont_colors = viridisLite::viridis(21, direction = 1),
+  #return_plots = TRUE,
+  pdf = here(dir_plots, .y),
+  assayname = "counts"
+))
+
+## -----------------------------
+## Top 25 genes markers
+
+suffix_name <- "MH_Top25.pdf"
+
+# Extract Ensembl ID
+lst_MH <- rowData(spe)$gene_search[
+  rowData(spe)$gene_name %in% markers.custom$MHb_putative[1:25]
+]
+
+lst_multi_g <- c(
+  z_score = paste0("multi_genes_Zs_", suffix_name),
+  pca = paste0("multi_genes_PCA_", suffix_name),
+  sparsity = paste0("multi_genes_Sp_", suffix_name)
+)
+
+print("Ploting multi-gene model for the top 25 Medial Habenula gene markers")
+
+map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
+  spe = spe,
+  geneid = lst_MH,
   multi_gene_method = .x, 
   height = var_height, 
   width = var_width,
