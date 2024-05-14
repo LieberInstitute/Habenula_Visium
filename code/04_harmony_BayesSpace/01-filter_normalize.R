@@ -159,20 +159,21 @@ Sys.time()
 
 print("Quick cluster table:")
 table(spe$scran_quick_cluster)
-#  1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 308  427  307  427  308  130  559  174  236  255  118  220  135  191  720  372 
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 337  342  320  275  497  317  423  160  150  206  380  126  191  720  372  193 
 # 17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32 
-# 193 1157  815  367  242  312  182  876 1187  343  386  750  280 1011  788  488 
+# 1157  815  367  508  909  600  151  187  743  680  139  901  612  193  663  488 
 # 33   34   35   36   37 
-# 261  950  475  143  804 
+# 261  950  475  143  804  
 
 message(Sys.time(), " - Running checking sizeFactors()")
 summary(sizeFactors(spe))
 # Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
-# 0.000083  0.179578  0.612649  1.000000  1.394761 14.853742 
+# 0.000042  0.180453  0.619294  1.000000  1.400150 14.932511 
 
 message(Sys.time(), " - Running logNormCounts()")
 spe <- logNormCounts(spe)
+# assays(2): counts logcounts
 
 # #   Save a copy of the SPE with HDF5-backed assays, which will be important to
 # #   control memory consumption later
@@ -181,6 +182,10 @@ spe <- logNormCounts(spe)
 #     spe, dir = paste0(filtered_hdf5_dir, '_temp'), replace = TRUE
 # )
 # gc()
+
+## Save new spe object with spots manually annotated drop
+saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
+
 
 ################################################################################
 #   Compute PCA
