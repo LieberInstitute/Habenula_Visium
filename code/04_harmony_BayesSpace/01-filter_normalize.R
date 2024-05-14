@@ -1,7 +1,7 @@
 library("spatialLIBD")
 library("here")
 library("tidyverse")
-#library("scran")
+library("scran")
 library("BiocParallel")
 library("scater")
 library("scry")
@@ -40,7 +40,7 @@ print(paste0(' Spots in tissue: ', in_tissue_spots))
 #  Re-upload the spots manually annotated to resume the work as noted here https://github.com/LieberInstitute/spatialLIBD/blob/77a5303f91edb7b9ffb1ce00b4193dae5d16a8a1/R/app_server.R#L1118-L1152)
 
 spatialLIBD_ann_file <- here("processed-data", "03_spatialLIBD_app", 
-                             "spatialLIBD_ManualAnnotation_All_roll_tissues_edge_2024-05-08_18.csv")
+                             "spatialLIBD_ManualAnnotation_tissue_roll_low_lib_2024_05_14.csv")
 
 # rv <- reactiveValues(ManualAnnotation = rep("NA", ncol(spe)), ContCount = data.frame(key = spe$key, COUNT = NA))
 rv <- list(ManualAnnotation = rep("NA", ncol(spe)), key = spe$key)
@@ -99,40 +99,34 @@ m
 # [49] 11387 11637 11682 11686 11700 11795 11819 12108 12818 12928 13066 13491
 # [61] 13493 13702 13763
 
-# set and trasnfer the label
-rv$ManualAnnotation[m[!is.na(m)]] <- previous_work$ManualAnnotation[!is.na(m)]
+# set and transfer the label
+#rv$ManualAnnotation[m[!is.na(m)]] <- previous_work$ManualAnnotation[!is.na(m)]
 spe$ManualAnnotation[m[!is.na(m)]] <- previous_work$ManualAnnotation[!is.na(m)]
 spe$key[m[!is.na(m)]] 
 # [1] "AACGAAAGTCGTCCCA-1_V13B23-285_B1" "AACGTTATCAGCACCT-1_V13B23-285_B1"
 # [3] "ACATAAGTCGTGGTGA-1_V13B23-285_B1" "ACCATCCGCCAACTAG-1_V13B23-285_B1"
 # [5] "ACTCGATGTATTTCAT-1_V13B23-285_B1" "ACTGCTCGGAAGGATG-1_V13B23-285_B1"
 
-unique(rv$ManualAnnotation)
+#unique(rv$ManualAnnotation)
 unique(spe$ManualAnnotation)
-# [1] "NA"                   "Tissue_rolls_low_lib"
-# manual_ann <- cluster_export(spe, "ManualAnnotation")  Note.Other alternative
-
-# length(rv[rv$ManualAnnotation == 'Tissue_rolls_low_lib'])
-# length(spe@colData@rownames[c(m)])
-# key_bc <- rv$key[m[63]] #TTGTGAGGCATGACGC-1_V13B23-285_C1
-# sample_id <-gsub("^[^.V]*", "", key_bc) #V13B23-285_C1
-# key_id <- unlist(strsplit(key_bc, split = "_"))[[1]]
-
+# [1] "NA"                   "low_lib_in_tissue"    "Tissue_rolls_low_lib"
+# manual_ann <- cluster_export(spe, "ManualAnnotation")  #Note.Other alternative
 
 ## Additional QC. Drop spots with manual annotations 
 
 #spe$key[m[63]] # TTGTGAGGCATGACGC-1_V13B23-285_C1
 colnames(colData(spe))
 spe <- spe[, !spe$ManualAnnotation == "Tissue_rolls_low_lib"]
+spe <- spe[, !spe$ManualAnnotation == "low_lib_in_tissue"]
 unique(spe$ManualAnnotation)
 cat(
   "Number of spots after removed low library size spots on the tissue edge:",
   dim(spe)[2],
   "\n"
 )
-
+  
 ## Save new spe object with spots manually annotated drop
-saveRDS(sub, file.path(dir_rdata, "spe_qc_low_spatialLIBD.rds"))
+saveRDS(spe, file.path(dir_rdata, "spe_qc_low_spatialLIBD.rds"))
 
 
 
@@ -387,6 +381,7 @@ spe <- runPCA(
 ################################################################################
 #   Obtain preliminary clusters based on default GLM-PCA and PCA settings
 ################################################################################
+
 spe$leiden20_PCA <- clusterCells(spe,
     use.dimred = "PCA",
     BLUSPARAM = SNNGraphParam(
