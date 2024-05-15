@@ -61,12 +61,12 @@ prefix_name <- 'ALL'
 
 ## Set directory for data and plots
 
-dir_plots <- here("plots", "04_harmony_BayesSpace")
+dir_plots <- here("plots", "", "04_harmony_BayesSpace")
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 
 
 ## set path to read RDS object
-spe_in_path <- here("processed-data", "04_harmony_BayesSpace", "spe_qc_low_spatialLIBD.rds")
+spe_in_path <- here("processed-data", "04_harmony_BayesSpace", "spe_qc_filtered_logcounts.rds") #spe_qc_low_spatialLIBD.rds
 
 
 ## load Datasets

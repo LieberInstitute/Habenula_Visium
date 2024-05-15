@@ -89,7 +89,12 @@ set.seed(20240229)
 
 ## Load the data
 # spe <- loadHDF5SummarizedExperiment(filtered_hdf5_dir)
-spe <- readRDS(file.path(dir_rdata, "spe_filtered.rds"))
+
+## set path to read filtered RDS object (CSC)
+# spe_in_path <- here("processed-data", "04_harmony_BayesSpace", "spe_qc_low_spatialLIBD.rds")
+# spe <- readRDS(spe_in_path)
+
+spe <- readRDS(file.path(dir_rdata, "spe_filtered.rds")) # replace with the n=5 rds
 
 ## Plot initial low-dimensional representations prior to batch correction
 plotReducedDim(spe,

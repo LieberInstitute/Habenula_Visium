@@ -187,6 +187,10 @@ spe <- logNormCounts(spe)
 saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 
 
+
+######### Move since here the code to other script: CSC
+
+
 ################################################################################
 #   Compute PCA
 ################################################################################
