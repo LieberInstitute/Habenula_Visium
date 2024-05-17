@@ -14,6 +14,45 @@ library("sessioninfo")
 source(here("code/04_harmony_BayesSpace", "func_DGE_marker_gene_lists.R"))       # Call functions to read paths
 
 
+### implementing function to filter the data-driven marker gene list from top50r
+# This is de function to call ... get_Top_DataDriven_markers_genes()
+
+
+s_path_name <- here('data', 'sfigu_top_50_MarkerGenes_Table.xlsx')
+Hb_gene_markers <- as.data.frame(read_excel(s_path_name, na = "---")) #sheet = "data"
+#f <-  c('LHb, MHb') 
+## Note: cellType.target is the column you want to use. That is the "target" cell type that the data corresponds to, 
+## the second cellType is the second highest non-target cell type (so the cell type we are comparing the target cell type to)
+
+top50_LHb_genes_byratio <- Hb_gene_markers %>% 
+  dplyr::arrange(cellType.target) %>% 
+  select(c(cellType.target, rank_ratio, Symbol, log.p.value), 1) %>%   #, starts_with(f)
+  dplyr::filter((cellType.target == 'LHb')) #| (cellType.target == 'MHb') %>%
+#slice_head(n = 50)
+
+top50_MHb_genes_byratio <- Hb_gene_markers %>% 
+  dplyr::arrange(cellType.target) %>% 
+  select(c(cellType.target, rank_ratio, Symbol, log.p.value), 1) %>%
+  dplyr::filter((cellType.target == 'MHb')) #| (cellType.target == 'MHb') %>%
+
+#nrow(top50_LHb_genes_byratio)
+#tail(top50_LHb_genes_byratio, n=5)
+
+if ( (nrow(top50_LHb_genes_byratio) > 0) &  (nrow(top50_MHb_genes_byratio) > 0) ) {
+  markers.custom = list(
+    'LHb_putative' = top50_LHb_genes_byratio$Symbol, # 'GRIN1','MAP2'),
+    'MHb_putative' = top50_MHb_genes_byratio$Symbol # 'SLC17A8'),
+  )
+}
+
+
+
+
+
+
+
+
+
 ############################# Load the marker gene list ################################
 
 # We have access to 3 gene markers lists:
