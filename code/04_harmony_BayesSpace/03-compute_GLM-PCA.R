@@ -10,19 +10,17 @@ library("sessioninfo")
 library("HDF5Array")
 
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
-# raw_in_path <- here("processed-data", "02_build_spe", "spe.rds")
-filtered_in_path <- here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds") # This spe was processed in ~/code/02_build_spe/*
-filtered_ordinary_path <- file.path(dir_rdata, "spe_filtered.rds")
-filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
+filtered_in_path <- file.path(dir_rdata, "spe_qc_filtered_logcounts.rds")
+#filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
-num_red_dims <- 50
 
+num_red_dims <- 50
 num_cores <- 2 # Sys.getenv('SLURM_CPUS_ON_NODE')
 set.seed(20240223)
 
-## Create output directories
-dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
-dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
+# ## Create output directories
+# dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
+# dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 
 ## load a filtered spe object
 spe <- readRDS(filtered_in_path)
