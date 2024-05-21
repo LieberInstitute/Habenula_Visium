@@ -16,6 +16,13 @@ library(readxl)
 here::here()
 
 
+get_Top_DataDriven_markers_genes <- function() {
+  
+  ## Load the Top 50 marker gene for habenula from Human Brain and returns a table
+  
+  
+}
+
 
 get_erik_markers_genes_HPC <- function() {
     
@@ -68,7 +75,7 @@ get_bukola_markers_genes_Hb <- function() {
 
 get_Top50r_markers_genes_Hb <- function() {
     
-    ## Load the Top 50 marker gene for habenula from Human Brain
+    ## Load the Top 50 marker gene for habenula from Human Brain and returns a list with the top50 marker genes
    
     ## read top50 by ratio gene marker list
     s_path_name <- here('data', 'sfigu_top_50_MarkerGenes_Table.xlsx')
