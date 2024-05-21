@@ -63,6 +63,9 @@ mapply(function(block, blockname) {
 dev.off()
 
 message(Sys.time(), " - Running getTopHVGs()")
+# By default getTopHVGs() retains all genes with positive values in the var.field column of stats
+#     - prop define a numeric scalar specifying the proportion of genes to report as HVGs
+#     _ further we subset to genes that have FDR less than or equal to fdr.threshold
 top.hvgs.p1 <- getTopHVGs(dec, prop = 0.1)
 print(paste("Num HVGs for top 10% prop:", length(top.hvgs.p1)))
 top.hvgs.p2 <- getTopHVGs(dec, prop = 0.2)
@@ -88,15 +91,22 @@ save(
 message(Sys.time(), " - Running runPCA()")
 Sys.time()
 
-# lst_top_hvgs <- list(PCA = top.hvgs.fdr5, PCA_p1 = top.hvgs.p1, PCA_p2 = top.hvgs.p2, PCA_p5 = top.hvgs.p5)
+# lst_top_hvgs <- list(PCA_fdr1 = as.character(top.hvgs.fdr1[!is.na(top.hvgs.fdr1)]),
+#                      PCA_fdr5 = as.character(top.hvgs.fdr5[!is.na(top.hvgs.fdr5)]))
+# typeof(top.hvgs.fdr1)
+# anyNA(top.hvgs.fdr1)
+# top.hvgs.fdr1[1][1:4]
+# top.hvgs.fdr1[2][1:4]
+# 
 # for (x in 1:length(lst_top_hvgs)) {
-#   message(' Processing ', names(lst_top_hvgs[x]))
-#   spe <- runPCA(spe,
-#       subset_row = hvgs,
-#       ncomponents = num_red_dims,
-#       name = names(lst_top_hvgs[x])
-#   )
+#   message(' Processing ', names(lst_top_hvgs[x]), lst_top_hvgs[x][1:10])
+#   # spe <- runPCA(spe,
+#   #     subset_row = lst_top_hvgs[x],
+#   #     ncomponents = num_red_dims,
+#   #     name = names(lst_top_hvgs[x])
+#   # )
 # }
+
 
 spe <-
     runPCA(spe,
