@@ -20,30 +20,38 @@ source(here("code/04_harmony_BayesSpace", "func_DGE_marker_gene_lists.R"))      
 
 s_path_name <- here('data', 'sfigu_top_50_MarkerGenes_Table.xlsx')
 Hb_gene_markers <- as.data.frame(read_excel(s_path_name, na = "---")) #sheet = "data"
-#f <-  c('LHb, MHb') 
 ## Note: cellType.target is the column you want to use. That is the "target" cell type that the data corresponds to, 
 ## the second cellType is the second highest non-target cell type (so the cell type we are comparing the target cell type to)
 
-top50_LHb_genes_byratio <- Hb_gene_markers %>% 
-  dplyr::arrange(cellType.target) %>% 
-  select(c(cellType.target, rank_ratio, Symbol, log.p.value), 1) %>%   #, starts_with(f)
-  dplyr::filter((cellType.target == 'LHb')) #| (cellType.target == 'MHb') %>%
-#slice_head(n = 50)
+head(Hb_gene_markers)
+colnames(Hb_gene_markers)
+# [1] "gene"                  "cellType.target"       "mean.target"          
+# [4] "cellType"              "mean"                  "ratio"                
+# [7] "rank_ratio"            "Symbol"                "anno_ratio"           
+# [10] "logFC"                 "log.p.value"           "log.FDR"              
+# [13] "std.logFC"             "std.logFC_rank_marker" "anno_logFC"   
 
-top50_MHb_genes_byratio <- Hb_gene_markers %>% 
-  dplyr::arrange(cellType.target) %>% 
-  select(c(cellType.target, rank_ratio, Symbol, log.p.value), 1) %>%
-  dplyr::filter((cellType.target == 'MHb')) #| (cellType.target == 'MHb') %>%
+# top50_LHb_genes_byratio <- Hb_gene_markers %>% 
+#   dplyr::arrange(cellType.target) %>% 
+#   select(c(cellType.target, rank_ratio, Symbol, log.p.value), 1) %>%   #, starts_with(f)
+#   dplyr::filter((cellType.target == 'LHb')) #| (cellType.target == 'MHb') %>%
+# #slice_head(n = 50)
+# 
+# top50_MHb_genes_byratio <- Hb_gene_markers %>% 
+#   dplyr::arrange(cellType.target) %>% 
+#   select(c(cellType.target, rank_ratio, Symbol, log.p.value), 1) %>%
+#   dplyr::filter((cellType.target == 'MHb')) #| (cellType.target == 'MHb') %>%
+# 
+# #nrow(top50_LHb_genes_byratio)
+# #tail(top50_LHb_genes_byratio, n=5)
+# 
+# if ( (nrow(top50_LHb_genes_byratio) > 0) &  (nrow(top50_MHb_genes_byratio) > 0) ) {
+#   markers.custom = list(
+#     'LHb_putative' = top50_LHb_genes_byratio$Symbol, # 'GRIN1','MAP2'),
+#     'MHb_putative' = top50_MHb_genes_byratio$Symbol # 'SLC17A8'),
+#   )
+# }
 
-#nrow(top50_LHb_genes_byratio)
-#tail(top50_LHb_genes_byratio, n=5)
-
-if ( (nrow(top50_LHb_genes_byratio) > 0) &  (nrow(top50_MHb_genes_byratio) > 0) ) {
-  markers.custom = list(
-    'LHb_putative' = top50_LHb_genes_byratio$Symbol, # 'GRIN1','MAP2'),
-    'MHb_putative' = top50_MHb_genes_byratio$Symbol # 'SLC17A8'),
-  )
-}
 
 
 
@@ -52,8 +60,7 @@ if ( (nrow(top50_LHb_genes_byratio) > 0) &  (nrow(top50_MHb_genes_byratio) > 0) 
 
 
 
-
-############################# Load the marker gene list ################################
+######################## Load the full marker genes lists (Known broad and Data driven for Habenula) ############################
 
 # We have access to 3 gene markers lists:
 
