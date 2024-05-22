@@ -18,8 +18,8 @@ options(repos = BiocManager::repositories())
 here("code", "03_spatialLIBD_app")
 
 ## I added a symbolic link to point the spe.rds object to wrap.
-#spe <- readRDS(here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds"))
-spe <- readRDS("spe_qc_low_lib_edge.rds")
+spe <- readRDS("spe_qc_filtered_logcounts.rds") # spe object QCed and removed low-library spots manually annotated
+
 
 # ## Import BayesSpace clusters
 # spe <- cluster_import(spe,
