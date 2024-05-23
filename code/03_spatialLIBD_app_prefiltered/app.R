@@ -17,7 +17,8 @@ options(repos = BiocManager::repositories())
 here("code", "03_spatialLIBD_app_prefiltered")
 
 ## I added a symbolic link to point the spe.rds object to wrap.
-spe <- readRDS(here('processed-data', '02_build_spe', "spe_raw.rds"))
+#spe <- readRDS(here('processed-data', '02_build_spe', "spe_raw.rds"))
+spe <- readRDS("spe_raw.rds")
 
 ## Quickly explore the data
 vars <- colnames(colData(spe))
