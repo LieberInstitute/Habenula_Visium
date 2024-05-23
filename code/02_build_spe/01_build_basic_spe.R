@@ -43,10 +43,7 @@ donor_info <- data.frame(
     race = c("EA/CAUC", rep("EA/CAUC", 4)),
     pmi = c(31.5, rep(10.5, 4)),
     diagnosis = c("Pilot", rep("Control", 4)),
-    rin = c(7, rep(6.3, 4)) # ,
-    # BCrating = c("Def AD", "Def AD", "Prob AD", "No AP"),
-    # braak = c("B3", "B3", "B3", "B2"),
-    # cerad = c("C3", "C3", "C3", "C0")
+    rin = c(7, rep(6.3, 4)) 
 )
 
 
