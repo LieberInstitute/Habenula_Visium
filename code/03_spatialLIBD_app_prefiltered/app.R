@@ -28,11 +28,11 @@ spatialLIBD::run_app(
     modeling_results = NULL,
     sig_genes = NULL,
     spe_discrete_vars = c(
-        # "ManualAnnotation",
+        "ManualAnnotation",
         "overlaps_tissue",
-        vars[grep("^10x_", vars)],
-        vars[grep("^scran_", vars)],
-        "edge_spots"
+        vars[grep("^10x_", vars)] #,
+        # vars[grep("^scran_", vars)],
+        # "edge_spots"
         # vars[grep("^SNN_k10", vars)],
         # vars[grep("^BayesSpace_harmony_", vars)]
     ),
@@ -40,8 +40,8 @@ spatialLIBD::run_app(
         "sum_umi",
         "sum_gene",
         "expr_chrM",
-        "expr_chrM_ratio",
-        "edge_distance"
+        "expr_chrM_ratio" #,
+        # "edge_distance"
     ),
     default_cluster = "10x_graphclust",
     docs_path = "www"
