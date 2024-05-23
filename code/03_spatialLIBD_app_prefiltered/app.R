@@ -2,8 +2,7 @@ library("spatialLIBD")
 library("markdown")
 library("here")
 
-
-# 2021-11-11T05:30:50.218127+00:00 shinyapps[5096402]: Warning: Error in loadNamespace: there is no package called ‘markdown’
+# CODE TO WRAP THE SPE WITH IN-TISSUE AND OUT-TISSUE SPOTS NONE FILTERED
 
 ## To install new spatialLIBD 1.15.4 (development version):
 ## .    https://bioconductor.org/packages/devel/data/experiment/html/spatialLIBD.html
@@ -18,13 +17,7 @@ options(repos = BiocManager::repositories())
 here("code", "03_spatialLIBD_app_prefiltered")
 
 ## I added a symbolic link to point the spe.rds object to wrap.
-spe <- readRDS("spe_raw.rds")
-
-# ## Import BayesSpace clusters
-# spe <- cluster_import(spe,
-#     cluster_dir = "clusters_BayesSpace",
-#     prefix = ""
-# )
+spe <- readRDS(here('processed-data', '02_build_spe', "spe_raw.rds"))
 
 ## Quickly explore the data
 vars <- colnames(colData(spe))
