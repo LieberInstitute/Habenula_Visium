@@ -11,7 +11,7 @@ library("HDF5Array")
 
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 # raw_in_path <- here("processed-data", "02_build_spe", "spe.rds")
-filtered_in_path <- here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds") 
+filtered_in_path <- here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds")
 #filtered_ordinary_path <- file.path(dir_rdata, "spe_filtered.rds")
 filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
@@ -36,24 +36,10 @@ cat("Number of spots after removed any remaining empty spots and/or genes with z
 
 #  Re-upload the spots manually annotated to resume the work as noted here https://github.com/LieberInstitute/spatialLIBD/blob/77a5303f91edb7b9ffb1ce00b4193dae5d16a8a1/R/app_server.R#L1118-L1152)
 
-spatialLIBD_ann_file <- here("processed-data", "03_spatialLIBD_app", 
+spatialLIBD_ann_file <- here("processed-data", "03_spatialLIBD_app",
                              "spatialLIBD_ManualAnnotation_2024-05-16.csv")
 
-# rv <- reactiveValues(ManualAnnotation = rep("NA", ncol(spe)), ContCount = data.frame(key = spe$key, COUNT = NA))
-rv <- list(ManualAnnotation = rep("NA", ncol(spe)), key = spe$key)
-names(rv)
-head(rv$ManualAnnotation) # NA
-tail(rv$key)
-# key COUNT
-# 16892 TTGTTAGCAAATTCGA-1_V13B23-285_D1    NA
-# 16893 TTGTTCAGTGTGCTAC-1_V13B23-285_D1    NA
-# 16894 TTGTTGTGTGTCAAGA-1_V13B23-285_D1    NA
-
-unique(rv$ManualAnnotation) # NA
-#unique(rv$key) # NA
-length(rv$ManualAnnotation) #  16897
-
-# read the annotation file made with the spatialLIBD shiny app  
+# read the annotation file made with the spatialLIBD shiny app
 previous_work <-
   read.csv(
     spatialLIBD_ann_file,
@@ -74,7 +60,7 @@ previous_work <-
 
 unique(previous_work['sample_id'])
 
-# add a unique keys identificator 
+# add a unique keys identificator
 previous_work$key <-
   paste0(
     previous_work$spot_name,
@@ -96,7 +82,7 @@ m
 # set and transfer the label
 #rv$ManualAnnotation[m[!is.na(m)]] <- previous_work$ManualAnnotation[!is.na(m)]
 spe$ManualAnnotation[m[!is.na(m)]] <- previous_work$ManualAnnotation[!is.na(m)]
-spe$key[m[!is.na(m)]] 
+spe$key[m[!is.na(m)]]
 # [1] "AACGAAAGTCGTCCCA-1_V13B23-285_B1" "AACGTTATCAGCACCT-1_V13B23-285_B1"
 # [3] "ACATAAGTCGTGGTGA-1_V13B23-285_B1" "ACCATCCGCCAACTAG-1_V13B23-285_B1"
 # [5] "ACTCGATGTATTTCAT-1_V13B23-285_B1" "ACTGCTCGGAAGGATG-1_V13B23-285_B1"
@@ -107,7 +93,7 @@ lst_manual_ann <- lst_manual_ann[! lst_manual_ann%in% c('NA')]
 
 # manual_ann <- cluster_export(spe, "ManualAnnotation")  #Note.Other alternative
 
-## Additional QC. Drop spots with manual annotations 
+## Additional QC. Drop spots with manual annotations
 #spe$key[m[63]] # TTGTGAGGCATGACGC-1_V13B23-285_C1
 colnames(colData(spe))
 
@@ -123,7 +109,7 @@ for (ann in lst_manual_ann) {
 
 unique(spe$ManualAnnotation)
 cat("Number of spots after removed low library size spots on the tissue edge:", dim(spe)[2],"\n")
-  
+
 ## Double check any remaining empty spots and/or genes with zero counts
 spe <- spe[
   rowSums(assays(spe)$counts) > 0,
@@ -165,17 +151,17 @@ Sys.time()
 
 print("Quick cluster table:")
 table(spe$scran_quick_cluster)
-# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 337  342  320  275  497  317  423  160  150  206  380  126  191  720  372  193 
-# 17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32 
-# 1157  815  367  508  909  600  151  187  743  680  139  901  612  193  663  488 
-# 33   34   35   36   37 
-# 261  950  475  143  804  
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16
+# 337  342  320  275  497  317  423  160  150  206  380  126  191  720  372  193
+# 17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32
+# 1157  815  367  508  909  600  151  187  743  680  139  901  612  193  663  488
+# 33   34   35   36   37
+# 261  950  475  143  804
 
 message(Sys.time(), " - Running checking sizeFactors()")
 summary(sizeFactors(spe))
-# Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
-# 0.000042  0.180453  0.619294  1.000000  1.400150 14.932511 
+# Min.   1st Qu.    Median      Mean   3rd Qu.      Max.
+# 0.000042  0.180453  0.619294  1.000000  1.400150 14.932511
 
 message(Sys.time(), " - Running logNormCounts()")
 spe <- logNormCounts(spe)
@@ -200,7 +186,7 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 # ################################################################################
 # #   Compute PCA
 # ################################################################################
-# 
+#
 # message(Sys.time(), " - Running modelGeneVar()")
 # ## From
 # ## http://bioconductor.org/packages/release/bioc/vignettes/scran/inst/doc/scran.html#4_variance_modelling
@@ -208,10 +194,10 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 #     block = spe$sample_id,
 #     BPPARAM = MulticoreParam(num_cores)
 # )
-# 
+#
 # #plot(dec$mean, dec$total, xlab="Mean log-expression", ylab="Variance")
 # #curve(metadata(dec)$trend(x), col="blue", add=TRUE)
-# 
+#
 # pdf(file.path(dir_plots, "scran_modelGeneVar.pdf"), useDingbats = FALSE)
 # mapply(function(block, blockname) {
 #     plot(
@@ -228,7 +214,7 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 #     )
 # }, dec$per.block, names(dec$per.block))
 # dev.off()
-# 
+#
 # message(Sys.time(), " - Running getTopHVGs()")
 # top.hvgs.p1 <- getTopHVGs(dec, prop = 0.1)
 # print(paste("Num HVGs for top 10% prop:", length(top.hvgs.p1)))
@@ -236,13 +222,13 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 # print(paste("Num HVGs for top 20% prop:", length(top.hvgs.p2)))
 # top.hvgs.p5 <- getTopHVGs(dec, prop = 0.5)
 # print(paste("Num HVGs for top 50% prop:", length(top.hvgs.p5)))
-# 
+#
 # top.hvgs.fdr5 <- getTopHVGs(dec, fdr.threshold = 0.05)
 # print(paste("Num HVGs at FDR = 0.05:", length(top.hvgs.fdr5)))
-# 
+#
 # top.hvgs.fdr1 <- getTopHVGs(dec, fdr.threshold = 0.01)
 # print(paste("Num HVGs at FDR = 0.01:", length(top.hvgs.fdr1)))
-# 
+#
 # save(
 #     top.hvgs.p1,
 #     top.hvgs.p2,
@@ -251,10 +237,10 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 #     top.hvgs.fdr1,
 #     file = file.path(dir_rdata, "top.hvgs.Rdata")
 # )
-# 
+#
 # message(Sys.time(), " - Running runPCA()")
 # Sys.time()
-# 
+#
 # # lst_top_hvgs <- list(PCA = top.hvgs.fdr5, PCA_p1 = top.hvgs.p1, PCA_p2 = top.hvgs.p2, PCA_p5 = top.hvgs.p5)
 # # for (x in 1:length(lst_top_hvgs)) {
 # #   message(' Processing ', names(lst_top_hvgs[x]))
@@ -264,7 +250,7 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 # #       name = names(lst_top_hvgs[x])
 # #   )
 # # }
-# 
+#
 # spe <-
 #     runPCA(spe,
 #         subset_row = top.hvgs.fdr5,
@@ -290,9 +276,9 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 #         name = "PCA_p5"
 #     )
 # Sys.time()
-# 
+#
 # #   Plot variance explained
-# 
+#
 # # lst_PCA_elbow <- list(PCA_p1 = 'pca_elbow_p1.pdf', PCA_p2 = 'pca_elbow_p2.pdf', PCA_p5 = 'pca_elbow_p5.pdf')
 # # plt_elbow <- function(dim_n, plt_name) {
 # #   percent.var <- attr(reducedDim(spe, dim_n), "percentVar")
@@ -300,9 +286,9 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 # #   plot(percent.var, xlab = gsub("^PCA_", "PC_", dim_n), ylab = "Variance explained (%)")
 # #   dev.off()
 # # }
-# # 
+# #
 # # map2(names(lst_PCA_elbow), lst_PCA_elbow, ~ plt_elbow(.x, .y))
-# 
+#
 # percent.var <- attr(reducedDim(spe, "PCA_p1"), "percentVar")
 # pdf(file.path(dir_plots, "pca_elbow_p1.pdf"), useDingbats = FALSE)
 # plot(percent.var, xlab = "PC_p1", ylab = "Variance explained (%)")
@@ -317,12 +303,12 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 # pdf(file.path(dir_plots, "pca_elbow_p5.pdf"), useDingbats = FALSE)
 # plot(percent.var, xlab = "PC_p5", ylab = "Variance explained (%)")
 # dev.off()
-# 
-# 
+#
+#
 # ################################################################################
 # #   Compute GLM-PCA
 # ################################################################################
-# 
+#
 # message(Sys.time(), " - Running devianceFeatureSelection()")
 # spe <- devianceFeatureSelection(
 #     spe,
@@ -331,7 +317,7 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 #     sorted = FALSE,
 #     batch = as.factor(spe$sample_id)
 # )
-# 
+#
 # pdf(file.path(dir_plots, "binomial_deviance.pdf"))
 # plot(
 #     sort(rowData(spe)$binomial_deviance, decreasing = T),
@@ -342,7 +328,7 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 # )
 # abline(v = 2000, lty = 2, col = "red")
 # dev.off()
-# 
+#
 # message(Sys.time(), " - Running nullResiduals()")
 # spe <- nullResiduals( # default params
 #     spe,
@@ -350,21 +336,21 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 #     fam = "binomial",
 #     type = "deviance"
 # )
-# 
-# 
+#
+#
 # hdgs.hb.2000 <-
 #     rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:2000]
 # hdgs.hb.5000 <-
 #     rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:5000]
 # hdgs.hb.10000 <-
 #     rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:10000]
-# 
+#
 # save(hdgs.hb.2000,
 #     hdgs.hb.5000,
 #     hdgs.hb.10000,
 #     file = file.path(dir_rdata, "hdgs.hb_2.Rdata")
 # )
-# 
+#
 # message(Sys.time(), " - Running GLM-PCA")
 # spe <- runPCA(
 #     spe,
@@ -374,7 +360,7 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 #     name = "GLMPCA_approx",
 #     BSPARAM = BiocSingular::IrlbaParam()
 # )
-# 
+#
 # spe <- runPCA(
 #     spe,
 #     exprs_values = "binomial_deviance_residuals",
@@ -383,7 +369,7 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 #     name = "GLMPCA_approx_5000",
 #     BSPARAM = BiocSingular::IrlbaParam()
 # )
-# 
+#
 # spe <- runPCA(
 #     spe,
 #     exprs_values = "binomial_deviance_residuals",
@@ -392,11 +378,11 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 #     name = "GLMPCA_approx_10000",
 #     BSPARAM = BiocSingular::IrlbaParam()
 # )
-# 
+#
 # ################################################################################
 # #   Obtain preliminary clusters based on default GLM-PCA and PCA settings
 # ################################################################################
-# 
+#
 # spe$leiden20_PCA <- clusterCells(spe,
 #     use.dimred = "PCA",
 #     BLUSPARAM = SNNGraphParam(
@@ -404,7 +390,7 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 #         cluster.fun = "leiden"
 #     )
 # )
-# 
+#
 # spe$leiden20_GLMPCA <- clusterCells(spe,
 #     use.dimred = "GLMPCA_approx",
 #     BLUSPARAM = SNNGraphParam(
@@ -412,18 +398,18 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
 #         cluster.fun = "leiden"
 #     )
 # )
-# 
-# 
+#
+#
 # ################################################################################
 # #   Save the processed SPE object
 # ################################################################################
-# 
+#
 # # message(Sys.time(), " - Saving HDF5-backed filtered spe")
 # # spe = saveHDF5SummarizedExperiment(
 # #     spe, dir = filtered_hdf5_dir, replace = TRUE
 # # )
 # # spe = realize(spe)
-# 
+#
 # message(Sys.time(), " - Saving ordinary filtered spe")
 # saveRDS(spe, filtered_ordinary_path)
 
