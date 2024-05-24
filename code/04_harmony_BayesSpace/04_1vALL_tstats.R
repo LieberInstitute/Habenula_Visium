@@ -62,20 +62,20 @@ proc.time()
 options(width = 120)
 session_info()
 
-─ Session info ───────────────────────────────────────────────────────────────────────────────────────────────────────
- setting  value
- version  R version 4.3.2 (2023-10-31)
- os       macOS Sonoma 14.3.1
- system   aarch64, darwin20
- ui       RStudio
- language (EN)
- collate  en_US.UTF-8
- ctype    en_US.UTF-8
- tz       America/New_York
- date     2024-03-05
- rstudio  2023.12.1+402 Ocean Storm (desktop)
- pandoc   3.1.12.1 @ /opt/homebrew/bin/pandoc
-
+# ─ Session info ───────────────────────────────────────────────────────────────────────────────────────────────────────
+#  setting  value
+#  version  R version 4.3.2 (2023-10-31)
+#  os       macOS Sonoma 14.3.1
+#  system   aarch64, darwin20
+#  ui       RStudio
+#  language (EN)
+#  collate  en_US.UTF-8
+#  ctype    en_US.UTF-8
+#  tz       America/New_York
+#  date     2024-03-05
+#  rstudio  2023.12.1+402 Ocean Storm (desktop)
+#  pandoc   3.1.12.1 @ /opt/homebrew/bin/pandoc
+#
 # ─ Packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 #  package                * version     date (UTC) lib source
 #  abind                    1.4-5       2016-07-21 [1] CRAN (R 4.3.0)
