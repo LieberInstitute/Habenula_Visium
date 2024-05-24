@@ -142,7 +142,7 @@ Sys.time()
 message(Sys.time(), " - Running computeSumFactors()")
 Sys.time()
 spe <- computeSumFactors(spe,
-    # clusters = spe$scran_quick_cluster,
+    clusters = spe$scran_quick_cluster,
     BPPARAM = MulticoreParam(num_cores)
 )
 Sys.time()
