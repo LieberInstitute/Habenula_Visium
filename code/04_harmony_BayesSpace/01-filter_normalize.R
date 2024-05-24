@@ -12,7 +12,7 @@ library("HDF5Array")
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 # raw_in_path <- here("processed-data", "02_build_spe", "spe.rds")
 filtered_in_path <- here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds")
-#filtered_ordinary_path <- file.path(dir_rdata, "spe_filtered.rds")
+# filtered_ordinary_path <- file.path(dir_rdata, "spe_filtered.rds")
 filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
 
@@ -26,7 +26,7 @@ dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 ## load a filtered spe object
 spe <- readRDS(filtered_in_path)
 
-cat("Number of spots after removed any remaining empty spots and/or genes with zero counts:", dim(spe)[2],"\n")
+cat("Number of spots after removed any remaining empty spots and/or genes with zero counts:", dim(spe)[2], "\n")
 
 
 
@@ -36,19 +36,21 @@ cat("Number of spots after removed any remaining empty spots and/or genes with z
 
 #  Re-upload the spots manually annotated to resume the work as noted here https://github.com/LieberInstitute/spatialLIBD/blob/77a5303f91edb7b9ffb1ce00b4193dae5d16a8a1/R/app_server.R#L1118-L1152)
 
-spatialLIBD_ann_file <- here("processed-data", "03_spatialLIBD_app",
-                             "spatialLIBD_ManualAnnotation_2024-05-16.csv")
+spatialLIBD_ann_file <- here(
+    "processed-data", "03_spatialLIBD_app",
+    "spatialLIBD_ManualAnnotation_2024-05-16.csv"
+)
 
 # read the annotation file made with the spatialLIBD shiny app
 previous_work <-
-  read.csv(
-    spatialLIBD_ann_file,
-    header = TRUE,
-    stringsAsFactors = FALSE,
-    na.strings = ""
-  )
+    read.csv(
+        spatialLIBD_ann_file,
+        header = TRUE,
+        stringsAsFactors = FALSE,
+        na.strings = ""
+    )
 
-head(previous_work) #list
+head(previous_work) # list
 # sample_id          spot_name     ManualAnnotation
 # 1  V13B23-285_B1 AACGAAAGTCGTCCCA-1 Tissue_rolls_low_lib
 # 2  V13B23-285_B1 AACGTTATCAGCACCT-1 Tissue_rolls_low_lib
@@ -56,18 +58,18 @@ head(previous_work) #list
 
 ## Update the non-NA
 previous_work <-
-  subset(previous_work, ManualAnnotation != "NA")
+    subset(previous_work, ManualAnnotation != "NA")
 
-unique(previous_work['sample_id'])
+unique(previous_work["sample_id"])
 
 # add a unique keys identificator
 previous_work$key <-
-  paste0(
-    previous_work$spot_name,
-    "_",
-    previous_work$sample_id
-  )
-previous_work['key']
+    paste0(
+        previous_work$spot_name,
+        "_",
+        previous_work$sample_id
+    )
+previous_work["key"]
 # 1  AACGAAAGTCGTCCCA-1_V13B23-285_B1
 # 2  AACGTTATCAGCACCT-1_V13B23-285_B1
 # 3  ACATAAGTCGTGGTGA-1_V13B23-285_B1
@@ -80,27 +82,27 @@ m
 # ...
 
 # set and transfer the label
-#rv$ManualAnnotation[m[!is.na(m)]] <- previous_work$ManualAnnotation[!is.na(m)]
+# rv$ManualAnnotation[m[!is.na(m)]] <- previous_work$ManualAnnotation[!is.na(m)]
 spe$ManualAnnotation[m[!is.na(m)]] <- previous_work$ManualAnnotation[!is.na(m)]
 spe$key[m[!is.na(m)]]
 # [1] "AACGAAAGTCGTCCCA-1_V13B23-285_B1" "AACGTTATCAGCACCT-1_V13B23-285_B1"
 # [3] "ACATAAGTCGTGGTGA-1_V13B23-285_B1" "ACCATCCGCCAACTAG-1_V13B23-285_B1"
 # [5] "ACTCGATGTATTTCAT-1_V13B23-285_B1" "ACTGCTCGGAAGGATG-1_V13B23-285_B1"
 
-#unique(rv$ManualAnnotation)
+# unique(rv$ManualAnnotation)
 lst_manual_ann <- as.list(unique(spe$ManualAnnotation))
-lst_manual_ann <- lst_manual_ann[! lst_manual_ann%in% c('NA')]
+lst_manual_ann <- lst_manual_ann[!lst_manual_ann %in% c("NA")]
 
 # manual_ann <- cluster_export(spe, "ManualAnnotation")  #Note.Other alternative
 
 ## Additional QC. Drop spots with manual annotations
-#spe$key[m[63]] # TTGTGAGGCATGACGC-1_V13B23-285_C1
+# spe$key[m[63]] # TTGTGAGGCATGACGC-1_V13B23-285_C1
 colnames(colData(spe))
 
 
 for (ann in lst_manual_ann) {
-  print(paste0("Removing spots for `", ann, "` manual annotation"))
-  spe <- spe[, !spe$ManualAnnotation == ann]
+    print(paste0("Removing spots for `", ann, "` manual annotation"))
+    spe <- spe[, !spe$ManualAnnotation == ann]
 }
 # [1] "Removing spots for `low_lib_manual` manual annotation"
 # [1] "Removing spots for `high_umi_manual` manual annotation"
@@ -108,14 +110,14 @@ for (ann in lst_manual_ann) {
 # [1] "Removing spots for `high_MTr` manual annotation"
 
 unique(spe$ManualAnnotation)
-cat("Number of spots after removed low library size spots on the tissue edge:", dim(spe)[2],"\n")
+cat("Number of spots after removed low library size spots on the tissue edge:", dim(spe)[2], "\n")
 
 ## Double check any remaining empty spots and/or genes with zero counts
 spe <- spe[
-  rowSums(assays(spe)$counts) > 0,
-  (colSums(assays(spe)$counts) > 0) & spe$in_tissue
+    rowSums(assays(spe)$counts) > 0,
+    (colSums(assays(spe)$counts) > 0) & spe$in_tissue
 ]
-cat("Number of spots after removed any remaining empty spots and/or genes with zero counts:", dim(spe)[2],"\n")
+cat("Number of spots after removed any remaining empty spots and/or genes with zero counts:", dim(spe)[2], "\n")
 
 ## Save new spe object with spots manually annotated drop
 saveRDS(spe, file.path(dir_rdata, "spe_qc_low_spatialLIBD.rds"))
@@ -170,8 +172,9 @@ spe <- logNormCounts(spe)
 # #   Save a copy of the SPE with HDF5-backed assays, which will be important to
 # #   control memory consumption later
 message(Sys.time(), " - Saving HDF5-backed object to control memory later")
-spe = saveHDF5SummarizedExperiment(
-    spe, dir = paste0(filtered_hdf5_dir, '_temp'), replace = TRUE
+spe <- saveHDF5SummarizedExperiment(
+    spe,
+    dir = paste0(filtered_hdf5_dir, "_temp"), replace = TRUE
 )
 gc()
 

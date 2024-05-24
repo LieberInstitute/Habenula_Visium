@@ -17,7 +17,7 @@ options(repos = BiocManager::repositories())
 here("code", "03_spatialLIBD_app_prefiltered")
 
 ## I added a symbolic link to point the spe.rds object to wrap.
-#spe <- readRDS(here('processed-data', '02_build_spe', "spe_raw.rds"))
+# spe <- readRDS(here('processed-data', '02_build_spe', "spe_raw.rds"))
 spe <- readRDS("spe_raw.rds")
 
 ## Quickly explore the data
@@ -31,7 +31,7 @@ spatialLIBD::run_app(
     spe_discrete_vars = c(
         "ManualAnnotation",
         "overlaps_tissue",
-        vars[grep("^10x_", vars)] #,
+        vars[grep("^10x_", vars)] # ,
         # vars[grep("^scran_", vars)],
         # "edge_spots"
         # vars[grep("^SNN_k10", vars)],
@@ -41,7 +41,7 @@ spatialLIBD::run_app(
         "sum_umi",
         "sum_gene",
         "expr_chrM",
-        "expr_chrM_ratio" #,
+        "expr_chrM_ratio" # ,
         # "edge_distance"
     ),
     default_cluster = "10x_graphclust",

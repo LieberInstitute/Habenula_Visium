@@ -8,43 +8,43 @@ library("lobstr")
 library("sessioninfo")
 
 
-#library(dplyr)
+# library(dplyr)
 
 
-source(here("code/04_harmony_BayesSpace", "func_DGE_marker_gene_lists.R"))       # Call functions to read paths
+source(here("code/04_harmony_BayesSpace", "func_DGE_marker_gene_lists.R")) # Call functions to read paths
 
 
 ### implementing function to filter the data-driven marker gene list from top50r
 # This is de function to call ... get_Top_DataDriven_markers_genes()
 
 
-s_path_name <- here('data', 'sfigu_top_50_MarkerGenes_Table.xlsx')
-Hb_gene_markers <- as.data.frame(read_excel(s_path_name, na = "---")) #sheet = "data"
-## Note: cellType.target is the column you want to use. That is the "target" cell type that the data corresponds to, 
+s_path_name <- here("data", "sfigu_top_50_MarkerGenes_Table.xlsx")
+Hb_gene_markers <- as.data.frame(read_excel(s_path_name, na = "---")) # sheet = "data"
+## Note: cellType.target is the column you want to use. That is the "target" cell type that the data corresponds to,
 ## the second cellType is the second highest non-target cell type (so the cell type we are comparing the target cell type to)
 
 head(Hb_gene_markers)
 colnames(Hb_gene_markers)
-# [1] "gene"                  "cellType.target"       "mean.target"          
-# [4] "cellType"              "mean"                  "ratio"                
-# [7] "rank_ratio"            "Symbol"                "anno_ratio"           
-# [10] "logFC"                 "log.p.value"           "log.FDR"              
-# [13] "std.logFC"             "std.logFC_rank_marker" "anno_logFC"   
+# [1] "gene"                  "cellType.target"       "mean.target"
+# [4] "cellType"              "mean"                  "ratio"
+# [7] "rank_ratio"            "Symbol"                "anno_ratio"
+# [10] "logFC"                 "log.p.value"           "log.FDR"
+# [13] "std.logFC"             "std.logFC_rank_marker" "anno_logFC"
 
-# top50_LHb_genes_byratio <- Hb_gene_markers %>% 
-#   dplyr::arrange(cellType.target) %>% 
+# top50_LHb_genes_byratio <- Hb_gene_markers %>%
+#   dplyr::arrange(cellType.target) %>%
 #   select(c(cellType.target, rank_ratio, Symbol, log.p.value), 1) %>%   #, starts_with(f)
 #   dplyr::filter((cellType.target == 'LHb')) #| (cellType.target == 'MHb') %>%
 # #slice_head(n = 50)
-# 
-# top50_MHb_genes_byratio <- Hb_gene_markers %>% 
-#   dplyr::arrange(cellType.target) %>% 
+#
+# top50_MHb_genes_byratio <- Hb_gene_markers %>%
+#   dplyr::arrange(cellType.target) %>%
 #   select(c(cellType.target, rank_ratio, Symbol, log.p.value), 1) %>%
 #   dplyr::filter((cellType.target == 'MHb')) #| (cellType.target == 'MHb') %>%
-# 
+#
 # #nrow(top50_LHb_genes_byratio)
 # #tail(top50_LHb_genes_byratio, n=5)
-# 
+#
 # if ( (nrow(top50_LHb_genes_byratio) > 0) &  (nrow(top50_MHb_genes_byratio) > 0) ) {
 #   markers.custom = list(
 #     'LHb_putative' = top50_LHb_genes_byratio$Symbol, # 'GRIN1','MAP2'),
@@ -65,12 +65,12 @@ colnames(Hb_gene_markers)
 # We have access to 3 gene markers lists:
 
 # Erik and Top50r putative marker genes merged
-markers.custom <- get_erik_and_Hb_markers_genes()          # merged lists
-prefix_name <- 'all_gm'                                    # prefix to save matched markers found in the clusters
-#markers.custom <- get_bukola_markers_genes_Hb()           # Bukola lists
-#prefix_name <- 'erik_gm'  
-#markers.custom <- get_Top50r_markers_genes_Hb()           # Top50r lists (putative Hb)
-#prefix_name <- 'Top50r_gm'  
+markers.custom <- get_erik_and_Hb_markers_genes() # merged lists
+prefix_name <- "all_gm" # prefix to save matched markers found in the clusters
+# markers.custom <- get_bukola_markers_genes_Hb()           # Bukola lists
+# prefix_name <- 'erik_gm'
+# markers.custom <- get_Top50r_markers_genes_Hb()           # Top50r lists (putative Hb)
+# prefix_name <- 'Top50r_gm'
 
 # str(markers.custom)
 # List of 14
@@ -91,17 +91,17 @@ prefix_name <- 'all_gm'                                    # prefix to save matc
 
 
 markers.custom$MHb_putative
-# [1] "CHAT"       "LINC01307"  "NEUROD1"    "CHRNB4"     "LINC02143" 
+# [1] "CHAT"       "LINC01307"  "NEUROD1"    "CHRNB4"     "LINC02143"
 # [6] "AC114321.1" "AC104170.1" "AC079760.2" "AC024610.2" "AC022382.2"
 # ...
 
-# # markers manually added for testing functions 
+# # markers manually added for testing functions
 # new_gm <- c('AQP4', 'MT-ND2')
 # markers.custom$MHb <- append(markers.custom$MHb, new_gm)
-# markers.custom$MHb 
+# markers.custom$MHb
 
 # set the number of top genes selected for the multi gene analysis
-prefix_name <- 'ALL'
+prefix_name <- "ALL"
 
 ####################### Run multi_gene analysis for exploratory purposes ###########################
 
@@ -112,7 +112,7 @@ dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 
 
 ## set path to read RDS object
-spe_in_path <- here("processed-data", "04_harmony_BayesSpace", "spe_qc_filtered_logcounts.rds") #spe_qc_low_spatialLIBD.rds
+spe_in_path <- here("processed-data", "04_harmony_BayesSpace", "spe_qc_filtered_logcounts.rds") # spe_qc_low_spatialLIBD.rds
 
 
 ## load Datasets
@@ -135,7 +135,7 @@ var_point_size <- 3.5
 # plot(imgRaster(spi))
 
 
-#######################  Inspect WM genes gene markers   ####################### 
+#######################  Inspect WM genes gene markers   #######################
 
 lst_WM <- c("GFAP", "AQP4", "MBP", "PLP1")
 
@@ -153,67 +153,67 @@ lstID_WM
 ## in-tissue metrics
 
 lst_multi_g <- c(
-  z_score = paste0("multi_genes_Zs_WM_", prefix_name, ".pdf"),
-  pca = paste0("multi_genes_PCA_WM_", prefix_name, ".pdf"),
-  sparsity = paste0("multi_genes_Sp_WM_", prefix_name, ".pdf")
+    z_score = paste0("multi_genes_Zs_WM_", prefix_name, ".pdf"),
+    pca = paste0("multi_genes_PCA_WM_", prefix_name, ".pdf"),
+    sparsity = paste0("multi_genes_Sp_WM_", prefix_name, ".pdf")
 )
 
 print("Ploting multi-genes for WM gene markers")
 
 map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
-  spe = spe,
-  geneid = lst_WM,
-  multi_gene_method = .x, # z-score, pca, sparcity
-  height = var_height, 
-  width = var_width,
-  point_size = var_point_size,
-  #cont_colors = viridisLite::turbo(21, direction = 1),  
-  cont_colors = viridisLite::viridis(21, direction = 1),
-  #return_plots = TRUE,
-  pdf = here(dir_plots, .y),
-  assayname = "counts"
+    spe = spe,
+    geneid = lst_WM,
+    multi_gene_method = .x, # z-score, pca, sparcity
+    height = var_height,
+    width = var_width,
+    point_size = var_point_size,
+    # cont_colors = viridisLite::turbo(21, direction = 1),
+    cont_colors = viridisLite::viridis(21, direction = 1),
+    # return_plots = TRUE,
+    pdf = here(dir_plots, .y),
+    assayname = "counts"
 ))
 
 
 
 
-#######################  Inspect `Hb neuron specific` genes marker ####################### 
+#######################  Inspect `Hb neuron specific` genes marker #######################
 
 ## -----------------------------
-# markers.custom$`Hb neuron specific` 
+# markers.custom$`Hb neuron specific`
 
 suffix_name <- "Hb_neuron_specific.pdf"
 
 # Extract Ensembl ID
 lst_Habenula <- rowData(spe)$gene_search[
-  rowData(spe)$gene_name %in% markers.custom$`Hb neuron specific`
+    rowData(spe)$gene_name %in% markers.custom$`Hb neuron specific`
 ]
 
 lst_multi_g <- c(
-  z_score = paste0("multi_genes_Zs_", suffix_name),
-  pca = paste0("multi_genes_PCA_", suffix_name),
-  sparsity = paste0("multi_genes_Sp_", suffix_name)
+    z_score = paste0("multi_genes_Zs_", suffix_name),
+    pca = paste0("multi_genes_PCA_", suffix_name),
+    sparsity = paste0("multi_genes_Sp_", suffix_name)
 )
 
 print("Ploting multi-gene model for habenula neuron specific gene markers")
 
 map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
-  spe = spe,
-  geneid = lst_Habenula,
-  multi_gene_method = .x, 
-  height = var_height, 
-  width = var_width,
-  point_size = var_point_size,
-  #cont_colors = viridisLite::turbo(21, direction = 1),  
-  cont_colors = viridisLite::viridis(21, direction = 1),
-  #return_plots = TRUE,
-  pdf = here(dir_plots, .y),
-  assayname = "counts"
+    spe = spe,
+    geneid = lst_Habenula,
+    multi_gene_method = .x,
+    height = var_height,
+    width = var_width,
+    point_size = var_point_size,
+    # cont_colors = viridisLite::turbo(21, direction = 1),
+    cont_colors = viridisLite::viridis(21, direction = 1),
+    # return_plots = TRUE,
+    pdf = here(dir_plots, .y),
+    assayname = "counts"
 ))
 
 
 
-#######################  Inspect `MHB neuron specific` genes marker ####################### 
+#######################  Inspect `MHB neuron specific` genes marker #######################
 
 ## -----------------------------
 # markers.custom$`MHB neuron specific` / `LHB neuron specific` / `mediodorsal thalamus`
@@ -222,34 +222,34 @@ suffix_name <- "MHB_neuron_specific.pdf"
 
 # Extract Ensembl ID
 lst_Habenula <- rowData(spe)$gene_search[
-  rowData(spe)$gene_name %in% markers.custom$`MHB neuron specific`
+    rowData(spe)$gene_name %in% markers.custom$`MHB neuron specific`
 ]
 
 lst_multi_g <- c(
-  z_score = paste0("multi_genes_Zs_", suffix_name),
-  pca = paste0("multi_genes_PCA_", suffix_name),
-  sparsity = paste0("multi_genes_Sp_", suffix_name)
+    z_score = paste0("multi_genes_Zs_", suffix_name),
+    pca = paste0("multi_genes_PCA_", suffix_name),
+    sparsity = paste0("multi_genes_Sp_", suffix_name)
 )
 
 print("Ploting multi-gene model for Medial Habenula neuron specific gene markers")
 
 map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
-  spe = spe,
-  geneid = lst_Habenula,
-  multi_gene_method = .x, 
-  height = var_height, 
-  width = var_width,
-  point_size = var_point_size,
-  #cont_colors = viridisLite::turbo(21, direction = 1),  
-  cont_colors = viridisLite::viridis(21, direction = 1),
-  #return_plots = TRUE,
-  pdf = here(dir_plots, .y),
-  assayname = "counts"
+    spe = spe,
+    geneid = lst_Habenula,
+    multi_gene_method = .x,
+    height = var_height,
+    width = var_width,
+    point_size = var_point_size,
+    # cont_colors = viridisLite::turbo(21, direction = 1),
+    cont_colors = viridisLite::viridis(21, direction = 1),
+    # return_plots = TRUE,
+    pdf = here(dir_plots, .y),
+    assayname = "counts"
 ))
 
 
 
-#######################  Inspect `LHB neuron specific` genes marker ####################### 
+#######################  Inspect `LHB neuron specific` genes marker #######################
 
 ## -----------------------------
 # markers.custom$`LHB neuron specific` / `mediodorsal thalamus`
@@ -258,66 +258,66 @@ suffix_name <- "LHB_neuron_specific.pdf"
 
 # Extract Ensembl ID
 lst_Habenula <- rowData(spe)$gene_search[
-  rowData(spe)$gene_name %in% markers.custom$`LHB neuron specific`
+    rowData(spe)$gene_name %in% markers.custom$`LHB neuron specific`
 ]
 
 lst_multi_g <- c(
-  z_score = paste0("multi_genes_Zs_", suffix_name),
-  pca = paste0("multi_genes_PCA_", suffix_name),
-  sparsity = paste0("multi_genes_Sp_", suffix_name)
+    z_score = paste0("multi_genes_Zs_", suffix_name),
+    pca = paste0("multi_genes_PCA_", suffix_name),
+    sparsity = paste0("multi_genes_Sp_", suffix_name)
 )
 
 print("Ploting multi-gene model for Lateral Habenula neuron specific gene markers")
 
 map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
-  spe = spe,
-  geneid = lst_Habenula,
-  multi_gene_method = .x, 
-  height = var_height, 
-  width = var_width,
-  point_size = var_point_size,
-  #cont_colors = viridisLite::turbo(21, direction = 1),  
-  cont_colors = viridisLite::viridis(21, direction = 1),
-  #return_plots = TRUE,
-  pdf = here(dir_plots, .y),
-  assayname = "counts"
+    spe = spe,
+    geneid = lst_Habenula,
+    multi_gene_method = .x,
+    height = var_height,
+    width = var_width,
+    point_size = var_point_size,
+    # cont_colors = viridisLite::turbo(21, direction = 1),
+    cont_colors = viridisLite::viridis(21, direction = 1),
+    # return_plots = TRUE,
+    pdf = here(dir_plots, .y),
+    assayname = "counts"
 ))
 
 
 
-#######################  Inspect Lateral Habenula genes marker from top50r ####################### 
+#######################  Inspect Lateral Habenula genes marker from top50r #######################
 
 ## -----------------------------
 ## ALL 50 genes markers
-# markers.custom$LHb_putative 
+# markers.custom$LHb_putative
 
 suffix_name <- "LH_ALL.pdf"
 
 # Extract Ensembl ID
 lst_LH <- rowData(spe)$gene_search[
-  rowData(spe)$gene_name %in% markers.custom$LHb_putative
+    rowData(spe)$gene_name %in% markers.custom$LHb_putative
 ]
 
 lst_multi_g <- c(
-  z_score = paste0("multi_genes_Zs_", suffix_name),
-  pca = paste0("multi_genes_PCA_", suffix_name),
-  sparsity = paste0("multi_genes_Sp_", suffix_name)
+    z_score = paste0("multi_genes_Zs_", suffix_name),
+    pca = paste0("multi_genes_PCA_", suffix_name),
+    sparsity = paste0("multi_genes_Sp_", suffix_name)
 )
 
 print("Ploting multi-gene model for ALL Lateral Habenula gene markers")
 
 map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
-  spe = spe,
-  geneid = lst_LH,
-  multi_gene_method = .x, 
-  height = var_height, 
-  width = var_width,
-  point_size = var_point_size,
-  #cont_colors = viridisLite::turbo(21, direction = 1),  
-  cont_colors = viridisLite::viridis(21, direction = 1),
-  #return_plots = TRUE,
-  pdf = here(dir_plots, .y),
-  assayname = "counts"
+    spe = spe,
+    geneid = lst_LH,
+    multi_gene_method = .x,
+    height = var_height,
+    width = var_width,
+    point_size = var_point_size,
+    # cont_colors = viridisLite::turbo(21, direction = 1),
+    cont_colors = viridisLite::viridis(21, direction = 1),
+    # return_plots = TRUE,
+    pdf = here(dir_plots, .y),
+    assayname = "counts"
 ))
 
 
@@ -326,68 +326,68 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
 
 suffix_name <- "LH_Top25.pdf"
 
-# markers.custom$LHb_putative 
+# markers.custom$LHb_putative
 # Extract Ensembl ID
 lst_LH <- rowData(spe)$gene_search[
-  rowData(spe)$gene_name %in% markers.custom$LHb_putative[1:25]
+    rowData(spe)$gene_name %in% markers.custom$LHb_putative[1:25]
 ]
 
 lst_multi_g <- c(
-  z_score = paste0("multi_genes_Zs_", suffix_name),
-  pca = paste0("multi_genes_PCA_", suffix_name),
-  sparsity = paste0("multi_genes_Sp_", suffix_name)
+    z_score = paste0("multi_genes_Zs_", suffix_name),
+    pca = paste0("multi_genes_PCA_", suffix_name),
+    sparsity = paste0("multi_genes_Sp_", suffix_name)
 )
 
 print("Ploting multi-gene model for the top 25 Lateral Habenula gene markers")
 
 map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
-  spe = spe,
-  geneid = lst_LH,
-  multi_gene_method = .x, 
-  height = var_height, 
-  width = var_width,
-  point_size = var_point_size,
-  #cont_colors = viridisLite::turbo(21, direction = 1),  
-  cont_colors = viridisLite::viridis(21, direction = 1),
-  #return_plots = TRUE,
-  pdf = here(dir_plots, .y),
-  assayname = "counts"
+    spe = spe,
+    geneid = lst_LH,
+    multi_gene_method = .x,
+    height = var_height,
+    width = var_width,
+    point_size = var_point_size,
+    # cont_colors = viridisLite::turbo(21, direction = 1),
+    cont_colors = viridisLite::viridis(21, direction = 1),
+    # return_plots = TRUE,
+    pdf = here(dir_plots, .y),
+    assayname = "counts"
 ))
 
 
-#######################  Inspect Medial Habenula gene markers from top 50r ####################### 
+#######################  Inspect Medial Habenula gene markers from top 50r #######################
 
 ## -----------------------------
 ## ALL 50 genes markers
-#markers.custom$MHb_putative 
+# markers.custom$MHb_putative
 
 suffix_name <- "MH_ALL.pdf"
 
 # Extract Ensembl ID
 lst_MH <- rowData(spe)$gene_search[
-  rowData(spe)$gene_name %in% markers.custom$MHb_putative
+    rowData(spe)$gene_name %in% markers.custom$MHb_putative
 ]
 
 lst_multi_g <- c(
-  z_score = paste0("multi_genes_Zs_", suffix_name),
-  pca = paste0("multi_genes_PCA_", suffix_name),
-  sparsity = paste0("multi_genes_Sp_", suffix_name)
+    z_score = paste0("multi_genes_Zs_", suffix_name),
+    pca = paste0("multi_genes_PCA_", suffix_name),
+    sparsity = paste0("multi_genes_Sp_", suffix_name)
 )
 
 print("Ploting multi-gene model for ALL Medial Habenula gene markers")
 
 map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
-  spe = spe,
-  geneid = lst_MH,
-  multi_gene_method = .x, 
-  height = var_height, 
-  width = var_width,
-  point_size = var_point_size,
-  #cont_colors = viridisLite::turbo(21, direction = 1),  
-  cont_colors = viridisLite::viridis(21, direction = 1),
-  #return_plots = TRUE,
-  pdf = here(dir_plots, .y),
-  assayname = "counts"
+    spe = spe,
+    geneid = lst_MH,
+    multi_gene_method = .x,
+    height = var_height,
+    width = var_width,
+    point_size = var_point_size,
+    # cont_colors = viridisLite::turbo(21, direction = 1),
+    cont_colors = viridisLite::viridis(21, direction = 1),
+    # return_plots = TRUE,
+    pdf = here(dir_plots, .y),
+    assayname = "counts"
 ))
 
 ## -----------------------------
@@ -397,34 +397,34 @@ suffix_name <- "MH_Top25.pdf"
 
 # Extract Ensembl ID
 lst_MH <- rowData(spe)$gene_search[
-  rowData(spe)$gene_name %in% markers.custom$MHb_putative[1:25]
+    rowData(spe)$gene_name %in% markers.custom$MHb_putative[1:25]
 ]
 
 lst_multi_g <- c(
-  z_score = paste0("multi_genes_Zs_", suffix_name),
-  pca = paste0("multi_genes_PCA_", suffix_name),
-  sparsity = paste0("multi_genes_Sp_", suffix_name)
+    z_score = paste0("multi_genes_Zs_", suffix_name),
+    pca = paste0("multi_genes_PCA_", suffix_name),
+    sparsity = paste0("multi_genes_Sp_", suffix_name)
 )
 
 print("Ploting multi-gene model for the top 25 Medial Habenula gene markers")
 
 map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
-  spe = spe,
-  geneid = lst_MH,
-  multi_gene_method = .x, 
-  height = var_height, 
-  width = var_width,
-  point_size = var_point_size,
-  #cont_colors = viridisLite::turbo(21, direction = 1),  
-  cont_colors = viridisLite::viridis(21, direction = 1),
-  #return_plots = TRUE,
-  pdf = here(dir_plots, .y),
-  assayname = "counts"
+    spe = spe,
+    geneid = lst_MH,
+    multi_gene_method = .x,
+    height = var_height,
+    width = var_width,
+    point_size = var_point_size,
+    # cont_colors = viridisLite::turbo(21, direction = 1),
+    cont_colors = viridisLite::viridis(21, direction = 1),
+    # return_plots = TRUE,
+    pdf = here(dir_plots, .y),
+    assayname = "counts"
 ))
 
 
 
-#######################  Inspect `mediodorsal thalamus` genes marker ####################### 
+#######################  Inspect `mediodorsal thalamus` genes marker #######################
 
 ## -----------------------------
 # markers.custom$`mediodorsal thalamus`
@@ -433,29 +433,29 @@ suffix_name <- "thalamus.pdf"
 
 # Extract Ensembl ID
 lst_thalamus <- rowData(spe)$gene_search[
-  rowData(spe)$gene_name %in% markers.custom$`mediodorsal thalamus`
+    rowData(spe)$gene_name %in% markers.custom$`mediodorsal thalamus`
 ]
 
 lst_multi_g <- c(
-  z_score = paste0("multi_genes_Zs_", suffix_name),
-  pca = paste0("multi_genes_PCA_", suffix_name),
-  sparsity = paste0("multi_genes_Sp_", suffix_name)
+    z_score = paste0("multi_genes_Zs_", suffix_name),
+    pca = paste0("multi_genes_PCA_", suffix_name),
+    sparsity = paste0("multi_genes_Sp_", suffix_name)
 )
 
 print("Ploting multi-gene model for thalamus gene markers")
 
 map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
-  spe = spe,
-  geneid = lst_thalamus,
-  multi_gene_method = .x, 
-  height = var_height, 
-  width = var_width,
-  point_size = var_point_size,
-  #cont_colors = viridisLite::turbo(21, direction = 1),  
-  cont_colors = viridisLite::viridis(21, direction = 1),
-  #return_plots = TRUE,
-  pdf = here(dir_plots, .y),
-  assayname = "counts"
+    spe = spe,
+    geneid = lst_thalamus,
+    multi_gene_method = .x,
+    height = var_height,
+    width = var_width,
+    point_size = var_point_size,
+    # cont_colors = viridisLite::turbo(21, direction = 1),
+    cont_colors = viridisLite::viridis(21, direction = 1),
+    # return_plots = TRUE,
+    pdf = here(dir_plots, .y),
+    assayname = "counts"
 ))
 
 

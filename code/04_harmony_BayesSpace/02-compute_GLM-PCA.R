@@ -8,12 +8,12 @@ library("scry")
 library("BiocSingular")
 library("bluster")
 library("sessioninfo")
-#library("HDF5Array")
+# library("HDF5Array")
 
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 filtered_in_path <- file.path(dir_rdata, "spe_qc_filtered_logcounts.rds")
 filtered_ordinary_path <- file.path(dir_rdata, "spe_filtered.rds")
-#filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
+# filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
 
 num_red_dims <- 50
@@ -28,8 +28,8 @@ set.seed(20240223)
 spe <- readRDS(filtered_in_path)
 
 ## Verified number of TRUE spots in tissue
-in_tissue_spots <- sum(as.numeric(map(unique(spe$sample_id), ~ sum( spe$in_tissue[spe$sample_id == .x]))))
-print(paste0(' Spots in tissue: ', in_tissue_spots))
+in_tissue_spots <- sum(as.numeric(map(unique(spe$sample_id), ~ sum(spe$in_tissue[spe$sample_id == .x]))))
+print(paste0(" Spots in tissue: ", in_tissue_spots))
 
 
 ################################################################################
@@ -44,8 +44,8 @@ dec <- modelGeneVar(spe,
     BPPARAM = MulticoreParam(num_cores)
 )
 
-#plot(dec$mean, dec$total, xlab="Mean log-expression", ylab="Variance")
-#curve(metadata(dec)$trend(x), col="blue", add=TRUE)
+# plot(dec$mean, dec$total, xlab="Mean log-expression", ylab="Variance")
+# curve(metadata(dec)$trend(x), col="blue", add=TRUE)
 
 plot(dec$mean, dec$total)
 
@@ -58,7 +58,7 @@ mapply(function(block, blockname) {
         ylab = "Variance",
         main = blockname
     )
-    #points(metadata(block)$mean, metadata(block)$var, col="red")
+    # points(metadata(block)$mean, metadata(block)$var, col="red")
     curve(metadata(block)$trend(x),
         col = "blue",
         add = TRUE
@@ -101,11 +101,11 @@ spe <-
         name = "PCA"
     )
 spe <-
-  runPCA(spe,
-         subset_row = top.hvgs.fdr1,
-         ncomponents = num_red_dims,
-         name = "PCA_fdr1"
-  )
+    runPCA(spe,
+        subset_row = top.hvgs.fdr1,
+        ncomponents = num_red_dims,
+        name = "PCA_fdr1"
+    )
 spe <-
     runPCA(spe,
         subset_row = top.hvgs.p1,
@@ -126,20 +126,22 @@ spe <-
     )
 Sys.time()
 reducedDimNames(spe)
-# [1] "10x_pca"  "10x_tsne" "10x_umap" "PCA"      "PCA_fdr1" "PCA_p1"   "PCA_p2"  
+# [1] "10x_pca"  "10x_tsne" "10x_umap" "PCA"      "PCA_fdr1" "PCA_p1"   "PCA_p2"
 # [8] "PCA_p5"
 
 ##   Plot variance explained
 
 plt_elbow <- function(dim_n, plt_name) {
-  percent.var <- attr(reducedDim(spe, dim_n), "percentVar")
-  pdf(file.path(dir_plots, plt_name), useDingbats = FALSE)
-  plot(percent.var, xlab = gsub("^PCA_", "PC_", dim_n), ylab = "Variance explained (%)")
-  dev.off()
+    percent.var <- attr(reducedDim(spe, dim_n), "percentVar")
+    pdf(file.path(dir_plots, plt_name), useDingbats = FALSE)
+    plot(percent.var, xlab = gsub("^PCA_", "PC_", dim_n), ylab = "Variance explained (%)")
+    dev.off()
 }
 
-lst_PCA_elbow <- list(PCA_p1 = 'pca_elbow_p1.pdf', PCA_p2 = 'pca_elbow_p2.pdf', PCA_p5 = 'pca_elbow_p5.pdf',
-                      PCA = 'pca_elbow_fdr5.pdf', PCA_fdr1 = 'pca_elbow_fdr1.pdf')
+lst_PCA_elbow <- list(
+    PCA_p1 = "pca_elbow_p1.pdf", PCA_p2 = "pca_elbow_p2.pdf", PCA_p5 = "pca_elbow_p5.pdf",
+    PCA = "pca_elbow_fdr5.pdf", PCA_fdr1 = "pca_elbow_fdr1.pdf"
+)
 
 map2(names(lst_PCA_elbow), lst_PCA_elbow, ~ plt_elbow(.x, .y))
 
@@ -175,7 +177,7 @@ spe <- nullResiduals( # default params
     fam = "binomial",
     type = "deviance"
 )
-# computes pearson residuals for count data based on a multinomial null model 
+# computes pearson residuals for count data based on a multinomial null model
 # Warning messages:
 #   1: In asMethod(object) :
 #   sparse->dense coercion: allocating vector of size 3.2 GiB
@@ -278,8 +280,8 @@ session_info()
 # > Sys.time()
 # [1] "2024-05-24 13:21:04 EDT"
 # > proc.time()
-# user   system  elapsed 
-# 1462.945   52.427 1796.425 
+# user   system  elapsed
+# 1462.945   52.427 1796.425
 # > options(width = 120)
 # > session_info()
 # [2] CRAN (R 4.3.2)
@@ -425,5 +427,3 @@ session_info()
 # utf8                     1.2.4       2023-10-22 [2] CRAN (R 4.3.2)
 # vctrs                    0.6.5       2023-12-01 [2] CRAN (R 4.3.2)
 # vipor                    0.4.7       2023-12-18 [2] CRAN (R 4.3.2)
-
-
