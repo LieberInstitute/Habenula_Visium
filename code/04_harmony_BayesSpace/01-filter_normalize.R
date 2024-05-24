@@ -12,7 +12,7 @@ library("HDF5Array")
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 # raw_in_path <- here("processed-data", "02_build_spe", "spe.rds")
 filtered_in_path <- here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds") 
-filtered_ordinary_path <- file.path(dir_rdata, "spe_filtered.rds")
+#filtered_ordinary_path <- file.path(dir_rdata, "spe_filtered.rds")
 filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
 
