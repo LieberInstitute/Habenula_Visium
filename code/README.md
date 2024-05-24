@@ -18,6 +18,8 @@
 | 04_harmony_BayesSpace  | spe_qc_low_spatialLIBD.rds | *spe* with only in-tissue spots, excluding those manually annotated as low quality or having artifacts. |
 | 04_harmony_BayesSpace  | spe_qc_filtered_logcounts.rds | spe_qc_low_spatialLIBD.rds *spe* with log normalized counts. |
 | 04_harmony_BayesSpace\spe_filtered_hdf5_temp  | assays.h5 | spe_qc_filtered_logcounts.rds *spe* HDF5-backed object to control memory later. |
+| 04_harmony_BayesSpace  | spe_filtered.rds | spe_qc_filtered computed GLM-PCA. |
+
 
 <br><br>
 
