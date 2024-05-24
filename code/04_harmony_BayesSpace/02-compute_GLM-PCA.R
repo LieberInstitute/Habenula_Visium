@@ -161,7 +161,7 @@ spe <- devianceFeatureSelection(
 
 pdf(file.path(dir_plots, "binomial_deviance.pdf"))
 plot(
-    sort(rowData(spe)$binomial_deviance, decreasing = T),
+    sort(rowData(spe)$binomial_deviance, decreasing = TRUE),
     type = "l",
     xlab = "ranked genes",
     ylab = "binomial deviance",
@@ -230,27 +230,6 @@ spe <- runPCA(
     name = "GLMPCA_approx_10000",
     BSPARAM = BiocSingular::IrlbaParam()
 )
-
-################################################################################
-#   Obtain preliminary clusters based on default GLM-PCA and PCA settings
-################################################################################
-
-spe$leiden20_PCA <- clusterCells(spe,
-    use.dimred = "PCA",
-    BLUSPARAM = SNNGraphParam(
-        k = 20,
-        cluster.fun = "leiden"
-    )
-)
-
-spe$leiden20_GLMPCA <- clusterCells(spe,
-    use.dimred = "GLMPCA_approx",
-    BLUSPARAM = SNNGraphParam(
-        k = 20,
-        cluster.fun = "leiden"
-    )
-)
-
 
 ################################################################################
 #   Save the processed SPE object

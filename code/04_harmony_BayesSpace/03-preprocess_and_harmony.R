@@ -130,34 +130,36 @@ ggcells(
 ## Perform harmony batch correction
 message("Running RunHarmony()")
 Sys.time()
-# set.seed(20240229)
-# spe <-
-#     RunHarmony_mod(
-#         spe,
-#         "subject",
-#         verbose = TRUE,
-#         plot_convergence = TRUE,
-#         reduction.use = "PCA",
-#         reduction.save = "HARMONY",
-#         kmeans_init_nstart = 100,
-#         kmeans_init_iter_max = 1000
-#     )
+set.seed(20240524)
+spe <-
+    RunHarmony_mod(
+        spe,
+        "sample_id",
+        verbose = TRUE,
+        plot_convergence = TRUE,
+        reduction.use = "PCA",
+        reduction.save = "HARMONY",
+        kmeans_init_nstart = 100,
+        kmeans_init_iter_max = 1000
+    )
 
-## As we only have 1 sample, RunHarmony doesn't work
-reducedDim(spe, "HARMONY") <- reducedDim(spe, "PCA")
+# ## As we only have 1 sample, RunHarmony doesn't work
+# reducedDim(spe, "HARMONY") <- reducedDim(spe, "PCA")
 
-# spe <-
-#     RunHarmony_mod(
-#         spe,
-#         group.by.vars = "subject",
-#         verbose = TRUE,
-#         reduction.use = "PCA",
-#         reduction.save = "harmony_subject_no_lambda",
-#         plot_convergence = TRUE,
-#         lambda = NULL,
-#         max_iter = 30
-#     )
+spe <-
+    RunHarmony_mod(
+        spe,
+        group.by.vars = "sample_id",
+        verbose = TRUE,
+        reduction.use = "PCA",
+        reduction.save = "harmony_subject_no_lambda",
+        plot_convergence = TRUE,
+        lambda = NULL,
+        max_iter = 30
+    )
 Sys.time()
+
+## Run Harmony on GLMPCA too, with and without lambda = NULL
 
 #   Perform dimensionality reduction using both PCA and harmony's reduced
 #   dimensions
