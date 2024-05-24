@@ -45,10 +45,9 @@ dec <- modelGeneVar(spe,
 #plot(dec$mean, dec$total, xlab="Mean log-expression", ylab="Variance")
 #curve(metadata(dec)$trend(x), col="blue", add=TRUE)
 
-pdf(file.path(dir_plots, "scran_modelGeneVar.pdf"), useDingbats = FALSE)
-
 plot(dec$mean, dec$total)
 
+pdf(file.path(dir_plots, "scran_modelGeneVar.pdf"), useDingbats = FALSE)
 mapply(function(block, blockname) {
     plot(
         block$mean,
@@ -129,32 +128,19 @@ reducedDimNames(spe)
 # [1] "10x_pca"  "10x_tsne" "10x_umap" "PCA"      "PCA_fdr1" "PCA_p1"   "PCA_p2"  
 # [8] "PCA_p5"
 
-#   Plot variance explained
+##   Plot variance explained
 
-# lst_PCA_elbow <- list(PCA_p1 = 'pca_elbow_p1.pdf', PCA_p2 = 'pca_elbow_p2.pdf', PCA_p5 = 'pca_elbow_p5.pdf')
-# plt_elbow <- function(dim_n, plt_name) {
-#   percent.var <- attr(reducedDim(spe, dim_n), "percentVar")
-#   pdf(file.path(dir_plots, plt_name), useDingbats = FALSE)
-#   plot(percent.var, xlab = gsub("^PCA_", "PC_", dim_n), ylab = "Variance explained (%)")
-#   dev.off()
-# }
-# 
-# map2(names(lst_PCA_elbow), lst_PCA_elbow, ~ plt_elbow(.x, .y))
+plt_elbow <- function(dim_n, plt_name) {
+  percent.var <- attr(reducedDim(spe, dim_n), "percentVar")
+  pdf(file.path(dir_plots, plt_name), useDingbats = FALSE)
+  plot(percent.var, xlab = gsub("^PCA_", "PC_", dim_n), ylab = "Variance explained (%)")
+  dev.off()
+}
 
-percent.var <- attr(reducedDim(spe, "PCA_p1"), "percentVar")
-pdf(file.path(dir_plots, "pca_elbow_p1.pdf"), useDingbats = FALSE)
-plot(percent.var, xlab = "PC_p1", ylab = "Variance explained (%)")
-dev.off()
-#
-percent.var <- attr(reducedDim(spe, "PCA_p2"), "percentVar")
-pdf(file.path(dir_plots, "pca_elbow_p2.pdf"), useDingbats = FALSE)
-plot(percent.var, xlab = "PC_p2", ylab = "Variance explained (%)")
-dev.off()
-#
-percent.var <- attr(reducedDim(spe, "PCA_p5"), "percentVar")
-pdf(file.path(dir_plots, "pca_elbow_p5.pdf"), useDingbats = FALSE)
-plot(percent.var, xlab = "PC_p5", ylab = "Variance explained (%)")
-dev.off()
+lst_PCA_elbow <- list(PCA_p1 = 'pca_elbow_p1.pdf', PCA_p2 = 'pca_elbow_p2.pdf', PCA_p5 = 'pca_elbow_p5.pdf',
+                      PCA = 'pca_elbow_fdr5.pdf', PCA_fdr1 = 'pca_elbow_fdr1.pdf')
+
+map2(names(lst_PCA_elbow), lst_PCA_elbow, ~ plt_elbow(.x, .y))
 
 
 ################################################################################
