@@ -11,6 +11,7 @@ library("sessioninfo")
 
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 filtered_in_path <- file.path(dir_rdata, "spe_qc_filtered_logcounts.rds")
+filtered_ordinary_path <- file.path(dir_rdata, "spe_filtered.rds")
 #filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
 
@@ -77,7 +78,6 @@ print(paste("Num HVGs for top 50% prop:", length(top.hvgs.p5)))
 
 top.hvgs.fdr5 <- getTopHVGs(dec, fdr.threshold = 0.05)
 print(paste("Num HVGs at FDR = 0.05:", length(top.hvgs.fdr5)))
-
 top.hvgs.fdr1 <- getTopHVGs(dec, fdr.threshold = 0.01)
 print(paste("Num HVGs at FDR = 0.01:", length(top.hvgs.fdr1)))
 
@@ -174,7 +174,7 @@ spe <- nullResiduals( # default params
     fam = "binomial",
     type = "deviance"
 )
-
+# computes pearson residuals for count data based on a multinomial null model 
 
 hdgs.hb.2000 <-
     rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:2000]
