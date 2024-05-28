@@ -12,13 +12,25 @@
 | Sub-directory | File name       | Description     |
 |:------------  |:------------    |:----------------|
 | 02_build_spe  | spe_raw.rds     | Basic *SpatialExperiment* (spe) object with donor information. It includes the n=5 samples, featuring both in-tissue and out-of-tissue spots, before quality control.     |
-| 02_build_spe  | spe.rds         | *spe* with only spots in-tissue, and removed spots with not umi counts or not gene counts. |
-| 02_build_spe  | spe_qc.rds      | *spe* with only spots in-tissue, and added scran variables before applying quality control. |
-| 02_build_spe  | spe_qc_low_lib_edge.rds | *spe* with only spots in-tissue, and removed low-library spots at edge. This is the version used to deploy thespatialLIBD app: https://libd.shinyapps.io/Habenula_Visium/ |
-| 04_harmony_BayesSpace  | spe_qc_low_spatialLIBD.rds | *spe* with only in-tissue spots, excluding those manually annotated as low quality or having artifacts. |
-| 04_harmony_BayesSpace  | spe_qc_filtered_logcounts.rds | spe_qc_low_spatialLIBD.rds *spe* with log normalized counts. |
-| 04_harmony_BayesSpace\spe_filtered_hdf5_temp  | assays.h5 | spe_qc_filtered_logcounts.rds *spe* HDF5-backed object to control memory later. |
-| 04_harmony_BayesSpace  | spe_filtered.rds | spe_qc_filtered computed GLM-PCA. |
+| 02_build_spe  | spe.rds         | *spe* with spots in-tissue, and removed spots with not umi counts or not gene counts. |
+| 02_build_spe  | spe_qc.rds      | *spe* with spots in-tissue, and added scran variables before applying quality control. |
+<!--| 02_build_spe  | spe_qc_low_lib_edge.rds | *spe* with only spots in-tissue, and removed low-library spots at edge. This is the version used to deploy thespatialLIBD app: https://libd.shinyapps.io/Habenula_Visium/ |
+| 04_harmony_BayesSpace  | spe_qc_low_spatialLIBD.rds | *spe* with only in-tissue spots, excluding those manually annotated as low quality or having artifacts. |-->
+| 04_harmony_BayesSpace  | spe_qcED_spatialLIBD.rds | *spe* with in-tissue spots, QCed and excluding those manually annotated as low quality or having tissue artifacts. |
+| 04_harmony_BayesSpace  | spe_qcED_spatialLIBD_log.rds | spe_qcED_spatialLIBD.rds *spe* with log normalized counts. |
+| 04_harmony_BayesSpace  | spe_qcED_spatialLIBD_log_GLM-PCA.rds | spe_qc_filtered computed GLM-PCA. |
+| 04_harmony_BayesSpace  | assays.h5 |  spe_qcED_spatialLIBD_log_GLM-PCA_hdf5 directory with HDF5-backed object to control memory later. |
+
+<br><br>
+
+##### Other objects
+
+<br>
+
+| Sub-directory | File name       | Description     |
+|:------------  |:------------    |:----------------|
+| 04_harmony_BayesSpace  | top.hvgs.Rdata | Set of highly variable genes, based on variance modelling statistics from modelGeneVar. This object contains subsets of the top HVGs at FDR equal to 0.05 and 0.01, and proportion equal to 10%, 20% and 50%  |
+
 
 
 <br><br>
