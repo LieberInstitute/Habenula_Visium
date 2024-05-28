@@ -175,7 +175,7 @@ spe <- saveHDF5SummarizedExperiment(
 gc()
 
 ## Save new spe object with spots manually annotated drop
-saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_lognorm.rds"))
+saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_log.rds"))
 
 
 
