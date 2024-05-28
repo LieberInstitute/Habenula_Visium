@@ -116,7 +116,7 @@ spe <- spe[
 cat("Number of spots after removed any remaining empty spots and/or genes with zero counts:", dim(spe)[2], "\n")
 
 ## Save new spe object with spots manually annotated drop
-saveRDS(spe, file.path(dir_rdata, "spe_qc_low_spatialLIBD.rds"))
+saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD.rds"))
 
 
 
@@ -175,7 +175,7 @@ spe <- saveHDF5SummarizedExperiment(
 gc()
 
 ## Save new spe object with spots manually annotated drop
-saveRDS(spe, file.path(dir_rdata, "spe_qc_filtered_logcounts.rds"))
+saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_lognorm.rds"))
 
 
 
