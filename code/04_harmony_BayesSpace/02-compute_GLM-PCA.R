@@ -8,12 +8,12 @@ library("scry")
 library("BiocSingular")
 library("bluster")
 library("sessioninfo")
-# library("HDF5Array")
+library("HDF5Array")
 
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
-filtered_in_path <- file.path(dir_rdata, "spe_qc_filtered_logcounts.rds")
-filtered_ordinary_path <- file.path(dir_rdata, "spe_filtered.rds")
-# filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
+filtered_in_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log.rds")
+filtered_ordinary_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log_GLM-PCA.rds") # new SPE with GLM-PCAs
+filtered_hdf5_dir <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log_GLM-PCA_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
 
 num_red_dims <- 50
@@ -43,6 +43,9 @@ dec <- modelGeneVar(spe,
     block = spe$sample_id,
     BPPARAM = MulticoreParam(num_cores)
 )
+colnames(dec$per.block)
+# [1] "V12D07-075_C1" "V13B23-285_A1" "V13B23-285_B1" "V13B23-285_C1"
+# [5] "V13B23-285_D1"
 
 # plot(dec$mean, dec$total, xlab="Mean log-expression", ylab="Variance")
 # curve(metadata(dec)$trend(x), col="blue", add=TRUE)
@@ -128,6 +131,8 @@ Sys.time()
 reducedDimNames(spe)
 # [1] "10x_pca"  "10x_tsne" "10x_umap" "PCA"      "PCA_fdr1" "PCA_p1"   "PCA_p2"
 # [8] "PCA_p5"
+plotPCA(spe)
+head(reducedDims(spe)$PCA_fdr1)
 
 ##   Plot variance explained
 
@@ -151,23 +156,30 @@ map2(names(lst_PCA_elbow), lst_PCA_elbow, ~ plt_elbow(.x, .y))
 ################################################################################
 
 message(Sys.time(), " - Running devianceFeatureSelection()")
-spe <- devianceFeatureSelection(
-    spe,
-    assay = "counts",
-    fam = "binomial",
-    sorted = FALSE,
-    batch = as.factor(spe$sample_id)
-)
+spe <- devianceFeatureSelection(spe, assay = "counts", fam = "binomial", sorted = FALSE, batch = as.factor(spe$sample_id))
+spe <- devianceFeatureSelection(spe, assay = "counts", fam = "poisson", sorted = FALSE, batch = as.factor(spe$sample_id))
+colnames(rowData(spe))
+head(rowData(spe)$binomial_deviance)
+head(rowData(spe)$poisson_deviance)
 
 pdf(file.path(dir_plots, "binomial_deviance.pdf"))
-plot(
+par(mfrow = c(2,1))
+p1 <- plot(
     sort(rowData(spe)$binomial_deviance, decreasing = TRUE),
     type = "l",
     xlab = "ranked genes",
     ylab = "binomial deviance",
-    main = "Feature Selection with Deviance"
-)
-abline(v = 2000, lty = 2, col = "red")
+    main = "Feature Selection with Binomial Deviance"
+) + abline(v = 1000, lty = 2, col = "red") + abline(v = 2000, lty = 2, col = "blue") 
+p2 <- plot(
+    sort(rowData(spe)$poisson_deviance, decreasing = TRUE),
+    type = "l",
+    xlab = "ranked genes",
+    ylab = "poisson deviance",
+    main = "Feature Selection with Poisson Deviance"
+) + abline(v = 1000, lty = 2, col = "red") + abline(v = 2000, lty = 2, col = "blue")
+
+plts <- p1 / p2
 dev.off()
 
 message(Sys.time(), " - Running nullResiduals()")
@@ -175,8 +187,10 @@ spe <- nullResiduals( # default params
     spe,
     assay = "counts",
     fam = "binomial",
-    type = "deviance"
+    type = "deviance",
+    batch = as.factor(spe$sample_id)
 )
+
 # computes pearson residuals for count data based on a multinomial null model
 # Warning messages:
 #   1: In asMethod(object) :
@@ -190,6 +204,10 @@ spe <- nullResiduals( # default params
 #     sparse->dense coercion: allocating vector of size 3.2 GiB
 #   6: In g({ : NaNs produced
 
+# produce residual vs. fitted plot 
+#head(rowData(spe)$nullresiduals)
+#plot(rowData(spe)$binomial_deviance), )  CSC
+
 hdgs.hb.2000 <-
     rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:2000]
 hdgs.hb.5000 <-
@@ -200,7 +218,7 @@ hdgs.hb.10000 <-
 save(hdgs.hb.2000,
     hdgs.hb.5000,
     hdgs.hb.10000,
-    file = file.path(dir_rdata, "hdgs.hb_2.Rdata")
+    file = file.path(dir_rdata, "hdgs.hb.Rdata")
 )
 
 message(Sys.time(), " - Running GLM-PCA")
@@ -235,11 +253,11 @@ spe <- runPCA(
 #   Save the processed SPE object
 ################################################################################
 
-# message(Sys.time(), " - Saving HDF5-backed filtered spe")
-# spe = saveHDF5SummarizedExperiment(
-#     spe, dir = filtered_hdf5_dir, replace = TRUE
-# )
-# spe = realize(spe)
+message(Sys.time(), " - Saving HDF5-backed filtered spe")
+spe = saveHDF5SummarizedExperiment(
+    spe, dir = filtered_hdf5_dir, replace = TRUE
+)
+spe = realize(spe)
 
 message(Sys.time(), " - Saving ordinary filtered spe")
 saveRDS(spe, filtered_ordinary_path)
