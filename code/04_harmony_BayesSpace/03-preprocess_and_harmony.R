@@ -101,8 +101,9 @@ spe <- readRDS(file.path(dir_rdata, "spe_qcED_spatialLIBD_log_GLM-PCA.rds")) # r
 # [10] "GLMPCA_approx_5000"  "GLMPCA_approx_10000"
 
 # list of reductions to plot
-lst_PCA <- c('PCA', 'PCA_fdr1', 'PCA_p1', 'PCA_p2', 'PCA_p5')
 
+lst_PCA <- c(reducedDimNames(spe)[grep("^PCA", reducedDimNames(spe))])
+# [1] "PCA"      "PCA_fdr1" "PCA_p1"   "PCA_p2"   "PCA_p5"
 pdf(file.path(dir_plots, 'reduction_dimension_PCA.pdf'), useDingbats = FALSE)
 map(lst_PCA, ~ plotReducedDim(spe,
                               dimred = .x, 
@@ -111,12 +112,17 @@ map(lst_PCA, ~ plotReducedDim(spe,
 )) 
 dev.off()
 
+lst_GLMPCA <- c(reducedDimNames(spe)[grep("^GLMPCA_", reducedDimNames(spe))])
+# [1] "GLMPCA_approx"       "GLMPCA_approx_5000"  "GLMPCA_approx_10000"
+pdf(file.path(dir_plots, 'reduction_dimension_GLMPCA.pdf'), useDingbats = FALSE)
+map(lst_GLMPCA, ~ plotReducedDim(spe,
+                              dimred = .x, 
+                              ncomponents = 3,
+                              colour_by = "sample_id"
+)) 
+dev.off()
 
-plotReducedDim(spe,
-    dimred = "GLMPCA_approx",
-    ncomponents = 3,
-    colour_by = "subject"
-)
+
 plotReducedDim(spe,
     dimred = "PCA",
     ncomponents = 3,
