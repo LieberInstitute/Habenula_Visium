@@ -131,25 +131,26 @@ Sys.time()
 reducedDimNames(spe)
 # [1] "10x_pca"  "10x_tsne" "10x_umap" "PCA"      "PCA_fdr1" "PCA_p1"   "PCA_p2"
 # [8] "PCA_p5"
-plotPCA(spe)
-head(reducedDims(spe)$PCA_fdr1)
+# plotPCA(spe)
+# head(reducedDims(spe)$PCA_fdr1)
 
 ##   Plot variance explained
 
-plt_elbow <- function(dim_n, plt_name) {
-    percent.var <- attr(reducedDim(spe, dim_n), "percentVar")
-    pdf(file.path(dir_plots, plt_name), useDingbats = FALSE)
-    plot(percent.var, xlab = gsub("^PCA_", "PC_", dim_n), ylab = "Variance explained (%)")
-    dev.off()
-}
-
 lst_PCA_elbow <- list(
-    PCA_p1 = "pca_elbow_p1.pdf", PCA_p2 = "pca_elbow_p2.pdf", PCA_p5 = "pca_elbow_p5.pdf",
-    PCA = "pca_elbow_fdr5.pdf", PCA_fdr1 = "pca_elbow_fdr1.pdf"
-)
+  PCA_p1 = length(top.hvgs.p1), PCA_p2 = length(top.hvgs.p2), PCA_p5 = length(top.hvgs.p5),
+  PCA = length(top.hvgs.fdr5), PCA_fdr1 = length(top.hvgs.fdr1))
 
-map2(names(lst_PCA_elbow), lst_PCA_elbow, ~ plt_elbow(.x, .y))
-
+pdf(file.path(dir_plots, 'pca_elbow.pdf'), useDingbats = FALSE)
+map2(names(lst_PCA_elbow), lst_PCA_elbow, ~plot(
+  attr(reducedDim(spe, .x), "percentVar"), 
+  #xlab = gsub("^PCA_", "PC_", .x), 
+  xlab = "Dimension", 
+  ylab = "Variance explained (%)",
+  col = "blue",
+  main = .x,
+  sub = paste0("( HVG = ", as.character(.y), " )")) 
+  )
+dev.off()
 
 ################################################################################
 #   Compute GLM-PCA
