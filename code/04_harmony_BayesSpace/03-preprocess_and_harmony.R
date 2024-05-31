@@ -71,22 +71,16 @@ num_cores <- detectCores() - 1
 ## Create output directories
 dir_plots <- here("plots", "04_harmony_BayesSpace")
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
-# filtered_hdf5_dir <- here(
-#     "processed-data", "04_harmony_BayesSpace", "spe_filtered_hdf5"
-# )
-# harmony_hdf5_dir <- here(
-#     "processed-data", "04_harmony_BayesSpace", "spe_harmony"
-# )
+filtered_hdf5_dir <- here("processed-data", "04_harmony_BayesSpace", "spe_qcED_spatialLIBD_log_GLM-PCA_hdf5")
+harmony_hdf5_dir <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony")
 
 dir.create(dir_plots, showWarnings = FALSE)
 dir.create(dir_rdata, showWarnings = FALSE)
 
 dir.create(file.path(dir_rdata, "clusters_graphbased"), showWarnings = FALSE)
-dir.create(file.path(dir_rdata, "clusters_graphbased_cut_at"),
-    showWarnings = FALSE
-)
+dir.create(file.path(dir_rdata, "clusters_graphbased_cut_at"), showWarnings = FALSE)
 
-set.seed(20240229)
+set.seed(20240531)
 
 ## Load the data
 # spe <- loadHDF5SummarizedExperiment(filtered_hdf5_dir)
@@ -95,14 +89,29 @@ set.seed(20240229)
 # spe_in_path <- here("processed-data", "04_harmony_BayesSpace", "spe_qc_low_spatialLIBD.rds")
 # spe <- readRDS(spe_in_path)
 
-spe <- readRDS(file.path(dir_rdata, "spe_filtered.rds")) # replace with the n=5 rds
+spe <- readRDS(file.path(dir_rdata, "spe_qcED_spatialLIBD_log_GLM-PCA.rds")) # replace with the n=5 rds
 
 ## Plot initial low-dimensional representations prior to batch correction
-plotReducedDim(spe,
-    dimred = "PCA",
-    ncomponents = 3,
-    colour_by = "subject"
-)
+
+# colnames(colData(spe))
+# reducedDimNames(spe)
+# [1] "10x_pca"             "10x_tsne"            "10x_umap"           
+# [4] "PCA"                 "PCA_fdr1"            "PCA_p1"             
+# [7] "PCA_p2"              "PCA_p5"              "GLMPCA_approx"      
+# [10] "GLMPCA_approx_5000"  "GLMPCA_approx_10000"
+
+# list of reductions to plot
+lst_PCA <- c('PCA', 'PCA_fdr1', 'PCA_p1', 'PCA_p2', 'PCA_p5')
+
+pdf(file.path(dir_plots, 'reduction_dimension_PCA.pdf'), useDingbats = FALSE)
+map(lst_PCA, ~ plotReducedDim(spe,
+                              dimred = .x, 
+                              ncomponents = 3,
+                              colour_by = "sample_id"
+)) 
+dev.off()
+
+
 plotReducedDim(spe,
     dimred = "GLMPCA_approx",
     ncomponents = 3,
