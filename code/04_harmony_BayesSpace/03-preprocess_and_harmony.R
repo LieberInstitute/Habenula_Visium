@@ -122,30 +122,27 @@ map(lst_GLMPCA, ~ plotReducedDim(spe,
 )) 
 dev.off()
 
+lst_PCA_GMLPCA <- c(lst_PCA, lst_GLMPCA)
+pdf(file.path(dir_plots, 'reduction_dimension_ALL.pdf'), useDingbats = FALSE)
+map(lst_PCA_GMLPCA, ~ plotReducedDim(spe,
+                                 dimred = .x, 
+                                 ncomponents = 3,
+                                 colour_by = "subject" #scran_discard
+)) 
+dev.off()
 
-plotReducedDim(spe,
-    dimred = "PCA",
-    ncomponents = 3,
-    colour_by = "scran_discard"
-)
-plotReducedDim(spe,
-    dimred = "GLMPCA_approx",
-    ncomponents = 3,
-    colour_by = "scran_discard"
-)
-
-ggcells(
-    spe,
-    aes(x = GLMPCA_approx.1, y = GLMPCA_approx.2, colour = scran_discard)
-) +
-    geom_point(size = 0.5) +
-    facet_wrap(~sample_id) +
-    labs(x = "GLMPC1", y = "GLMPC2", colour = "Discard") + theme_classic()
+# ggcells(
+#     spe,
+#     aes(x = PCA_p1, y = PCA_p2, colour = sample_id)
+# ) +
+#     geom_point(size = 0.5) +
+#     facet_wrap(~sample_id) +
+#     labs(x = "GLMPC1", y = "GLMPC2", colour = "Discard") + theme_classic()
 
 ## Perform harmony batch correction
 message("Running RunHarmony()")
 Sys.time()
-set.seed(20240524)
+set.seed(20240531)
 spe <-
     RunHarmony_mod(
         spe,
@@ -157,9 +154,6 @@ spe <-
         kmeans_init_nstart = 100,
         kmeans_init_iter_max = 1000
     )
-
-# ## As we only have 1 sample, RunHarmony doesn't work
-# reducedDim(spe, "HARMONY") <- reducedDim(spe, "PCA")
 
 spe <-
     RunHarmony_mod(
