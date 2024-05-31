@@ -50,4 +50,8 @@ Additional notes:
 1. *spatialLIBD* version 1.15.4 is available on bioc-devel, not on bioc-release.
 Aka via https://bioconductor.org/packages/devel/data/experiment/html/spatialLIBD.html + the installation instructions listed there. Be sure to have the correct credential access to install the devel version. This link has help resources to setup the PAT access https://usethis.r-lib.org/articles/git-credentials.html
 
-2. The new *spatialLIBD* new version app start R (version “4.4”). Thus, if you are working in the *JHPCE* you we need to update your *bas
+2. The new *spatialLIBD* new version app start R (version “4.4”). Thus, if you are working in the *JHPCE* you we need to update your *bashrc* profile for JHPCE to load the proper R module. Ex. $ vim ~/.bashrc; Replace conda_R/4.3.x with conda_R/4.4
+
+<br><br>
+
+
