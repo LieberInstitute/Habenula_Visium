@@ -74,11 +74,11 @@ message(Sys.time(), " - Running getTopHVGs()")
 #     - prop define a numeric scalar specifying the proportion of genes to report as HVGs
 #     _ further we subset to genes that have FDR less than or equal to fdr.threshold
 top.hvgs.p1 <- getTopHVGs(dec, prop = 0.1)
-print(paste("Num HVGs for top 10% prop:", length(top.hvgs.p1)))
+print(paste("Num HVGs for top 10 proportion:", length(top.hvgs.p1)))
 top.hvgs.p2 <- getTopHVGs(dec, prop = 0.2)
-print(paste("Num HVGs for top 20% prop:", length(top.hvgs.p2)))
+print(paste("Num HVGs for top 20 proportion:", length(top.hvgs.p2)))
 top.hvgs.p5 <- getTopHVGs(dec, prop = 0.5)
-print(paste("Num HVGs for top 50% prop:", length(top.hvgs.p5)))
+print(paste("Num HVGs for top 50 proportion:", length(top.hvgs.p5)))
 
 top.hvgs.fdr5 <- getTopHVGs(dec, fdr.threshold = 0.05)
 print(paste("Num HVGs at FDR = 0.05:", length(top.hvgs.fdr5)))
