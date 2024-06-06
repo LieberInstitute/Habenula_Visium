@@ -7,6 +7,7 @@ library("scater")
 library("scry")
 library("BiocSingular")
 library("bluster")
+library("PCAtools")
 library("sessioninfo")
 library("HDF5Array")
 
@@ -45,12 +46,12 @@ dec <- modelGeneVar(spe,
 )
 colnames(dec$per.block)
 
-
 ## Plot gene variance in one plot 
 
 color_v <- c("red","blue","black","green","brown")
-y_axis <- c(1)
-x_axis <- c(1)
+y_axis <- c(0)
+x_axis <- c(0)
+## Get max axis range
 for (i in 1:length(colnames(dec$per.block))) {
   current <- dec$per.block[[i]]
   y_axis <- append(y_axis, max(current$total))
@@ -148,28 +149,61 @@ spe <-
         name = "PCA_p5"
     )
 Sys.time()
-reducedDimNames(spe)
-# [1] "10x_pca"  "10x_tsne" "10x_umap" "PCA"      "PCA_fdr1" "PCA_p1"   "PCA_p2"
-# [8] "PCA_p5"
+# reducedDimNames(spe)
 # plotPCA(spe)
 # head(reducedDims(spe)$PCA_fdr1)
 
-##   Plot variance explained
+##   Plot all elbow plots in the same plot and add legends including hvg used and inflection point
 
 lst_PCA_elbow <- list(
   PCA_p1 = length(top.hvgs.p1), PCA_p2 = length(top.hvgs.p2), PCA_p5 = length(top.hvgs.p5),
   PCA = length(top.hvgs.fdr5), PCA_fdr1 = length(top.hvgs.fdr1))
 
+# map2(names(lst_PCA_elbow), lst_PCA_elbow, ~plot(
+#   attr(reducedDim(spe, .x), "percentVar"), 
+#   #xlab = gsub("^PCA_", "PC_", .x), 
+#   xlab = "Dimension", 
+#   ylab = "Variance explained (%)",
+#   col = "blue",
+#   main = .x,
+#   sub = paste0("( HVG = ", as.character(.y), " )")) 
+#   )
+
+## Get max axis range
+max_percentVar <- map(names(lst_PCA_elbow), ~ max(attr(reducedDim(spe, .x), "percentVar")))
+y_axis <- ceiling(max(unlist(max_percentVar)) + 0.5)
+x_axis <- num_red_dims
+
 pdf(file.path(dir_plots, 'pca_elbow.pdf'), useDingbats = FALSE)
-map2(names(lst_PCA_elbow), lst_PCA_elbow, ~plot(
-  attr(reducedDim(spe, .x), "percentVar"), 
+plot(
+  attr(reducedDim(spe, names(lst_PCA_elbow[1])), "percentVar"), 
   #xlab = gsub("^PCA_", "PC_", .x), 
   xlab = "Dimension", 
   ylab = "Variance explained (%)",
-  col = "blue",
-  main = .x,
-  sub = paste0("( HVG = ", as.character(.y), " )")) 
-  )
+  ylim =c(0, y_axis), xlim =c(0, x_axis),
+  col = color_v[1],
+  main = "Elbow plots")
+
+## Build legend list for first element
+percent.var <- attr(reducedDim(spe, names(lst_PCA_elbow[1])), "percentVar") 
+points(percent.var, col=color_v[1]) 
+chosen.elbow <- findElbowPoint(percent.var)
+hvg.threshold <- names(lst_PCA_elbow[1])
+hvg.used <- paste0("( HVG = ", as.character(lst_PCA_elbow[1]), ")")
+leg <- paste(hvg.threshold, hvg.used, ' elbow = ', chosen.elbow)
+legend_label <- c(leg)
+
+for (i in 2:length(names(lst_PCA_elbow))) {
+  percent.var <- attr(reducedDim(spe, names(lst_PCA_elbow[i])), "percentVar") 
+  points(percent.var, col=color_v[i]) 
+  chosen.elbow <- findElbowPoint(percent.var)
+  hvg.threshold <- names(lst_PCA_elbow[i])
+  hvg.used <- paste0("( HVG = ", as.character(lst_PCA_elbow[i]), ")")
+  leg <- paste(hvg.threshold, hvg.used, ' elbow = ', chosen.elbow)
+  legend_label <- append(legend_label, leg)
+}
+legend("topright", legend = legend_label,
+       col=c(color_v), lty=1:2, cex=0.8)
 dev.off()
 
 ################################################################################
