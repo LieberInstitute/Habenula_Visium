@@ -44,30 +44,50 @@ dec <- modelGeneVar(spe,
     BPPARAM = MulticoreParam(num_cores)
 )
 colnames(dec$per.block)
-# [1] "V12D07-075_C1" "V13B23-285_A1" "V13B23-285_B1" "V13B23-285_C1"
-# [5] "V13B23-285_D1"
 
-# plot(dec$mean, dec$total, xlab="Mean log-expression", ylab="Variance")
-# curve(metadata(dec)$trend(x), col="blue", add=TRUE)
 
-plot(dec$mean, dec$total)
+## Plot gene variance in one plot 
+
+color_v <- c("red","blue","black","green","brown")
+y_axis <- c(1)
+x_axis <- c(1)
+for (i in 1:length(colnames(dec$per.block))) {
+  current <- dec$per.block[[i]]
+  y_axis <- append(y_axis, max(current$total))
+  x_axis <- append(x_axis, max(current$mean))
+}
+y_axis <- ceiling(max(y_axis))
+x_axis <- ceiling(max(x_axis))
 
 pdf(file.path(dir_plots, "scran_modelGeneVar.pdf"), useDingbats = FALSE)
-mapply(function(block, blockname) {
-    plot(
-        block$mean,
-        block$total,
-        xlab = "Mean log-expression",
-        ylab = "Variance",
-        main = blockname
-    )
-    # points(metadata(block)$mean, metadata(block)$var, col="red")
-    curve(metadata(block)$trend(x),
-        col = "blue",
-        add = TRUE
-    )
-}, dec$per.block, names(dec$per.block))
+plot(dec$per.block[[1]]$mean, dec$per.block[[1]]$total, 
+     ylim =c(0, y_axis), xlim =c(0, x_axis),
+     xlab = "Mean log-expression",
+     ylab = "Variance")
+
+for (i in 1:length(colnames(dec$per.block))) {
+  current <- dec$per.block[[i]]
+  curve(metadata(current)$trend(x), add=TRUE, col=color_v[i]) 
+  }
+legend("topright", legend = colnames(dec$per.block),
+       col=c(color_v), lty=1:2, cex=0.8)
 dev.off()
+
+# mapply(function(block, blockname) {
+#     plot(
+#         block$mean,
+#         block$total,
+#         xlab = "Mean log-expression",
+#         ylab = "Variance",
+#         main = blockname
+#     )
+#     # points(metadata(block)$mean, metadata(block)$var, col="red")
+#     curve(metadata(block)$trend(x),
+#         col = "blue",
+#         add = TRUE
+#     )
+# }, dec$per.block, names(dec$per.block))
+
 
 message(Sys.time(), " - Running getTopHVGs()")
 # By default getTopHVGs() retains all genes with positive values in the var.field column of stats
