@@ -19,11 +19,7 @@ dir_plots <- here("plots", "04_harmony_BayesSpace")
 
 num_red_dims <- 50
 num_cores <- 2 # Sys.getenv('SLURM_CPUS_ON_NODE')
-set.seed(20240223)
-
-# ## Create output directories
-# dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
-# dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
+set.seed(20240613)
 
 ## load a filtered spe object
 spe <- readRDS(filtered_in_path)
@@ -31,7 +27,6 @@ spe <- readRDS(filtered_in_path)
 ## Verified number of TRUE spots in tissue
 in_tissue_spots <- sum(as.numeric(map(unique(spe$sample_id), ~ sum(spe$in_tissue[spe$sample_id == .x]))))
 print(paste0(" Spots in tissue: ", in_tissue_spots))
-
 
 ################################################################################
 #   Compute PCA
@@ -46,11 +41,13 @@ dec <- modelGeneVar(spe,
 )
 colnames(dec$per.block)
 
-## Plot gene variance in one plot 
+## Plot gene variance in one plot for overview 
 
+# set some initial values 
 color_v <- c("red","blue","black","green","brown")
 y_axis <- c(0)
 x_axis <- c(0)
+
 ## Get max axis range
 for (i in 1:length(colnames(dec$per.block))) {
   current <- dec$per.block[[i]]
@@ -74,21 +71,31 @@ legend("topright", legend = colnames(dec$per.block),
        col=c(color_v), lty=1:2, cex=0.8)
 dev.off()
 
-# mapply(function(block, blockname) {
-#     plot(
-#         block$mean,
-#         block$total,
-#         xlab = "Mean log-expression",
-#         ylab = "Variance",
-#         main = blockname
-#     )
-#     # points(metadata(block)$mean, metadata(block)$var, col="red")
-#     curve(metadata(block)$trend(x),
-#         col = "blue",
-#         add = TRUE
-#     )
-# }, dec$per.block, names(dec$per.block))
+## Plot gene variance by sample
 
+pdf(file.path(dir_plots, "scran_modelGeneVar_individual_plots.pdf"), useDingbats = FALSE)
+mapply(function(block, blockname) {
+    plot(
+        block$mean,
+        block$total,
+        xlab = "Mean log-expression",
+        ylab = "Variance",
+        main = blockname
+    )
+    # points(metadata(block)$mean, metadata(block)$var, col="red")
+    curve(metadata(block)$trend(x),
+        col = "blue",
+        add = TRUE
+    )
+}, dec$per.block, names(dec$per.block))
+dev.off()
+
+# Ordering by most interesting genes for inspection.
+hvg <- mapply(function(block) {
+  head(block[order(block$bio, decreasing=TRUE),], n=10) 
+  }, dec$per.block)
+
+capture.output(hvg, file = file.path(dir_rdata, "scran_hvg.csv"))
 
 message(Sys.time(), " - Running getTopHVGs()")
 # By default getTopHVGs() retains all genes with positive values in the var.field column of stats
@@ -213,28 +220,30 @@ dev.off()
 message(Sys.time(), " - Running devianceFeatureSelection()")
 spe <- devianceFeatureSelection(spe, assay = "counts", fam = "binomial", sorted = FALSE, batch = as.factor(spe$sample_id))
 spe <- devianceFeatureSelection(spe, assay = "counts", fam = "poisson", sorted = FALSE, batch = as.factor(spe$sample_id))
-colnames(rowData(spe))
-head(rowData(spe)$binomial_deviance)
-head(rowData(spe)$poisson_deviance)
+# colnames(rowData(spe))
+# head(rowData(spe)$binomial_deviance)
+# head(rowData(spe)$poisson_deviance)
 
-pdf(file.path(dir_plots, "binomial_deviance.pdf"))
+pdf(file.path(dir_plots, "binomial_deviance100.pdf"))
 par(mfrow = c(2,1))
 p1 <- plot(
-    sort(rowData(spe)$binomial_deviance, decreasing = TRUE),
+    sort(rowData(spe)$binomial_deviance, decreasing = TRUE)[1:100],
     type = "l",
     xlab = "ranked genes",
     ylab = "binomial deviance",
     main = "Feature Selection with Binomial Deviance"
-) + abline(v = 1000, lty = 2, col = "red") + abline(v = 2000, lty = 2, col = "blue") 
+) + abline(v = 10, lty = 2, col = "red") + abline(v = 20, lty = 2, col = "blue") 
+# ) + abline(v = 1000, lty = 2, col = "red") + abline(v = 2000, lty = 2, col = "blue") 
 p2 <- plot(
-    sort(rowData(spe)$poisson_deviance, decreasing = TRUE),
+    sort(rowData(spe)$poisson_deviance, decreasing = TRUE)[1:100],
     type = "l",
     xlab = "ranked genes",
     ylab = "poisson deviance",
     main = "Feature Selection with Poisson Deviance"
-) + abline(v = 1000, lty = 2, col = "red") + abline(v = 2000, lty = 2, col = "blue")
-
+) + abline(v = 10, lty = 2, col = "red") + abline(v = 20, lty = 2, col = "blue")
+# ) + abline(v = 1000, lty = 2, col = "red") + abline(v = 2000, lty = 2, col = "blue")
 plts <- p1 / p2
+plts
 dev.off()
 
 message(Sys.time(), " - Running nullResiduals()")
@@ -259,20 +268,16 @@ spe <- nullResiduals( # default params
 #     sparse->dense coercion: allocating vector of size 3.2 GiB
 #   6: In g({ : NaNs produced
 
-# produce residual vs. fitted plot 
-#head(rowData(spe)$nullresiduals)
-#plot(rowData(spe)$binomial_deviance), )  CSC
-
+hdgs.hb.1000 <-
+    rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:1000]
 hdgs.hb.2000 <-
     rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:2000]
 hdgs.hb.5000 <-
     rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:5000]
-hdgs.hb.10000 <-
-    rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:10000]
 
-save(hdgs.hb.2000,
+save(hdgs.hb.1000,
+    hdgs.hb.2000,
     hdgs.hb.5000,
-    hdgs.hb.10000,
     file = file.path(dir_rdata, "hdgs.hb.Rdata")
 )
 
@@ -280,9 +285,18 @@ message(Sys.time(), " - Running GLM-PCA")
 spe <- runPCA(
     spe,
     exprs_values = "binomial_deviance_residuals",
-    subset_row = hdgs.hb.2000,
+    subset_row = hdgs.hb.1000,
     ncomponents = num_red_dims,
     name = "GLMPCA_approx",
+    BSPARAM = BiocSingular::IrlbaParam()
+)
+
+spe <- runPCA(
+    spe,
+    exprs_values = "binomial_deviance_residuals",
+    subset_row = hdgs.hb.2000,
+    ncomponents = num_red_dims,
+    name = "GLMPCA_approx_2000",
     BSPARAM = BiocSingular::IrlbaParam()
 )
 
@@ -292,15 +306,6 @@ spe <- runPCA(
     subset_row = hdgs.hb.5000,
     ncomponents = num_red_dims,
     name = "GLMPCA_approx_5000",
-    BSPARAM = BiocSingular::IrlbaParam()
-)
-
-spe <- runPCA(
-    spe,
-    exprs_values = "binomial_deviance_residuals",
-    subset_row = hdgs.hb.10000,
-    ncomponents = num_red_dims,
-    name = "GLMPCA_approx_10000",
     BSPARAM = BiocSingular::IrlbaParam()
 )
 
