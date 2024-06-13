@@ -1,13 +1,14 @@
 library("spatialLIBD")
+library("SpatialExperiment")
 library("here")
 library("tidyverse")
 library("scran")
-library("BiocParallel")
 library("scater")
 library("scry")
+library("BiocParallel")
 library("BiocSingular")
-library("bluster")
-library("PCAtools")
+#library("bluster")
+#library("PCAtools")
 library("sessioninfo")
 library("HDF5Array")
 
@@ -97,6 +98,8 @@ hvg <- mapply(function(block) {
 
 capture.output(hvg, file = file.path(dir_rdata, "scran_hvg.csv"))
 
+# get the top variable genes at different thresholds
+
 message(Sys.time(), " - Running getTopHVGs()")
 # By default getTopHVGs() retains all genes with positive values in the var.field column of stats
 #     - prop define a numeric scalar specifying the proportion of genes to report as HVGs
@@ -125,11 +128,32 @@ save(
 message(Sys.time(), " - Running runPCA()")
 Sys.time()
 
+# HVG by proportion of genes to report 
+# 10p is our default named PCA for further analysis
+spe <-
+  runPCA(spe,
+         subset_row = top.hvgs.p1,
+         ncomponents = num_red_dims,
+         name = "PCA"
+  )
+spe <- # 20p
+  runPCA(spe,
+         subset_row = top.hvgs.p2,
+         ncomponents = num_red_dims,
+         name = "PCA_p2"
+  )
+spe <- # 50p
+  runPCA(spe,
+         subset_row = top.hvgs.p5,
+         ncomponents = num_red_dims,
+         name = "PCA_p5"
+  )
+# HVG by Fold Discovery Rate
 spe <-
     runPCA(spe,
         subset_row = top.hvgs.fdr5,
         ncomponents = num_red_dims,
-        name = "PCA"
+        name = "PCA_fdr5"
     )
 spe <-
     runPCA(spe,
@@ -137,44 +161,18 @@ spe <-
         ncomponents = num_red_dims,
         name = "PCA_fdr1"
     )
-spe <-
-    runPCA(spe,
-        subset_row = top.hvgs.p1,
-        ncomponents = num_red_dims,
-        name = "PCA_p1"
-    )
-spe <-
-    runPCA(spe,
-        subset_row = top.hvgs.p2,
-        ncomponents = num_red_dims,
-        name = "PCA_p2"
-    )
-spe <-
-    runPCA(spe,
-        subset_row = top.hvgs.p5,
-        ncomponents = num_red_dims,
-        name = "PCA_p5"
-    )
 Sys.time()
-# reducedDimNames(spe)
-# plotPCA(spe)
+reducedDimNames(spe)
+plotReducedDim(spe, dimred = "PCA", colour_by = "sample_id") 
+plotReducedDim(spe, dimred = "PCA_p2", colour_by = "sample_id") 
+
 # head(reducedDims(spe)$PCA_fdr1)
 
 ##   Plot all elbow plots in the same plot and add legends including hvg used and inflection point
 
 lst_PCA_elbow <- list(
-  PCA_p1 = length(top.hvgs.p1), PCA_p2 = length(top.hvgs.p2), PCA_p5 = length(top.hvgs.p5),
-  PCA = length(top.hvgs.fdr5), PCA_fdr1 = length(top.hvgs.fdr1))
-
-# map2(names(lst_PCA_elbow), lst_PCA_elbow, ~plot(
-#   attr(reducedDim(spe, .x), "percentVar"), 
-#   #xlab = gsub("^PCA_", "PC_", .x), 
-#   xlab = "Dimension", 
-#   ylab = "Variance explained (%)",
-#   col = "blue",
-#   main = .x,
-#   sub = paste0("( HVG = ", as.character(.y), " )")) 
-#   )
+  PCA = length(top.hvgs.p1), PCA_p2 = length(top.hvgs.p2), PCA_p5 = length(top.hvgs.p5),
+  PCA_fdr5 = length(top.hvgs.fdr5), PCA_fdr1 = length(top.hvgs.fdr1))
 
 ## Get max axis range
 max_percentVar <- map(names(lst_PCA_elbow), ~ max(attr(reducedDim(spe, .x), "percentVar")))
@@ -194,19 +192,19 @@ plot(
 ## Build legend list for first element
 percent.var <- attr(reducedDim(spe, names(lst_PCA_elbow[1])), "percentVar") 
 points(percent.var, col=color_v[1]) 
-chosen.elbow <- findElbowPoint(percent.var)
+#chosen.elbow <- findElbowPoint(percent.var)
 hvg.threshold <- names(lst_PCA_elbow[1])
-hvg.used <- paste0("( HVG = ", as.character(lst_PCA_elbow[1]), ")")
-leg <- paste(hvg.threshold, hvg.used, ' elbow = ', chosen.elbow)
+hvg.used <- paste0("(HVG = ", as.character(lst_PCA_elbow[1]), ")")
+leg <- paste(hvg.threshold, hvg.used) #, ' elbow = ', chosen.elbow)
 legend_label <- c(leg)
 
 for (i in 2:length(names(lst_PCA_elbow))) {
   percent.var <- attr(reducedDim(spe, names(lst_PCA_elbow[i])), "percentVar") 
   points(percent.var, col=color_v[i]) 
-  chosen.elbow <- findElbowPoint(percent.var)
+  #chosen.elbow <- findElbowPoint(percent.var)
   hvg.threshold <- names(lst_PCA_elbow[i])
-  hvg.used <- paste0("( HVG = ", as.character(lst_PCA_elbow[i]), ")")
-  leg <- paste(hvg.threshold, hvg.used, ' elbow = ', chosen.elbow)
+  hvg.used <- paste0("(HVG = ", as.character(lst_PCA_elbow[i]), ")")
+  leg <- paste(hvg.threshold, hvg.used) #, ' elbow = ', chosen.elbow)
   legend_label <- append(legend_label, leg)
 }
 legend("topright", legend = legend_label,
@@ -219,10 +217,12 @@ dev.off()
 
 message(Sys.time(), " - Running devianceFeatureSelection()")
 spe <- devianceFeatureSelection(spe, assay = "counts", fam = "binomial", sorted = FALSE, batch = as.factor(spe$sample_id))
-spe <- devianceFeatureSelection(spe, assay = "counts", fam = "poisson", sorted = FALSE, batch = as.factor(spe$sample_id))
+spe <- devianceFeatureSelection(spe, assay = "counts", fam = "poisson", sorted = FALSE, batch = as.factor(spe$sample_id)) # batch = dec$per.block)
 # colnames(rowData(spe))
 # head(rowData(spe)$binomial_deviance)
 # head(rowData(spe)$poisson_deviance)
+
+## plot binomial and poison deviance in first 100 selected genes 
 
 pdf(file.path(dir_plots, "binomial_deviance100.pdf"))
 par(mfrow = c(2,1))
@@ -246,34 +246,25 @@ plts <- p1 / p2
 plts
 dev.off()
 
+## calculate residuals from binomial model
+
 message(Sys.time(), " - Running nullResiduals()")
 spe <- nullResiduals( # default params
     spe,
     assay = "counts",
     fam = "binomial",
     type = "deviance",
-    batch = as.factor(spe$sample_id)
+    #batch = as.factor(spe$sample_id)
 )
+# produce residual vs. fitted plot. CSC 
 
-# computes pearson residuals for count data based on a multinomial null model
-# Warning messages:
-#   1: In asMethod(object) :
-#   sparse->dense coercion: allocating vector of size 3.2 GiB
-# 2: In log({ : NaNs produced
-#   3: In asMethod(object) :
-#     sparse->dense coercion: allocating vector of size 3.2 GiB
-#   4: In asMethod(object) :
-#     sparse->dense coercion: allocating vector of size 3.2 GiB
-#   5: In asMethod(object) :
-#     sparse->dense coercion: allocating vector of size 3.2 GiB
-#   6: In g({ : NaNs produced
-
+## Get HDG
 hdgs.hb.1000 <-
     rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:1000]
 hdgs.hb.2000 <-
     rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:2000]
 hdgs.hb.5000 <-
-    rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:5000]
+   rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:5000]
 
 save(hdgs.hb.1000,
     hdgs.hb.2000,
@@ -300,18 +291,10 @@ spe <- runPCA(
     BSPARAM = BiocSingular::IrlbaParam()
 )
 
-spe <- runPCA(
-    spe,
-    exprs_values = "binomial_deviance_residuals",
-    subset_row = hdgs.hb.5000,
-    ncomponents = num_red_dims,
-    name = "GLMPCA_approx_5000",
-    BSPARAM = BiocSingular::IrlbaParam()
-)
+plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sample_id") 
+plotReducedDim(spe, dimred = "GLMPCA_approx_2000", colour_by = "sample_id") 
 
-################################################################################
-#   Save the processed SPE object
-################################################################################
+## Save the processed SPE object
 
 message(Sys.time(), " - Saving HDF5-backed filtered spe")
 spe = saveHDF5SummarizedExperiment(
