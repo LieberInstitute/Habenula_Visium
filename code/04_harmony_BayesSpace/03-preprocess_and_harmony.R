@@ -1,6 +1,7 @@
 ## Required libraries
 library("spatialLIBD")
 library("here")
+library("purrr")
 library("harmony")
 library("parallel")
 library("scater")
@@ -15,7 +16,8 @@ library("sessioninfo")
 RunHarmony_mod <- function(
         object,
         group.by.vars,
-        reduction.use = "PCA",
+        #reduction.use = "PCA",
+        reduction.use = "GLMPCA_approx", # Top 1000
         dims.use = NULL,
         verbose = TRUE,
         reduction.save = "HARMONY",
@@ -23,6 +25,10 @@ RunHarmony_mod <- function(
     ## Get PCA embeddings
     if (!"PCA" %in% SingleCellExperiment::reducedDimNames(object)) {
         stop("PCA must be computed before running Harmony.")
+    }
+    ## Get GMLPCA embeddings
+    if (!"GLMPCA_approx" %in% SingleCellExperiment::reducedDimNames(object)) {
+      stop("GLMPCA must be computed before running Harmony.")
     }
     pca_embedding <-
         SingleCellExperiment::reducedDim(object, reduction.use)
@@ -65,7 +71,7 @@ RunHarmony_mod <- function(
     return(object)
 }
 
-tsne_perplex_vals <- c("05", "20", "50", "80")
+tsne_perplex_vals <- c("05", "20", "50") #, "80"
 num_cores <- detectCores() - 1
 
 ## Create output directories
@@ -76,31 +82,20 @@ harmony_hdf5_dir <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony
 
 dir.create(dir_plots, showWarnings = FALSE)
 dir.create(dir_rdata, showWarnings = FALSE)
-
 dir.create(file.path(dir_rdata, "clusters_graphbased"), showWarnings = FALSE)
 dir.create(file.path(dir_rdata, "clusters_graphbased_cut_at"), showWarnings = FALSE)
 
-set.seed(20240531)
+set.seed(20240614)
 
 ## Load the data
 # spe <- loadHDF5SummarizedExperiment(filtered_hdf5_dir)
-
-## set path to read filtered RDS object (CSC)
-# spe_in_path <- here("processed-data", "04_harmony_BayesSpace", "spe_qc_low_spatialLIBD.rds")
-# spe <- readRDS(spe_in_path)
-
-spe <- readRDS(file.path(dir_rdata, "spe_qcED_spatialLIBD_log_GLM-PCA.rds")) # replace with the n=5 rds
+spe <- readRDS(file.path(dir_rdata, "spe_qcED_spatialLIBD_log_GLM-PCA.rds")) 
+# colnames(colData(spe))
+reducedDimNames(spe)
 
 ## Plot initial low-dimensional representations prior to batch correction
 
-# colnames(colData(spe))
-# reducedDimNames(spe)
-# [1] "10x_pca"             "10x_tsne"            "10x_umap"           
-# [4] "PCA"                 "PCA_fdr1"            "PCA_p1"             
-# [7] "PCA_p2"              "PCA_p5"              "GLMPCA_approx"      
-# [10] "GLMPCA_approx_5000"  "GLMPCA_approx_10000"
-
-# list of reductions to plot
+# Build a list with the reductions to plot
 
 lst_PCA <- c(reducedDimNames(spe)[grep("^PCA", reducedDimNames(spe))])
 # [1] "PCA"      "PCA_fdr1" "PCA_p1"   "PCA_p2"   "PCA_p5"
@@ -113,7 +108,6 @@ map(lst_PCA, ~ plotReducedDim(spe,
 dev.off()
 
 lst_GLMPCA <- c(reducedDimNames(spe)[grep("^GLMPCA_", reducedDimNames(spe))])
-# [1] "GLMPCA_approx"       "GLMPCA_approx_5000"  "GLMPCA_approx_10000"
 pdf(file.path(dir_plots, 'reduction_dimension_GLMPCA.pdf'), useDingbats = FALSE)
 map(lst_GLMPCA, ~ plotReducedDim(spe,
                               dimred = .x, 
@@ -133,7 +127,7 @@ dev.off()
 
 # ggcells(
 #     spe,
-#     aes(x = PCA_p1, y = PCA_p2, colour = sample_id)
+#     aes(x = PCA_p1, y = PCA_p1, colour = sample_id)
 # ) +
 #     geom_point(size = 0.5) +
 #     facet_wrap(~sample_id) +
@@ -142,14 +136,16 @@ dev.off()
 ## Perform harmony batch correction
 message("Running RunHarmony()")
 Sys.time()
-set.seed(20240531)
+set.seed(20240614)
+
 spe <-
     RunHarmony_mod(
         spe,
-        "sample_id",
+        group.by.vars = "sample_id",
         verbose = TRUE,
         plot_convergence = TRUE,
-        reduction.use = "PCA",
+        #reduction.use = "PCA",   # HVGs at FDR = 0.05 = 8009
+        reduction.use = "GLMPCA_approx",  # Top 1000
         reduction.save = "HARMONY",
         kmeans_init_nstart = 100,
         kmeans_init_iter_max = 1000
@@ -160,7 +156,8 @@ spe <-
         spe,
         group.by.vars = "sample_id",
         verbose = TRUE,
-        reduction.use = "PCA",
+        #reduction.use = "PCA",
+        reduction.use = "GLMPCA_approx",  # Top 1000
         reduction.save = "harmony_subject_no_lambda",
         plot_convergence = TRUE,
         lambda = NULL,
@@ -172,7 +169,7 @@ Sys.time()
 
 #   Perform dimensionality reduction using both PCA and harmony's reduced
 #   dimensions
-for (dimred_var in c("PCA", "HARMONY")) {
+for (dimred_var in c("PCA", "HARMONY", "harmony_subject_no_lambda")) {
     #   Run TSNE with several perplexity values
     for (perplex in tsne_perplex_vals) {
         message(
@@ -260,13 +257,14 @@ for (dimred_var in c("PCA", "HARMONY")) {
     }
 }
 
-## Perform graph-based clustering on batch corrected-data
+## Perform graph-based clustering on batch corrected-data. Smaller 'k' usually yields finer clusters (ex. 5)
 message("Running buildSNNGraph() on HARMONY dimensions")
 Sys.time()
 g_k10 <- buildSNNGraph(spe, k = 10, use.dimred = "HARMONY")
 Sys.time()
 save(g_k10, file = file.path(dir_rdata, "g_k10_harmony.Rdata"))
 
+## For clustering based on the produced graph
 message("Running cluster_walktrap()")
 Sys.time()
 g_walk_k10 <- igraph::cluster_walktrap(g_k10)
@@ -338,7 +336,7 @@ spe$col <- spe$array_col
 ## Save new SPE object
 saveRDS(spe, file.path(dir_rdata, "spe_harmony.rds"))
 
-## Object size in GB
+## Object size in GB. 4.44 GB
 ## (do this near the end in case lobstr crashes, it's happened to me once)
 lobstr::obj_size(spe)
 
