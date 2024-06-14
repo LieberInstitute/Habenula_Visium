@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -p bluejay
-#SBATCH --mem=32G
+#SBATCH -p shared
+#SBATCH --mem=80G
 #SBATCH --job-name=BayesSpace_k_search
 #SBATCH -c 1
 #SBATCH -t 1-00:00:00
@@ -27,7 +27,7 @@ module load conda_R/4.3.x
 ## List current modules for reproducibility
 module list
 
-Rscript 03-BayesSpace_k_search.R
+Rscript 04-BayesSpace_k_search.R
 
 echo "**** Job ends ****"
 date
