@@ -258,9 +258,9 @@ spe <- nullResiduals( # default params
 )
 # produce residual vs. fitted plot. CSC 
 
-## Get HDG
+## Get HVDG
 hdgs.hb.1000 <-
-    rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:1000]
+      rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:1000]
 hdgs.hb.2000 <-
     rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:2000]
 hdgs.hb.5000 <-
