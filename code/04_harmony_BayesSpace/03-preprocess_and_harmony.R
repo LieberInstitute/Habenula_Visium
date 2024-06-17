@@ -30,6 +30,7 @@ RunHarmony_mod <- function(
     if (!"GLMPCA_approx" %in% SingleCellExperiment::reducedDimNames(object)) {
       stop("GLMPCA must be computed before running Harmony.")
     }
+    ## PCA embeddings validations
     pca_embedding <-
         SingleCellExperiment::reducedDim(object, reduction.use)
     if (is.null(dims.use)) {
@@ -95,7 +96,7 @@ reducedDimNames(spe)
 
 ## Plot initial low-dimensional representations prior to batch correction
 
-# Build a list with the reductions to plot
+# Build a list with the reductions PCA and GLM-PCA to plot
 
 lst_PCA <- c(reducedDimNames(spe)[grep("^PCA", reducedDimNames(spe))])
 # [1] "PCA"      "PCA_fdr1" "PCA_p1"   "PCA_p2"   "PCA_p5"
@@ -350,18 +351,7 @@ saveRDS(spe, file.path(dir_rdata, "spe_harmony.rds"))
 ## (do this near the end in case lobstr crashes, it's happened to me once)
 lobstr::obj_size(spe)
 
-
 message('Harmony correction completed! ')   
-
-
-## slurm script reproducibility
-
-# slurmjobs::job_loop(
-#   #loops = list(type_mtx = c("data_counts", "norm_counts"), integration_model = c("mod1", "mod2", "mod3", "mod4")),
-#   name = "03-preprocess_and_harmony.R",
-#   cores = 2,
-#   create_shell = TRUE
-# )
 
 
 ## Reproducibility information
