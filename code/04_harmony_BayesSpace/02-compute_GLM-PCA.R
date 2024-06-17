@@ -93,10 +93,10 @@ dev.off()
 
 # Ordering by most interesting genes for inspection.
 hvg <- mapply(function(block) {
-  head(block[order(block$bio, decreasing=TRUE),], n=10) 
+  head(block[order(block$bio, decreasing=TRUE),], n=20) 
   }, dec$per.block)
 
-capture.output(hvg, file = file.path(dir_rdata, "scran_hvg.csv"))
+capture.output(hvg, file = file.path(dir_rdata, "scran_Top20_hvgALL.csv"))
 
 # get the top variable genes at different thresholds
 
@@ -217,31 +217,35 @@ dev.off()
 
 message(Sys.time(), " - Running devianceFeatureSelection()")
 spe <- devianceFeatureSelection(spe, assay = "counts", fam = "binomial", sorted = FALSE, batch = as.factor(spe$sample_id))
-spe <- devianceFeatureSelection(spe, assay = "counts", fam = "poisson", sorted = FALSE, batch = as.factor(spe$sample_id)) # batch = dec$per.block)
+spe <- devianceFeatureSelection(spe, assay = "counts", fam = "poisson", sorted = FALSE, batch = as.factor(spe$sample_id)) 
 # colnames(rowData(spe))
 # head(rowData(spe)$binomial_deviance)
+# binomial_dev <- rowData(spe)$binomial_deviance
+# length(binomial_dev[binomial_dev == 0])
+# summary(binomial_dev)
 # head(rowData(spe)$poisson_deviance)
 
 ## plot binomial and poison deviance in first 100 selected genes 
 
-pdf(file.path(dir_plots, "binomial_deviance100.pdf"))
+pdf(file.path(dir_plots, "binomial_deviance10000.pdf"))
 par(mfrow = c(2,1))
 p1 <- plot(
-    sort(rowData(spe)$binomial_deviance, decreasing = TRUE)[1:100],
+    sort(rowData(spe)$binomial_deviance, decreasing = TRUE)[1:10000],
     type = "l",
     xlab = "ranked genes",
     ylab = "binomial deviance",
     main = "Feature Selection with Binomial Deviance"
-) + abline(v = 10, lty = 2, col = "red") + abline(v = 20, lty = 2, col = "blue") 
-# ) + abline(v = 1000, lty = 2, col = "red") + abline(v = 2000, lty = 2, col = "blue") 
+# ) + abline(v = 10, lty = 2, col = "red") + abline(v = 20, lty = 2, col = "blue") 
+) + abline(v = 1000, lty = 2, col = "red") + abline(v = 2000, lty = 2, col = "blue") + abline(v = 5000, lty = 2, col = "green") 
 p2 <- plot(
-    sort(rowData(spe)$poisson_deviance, decreasing = TRUE)[1:100],
+    sort(rowData(spe)$poisson_deviance, decreasing = TRUE)[1:10000],
     type = "l",
     xlab = "ranked genes",
     ylab = "poisson deviance",
     main = "Feature Selection with Poisson Deviance"
-) + abline(v = 10, lty = 2, col = "red") + abline(v = 20, lty = 2, col = "blue")
-# ) + abline(v = 1000, lty = 2, col = "red") + abline(v = 2000, lty = 2, col = "blue")
+# ) + abline(v = 10, lty = 2, col = "red") + abline(v = 20, lty = 2, col = "blue")
+) + abline(v = 1000, lty = 2, col = "red") + abline(v = 2000, lty = 2, col = "blue") + abline(v = 5000, lty = 2, col = "green") 
+
 plts <- p1 / p2
 plts
 dev.off()
@@ -253,10 +257,13 @@ spe <- nullResiduals( # default params
     spe,
     assay = "counts",
     fam = "binomial",
-    type = "deviance",
-    #batch = as.factor(spe$sample_id)
+    type = "deviance"
+    # batch = as.factor(spe$sample_id)
 )
 # produce residual vs. fitted plot. CSC 
+# assayNames(spe)
+# binom_dev_residuals <- assay(spe,"binomial_deviance_residuals")
+# plot(binom_dev_residuals) 
 
 ## Get HVDG
 hdgs.hb.1000 <-
