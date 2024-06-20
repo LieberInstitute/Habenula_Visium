@@ -19,8 +19,8 @@ rsconnect::deployApp(
     appDir = here("code", "03_spatialLIBD_app"),
     appFiles = c(
         "app.R",
-        "spe_qc_filtered_logcounts.rds",
-        # withr::with_dir(here("code", "03_spatialLIBD_app"), dir("clusters_BayesSpace", full.names = TRUE)),
+        "spe_harmony.rds",
+        withr::with_dir(here("code", "03_spatialLIBD_app"), dir("clusters_BayesSpace", full.names = TRUE)),
         withr::with_dir(here("code", "03_spatialLIBD_app"), dir("www", full.names = TRUE))
     ),
     appName = "Habenula_Visium",

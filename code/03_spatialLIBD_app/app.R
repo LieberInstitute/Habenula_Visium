@@ -18,14 +18,15 @@ options(repos = BiocManager::repositories())
 here("code", "03_spatialLIBD_app")
 
 ## I added a symbolic link to point the spe.rds object to wrap.
-spe <- readRDS("spe_qc_filtered_logcounts.rds") # spe object QCed and removed low-library spots manually annotated
+spe <- readRDS("spe_harmony.rds") # spe with harmony and BayesSpace
 
+# lobstr::obj_size(spe)
 
-# ## Import BayesSpace clusters
-# spe <- cluster_import(spe,
-#     cluster_dir = "clusters_BayesSpace",
-#     prefix = ""
-# )
+## Import BayesSpace clusters
+spe <- cluster_import(spe,
+    cluster_dir = "clusters_BayesSpace",
+    prefix = ""
+)
 
 ## Quickly explore the data
 vars <- colnames(colData(spe))
@@ -40,9 +41,10 @@ spatialLIBD::run_app(
         "overlaps_tissue",
         vars[grep("^10x_", vars)],
         vars[grep("^scran_", vars)],
-        "edge_spots"
+        "edge_spots",
         # vars[grep("^SNN_k10", vars)],
-        # vars[grep("^BayesSpace_harmony_", vars)]
+        # vars[grep("^BayesSpace_pca", vars)],
+        vars[grep("^BayesSpace_harmony_", vars)]
     ),
     spe_continuous_vars = c(
         "sum_umi",
