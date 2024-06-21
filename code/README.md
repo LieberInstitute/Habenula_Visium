@@ -15,10 +15,11 @@
 | 02_build_spe            | spe.rds                   | *spe* with spots in-tissue, and removed spots with not umi counts or not gene counts.   |
 | 02_build_spe            | spe_qc.rds                | *spe* with spots in-tissue, and added scran variables before applying quality control.    |
 | 04_harmony_BayesSpace   | spe_qcED_spatialLIBD.rds  | *spe* with in-tissue spots, QCed and excluding those manually annotated as low quality or having tissue artifacts.    |
-| 04_harmony_BayesSpace   | spe_qcED_spatialLIBD_log.rds          | previous *spe* with log normalized counts.    |
-| 04_harmony_BayesSpace   | spe_qcED_spatialLIBD_log_GLM-PCA.rds  | previous *spe* computed GLM-PCA.    |
-| 04_harmony_BayesSpace   | spe_qcED_spatialLIBD_log_GLM-PCA_hdf5/assays.h5                             | previous *spe* with HDF5-backed object to control memory later.   |
-| 04_harmony_BayesSpace   | spe_harmony.rds                       | previous *spe* after batch correction with Harmony.   |
+| 04_harmony_BayesSpace   | spe_qcED_spatialLIBD_log.rds          | *spe_qcED_spatialLIBD.rds* with log normalized counts.    |
+| 04_harmony_BayesSpace   | spe_qcED_spatialLIBD_log_GLM-PCA.rds  | *spe_qcED_spatialLIBD_log.rds* with GLM-PCA reductions.    |
+| 04_harmony_BayesSpace   | spe_qcED_spatialLIBD_log_GLM-PCA_hdf5/assays.h5                             | *spe_qcED_spatialLIBD_log_GLM-PCA.rds*  HDF5-backed object to control memory later.   |
+| 04_harmony_BayesSpace   | spe_harmony.rds                       | *spe_qcED_spatialLIBD_log_GLM-PCA.rds* with GLMPCA Harmony batch correction.   |
+| 04_harmony_BayesSpace   | spe_harmony_shiny.rds                 | *spe_harmony.rds* after removing counts and deviance assays to reduce instance size for shiny app.  |
 
 <!--| 02_build_spe  | spe_qc_low_lib_edge.rds | *spe* with only spots in-tissue, and removed low-library spots at edge. This is the version used to deploy thespatialLIBD app: https://libd.shinyapps.io/Habenula_Visium/ |
 | 04_harmony_BayesSpace  | spe_qc_low_spatialLIBD.rds | *spe* with only in-tissue spots, excluding those manually annotated as low quality or having artifacts. |-->
