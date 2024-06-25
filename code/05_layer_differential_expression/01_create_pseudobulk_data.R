@@ -24,28 +24,33 @@ library("sessioninfo")
 library("scater")
 
 ## output directory
-dir_rdata <- here::here(
-  "processed-data",
-  "rdata",
-  "spe",
-  "07_layer_differential_expression"
-)
+# dir_rdata <- here::here(
+#   "processed-data",
+#   "rdata",
+#   "spe",
+#   "07_layer_differential_expression"
+# )
+dir_rdata <- here("processed-data", "05_layer_differential_expression")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_rdata)) ## Check that it was created successfully
 
 ## load spe data
-load(
-  here(
-    "processed-data",
-    "rdata",
-    "spe",
-    "01_build_spe",
-    "spe_filtered_final_with_clusters.Rdata"
-  ),
-  verbose = TRUE
-)
+# load(
+#   here(
+#     "processed-data",
+#     "rdata",
+#     "spe",
+#     "01_build_spe",
+#     "spe_filtered_final_with_clusters.Rdata"
+#   ),
+#   verbose = TRUE
+# )
+spe_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony.rds")
+spe <- readRDS(spe_in)
 
 ## Convert from character to a factor
+colnames(colData(spe))
+colnames(rowData(spe))
 spe$BayesSpace <-
   factor(
     paste0("Sp", sprintf("%02d", k), "D", sprintf("%02d", colData(spe)[[paste0("bayesSpace_harmony_", k)]]))
