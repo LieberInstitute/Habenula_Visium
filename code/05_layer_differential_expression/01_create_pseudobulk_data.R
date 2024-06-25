@@ -75,16 +75,17 @@ dim(sce_pseudo)
 
 ## Rename "region" into "position" for consistency with
 ## https://github.com/LieberInstitute/DLPFC_snRNAseq
-sce_pseudo$position <- sce_pseudo$region
+#sce_pseudo$position <- sce_pseudo$region
 
 ## Simplify the colData()  for the pseudo-bulked data
+colnames(colData(sce_pseudo))
 colData(sce_pseudo) <- colData(sce_pseudo)[, sort(c(
   "age",
   "sample_id",
   "BayesSpace",
   "subject",
   "sex",
-  "position",
+  # "position",
   "diagnosis",
   "ncells"
 ))]
