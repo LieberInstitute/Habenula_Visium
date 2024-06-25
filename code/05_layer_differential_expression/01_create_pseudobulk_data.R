@@ -48,9 +48,17 @@ stopifnot(file.exists(dir_rdata)) ## Check that it was created successfully
 spe_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony.rds")
 spe <- readRDS(spe_in)
 
+## Import BayesSpace clusters
+clusters_BayesSpace_dir <- here("processed-data", "04_harmony_BayesSpace", "clusters_BayesSpace")
+spe <- cluster_import(spe,
+                      cluster_dir = clusters_BayesSpace_dir,               #"clusters_BayesSpace",
+                      prefix = ""
+)
+
 ## Convert from character to a factor
-colnames(colData(spe))
-colnames(rowData(spe))
+colData(spe)[grep("BayesSpace_harmony", colnames(colData(spe)))]
+#length(grep("BayesSpace_harmony", colnames(colData(spe))))
+
 spe$BayesSpace <-
   factor(
     paste0("Sp", sprintf("%02d", k), "D", sprintf("%02d", colData(spe)[[paste0("bayesSpace_harmony_", k)]]))
