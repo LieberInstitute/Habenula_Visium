@@ -4,7 +4,7 @@
 # sgejobs::job_single(
 #     name = "01_create_pseudobulk_data",
 #     create_shell = TRUE,
-#     queue = "bluejay",
+#     queue = "shared",
 #     memory = "15G",
 #     task_num = 28,
 #     tc = 10
@@ -49,6 +49,7 @@ spe_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony.rds")
 spe <- readRDS(spe_in)
 
 ## Import BayesSpace clusters
+colnames(colData(spe))
 clusters_BayesSpace_dir <- here("processed-data", "04_harmony_BayesSpace", "clusters_BayesSpace")
 spe <- cluster_import(spe,
                       cluster_dir = clusters_BayesSpace_dir,               #"clusters_BayesSpace",
@@ -56,12 +57,14 @@ spe <- cluster_import(spe,
 )
 
 ## Convert from character to a factor
+
+# Quick inspection
 colData(spe)[grep("BayesSpace_harmony", colnames(colData(spe)))]
 #length(grep("BayesSpace_harmony", colnames(colData(spe))))
 
 spe$BayesSpace <-
   factor(
-    paste0("Sp", sprintf("%02d", k), "D", sprintf("%02d", colData(spe)[[paste0("bayesSpace_harmony_", k)]]))
+    paste0("Sp", sprintf("%02d", k), "D", sprintf("%02d", colData(spe)[[paste0("BayesSpace_harmony_k", sprintf("%02d", k))]]))
   )
 
 ## pseudobulk across a given BayesSpace k
@@ -72,6 +75,7 @@ sce_pseudo <-
                           min_ncells = 10
   )
 dim(sce_pseudo)
+# [1] 13508     15 with 5 capture areas and k=5
 
 ## Rename "region" into "position" for consistency with
 ## https://github.com/LieberInstitute/DLPFC_snRNAseq
@@ -96,12 +100,16 @@ as.data.frame(colData(sce_pseudo))
 
 ## Compute PCs
 ## Adapted from https://github.com/LieberInstitute/spatialDLPFC/blob/f47daafa19b02e6208c7e0a9bc068367f806206c/code/analysis/09_region_differential_expression/preliminary_analysis.R#L60-L68
+
 pca <- prcomp(t(assays(sce_pseudo)$logcounts))
-message(Sys.time(), " % of variance explained for the top 20 PCs:")
+head(pca$x[1:5])
+# avoid an error when less PCs are available
+if ((n_components <- length(pca$sdev)) > 21) { n_components <- 20 } 
+
+message(Sys.time(), " % of variance explained for the top ", n_components ," PCs:")
 metadata(sce_pseudo)
-metadata(sce_pseudo) <- list("PCA_var_explained" = jaffelab::getPcaVars(pca)[seq_len(20)])
-metadata(sce_pseudo)
-pca_pseudo <- pca$x[, seq_len(20)]
+metadata(sce_pseudo) <- list("PCA_var_explained" = jaffelab::getPcaVars(pca))[seq_len(n_components)] #20
+pca_pseudo <- pca$x[, seq_len(n_components)] #20
 colnames(pca_pseudo) <- paste0("PC", sprintf("%02d", seq_len(ncol(pca_pseudo))))
 reducedDims(sce_pseudo) <- list(PCA = pca_pseudo)
 
