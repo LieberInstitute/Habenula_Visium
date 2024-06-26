@@ -9,6 +9,10 @@
 #     task_num = 28,
 #     tc = 10
 # )
+
+slurmjobs::job_single('01_create_pseudobulk_data', create_shell = TRUE, memory = '20G', command = "01_create_pseudobulk_data.R")
+# To submit the job use: sbatch 01_create_pseudobulk_data.sh
+
 # To execute the script builder, use: qsub 01_create_pseudobulk_data.sh
 
 k <- as.numeric(Sys.getenv("SGE_TASK_ID"))
