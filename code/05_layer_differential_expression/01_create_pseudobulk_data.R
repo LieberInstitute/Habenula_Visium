@@ -52,7 +52,7 @@ spe <- readRDS(spe_in)
 colnames(colData(spe))
 clusters_BayesSpace_dir <- here("processed-data", "04_harmony_BayesSpace", "clusters_BayesSpace")
 spe <- cluster_import(spe,
-                      cluster_dir = clusters_BayesSpace_dir,               #"clusters_BayesSpace",
+                      cluster_dir = clusters_BayesSpace_dir,              
                       prefix = ""
 )
 
@@ -102,8 +102,19 @@ as.data.frame(colData(sce_pseudo))
 ## Adapted from https://github.com/LieberInstitute/spatialDLPFC/blob/f47daafa19b02e6208c7e0a9bc068367f806206c/code/analysis/09_region_differential_expression/preliminary_analysis.R#L60-L68
 
 pca <- prcomp(t(assays(sce_pseudo)$logcounts))
-head(pca$x[1:5])
-# avoid an error when less PCs are available
+# length(pca$sdev) #number of components processed 
+# summary(pca) 
+# Importance of components:
+#                         PC1     PC2     PC3      PC4      PC5      PC6      PC7      PC8      PC9    PC10    PC11    PC12   PC13    PC14      PC15
+# Standard deviation     60.90 36.1595 29.9354 20.08013 19.07484 16.91213 12.60943 12.20756 11.23785 9.15730 8.26029 7.97064 7.7150 7.17131 5.309e-14
+# Proportion of Variance  0.48  0.1692  0.1160  0.05218  0.04709  0.03702  0.02058  0.01929  0.01634 0.01085 0.00883 0.00822 0.0077 0.00666 0.000e+00
+# Cumulative Proportion   0.48  0.6493  0.7652  0.81742  0.86451  0.90153  0.92211  0.94139  0.95774 0.96859 0.97742 0.98564 0.9933 1.00000 1.000e+00
+# print(pca[1])
+# plot(pca, "PCA of pseudobulk data")
+# plot(pca$x[,1],pca$x[,2])
+# biplot(pca)
+
+# Set number of components equal to pseudo bulk groups. Avoid an error triggered when <20 pseudo bulk groups are processed by default.
 if ((n_components <- length(pca$sdev)) > 21) { n_components <- 20 } 
 
 message(Sys.time(), " % of variance explained for the top ", n_components ," PCs:")
@@ -114,9 +125,9 @@ colnames(pca_pseudo) <- paste0("PC", sprintf("%02d", seq_len(ncol(pca_pseudo))))
 reducedDims(sce_pseudo) <- list(PCA = pca_pseudo)
 
 ## Compute some reduced dims
-set.seed(20220423)
-sce_pseudo <- scater::runMDS(sce_pseudo, ncomponents = 20)
-sce_pseudo <- scater::runPCA(sce_pseudo, name = "runPCA")
+set.seed(20240626)
+# sce_pseudo <- scater::runMDS(sce_pseudo, ncomponents = (n_components-1)) #20
+# sce_pseudo <- scater::runPCA(sce_pseudo, name = "runPCA")
 
 ## We don't want to model the pathology groups as integers / numeric
 ## so let's double check this
@@ -132,10 +143,10 @@ rowData(sce_pseudo)$gene_search <-
 
 ## Load pathology colors
 ## This info is used by spatialLIBD v1.7.18 or newer
-source(here("code", "analysis", "colors_bayesSpace.R"), echo = TRUE, max.deparse.length = 500)
-names(colors_bayesSpace) <-
-  paste0("Sp", sprintf("%02d", k), "D", sprintf("%02d", as.integer(names(colors_bayesSpace))))
-sce_pseudo$BayesSpace_colors <- colors_bayesSpace[as.character(sce_pseudo$BayesSpace)]
+# source(here("code", "analysis", "colors_bayesSpace.R"), echo = TRUE, max.deparse.length = 500)
+# names(colors_bayesSpace) <-
+#   paste0("Sp", sprintf("%02d", k), "D", sprintf("%02d", as.integer(names(colors_bayesSpace))))
+# sce_pseudo$BayesSpace_colors <- colors_bayesSpace[as.character(sce_pseudo$BayesSpace)]
 
 ## save RDS file
 saveRDS(
