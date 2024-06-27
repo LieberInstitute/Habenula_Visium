@@ -4,7 +4,7 @@
 # slurmjobs::job_single('01_create_pseudobulk_data', create_shell = TRUE, memory = '20G', command = "01_create_pseudobulk_data.R")
 # To submit the job use: sbatch 01_create_pseudobulk_data.sh
 
-k <- as.numeric(Sys.getenv("SGE_TASK_ID"))
+k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 ## For testing
 if (FALSE) {
@@ -44,9 +44,11 @@ spe <- readRDS(spe_in)
 ## Import BayesSpace clusters
 colnames(colData(spe))
 clusters_BayesSpace_dir <- here("processed-data", "04_harmony_BayesSpace", "clusters_BayesSpace")
+head(spe$key[1:5])
 spe <- cluster_import(spe,
                       cluster_dir = clusters_BayesSpace_dir,              
-                      prefix = ""
+                      prefix = "",
+                      overwrite = TRUE
 )
 
 ## Convert from character to a factor
@@ -69,6 +71,9 @@ sce_pseudo <-
   )
 dim(sce_pseudo)
 
+message('Pseudobulk completed ')
+
+
 ## Rename "region" into "position" for consistency with
 ## https://github.com/LieberInstitute/DLPFC_snRNAseq
 #sce_pseudo$position <- sce_pseudo$region
@@ -81,7 +86,6 @@ colData(sce_pseudo) <- colData(sce_pseudo)[, sort(c(
   "BayesSpace",
   "subject",
   "sex",
-  # "position",
   "diagnosis",
   "ncells"
 ))]
@@ -93,53 +97,46 @@ as.data.frame(colData(sce_pseudo))
 ## Compute PCs
 ## Adapted from https://github.com/LieberInstitute/spatialDLPFC/blob/f47daafa19b02e6208c7e0a9bc068367f806206c/code/analysis/09_region_differential_expression/preliminary_analysis.R#L60-L68
 
-pca <- prcomp(t(assays(sce_pseudo)$logcounts))
+message('Processing PCA')
 
+pca <- prcomp(t(assays(sce_pseudo)$logcounts))
+dim(pca$x)
 ## Explore pca
 # length(pca$sdev) 
 # summary(pca) 
-# print(pca[1])
+# print(pca$x)
 # plot(pca, paste0("PCA of pseudobulk data with BS k=", as.character(k)))
 # plot(pca$x[,1],pca$x[,2])
-# biplot(pca)
 
-
-# Set number of components equal to pseudo bulk groups. Avoid an error triggered when number of components <20 pseudo-bulked groups. Default componenets = 20
-if ((n_components <- length(pca$sdev)) > 21) { n_components <- 20 } 
-
-message(Sys.time(), " % of variance explained for the top ", n_components ," PCs:")
+message(Sys.time(), " % of variance explained for the top PCs:")
 metadata(sce_pseudo)
-# metadata(sce_pseudo) <- list("PCA_var_explained" = jaffelab::getPcaVars(pca))[seq_len(n_components)]
-metadata(sce_pseudo) <- list("PCA_var_explained" = jaffelab::getPcaVars(pca)[seq_len(n_components)])
-pca_pseudo <- pca$x[, seq_len(n_components)]
-colnames(pca_pseudo) <- paste0("PC", sprintf("%02d", seq_len(ncol(pca_pseudo))))
-reducedDims(sce_pseudo) <- list(PCA = pca_pseudo)
-# plotPCA(sce_pseudo, colour_by = "sample_id", ncomponents = n_components, point_size = 1) 
+metadata(sce_pseudo) <- list("PCA_var_explained" = jaffelab::getPcaVars(pca)) #[seq_len(20)])
+metadata(sce_pseudo)
+#pca_pseudo <- pca$x[, seq_len(n_components)]
+colnames(pca$x) <- paste0("PC", sprintf("%02d", seq_len(ncol(pca$x))))
+head(pca$x)
+reducedDims(sce_pseudo) <- list(PCA = pca$x)
+#plotPCA(sce_pseudo, colour_by = "sample_id", 2, point_size = 1) 
+
+message(' Compute reduced dims')
 
 ## Compute some reduced dims
 set.seed(20240626)
-sce_pseudo <- scater::runMDS(sce_pseudo, ncomponents = (n_components-1)) #20
-sce_pseudo <- scater::runPCA(sce_pseudo, name = "runPCA")
-# Warning in (function (A, nv = 5, nu = nv, maxit = 1000, work = nv + 7, reorth = TRUE,  :
-#                         You're computing too large a percentage of total singular values, use a standard svd instead.
+#sce_pseudo <- scater::runMDS(sce_pseudo, ncomponents = 2) #20
+#sce_pseudo <- scater::runPCA(sce_pseudo, name = "runPCA")
 
 ## Double check the BayesSpace meta are factors
 stopifnot(is.factor(sce_pseudo$BayesSpace))
 
-## For the spatialLIBD shiny app
-rowData(sce_pseudo)$gene_search <-
-  paste0(
-    rowData(sce_pseudo)$gene_name,
-    "; ",
-    rowData(sce_pseudo)$gene_id
-  )
+# ## For the spatialLIBD shiny app
+# rowData(sce_pseudo)$gene_search <-
+#   paste0(
+#     rowData(sce_pseudo)$gene_name,
+#     "; ",
+#     rowData(sce_pseudo)$gene_id
+#   )
 
-## Load pathology colors
-## This info is used by spatialLIBD v1.7.18 or newer
-# source(here("code", "analysis", "colors_bayesSpace.R"), echo = TRUE, max.deparse.length = 500)
-# names(colors_bayesSpace) <-
-#   paste0("Sp", sprintf("%02d", k), "D", sprintf("%02d", as.integer(names(colors_bayesSpace))))
-# sce_pseudo$BayesSpace_colors <- colors_bayesSpace[as.character(sce_pseudo$BayesSpace)]
+message(' Saving pseudobulk with reduced dims for BS k=', k)
 
 ## save RDS file
 saveRDS(
@@ -149,6 +146,8 @@ saveRDS(
     paste0("sce_pseudo_BayesSpace_k", sprintf("%02d", k), ".rds")
   )
 )
+
+message(' Process completed!')
 
 ## Reproducibility information
 print("Reproducibility information:")
