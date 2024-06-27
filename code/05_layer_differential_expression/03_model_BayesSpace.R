@@ -1,15 +1,9 @@
-# library(sgejobs)
-# sgejobs::job_single(
-#     name = "03_model_BayesSpace",
-#     create_shell = TRUE,
-#     queue = "bluejay",
-#     memory = "5G",
-#     task_num = 28,
-#     tc = 10
-# )
-# To execute the script builder, use: qsub 03_model_BayesSpace.sh
+# library(slurmjobs)
+# slurmjobs::job_single('03_model_BayesSpace', create_shell = TRUE, memory = '20G', command = "03_model_BayesSpace.R")
 
-k <- as.numeric(Sys.getenv("SGE_TASK_ID"))
+# To submit the job use: sbatch 03_model_BayesSpace.sh
+
+k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 ## For testing
 if (FALSE) {
