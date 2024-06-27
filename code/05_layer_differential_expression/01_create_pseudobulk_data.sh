@@ -4,9 +4,10 @@
 #SBATCH --job-name=01_create_pseudobulk_data
 #SBATCH -c 1
 #SBATCH -t 1-00:00:00
-#SBATCH -o logs/01_create_pseudobulk_data.txt
-#SBATCH -e logs/01_create_pseudobulk_data.txt
+#SBATCH -o logs/01_create_pseudobulk_data.%a.out
+#SBATCH -e logs/01_create_pseudobulk_data.%a.err
 #SBATCH --mail-type=ALL
+#SBATCH --array=2-28%20
 
 set -e
 
@@ -21,13 +22,13 @@ echo "Node name: ${SLURMD_NODENAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.3
+module load conda_R/4.3.x
 
 ## List current modules for reproducibility
 module list
 
 ## Edit with your job command
-01_create_pseudobulk_data.R
+Rscript 01_create_pseudobulk_data.R
 
 echo "**** Job ends ****"
 date
