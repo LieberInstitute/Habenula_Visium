@@ -16,18 +16,10 @@ library("sessioninfo")
 library("spatialLIBD")
 
 ## output directory
-dir_rdata <- here::here(
-  "processed-data",
-  "rdata",
-  "spe",
-  "07_layer_differential_expression"
-)
+dir_rdata <- here("processed-data","05_layer_differential_expression")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_rdata)) ## Check that it was created successfully
-dir_plots <- here::here(
-  "plots",
-  "07_layer_differential_expression"
-)
+dir_plots <- here("plots","05_layer_differential_expression")
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_plots))
 
@@ -45,10 +37,12 @@ sce_pseudo$registration_variable <- sce_pseudo$BayesSpace
 sce_pseudo$registration_sample_id <- sce_pseudo$sample_id
 
 ## Set arguments used in spatialLIBD::registration_wrapper()
-covars <- c("position", "age", "sex")
+covars <- c("subject")   # add sex, age when we jave more than 2 clases
 gene_ensembl <- "gene_id"
 gene_name <- "gene_name"
 suffix <- "all"
+
+colData(sce_pseudo)
 
 ## Taken from spatialLIBD::registration_wrapper()
 ## https://github.com/LieberInstitute/spatialLIBD/blob/master/R/registration_wrapper.R
