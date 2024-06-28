@@ -1,12 +1,13 @@
 #!/bin/bash
 #SBATCH -p shared
-#SBATCH --mem=20G
+#SBATCH --mem=30G
 #SBATCH --job-name=03_model_BayesSpace
 #SBATCH -c 1
 #SBATCH -t 1-00:00:00
-#SBATCH -o logs/03_model_BayesSpace.txt
-#SBATCH -e logs/03_model_BayesSpace.txt
+#SBATCH -o logs/03_model_BayesSpace.%a.out
+#SBATCH -e logs/03_model_BayesSpace.%a.err
 #SBATCH --mail-type=ALL
+#SBATCH --array=2-28%20
 
 set -e
 
@@ -21,13 +22,13 @@ echo "Node name: ${SLURMD_NODENAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.3
+module load conda_R/4.3.x
 
 ## List current modules for reproducibility
 module list
 
 ## Edit with your job command
-03_model_BayesSpace.R
+Rscript 03_model_BayesSpace.R
 
 echo "**** Job ends ****"
 date
