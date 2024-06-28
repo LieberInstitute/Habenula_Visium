@@ -1,3 +1,5 @@
+# copied from https://github.com/LieberInstitute/spatialDLPFC/blob/bd93c980d7653579f81ff1c91c309cea0c7474a6/code/analysis/07_layer_differential_expression/02_explore_expr_variability.R
+
 # library(slurmjobs)
 # slurmjobs::job_single('02_explore_expr_variability', create_shell = TRUE, memory = '20G', command = "02_explore_expr_variability.R")
 
@@ -43,23 +45,23 @@ spe_pseudo <-
 
 ## Define variables to use
 vars <- c(
-  "age",
+#  "age",
   "sample_id",
   "BayesSpace",
-  "subject",
-  "sex" 
+  "subject"#,
+#  "sex" 
 )
 
 ## Plot PCs with different colors
 ## Each point here is a sample
 reducedDim(spe_pseudo)
 
-pdf(file = file.path(dir_plots, paste0("sce_pseudo_PCs_k", sprintf("%02d", k), ".pdf")), width = 14, height = 14)
+pdf(file = file.path(dir_plots, paste0("sce_pseudo_PCs_k", sprintf("%02d", k), ".pdf")), width = 8, height = 8)
 for (var in vars) {
   p <- plotPCA(
     spe_pseudo,
     colour_by = var,
-    ncomponents = 12,
+    #ncomponents = 12,
     point_size = 1,
     label_format = c("%s %02i", " (%i%%)"),
     percentVar = metadata(spe_pseudo)$PCA_var_explained
@@ -77,8 +79,9 @@ dev.off()
 variance_expl <- getVarianceExplained(spe_pseudo,
                              variables = vars
 )
-head(variance_expl)
-summary(variance_expl)
+## Quick inspection
+#head(variance_expl)
+#summary(variance_expl)
 
 ## Now visualize the percent of variance explained across all genes
 pdf(file = file.path(dir_plots, paste0("sce_pseudo_gene_explanatory_vars_k", sprintf("%02d", k), ".pdf")))
