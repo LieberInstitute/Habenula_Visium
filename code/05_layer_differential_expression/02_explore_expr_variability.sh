@@ -4,9 +4,10 @@
 #SBATCH --job-name=02_explore_expr_variability
 #SBATCH -c 1
 #SBATCH -t 1-00:00:00
-#SBATCH -o logs/02_explore_expr_variability.txt
-#SBATCH -e logs/02_explore_expr_variability.txt
+#SBATCH -o logs/02_explore_expr_variability.%a.out
+#SBATCH -e logs/02_explore_expr_variability.%a.err
 #SBATCH --mail-type=ALL
+#SBATCH --array=2-28%20
 
 set -e
 
@@ -21,13 +22,13 @@ echo "Node name: ${SLURMD_NODENAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.3
+module load conda_R/4.3.x
 
 ## List current modules for reproducibility
 module list
 
 ## Edit with your job command
-02_explore_expr_variability.R
+Rscript 02_explore_expr_variability.R
 
 echo "**** Job ends ****"
 date
