@@ -47,7 +47,7 @@ spe_pseudo <-
 # dim(pca$x)
 # library(tidyverse)
 # data.frame(sd = pca$sdev) %>%
-#   mutate(pct = 100 * (sd/sum(sd))) %>%
+#   mutate(pct = 100 * (sd^2/sum(sd^2))) %>%
 #   ggplot(aes(1:10, pct)) +
 #   geom_col() +
 #   ggtitle(paste0("PCA of pseudobulk data with BS k=", as.character(k)))
@@ -64,14 +64,14 @@ vars <- c(
 
 ## Plot PCs with different colors
 ## Each point here is a sample
-reducedDim(spe_pseudo)
+# reducedDim(spe_pseudo)
 
 pdf(file = file.path(dir_plots, paste0("sce_pseudo_PCs_k", sprintf("%02d", k), ".pdf")), width = 8, height = 8)
 for (var in vars) {
   p <- plotPCA(
     spe_pseudo,
     colour_by = var,
-    #ncomponents = 12,
+    ncomponents = min(12, length(metadata(spe_pseudo)$PCA_var_explained)),
     point_size = 1,
     label_format = c("%s %02i", " (%i%%)"),
     percentVar = metadata(spe_pseudo)$PCA_var_explained
