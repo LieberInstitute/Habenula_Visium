@@ -1,3 +1,15 @@
+# library(slurmjobs)
+# slurmjobs::job_single('01_compute_cor', create_shell = TRUE, memory = '20G', command = "01_compute_cor.R")
+
+# To submit the job use: sbatch 01_compute_cor.sh
+
+k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+
+## For testing
+if (is.na(k)) {
+  k <- 2
+}
+
 library("here")
 library("spatialLIBD")
 library("sessioninfo")
