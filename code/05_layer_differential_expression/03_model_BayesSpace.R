@@ -39,7 +39,7 @@ sce_pseudo$registration_variable <- sce_pseudo$BayesSpace
 sce_pseudo$registration_sample_id <- sce_pseudo$sample_id
 
 ## Set arguments used in spatialLIBD::registration_wrapper()
-covars <- c("subject")   # add sex, age when we jave more than 2 clases
+covars <- c("subject")   # add sex, age when we have more than 2 classes
 gene_ensembl <- "gene_id"
 gene_name <- "gene_name"
 suffix <- "all"
