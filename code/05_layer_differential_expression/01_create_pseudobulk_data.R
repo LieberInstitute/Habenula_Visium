@@ -7,7 +7,7 @@
 k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 ## For testing
-if (FALSE) {
+if (is.na(k)) {
   k <- 2
 }
 
@@ -27,7 +27,7 @@ spe <- readRDS(spe_in)
 ## Import BayesSpace clusters
 colnames(colData(spe))
 clusters_BayesSpace_dir <- here("processed-data", "04_harmony_BayesSpace", "clusters_BayesSpace")
-head(spe$key[1:5])
+#head(spe$key[1:5])
 spe <- cluster_import(spe,
                       cluster_dir = clusters_BayesSpace_dir,              
                       prefix = "",
@@ -87,31 +87,36 @@ dim(pca$x)
 # plot(pca, paste0("PCA of pseudobulk data with BS k=", as.character(k)))
 # plot(pca$x[,1],pca$x[,2])
 
-message(Sys.time(), " % of variance explained for the top PCs:")
+# Set number of components equal to pseudo bulk groups. Avoid an error triggered when n_components <20 pseudo bulk groups. Default=20.
+if ((n_components <- length(pca$sdev)) > 21) { n_components <- 20 }
+
+message(Sys.time(), " % of variance explained for the top ", n_components ," PCs:")
+metadata(spe_pseudo) <- list("PCA_var_explained" = jaffelab::getPcaVars(pca)[seq_len(n_components)]) #[seq_len(20)])
 metadata(spe_pseudo)
-metadata(spe_pseudo) <- list("PCA_var_explained" = jaffelab::getPcaVars(pca)) #[seq_len(20)])
-metadata(spe_pseudo)
-#pca_pseudo <- pca$x[, seq_len(n_components)]
 colnames(pca$x) <- paste0("PC", sprintf("%02d", seq_len(ncol(pca$x))))
 head(pca$x)
 reducedDims(spe_pseudo) <- list(PCA = pca$x)
-#plotPCA(spe_pseudo, colour_by = "sample_id", 2, point_size = 1) 
+#plotPCA(spe_pseudo, colour_by = "sample_id", n_components, point_size = 1) 
 
 ## Compute some reduced dims
+message('/nProcessing MDS and scarter runPCA')
+
 set.seed(20240626)
-#spe_pseudo <- scater::runMDS(spe_pseudo, ncomponents = 2) #20
-#spe_pseudo <- scater::runPCA(spe_pseudo, name = "runPCA")
+if (n_components>20) {
+  spe_pseudo <- scater::runMDS(spe_pseudo, ncomponents = (n_components-1)) #20
+  spe_pseudo <- scater::runPCA(spe_pseudo, name = "runPCA", ncomponents = n_components)
+}
 
 ## Double check the BayesSpace meta are factors
 stopifnot(is.factor(spe_pseudo$BayesSpace))
 
-# ## For the spatialLIBD shiny app
-# rowData(spe_pseudo)$gene_search <-
-#   paste0(
-#     rowData(spe_pseudo)$gene_name,
-#     "; ",
-#     rowData(spe_pseudo)$gene_id
-#   )
+## For the spatialLIBD shiny app
+rowData(spe_pseudo)$gene_search <-
+  paste0(
+    rowData(spe_pseudo)$gene_name,
+    "; ",
+    rowData(spe_pseudo)$gene_id
+  )
 
 message(' Saving pseudobulk with reduced dims for BS k=', k)
 
