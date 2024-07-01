@@ -88,7 +88,8 @@ dim(pca$x)
 # plot(pca$x[,1],pca$x[,2])
 
 # Set number of components equal to pseudo bulk groups. Avoid an error triggered when n_components <20 pseudo bulk groups. Default=20.
-if ((n_components <- length(pca$sdev)) > 21) { n_components <- 20 }
+n_components <- length(pca$sdev)
+if (n_components > 21) { n_components <- 20 }
 
 message(Sys.time(), " % of variance explained for the top ", n_components ," PCs:")
 metadata(spe_pseudo) <- list("PCA_var_explained" = jaffelab::getPcaVars(pca)[seq_len(n_components)]) #[seq_len(20)])
@@ -102,10 +103,8 @@ reducedDims(spe_pseudo) <- list(PCA = pca$x)
 message('/nProcessing MDS and scarter runPCA')
 
 set.seed(20240626)
-if (n_components>20) {
-  spe_pseudo <- scater::runMDS(spe_pseudo, ncomponents = (n_components-1)) #20
-  spe_pseudo <- scater::runPCA(spe_pseudo, name = "runPCA", ncomponents = n_components)
-}
+spe_pseudo <- scater::runMDS(spe_pseudo, name = "runMDS", ncomponents = (n_components-1)) #20
+spe_pseudo <- scater::runPCA(spe_pseudo, name = "runPCA", ncomponents = n_components)
 
 ## Double check the BayesSpace meta are factors
 stopifnot(is.factor(spe_pseudo$BayesSpace))
