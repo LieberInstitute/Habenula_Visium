@@ -8,7 +8,7 @@
 k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 ## For testing
-if (FALSE) {
+if (is.na(k)) {
   k <- 2
 }
 
@@ -16,7 +16,6 @@ library("here")
 library("sessioninfo")
 library("SingleCellExperiment")
 library("scater")
-## Load BayesSpace colors
 library(Polychrome)
 
 colors_bayesSpace <- Polychrome::palette36.colors(28)
@@ -42,6 +41,17 @@ spe_pseudo <-
       paste0("sce_pseudo_BayesSpace_k", sprintf("%02d", k), ".rds")
     )
   )
+
+# plot percentage of variance explained for the first 10 components
+# pca <- prcomp(t(assays(spe_pseudo)$logcounts))
+# dim(pca$x)
+# library(tidyverse)
+# data.frame(sd = pca$sdev) %>%
+#   mutate(pct = 100 * (sd/sum(sd))) %>%
+#   ggplot(aes(1:10, pct)) +
+#   geom_col() +
+#   ggtitle(paste0("PCA of pseudobulk data with BS k=", as.character(k)))
+
 
 ## Define variables to use
 vars <- c(
