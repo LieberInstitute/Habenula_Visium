@@ -2,57 +2,103 @@ library("here")
 library("spatialLIBD")
 library("sessioninfo")
 
+# # ==================== Here my enrichment datasets
+# load(here("processed-data", "05_layer_differential_expression", "modeling_results_BS", "modeling_results_BayesSpace_k02.Rdata"))
+# ## Quick inspection to the BS models 
+# results_enrichment <- modeling_results$enrichment
+# # ==================== /
+
 ## Create output directories
 dir_rdata <-
     here("processed-data", "06_spatial_registration_vs_snRNA-seq")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 
 ## Load BayesSpace enrichment t-stats
-BayesSpace_stats_list <-
-    readRDS(here(
-        "processed-data",
-        "04_harmony_BayesSpace",
-        "BayesSpace_stats_list.rds"
-    ))
+# BayesSpace_stats_list <-
+#     readRDS(here(
+#         "processed-data",
+#         "04_harmony_BayesSpace",
+#         "BayesSpace_stats_list.rds"
+#     ))
+# # head(BayesSpace_stats_list)
+# # BayesSpace_stats_list$BayesSpace_harmony_k08$k08_1[1:10]
+# # head(rownames(BayesSpace_stats_list$BayesSpace_harmony_k08))
+# 
+# ## Reformat to match expect format for spatialLIBD::layer_stat_cor
+# ## Aka, match the format from
+# ## head(spatialLIBD::tstats_Human_DLPFC_snRNAseq_Nguyen_topLayer)
+# 
+# BayesSpace_stats_list <- lapply(BayesSpace_stats_list, function(x) {
+#     rownames(x) <- x$gene
+#     x$gene <- NULL
+#     colnames(x) <- gsub("BayesSpace_harmony_", "", colnames(x))
+#     return(x)
+# })
+# # # names(BayesSpace_stats_list)
+# # [1] "BayesSpace_harmony_k02" "BayesSpace_harmony_k03" "BayesSpace_harmony_k04" "BayesSpace_harmony_k05"
+# # [5] "BayesSpace_harmony_k06" "BayesSpace_harmony_k07" "BayesSpace_harmony_k08" "BayesSpace_harmony_k09"
+# # [9] "BayesSpace_harmony_k10" "BayesSpace_harmony_k11" "BayesSpace_harmony_k12" "BayesSpace_harmony_k13"
 
-## Reformat to match expect format for spatialLIBD::layer_stat_cor
-## Aka, match the format from
-## head(spatialLIBD::tstats_Human_DLPFC_snRNAseq_Nguyen_topLayer)
+bayesSpace_registration_fn <-
+  map(k_list, ~ here(
+    dir_input,
+    paste0(
+      "modeling_results_BayesSpace_k",
+      sprintf("%02d", .x),
+      ".Rdata"
+    )
+  ))
+bayesSpace_registration <-
+  lapply(bayesSpace_registration_fn, function(x) {
+    get(load(x))
+  })
 
-BayesSpace_stats_list <- lapply(BayesSpace_stats_list, function(x) {
-    rownames(x) <- x$gene
-    x$gene <- NULL
-    colnames(x) <- gsub("BayesSpace_harmony_", "", colnames(x))
-    return(x)
-})
+## Select t-stats from the registration enrichment data
+
+registration_t_stats <-
+  map(bayesSpace_registration, function(data) {
+    x <- data$enrichment
+    t_stats <- x[, grep("^t_stat_", colnames(x))]
+    colnames(t_stats) <- gsub("^t_stat_", "", colnames(t_stats))
+    return(t_stats)
+  })
+
+
+
 
 registration_vars <-
     c("final_Annotations", "final_Annotations_broad")
 
 compute_cor <- function(current_var) {
-    ## Load input snRNA-seq data
+    # Load input snRNA-seq data
     results_enrichment <-
         readRDS(here(
             "processed-data",
             "05_snRNA-seq_model_stats",
             paste0("enrichment_", current_var, ".rds")
         ))
-    modeling_results_Hb <- list("enrichment" = results_enrichment)
-
+    # compute the correlation 
     lapply(
         BayesSpace_stats_list,
         layer_stat_cor,
-        modeling_results = modeling_results_Hb,
+        modeling_results = "enrichment",
         top_n = 100
     )
 }
 
 cor_fine <- compute_cor("final_Annotations")
+head(cor_fine)
 cor_broad <- compute_cor("final_Annotations_broad")
 
-## Annotate clusters
+## Explore the correlation matrix in BS K8
+#head(cor_broad)
+head(cor_broad$BayesSpace_harmony_k08[, seq_len(3)])
+summary(cor_broad$BayesSpace_harmony_k08)
+
+## Annotate clusters / classify by layer confidence classes (good/poor)
 annotated_clusters_fine <-
     lapply(cor_fine, annotate_registered_clusters, cutoff_merge_ratio = 0.1)
+head(annotated_clusters_fine)
 annotated_clusters_broad <-
     lapply(cor_broad, annotate_registered_clusters, cutoff_merge_ratio = 0.1)
 
