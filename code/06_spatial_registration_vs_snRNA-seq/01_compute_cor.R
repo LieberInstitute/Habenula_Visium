@@ -24,6 +24,9 @@ library("sessioninfo")
 dir_rdata <-
     here("processed-data", "06_spatial_registration_vs_snRNA-seq")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
+## Input dir
+dir_input <- 
+  here("processed-data", "05_layer_differential_expression", "modeling_results_BS")
 
 ## Load BayesSpace enrichment t-stats
 # BayesSpace_stats_list <-
@@ -51,8 +54,9 @@ dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 # # [5] "BayesSpace_harmony_k06" "BayesSpace_harmony_k07" "BayesSpace_harmony_k08" "BayesSpace_harmony_k09"
 # # [9] "BayesSpace_harmony_k10" "BayesSpace_harmony_k11" "BayesSpace_harmony_k12" "BayesSpace_harmony_k13"
 
+## Load Registration Results 
 bayesSpace_registration_fn <-
-  map(k_list, ~ here(
+  map(k, ~ here(
     dir_input,
     paste0(
       "modeling_results_BayesSpace_k",
@@ -65,8 +69,8 @@ bayesSpace_registration <-
     get(load(x))
   })
 
-## Select t-stats from the registration enrichment data
 
+## Select t-stats from the registration enrichment data
 registration_t_stats <-
   map(bayesSpace_registration, function(data) {
     x <- data$enrichment
@@ -74,9 +78,6 @@ registration_t_stats <-
     colnames(t_stats) <- gsub("^t_stat_", "", colnames(t_stats))
     return(t_stats)
   })
-
-
-
 
 registration_vars <-
     c("final_Annotations", "final_Annotations_broad")
