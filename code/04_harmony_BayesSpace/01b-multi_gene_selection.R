@@ -193,7 +193,6 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
     height = var_height,
     width = var_width,
     point_size = var_point_size,
-    # cont_colors = viridisLite::turbo(21, direction = 1),
     cont_colors = viridisLite::viridis(21, direction = 1),
     pdf = here(dir_plots, "Marker_genes_exploratory_initial", .y),
     assayname = "logcounts"
@@ -206,17 +205,22 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
 ## -----------------------------
 # markers.custom$`MHB neuron specific` / `LHB neuron specific` / `mediodorsal thalamus`
 
-suffix_name <- "MHB_neuron_specific.pdf"
+suffix_name <- "Medial_Hb_neuron.pdf"
 
 # Extract Ensembl ID
 lst_Habenula <- rowData(spe)$gene_search[
     rowData(spe)$gene_name %in% markers.custom$`MHB neuron specific`
 ]
 
+## Multi-gene function crashes if searching have no expression variation (CHAT and CHRNB4) in some of the selected genes
+## Thus, we adjusted the searching for only the TAC gene
+lst_Habenula <- lst_Habenula[1]
+suffix_name <- "Medial_Hb_TAC_neuron.pdf"
+
 lst_multi_g <- c(
-    z_score = paste0("multi_genes_Zs_", suffix_name),
-    pca = paste0("multi_genes_PCA_", suffix_name),
-    sparsity = paste0("multi_genes_Sp_", suffix_name)
+    z_score = paste0("literature_multi_genes_Zs_", suffix_name),
+    pca = paste0("literature_multi_genes_PCA_", suffix_name),
+    sparsity = paste0("literature_multi_genes_Sp_", suffix_name)
 )
 
 print("Ploting multi-gene model for Medial Habenula neuron specific gene markers")
@@ -228,11 +232,9 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
     height = var_height,
     width = var_width,
     point_size = var_point_size,
-    # cont_colors = viridisLite::turbo(21, direction = 1),
     cont_colors = viridisLite::viridis(21, direction = 1),
-    # return_plots = TRUE,
-    pdf = here(dir_plots, .y),
-    assayname = "counts"
+    pdf = here(dir_plots, "Marker_genes_exploratory_initial", .y),
+    assayname = "logcounts"
 ))
 
 
