@@ -43,7 +43,7 @@ spe_pseudo <-
   )
 
 # plot percentage of variance explained for the first 10 components
-# pca <- prcomp(t(assays(spe_pseudo)$logcounts))
+pca <- prcomp(t(assays(spe_pseudo)$logcounts))
 # dim(pca$x)
 # library(tidyverse)
 # data.frame(sd = pca$sdev) %>%
@@ -90,8 +90,8 @@ variance_expl <- getVarianceExplained(spe_pseudo,
                              variables = vars
 )
 ## Quick inspection
-#head(variance_expl)
-#summary(variance_expl)
+# head(variance_expl)
+# summary(variance_expl)
 
 ## Now visualize the percent of variance explained across all genes
 pdf(file = file.path(dir_plots, paste0("sce_pseudo_gene_explanatory_vars_k", sprintf("%02d", k), ".pdf")))
