@@ -110,17 +110,12 @@ prefix_name <- "ALL"
 dir_plots <- here("plots", "", "04_harmony_BayesSpace")
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 
-
-## set path to read RDS object
-spe_in_path <- here("processed-data", "04_harmony_BayesSpace", "spe_qc_filtered_logcounts.rds") # spe_qc_low_spatialLIBD.rds
-
-
-## load Datasets
+## set path to read RDS object. In this case I set the QCed data with log normalized counts.
+spe_in_path <- here("processed-data", "04_harmony_BayesSpace", "spe_qcED_spatialLIBD_log.rds") 
 spe <- readRDS(spe_in_path)
 unique(spe$sample_id)
-# [1] "V12D07-075_C1" "V13B23-285_A1" "V13B23-285_B1" "V13B23-285_C1"
-# [5] "V13B23-285_D1"
 
+## Quick exploration
 cat(" Number of spots:", dim(spe)[2], "\n")
 
 ## Set some initials for manage plots
@@ -128,16 +123,10 @@ var_height <- 24 # 24/3=8
 var_width <- 36 # 36/4=9
 var_point_size <- 3.5
 
-# imgData(spe)
-# spi <- getImg(spe[18])
-# str(spi)
-# identical(spi, imgData(spe)$data[[1]])
-# plot(imgRaster(spi))
 
+#######################  Inspect WM known gene markers   #######################
 
-#######################  Inspect WM genes gene markers   #######################
-
-lst_WM <- c("GFAP", "AQP4", "MBP", "PLP1")
+lst_white_matter_genes <- c("GFAP", "AQP4", "MBP", "PLP1")
 
 # Extract Ensembl ID
 lst_WM <- rowData(spe)$gene_search[
@@ -145,7 +134,7 @@ lst_WM <- rowData(spe)$gene_search[
 ]
 
 ## Our list of white matter genes
-lstID_WM
+lst_WM
 # [1] "GFAP; ENSG00000131095" "AQP4; ENSG00000171885" "MBP; ENSG00000197971"
 # [4] "PLP1; ENSG00000123560"
 
@@ -153,9 +142,9 @@ lstID_WM
 ## in-tissue metrics
 
 lst_multi_g <- c(
-    z_score = paste0("multi_genes_Zs_WM_", prefix_name, ".pdf"),
-    pca = paste0("multi_genes_PCA_WM_", prefix_name, ".pdf"),
-    sparsity = paste0("multi_genes_Sp_WM_", prefix_name, ".pdf")
+    z_score = paste0("literature_multi_genes_Zs_WM_", prefix_name, ".pdf"),
+    pca = paste0("literature_multi_genes_PCA_WM_", prefix_name, ".pdf"),
+    sparsity = paste0("literature_multi_genes_Sp_WM_", prefix_name, ".pdf")
 )
 
 print("Ploting multi-genes for WM gene markers")
@@ -170,8 +159,8 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
     # cont_colors = viridisLite::turbo(21, direction = 1),
     cont_colors = viridisLite::viridis(21, direction = 1),
     # return_plots = TRUE,
-    pdf = here(dir_plots, .y),
-    assayname = "counts"
+    pdf = here(dir_plots, "Marker_genes_exploratory_initial", .y),
+    assayname = "logcounts" #"counts"
 ))
 
 
