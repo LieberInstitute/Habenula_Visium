@@ -244,7 +244,7 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
 ## -----------------------------
 # markers.custom$`LHB neuron specific` / `mediodorsal thalamus`
 
-suffix_name <- "LHB_neuron_specific.pdf"
+suffix_name <- "Lateral_Hb_neuron.pdf"
 
 # Extract Ensembl ID
 lst_Habenula <- rowData(spe)$gene_search[
@@ -252,9 +252,9 @@ lst_Habenula <- rowData(spe)$gene_search[
 ]
 
 lst_multi_g <- c(
-    z_score = paste0("multi_genes_Zs_", suffix_name),
-    pca = paste0("multi_genes_PCA_", suffix_name),
-    sparsity = paste0("multi_genes_Sp_", suffix_name)
+    z_score = paste0("literature_multi_genes_Zs_", suffix_name),
+    pca = paste0("literature_multi_genes_PCA_", suffix_name),
+    sparsity = paste0("literature_multi_genes_Sp_", suffix_name)
 )
 
 print("Ploting multi-gene model for Lateral Habenula neuron specific gene markers")
@@ -266,11 +266,9 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
     height = var_height,
     width = var_width,
     point_size = var_point_size,
-    # cont_colors = viridisLite::turbo(21, direction = 1),
     cont_colors = viridisLite::viridis(21, direction = 1),
-    # return_plots = TRUE,
-    pdf = here(dir_plots, .y),
-    assayname = "counts"
+    pdf = here(dir_plots, "Marker_genes_exploratory_initial", .y),
+    assayname = "logcounts"
 ))
 
 
