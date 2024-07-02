@@ -14,6 +14,9 @@ dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 load(file.path(dir_rdata, "cor_BayesSpace_vs_snRNA-seq.Rdata"),
     verbose = TRUE
 )
+# head(cor_fine)
+# head(cor_broad)
+
 
 ## Make basic heatmaps (not ComplexHeatmap) versions
 
@@ -37,26 +40,37 @@ lapply(
 )
 dev.off()
 
+str(cor_broad)
+head(cor_broad[7])
 
-k08_broad <- cor_broad$BayesSpace_harmony_k08
-rownames(k08_broad) <- gsub("^k08_", "", rownames(k08_broad))
+k08_broad <- cor_broad[[7]]
+#rownames(k08_broad) <- gsub("^k08_", "", rownames(k08_broad))
+
+## set min and max correlation
+max_corr <- max(sapply(k08_broad, max))
+min_corr <- min(sapply(k08_broad, min))
 
 pdf(file = file.path(dir_plots, "snRNA-seq_registration_broadRes_basic_k08_square.pdf"))
-layer_stat_cor_plot(k08_broad ,
-    max = max(k08_broad),
-    min = min(k08_broad))
+layer_stat_cor_plot(k08_broad,
+  max = max_corr,
+  min = min_corr
+)
 dev.off()
 
 pdf(file = file.path(dir_plots, "snRNA-seq_registration_broadRes_basic_k08_tall.pdf"), height = 10)
-layer_stat_cor_plot(k08_broad ,
-    max = max(k08_broad),
-    min = min(k08_broad))
+layer_stat_cor_plot(
+  k08_broad,
+  max = max_corr,
+  min = min_corr
+)
 dev.off()
 
 pdf(file = file.path(dir_plots, "snRNA-seq_registration_broadRes_basic_k08_wide.pdf"), width = 10)
-layer_stat_cor_plot(k08_broad ,
-    max = max(k08_broad),
-    min = min(k08_broad))
+layer_stat_cor_plot(
+  k08_broad,
+  max = max_corr,
+  min = min_corr
+)
 dev.off()
 
 
