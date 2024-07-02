@@ -66,7 +66,7 @@ colnames(Hb_gene_markers)
 
 # Erik and Top50r putative marker genes merged
 markers.custom <- get_erik_and_Hb_markers_genes() # merged lists
-prefix_name <- "all_gm" # prefix to save matched markers found in the clusters
+# prefix_name <- "all_gm" # prefix to save matched markers found in the clusters
 # markers.custom <- get_bukola_markers_genes_Hb()           # Bukola lists
 # prefix_name <- 'erik_gm'
 # markers.custom <- get_Top50r_markers_genes_Hb()           # Top50r lists (putative Hb)
@@ -99,9 +99,6 @@ markers.custom$MHb_putative
 # new_gm <- c('AQP4', 'MT-ND2')
 # markers.custom$MHb <- append(markers.custom$MHb, new_gm)
 # markers.custom$MHb
-
-# set the number of top genes selected for the multi gene analysis
-prefix_name <- "ALL"
 
 ####################### Run multi_gene analysis for exploratory purposes ###########################
 
@@ -140,11 +137,14 @@ lst_WM
 
 ## -----------------------------
 ## in-tissue metrics
+# set the number of top genes selected for the multi gene analysis
+suffix_name <- ""
 
+## define multi-gene method to plot
 lst_multi_g <- c(
-    z_score = paste0("literature_multi_genes_Zs_WM_", prefix_name, ".pdf"),
-    pca = paste0("literature_multi_genes_PCA_WM_", prefix_name, ".pdf"),
-    sparsity = paste0("literature_multi_genes_Sp_WM_", prefix_name, ".pdf")
+    z_score = paste0("literature_multi_genes_Zs_WM", suffix_name, ".pdf"),
+    pca = paste0("literature_multi_genes_PCA_WM", suffix_name, ".pdf"),
+    sparsity = paste0("literature_multi_genes_Sp_WM", suffix_name, ".pdf")
 )
 
 print("Ploting multi-genes for WM gene markers")
@@ -171,7 +171,7 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
 ## -----------------------------
 # markers.custom$`Hb neuron specific`
 
-suffix_name <- "Hb_neuron_specific.pdf"
+suffix_name <- "Hb_neuron.pdf"
 
 # Extract Ensembl ID
 lst_Habenula <- rowData(spe)$gene_search[
@@ -179,9 +179,9 @@ lst_Habenula <- rowData(spe)$gene_search[
 ]
 
 lst_multi_g <- c(
-    z_score = paste0("multi_genes_Zs_", suffix_name),
-    pca = paste0("multi_genes_PCA_", suffix_name),
-    sparsity = paste0("multi_genes_Sp_", suffix_name)
+    z_score = paste0("literature_multi_genes_Zs_", suffix_name),
+    pca = paste0("literature_multi_genes_PCA_", suffix_name),
+    sparsity = paste0("literature_multi_genes_Sp_", suffix_name)
 )
 
 print("Ploting multi-gene model for habenula neuron specific gene markers")
@@ -195,9 +195,8 @@ map2(as.vector(names(lst_multi_g)), as.vector(lst_multi_g), ~ vis_grid_gene(
     point_size = var_point_size,
     # cont_colors = viridisLite::turbo(21, direction = 1),
     cont_colors = viridisLite::viridis(21, direction = 1),
-    # return_plots = TRUE,
-    pdf = here(dir_plots, .y),
-    assayname = "counts"
+    pdf = here(dir_plots, "Marker_genes_exploratory_initial", .y),
+    assayname = "logcounts"
 ))
 
 
