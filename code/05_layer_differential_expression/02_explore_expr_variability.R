@@ -16,7 +16,7 @@ library("here")
 library("sessioninfo")
 library("SingleCellExperiment")
 library("scater")
-library(Polychrome)
+library("Polychrome")
 
 colors_bayesSpace <- Polychrome::palette36.colors(28)
 names(colors_bayesSpace) <- c(1:28)
@@ -29,6 +29,7 @@ names(colors_bayesSpace) <-
 dir_rdata <- here("processed-data", "05_layer_differential_expression")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_rdata)) ## Check that it was created successfully
+
 dir_plots <- here("plots", "05_layer_differential_expression")
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_plots))
@@ -42,9 +43,9 @@ spe_pseudo <-
     )
   )
 
-# plot percentage of variance explained for the first 10 components
+# Calculates the percent of variance explained for first 12 principal components / LieberInstitute/jaffelab
 pca <- prcomp(t(assays(spe_pseudo)$logcounts))
-# dim(pca$x)
+# # Frequency plot by percentage of variance explained for the first 10 components
 # library(tidyverse)
 # data.frame(sd = pca$sdev) %>%
 #   mutate(pct = 100 * (sd^2/sum(sd^2))) %>%
@@ -75,7 +76,8 @@ for (var in vars) {
     point_size = 1,
     label_format = c("%s %02i", " (%i%%)"),
     percentVar = metadata(spe_pseudo)$PCA_var_explained
-  )
+  )  + ggtitle(paste0("PCA of pseudobulk data with BS k=", as.character(k))) + 
+    theme(text = element_text(size = 7), axis.text.x = element_text(angle = 45))
   if (var == "BayesSpace") {
     p <- p + scale_color_manual("BayesSpace", values = colors_bayesSpace)
   }
@@ -88,14 +90,14 @@ dev.off()
 ## using scater::getVarianceExplained()
 variance_expl <- getVarianceExplained(spe_pseudo,
                              variables = vars
-)
+) 
 ## Quick inspection
 # head(variance_expl)
 # summary(variance_expl)
 
 ## Now visualize the percent of variance explained across all genes
 pdf(file = file.path(dir_plots, paste0("sce_pseudo_gene_explanatory_vars_k", sprintf("%02d", k), ".pdf")))
-plotExplanatoryVariables(variance_expl)
+plotExplanatoryVariables(variance_expl) + ggtitle(paste0("PCA of pseudobulk data with BS k=", as.character(k))) 
 dev.off()
 
 ## Reproducibility information
