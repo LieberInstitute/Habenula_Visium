@@ -9,10 +9,9 @@ library("BiocSingular")
 library("sessioninfo")
 library("HDF5Array")
 
+## set path directories
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
-# raw_in_path <- here("processed-data", "02_build_spe", "spe.rds")
 filtered_in_path <- here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds")
-# filtered_ordinary_path <- file.path(dir_rdata, "spe_filtered.rds")
 filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
 
@@ -37,8 +36,8 @@ cat("Number of spots after removed any remaining empty spots and/or genes with z
 #  Re-upload the spots manually annotated to resume the work as noted here https://github.com/LieberInstitute/spatialLIBD/blob/77a5303f91edb7b9ffb1ce00b4193dae5d16a8a1/R/app_server.R#L1118-L1152)
 
 spatialLIBD_ann_file <- here(
-    "processed-data", "03_spatialLIBD_app",
-    "spatialLIBD_ManualAnnotation_2024-05-16_v2.csv"
+    "processed-data", "03_spatialLIBD_app", "Manual_annotations", 
+    "spatialLIBD_ManAnn_2024-05-16_CSC_quality_controls_v2.csv"
 )
 
 # read the annotation file made with the spatialLIBD shiny app
