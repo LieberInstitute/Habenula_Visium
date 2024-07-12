@@ -12,18 +12,20 @@ library("here")
 
 ## You need this to enable shinyapps to install Bioconductor packages
 options(repos = BiocManager::repositories())
-# getOption("repos") # 'getOption("repos")' replaces Bioconductor standard repositories
 
 ## Deploy the app, that is, upload it to shinyapps.io
 rsconnect::deployApp(
-    appDir = here("code", "03_spatialLIBD_app"),
+    appDir = here("code", "03_spatialLIBD_app_deploy_k16"),
     appFiles = c(
         "app.R",
-        "spe_harmony.rds",
-        withr::with_dir(here("code", "03_spatialLIBD_app"), dir("clusters_BayesSpace", full.names = TRUE)),
-        withr::with_dir(here("code", "03_spatialLIBD_app"), dir("www", full.names = TRUE))
+        "spe_subset_for_spatialLIBD.rds",
+        "sce_pseudo_BayesSpace_k16.rds",
+        "modeling_results_BayesSpace_k16.Rdata",
+        "sig_genes_subset_k16.Rdata",
+        withr::with_dir(here("code", "03_spatialLIBD_app_deploy_k16"), dir("clusters_BayesSpace", full.names = TRUE)),
+        withr::with_dir(here("code", "03_spatialLIBD_app_deploy_k16"), dir("www", full.names = TRUE))
     ),
-    appName = "Habenula_Visium",
+    appName = "Habenula_Visium_Sp16",
     account = "libd",
     server = "shinyapps.io"
 )
