@@ -27,7 +27,9 @@ load("sig_genes_subset_k16.Rdata", verbose = TRUE)
 # lobstr::obj_size(spe)
 # 4.03 GB
 
+# Quick inspection
 colnames(colData(spe))
+
 ## Import BayesSpace clusters
 spe <- cluster_import(spe,
     cluster_dir = "clusters_BayesSpace",
@@ -57,10 +59,11 @@ spatialLIBD::run_app(
         "overlaps_tissue",
         vars[grep("^10x_", vars)],
         vars[grep("^scran_", vars)],
-        # "edge_spots",
-        # vars[grep("^SNN_k10", vars)],
+        "edge_spots",
+        vars[grep("^SNN_k10", vars)],
         # vars[grep("^BayesSpace_pca", vars)],
-        vars[grep("^BayesSpace_harmony_", vars)]
+        vars[grep("^BayesSpace_harmony_", vars)],
+        "BayesSpace_colors"
     ),
     spe_continuous_vars = c(
         "sum_umi",
