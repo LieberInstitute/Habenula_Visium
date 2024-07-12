@@ -7,19 +7,19 @@ library("sessioninfo")
 
 ## Set up soft links if needed
 withr::with_dir(
-  here("code", "deploy_app_k09"),
-  system("ln -s ../../processed-data/rdata/spe/07_layer_differential_expression/modeling_results_BayesSpace_k09.Rdata modeling_results_BayesSpace_k09.Rdata")
+    here("code", "03_spatialLIBD_app_deploy_k16"),
+    system("ln -s ../../processed-data/05_layer_differential_expression/modeling_results_BS/modeling_results_BayesSpace_k16.Rdata modeling_results_BayesSpace_k16.Rdata")
 )
 withr::with_dir(
-  here("code", "deploy_app_k09"),
-  system("ln -s ../../processed-data/rdata/spe/07_layer_differential_expression/sce_pseudo_BayesSpace_k09.rds sce_pseudo_BayesSpace_k09.rds")
+    here("code", "03_spatialLIBD_app_deploy_k16"),
+    system("ln -s ../../processed-data/05_layer_differential_expression/sce_pseudo_BayesSpace_k16.rds  sce_pseudo_BayesSpace_k16.rds")
 )
 withr::with_dir(
-  here("code", "deploy_app_k09"),
-  system("ln -s ../../processed-data/rdata/spe/01_build_spe/spe_subset_for_spatialLIBD.rds spe_subset_for_spatialLIBD.rds")
+    here("code", "03_spatialLIBD_app_deploy_k16"),
+    system("ln -s ../../processed-data/04_harmony_BayesSpace/spe_harmony_shiny.rds spe_subset_for_spatialLIBD.rds")
 )
 withr::with_dir(
-  here("code", "deploy_app_k09", "www"),
+  here("code", "03_spatialLIBD_app_deploy_k16", "www"),
   system("ln -s ../../../README.md README.md")
 )
 
@@ -29,31 +29,31 @@ sce_pseudo <-
   readRDS(
     here(
       "code",
-      "deploy_app_k09",
-      "sce_pseudo_BayesSpace_k09.rds"
+      "03_spatialLIBD_app_deploy_k16",
+      "sce_pseudo_BayesSpace_k16.rds"
     )
   )
 
 lobstr::obj_size(sce_pseudo)
-# 56.41 MB
+# 6.21 MB
 
 # load modeling results for k09 clustering/pseudobulking
 load(
   here(
     "code",
-    "deploy_app_k09",
-    "modeling_results_BayesSpace_k09.Rdata"
+    "03_spatialLIBD_app_deploy_k16",
+    "modeling_results_BayesSpace_k16.Rdata"
   ),
   verbose = TRUE
 )
 lobstr::obj_size(modeling_results)
-# 15.87 MB
+# 17.94 MB
 
 ## For sig_genes_extract_all() to work https://github.com/LieberInstitute/Visium_IF_AD/blob/5e3518a9d379e90f593f5826cc24ec958f81f4aa/code/05_deploy_app_wholegenome/app.R#L37-L44
 sce_pseudo$spatialLIBD <- sce_pseudo$BayesSpace
 
 ## Check that we have the right number of tests
-k <- 9
+k <- 16
 tests <- lapply(modeling_results, function(x) {
   colnames(x)[grep("stat", colnames(x))]
 })
@@ -62,26 +62,29 @@ stopifnot(length(tests$enrichment) == k)
 stopifnot(length(tests$pairwise) == choose(k, 2))
 
 sig_genes <- sig_genes_extract_all(
-  n = nrow(sce_pseudo),
+  n = nrow(sce_pseudo), #1000
   modeling_results = modeling_results,
   sce_layer = sce_pseudo
 )
+# table(sig_genes$test)
 
 ## Check that we have the right number of tests.
 ## the + 1 at the end assumes only "all"
 stopifnot(length(unique(sig_genes$test)) == choose(k, 2) * 2 + k + 1)
 
 lobstr::obj_size(sig_genes)
-# 423.73 MB
-
+# 1.14GB huge / 423.73 MB
+head(sig_genes)
 dim(sig_genes)
+# [1] 1004870      13
 # [1] 1002450      12
 
 ## Drop parts we don't need to reduce the memory
+# sig_genes
 sig_genes$in_rows <- NULL
 sig_genes$in_rows_top20 <- NULL
 lobstr::obj_size(sig_genes)
-# 78.88 MB
+# 95.87 MB / 78.88 MB
 
 # ## Subset sig_genes
 # sig_genes <- subset(sig_genes, fdr < 0.05)
@@ -111,14 +114,14 @@ write.csv(
   subset(z, top <= 25),
   file = here(
     "processed-data",
-    "rdata",
-    "spe",
-    "07_layer_differential_expression",
-    "spatialDLPFC_model_results_FDR5perc_top25_k09.csv"
+    # "rdata",
+    # "spe",
+    "05_layer_differential_expression",
+    "spatialHb_model_results_FDR5perc_top25_k16.csv"
   )
 )
 
-save(sig_genes, file = here::here("code", "deploy_app_k09", "sig_genes_subset_k09.Rdata"))
+save(sig_genes, file = here::here("code", "03_spatialLIBD_app_deploy_k16", "sig_genes_subset_k16.Rdata"))
 
 ## Reproducibility information
 print("Reproducibility information:")
