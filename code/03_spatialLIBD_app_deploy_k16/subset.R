@@ -17,6 +17,7 @@ withr::with_dir(
 withr::with_dir(
     here("code", "03_spatialLIBD_app_deploy_k16"),
     system("ln -s ../../processed-data/04_harmony_BayesSpace/spe_harmony_shiny.rds spe_subset_for_spatialLIBD.rds")
+    # system("ln -s ../../processed-data/rdata/spe/01_build_spe/spe_subset_for_spatialLIBD.rds spe_subset_for_spatialLIBD.rds")
 )
 withr::with_dir(
   here("code", "03_spatialLIBD_app_deploy_k16", "www"),
