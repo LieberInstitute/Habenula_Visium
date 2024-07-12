@@ -26,29 +26,11 @@ withr::with_dir(
 
 
 # load the pseudobulked object sce_pseudo
-sce_pseudo <-
-  readRDS(
-    here(
-      "code",
-      "03_spatialLIBD_app_deploy_k16",
-      "sce_pseudo_BayesSpace_k16.rds"
-    )
-  )
-
-lobstr::obj_size(sce_pseudo)
-# 6.21 MB
-
-# load modeling results for k09 clustering/pseudobulking
-load(
-  here(
-    "code",
-    "03_spatialLIBD_app_deploy_k16",
-    "modeling_results_BayesSpace_k16.Rdata"
-  ),
-  verbose = TRUE
-)
-lobstr::obj_size(modeling_results)
-# 17.94 MB
+sce_pseudo <-readRDS("sce_pseudo_BayesSpace_k16.rds")
+# lobstr::obj_size(sce_pseudo) # 6.21 MB
+# load modeling results for k16
+load("modeling_results_BayesSpace_k16.Rdata", verbose = TRUE)
+# lobstr::obj_size(modeling_results) # 17.94 MB
 
 ## For sig_genes_extract_all() to work https://github.com/LieberInstitute/Visium_IF_AD/blob/5e3518a9d379e90f593f5826cc24ec958f81f4aa/code/05_deploy_app_wholegenome/app.R#L37-L44
 sce_pseudo$spatialLIBD <- sce_pseudo$BayesSpace
