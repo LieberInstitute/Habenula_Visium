@@ -26,7 +26,7 @@ withr::with_dir(
 
 
 # load the pseudobulked object sce_pseudo
-sce_pseudo <-readRDS("sce_pseudo_BayesSpace_k16.rds")
+sce_pseudo <- readRDS("sce_pseudo_BayesSpace_k16.rds")
 # lobstr::obj_size(sce_pseudo) # 6.21 MB
 # load modeling results for k16
 load("modeling_results_BayesSpace_k16.Rdata", verbose = TRUE)
@@ -45,29 +45,29 @@ stopifnot(length(tests$enrichment) == k)
 stopifnot(length(tests$pairwise) == choose(k, 2))
 
 sig_genes <- sig_genes_extract_all(
-  n = nrow(sce_pseudo), #1000
+  n = nrow(sce_pseudo), #100
   modeling_results = modeling_results,
   sce_layer = sce_pseudo
 )
 # table(sig_genes$test)
+
 
 ## Check that we have the right number of tests.
 ## the + 1 at the end assumes only "all"
 stopifnot(length(unique(sig_genes$test)) == choose(k, 2) * 2 + k + 1)
 
 lobstr::obj_size(sig_genes)
-# 1.14GB huge / 423.73 MB
+# 1.14GB
 head(sig_genes)
 dim(sig_genes)
 # [1] 1004870      13
-# [1] 1002450      12
 
 ## Drop parts we don't need to reduce the memory
 # sig_genes
 sig_genes$in_rows <- NULL
 sig_genes$in_rows_top20 <- NULL
 lobstr::obj_size(sig_genes)
-# 95.87 MB / 78.88 MB
+# 95.87 MB
 
 # ## Subset sig_genes
 # sig_genes <- subset(sig_genes, fdr < 0.05)
@@ -89,12 +89,18 @@ fix_csv <- function(df) {
   return(df)
 }
 z <- fix_csv(as.data.frame(subset(sig_genes, fdr < 0.05)))
+colnames(z)
+# [1] "top"        "model_type" "test"       "gene"       "stat"       "pval"       "fdr"        "gene_index"
+# [9] "logFC"      "ensembl"    "results"
 dim(z)
-# [1] 344722     10
-dim(subset(z, top <= 25))
-# [1] 2043   10
+# [1] 79959    11
+
+z <- subset(z, top <= 25)
+dim(z)
+# [1] 5022   11
+
 write.csv(
-  subset(z, top <= 25),
+  z,
   file = here(
     "processed-data",
     # "rdata",
