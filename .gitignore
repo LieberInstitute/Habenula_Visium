@@ -14,12 +14,6 @@ code/01_spaceranger/
 # I think this is a back up of code/02_build_spe/
 processed-data/01_spaceranger/02_build_spe/
 
-# RDS files with all the samples merged
-processed-data/02_build_spe/spe*
-
-# soft links 
-code/03_spatialLIBD_app/spe_harmony.rds
-
 # old versions
 code/04_harmony_BayesSpace/old/
 
@@ -37,18 +31,22 @@ processed-data/06_spatial_registration_vs_snRNA-seq/tmp/
 plots/02_build_spe/pilot_sample/
 # RDS files with only the pilot sample
 processed-data/02_build_spe/pilot/
-
-###### ================================================================
-
 # temporal directories used to test code
 code/04_harmony_BayesSpace/tmp/
 plots/04_harmony_BayesSpace/tmp/
 processed-data/04_harmony_BayesSpace/tmp/
 
-# big files in pre-processing 
-*.rds
-processed-data/05_snRNA-seq_model_stats/*.rds		 # snRNAseq annotationeference from human pilot
-#processed-data/04_harmony_BayesSpace/top.hvgs.Rdata
+###### ================================================================
 
+# Big files. RDS, RData, softlinks, etc
+
+code/03_spatialLIBD_app/*.rds
+code/03_spatialLIBD_app_prefiltered/*.rds 
+
+processed-data/02_build_spe/spe*
+processed-data/04_harmony_BayesSpace/spe_qcED_spatialLIBD_log_GLM-PCA_hdf5/
+processed-data/05_snRNA-seq_model_stats/*.rds		 # snRNAseq annotationeference from human pilot
+processed-data/05_layer_differential_expression/
+processed-data/06_spatial_registration_vs_snRNA-seq/*.Rdata
 
  
