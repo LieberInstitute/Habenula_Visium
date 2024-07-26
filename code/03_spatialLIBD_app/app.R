@@ -21,12 +21,16 @@ here("code", "03_spatialLIBD_app")
 spe <- readRDS("spe_harmony.rds") # spe with harmony and BayesSpace
 
 # lobstr::obj_size(spe)
+# 4.03 GB
 
 ## Import BayesSpace clusters
 spe <- cluster_import(spe,
     cluster_dir = "clusters_BayesSpace",
     prefix = ""
 )
+
+## Quick inspection
+# table(spe$BayesSpace_harmony_k24)
 
 ## Quickly explore the data
 vars <- colnames(colData(spe))
