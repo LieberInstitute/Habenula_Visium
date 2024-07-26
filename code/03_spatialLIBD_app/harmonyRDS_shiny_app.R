@@ -4,8 +4,8 @@ library("here")
 
 ## This removes not required assays to deploy the shiny app
 
-here("code", "03_spatialLIBD_app")
-path_in <- path_out <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony.rds")
+here::here("code", "03_spatialLIBD_app")
+path_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony.rds")
 path_out <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony_shiny.rds")
 
 ## symbolic link to point the spe.rds object to clean
@@ -23,4 +23,10 @@ assay(spe, "binomial_deviance_residuals") <- NULL
 # 4.03 GB
 
 saveRDS(spe, path_out)
+
+## Set up soft links if needed
+withr::with_dir(
+    here("code", "03_spatialLIBD_app"),
+    system("ln -s ../../processed-data/04_harmony_BayesSpace/spe_harmony_shiny.rds spe_harmony.rds")
+)
 
