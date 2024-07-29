@@ -16,26 +16,38 @@ options("golem.app.prod" = TRUE)
 ## You need this to enable shinyapps to install Bioconductor packages
 options(repos = BiocManager::repositories())
 
-## Load the spe object
-# spe_subset_for_spatialLIBD.rds
+######### Load All required objects #########
+
+## Set BayesSpace k selection
+BayesSpace_k <- 24
+
+## load harmony_BayesSpace spe object
 spe <- readRDS("spe_subset_for_spatialLIBD.rds")
-# load the pseudobulked object sce_pseudo
-sce_pseudo <- readRDS("sce_pseudo_BayesSpace_k16.rds")
-# load modeling results for k9 clustering/pseudobulking
-load("modeling_results_BayesSpace_k16.Rdata", verbose = TRUE)
-load("sig_genes_subset_k16.Rdata", verbose = TRUE)
 # lobstr::obj_size(spe)
 # 4.03 GB
+
+## load the pseudobulked object sce_pseudo
+sce_pseudo_name <- paste0("sce_pseudo_BayesSpace_k", BayesSpace_k,".rds")
+sce_pseudo <- readRDS(sce_pseudo_name)
+
+## load modeling results for any k9 clustering/pseudobulking
+modeling_results_name <- paste0("modeling_results_BayesSpace_k", BayesSpace_k ,".Rdata")
+load(modeling_results_name, verbose = TRUE)
+
+## Load all significant genes
+signif_genes_name <- paste0("sig_genes_k", BayesSpace_k,".Rdata")
+load(signif_genes_name, verbose = TRUE)
 
 # Quick inspection
 colnames(colData(spe))
 
-## Import BayesSpace clusters
+## Import `BayesSpace_harmony_k%` clusters and assign them to `BayesSpace` new column
 spe <- cluster_import(spe,
     cluster_dir = "clusters_BayesSpace",
     prefix = ""
 )
-spe$BayesSpace <- spe$BayesSpace_harmony_k16
+BS_k_column <- paste0("BayesSpace_harmony_k", BayesSpace_k)
+spe$BayesSpace <- spe[[BS_k_column]]
 
 ## Quickly explore the data
 vars <- colnames(colData(spe))
@@ -47,13 +59,16 @@ m <- match(as.character(spe$BayesSpace_harmony_k16), names(colors_BayesSpace))
 stopifnot(all(!is.na(m)))
 spe$BayesSpace_colors <- spe$BayesSpace_harmony_k16_colors <- colors_BayesSpace[m]
 
+
+title_name <- paste0("spatialHabenula, Visium, Sp", BayesSpace_k)
+
 spatialLIBD::run_app(
     spe,
     sce_layer = sce_pseudo,
     modeling_results = modeling_results,
     sig_genes = sig_genes,
-    title = "spatialHabenula, Visium, Sp16",
-    spe_discrete_vars = c( ## this is the variables for the spe object not the sce_pseudo object
+    title = title_name,
+    spe_discrete_vars = c( ## this are the variables for the spe object not the sce_pseudo object
         "BayesSpace",
         "ManualAnnotation",
         "overlaps_tissue",
