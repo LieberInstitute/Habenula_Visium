@@ -13,19 +13,30 @@ library("here")
 ## You need this to enable shinyapps to install Bioconductor packages
 options(repos = BiocManager::repositories())
 
+## Set BayesSpace k selection
+BayesSpace_k <- 24
+
+
+## Build names
+appDir_name <-  here("code", "03_spatialLIBD_app_pseudobulk")
+sce_pseudo_name <- paste0("sce_pseudo_BayesSpace_k", BayesSpace_k, ".rds")
+modeling_results_name <- paste0("modeling_results_BayesSpace_k", BayesSpace_k, ".Rdata")
+sig_genes_name <- paste0("sig_genes_k", BayesSpace_k, ".Rdata")
+app_name <- paste0("Habenula_Visium_Sp", BayesSpace_k)
+
 ## Deploy the app, that is, upload it to shinyapps.io
 rsconnect::deployApp(
-    appDir = here("code", "03_spatialLIBD_app_deploy_k16"),
+    appDir = appDir_name,
     appFiles = c(
         "app.R",
         "spe_subset_for_spatialLIBD.rds",
-        "sce_pseudo_BayesSpace_k16.rds",
-        "modeling_results_BayesSpace_k16.Rdata",
-        "sig_genes_subset_k16.Rdata",
-        withr::with_dir(here("code", "03_spatialLIBD_app_deploy_k16"), dir("clusters_BayesSpace", full.names = TRUE)),
-        withr::with_dir(here("code", "03_spatialLIBD_app_deploy_k16"), dir("www", full.names = TRUE))
+        sce_pseudo_name,
+        modeling_results_name,
+        sig_gene,
+        withr::with_dir(appDir_name, dir("clusters_BayesSpace", full.names = TRUE)),
+        withr::with_dir(appDir_name, dir("www", full.names = TRUE))
     ),
-    appName = "Habenula_Visium_Sp16",
+    appName = app_name,
     account = "libd",
     server = "shinyapps.io"
 )
