@@ -120,7 +120,7 @@ table(sig_genes$model_type)
 table(z$model_type)
 
 ## Save ALL the significant DEG that passed the fdr at 5%
-model_topAll_csv <- paste0("spatialHb_model_results_k", k, "_ALL.csv")
+model_topAll_csv <- paste0("spatialHb_model_results_k", k, "_ALL_FDR5perc.csv")
 model_topAll_csv <- here("processed-data", "05_layer_differential_expression", model_topAll_csv)
 write.csv(z, model_topAll_csv)
 
