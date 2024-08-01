@@ -8,7 +8,7 @@ library(Matrix)
 library(SpatialExperiment)
 
 k = as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-k <- 3
+# test k <- 3
 
 # spe_dir = here(
 #   'processed-data', '05_harmony_BayesSpace', 'spe_filtered_hdf5'
@@ -16,6 +16,7 @@ k <- 3
 # spe with in-tissue spot counts, QCed and excluding those manually annotated as low quality or having tissue artifacts.
 spe_dir <- here("processed-data", "04_harmony_BayesSpace", "spe_qcED_spatialLIBD.rds")
 
+# notes.  it contains spatial variable genes
 svg_path = here(
   'processed-data', '05_harmony_BayesSpace', 'nnSVG_out',
   'summary_across_samples.csv'
@@ -37,8 +38,12 @@ spe = readRDS(spe_dir)
 names(colData(spe))
 
 #   PRECAST expects array coordinates in 'row' and 'col' columns
-spe$row = spe$array_row_transformed
-spe$col = spe$array_col_transformed
+# spe$row = spe$array_row_transformed
+# spe$col = spe$array_col_transformed
+
+# note csc. need double chk if I need to transform the coordinates 
+spe$row = spe$array_row
+spe$col = spe$array_col
 
 #   Create a list of Seurat objects: one per sample_id 
 seu_list = lapply(
@@ -58,16 +63,24 @@ seu_list = lapply(
   }
 )
 
-svgs = read.csv(svg_path) |>
-  as_tibble() |>
-  arrange(nnsvg_avg_rank_rank) |>
-  slice_head(n = num_genes) |>
-  pull(gene_id)
+
+## load the previous selected hvdg processed to Compute GLM-PCA (Binominal model 2000 genes - count assay)
+dir_rdata <- here("processed-data", "04_harmony_BayesSpace", "hdgs.hb.Rdata")
+hvdg_all <- load(dir_rdata)
+hvdg <- hdgs.hb.2000
+
+# svgs = read.csv(svg_path) |>
+#   as_tibble() |>
+#   arrange(nnsvg_avg_rank_rank) |>
+#   slice_head(n = num_genes) |>
+#   pull(gene_id)
 
 pre_obj = CreatePRECASTObject(
   seuList = seu_list,
   selectGenesMethod = NULL,
-  customGenelist = svgs
+  #customGenelist = svgs
+  customGenelist = hvdg
+  
   #   Using defaults for gene-filtering-related parameters. Though each donor
   #   consists of more spots than 1 typical Visium capture area (and would
   #   thus be expected to throw off the appropriateness of the defaults for
