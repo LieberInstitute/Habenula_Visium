@@ -4,8 +4,8 @@
 #SBATCH -c 1
 #SBATCH --mem=20G
 #SBATCH --job-name=05-run_nnSVG
-#SBATCH -o ../../processed-data/05_harmony_BayesSpace/logs/05-run_nnSVG_%a.log
-#SBATCH -e ../../processed-data/05_harmony_BayesSpace/logs/05-run_nnSVG_%a.log
+#SBATCH -o ../../processed-data/04_harmony_BayesSpace/logs/05-run_nnSVG_%a.log
+#SBATCH -e ../../processed-data/04_harmony_BayesSpace/logs/05-run_nnSVG_%a.log
 #SBATCH --array=1-10%5
 
 set -e
@@ -18,8 +18,9 @@ echo "Job id: ${SLURM_JOB_ID}"
 echo "Job name: ${SLURM_JOB_NAME}"
 echo "Node name: ${SLURMD_NODENAME}"
 
-module load conda_R/4.3
-Rscript 05-run_nnSVG.R
+module load conda_R/4.3.x
+Rscript 07-run-nnSVR.R
+        
 
 echo "**** Job ends ****"
 date
