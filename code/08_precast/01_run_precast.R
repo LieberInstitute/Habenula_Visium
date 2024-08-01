@@ -8,37 +8,52 @@ library(Matrix)
 library(SpatialExperiment)
 
 k = as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+k <- 3
 
-spe_dir = here(
-  'processed-data', '05_harmony_BayesSpace', 'spe_filtered_hdf5'
-)
+# spe_dir = here(
+#   'processed-data', '05_harmony_BayesSpace', 'spe_filtered_hdf5'
+# )
+# spe with in-tissue spot counts, QCed and excluding those manually annotated as low quality or having tissue artifacts.
+spe_dir <- here("processed-data", "04_harmony_BayesSpace", "spe_qcED_spatialLIBD.rds")
+
 svg_path = here(
   'processed-data', '05_harmony_BayesSpace', 'nnSVG_out',
   'summary_across_samples.csv'
 )
-out_path = here('processed-data', '10_precast', paste0('PRECAST_k', k, '.csv'))
+out_path = here('processed-data', '08_precast', paste0('PRECAST_k', k, '.csv'))
 num_genes = 2000
 
-set.seed(1)
+set.seed(31072024)
 dir.create(dirname(out_path), showWarnings = FALSE)
 
-spe = loadHDF5SummarizedExperiment(spe_dir)
+#spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_dir)
+# spe
+# class: SpatialExperiment 
+# dim: 25826 16613 
+# metadata(0):
+#   assays(1): counts
+
+names(colData(spe))
 
 #   PRECAST expects array coordinates in 'row' and 'col' columns
 spe$row = spe$array_row_transformed
 spe$col = spe$array_col_transformed
 
-#   Create a list of Seurat objects: one per donor
+#   Create a list of Seurat objects: one per sample_id 
 seu_list = lapply(
-  unique(spe$donor),
-  function(donor) {
-    small_spe = spe[, spe$donor == donor]
+  # unique(spe$donor),
+  unique(spe$sample_id),
+  # function(donor) {
+    # small_spe = spe[, spe$donor == donor]
+  function(sample) {  
+    small_spe = spe[, spe$sample_id == sample]
     
     CreateSeuratObject(
       #   Bring into memory to greatly improve speed
       counts = as(assays(small_spe)$counts, "dgCMatrix"),
       meta.data = as.data.frame(colData(small_spe)),
-      project = 'spatialNAc'
+      project = 'Hb_Visium'
     )
   }
 )
