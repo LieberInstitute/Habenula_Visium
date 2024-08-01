@@ -19,8 +19,11 @@ echo "Job name: ${SLURM_JOB_NAME}"
 echo "Node name: ${SLURMD_NODENAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
-module load conda_R/4.3
-Rscript 01-precast.R
+module load conda_R/4.3.x
+## List current modules for reproducibility
+module list
+
+Rscript 01_run_precast.R
 
 echo "**** Job ends ****"
 date
