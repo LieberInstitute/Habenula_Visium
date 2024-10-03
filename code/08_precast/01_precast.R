@@ -1,12 +1,19 @@
-library(getopt)
-library(sessioninfo)
-library(here)
-library(PRECAST)
-library(HDF5Array)
-library(Seurat)
-library(tidyverse)
-library(Matrix)
-library(SpatialExperiment)
+library("getopt")
+library("sessioninfo")
+library("here")
+library("PRECAST")    # * 1.6.5
+library("HDF5Array")
+library("Seurat")     # * 5.0.1
+library("tidyverse")
+library("Matrix")
+library("SpatialExperiment")  # * 1.12.0
+
+
+## Create directories
+dir_plots <- here::here("plots", "08_precast")
+if (!dir.exists(dir_plots)) { dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE) }
+out_path = here("processed-data", "08_precast", "precast_out")
+if (!dir.exists(out_path)) { dir.create(out_path, showWarnings = FALSE, recursive = TRUE) }
 
 # Import command-line parameters
 spec <- matrix(
@@ -27,13 +34,22 @@ opt <- getopt(spec)
 print("Using the following parameters:")
 print(opt)
 
-spe_dir = here('processed-data', '15_samui_imagej_comparison', 'spe')
+# spe with in-tissue spot counts, QCed and excluding those manually annotated as low quality or having tissue artifacts.
+spe_dir <- here("processed-data", "04_harmony_BayesSpace", "spe_qcED_spatialLIBD.rds")
+#spe_dir = here('processed-data', '15_samui_imagej_comparison', 'spe')
+
+# csc. I do not have a file like this
 svg_path = here(
   'processed-data', '05_harmony_BayesSpace', '07-run_nnSVG', 'nnSVG_out',
   'summary_across_samples.csv'
 )
+
+# csc. is this a new directory ?
 out_path = here(
   'processed-data', '15_samui_imagej_comparison', 'precast_out',
+  sprintf('PRECAST_k%s_%s.csv', opt$k, opt$final_step)
+)
+out_path = here('processed-data', '08_precast', 'precast_out',
   sprintf('PRECAST_k%s_%s.csv', opt$k, opt$final_step)
 )
 num_genes = 2000
@@ -41,7 +57,15 @@ num_genes = 2000
 set.seed(1)
 dir.create(dirname(out_path), showWarnings = FALSE)
 
-spe = loadHDF5SummarizedExperiment(spe_dir)
+#spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_dir)
+# spe
+# class: SpatialExperiment 
+# dim: 25826 16613 
+# metadata(0):
+#   assays(1): counts
+
+# names(colData(spe))
 
 #   PRECAST expects array coordinates in 'row' and 'col' columns
 spe$row = spe[[paste0('array_row_', opt$final_step)]]
@@ -49,7 +73,8 @@ spe$col = spe[[paste0('array_col_', opt$final_step)]]
 
 #   Create a list of Seurat objects: one per donor
 seu_list = lapply(
-  unique(spe$donor),
+  # unique(spe$donor),
+  unique(spe$sample_id),
   function(donor) {
     small_spe = spe[, spe$donor == donor]
     
@@ -57,7 +82,8 @@ seu_list = lapply(
       #   Bring into memory to greatly improve speed
       counts = as(assays(small_spe)$counts, "dgCMatrix"),
       meta.data = as.data.frame(colData(small_spe)),
-      project = 'spatialNAc'
+      # project = 'spatialNAc'
+      project = 'Hb_Visium'
     )
   }
 )
@@ -105,6 +131,10 @@ pre_obj@meta.data |>
   rename_with(~ sub('_PRE_CAST', '', .x)) |>
   write_csv(out_path)
 
+print("Reproducibility information:")
+Sys.time()
+proc.time()
+options(width = 120)
 session_info()
 
 ## This script was made using slurmjobs version 1.2.2
