@@ -160,15 +160,15 @@ spe <- logNormCounts(spe)
 
 # Save a copy of the SPE with HDF5-backed assays, which will be important to
 # control memory consumption later
-message(Sys.time(), " - Saving HDF5-backed object to control memory later")
+
+saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_log.rds"))
+
 spe <- saveHDF5SummarizedExperiment(
     spe,
     dir = paste0(filtered_hdf5_dir, "_temp"), replace = TRUE
 )
 gc()
 
-## Save new spe object with spots manually annotated drop
-saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_log.rds"))
 
 
 # ################################################################################
