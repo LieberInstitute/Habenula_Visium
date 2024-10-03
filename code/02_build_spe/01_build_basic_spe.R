@@ -5,26 +5,35 @@ library("sessioninfo")
 
 
 
-
 ## Create output directories
 dir_rdata <- here::here("processed-data", "02_build_spe")
 if (!dir.exists(dir_rdata)) {
     dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 }
 
+## Define the donor info using information from
+## https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/raw-data/Visium_SPG_AD_ITG_MasterExcelSummarySheet.xlsx
+
+Sid <- "S1_v S2_v S3_v S4_v S5_v S6_v S7_v S8_v S9_v"
+Sid <- strsplit(Sid, "\\s+")[[1]]
+sr_sample_ids <- "V12D07-075_C1 V13B23-285_A1 V13B23-285_B1 V13B23-285_C1 V13B23-285_D1 V13B23-281_A1 V13B23-281_B1 V13B23-281_C1 V13B23-281_D1"
+sr_sample_ids <- strsplit(sr_sample_ids, "\\s+")[[1]]
+brain_id <- "Br8112 Br8518 Br8518 Br8518 Br8518 Br6522 Br6522 Br6522 Br6522"
+brain_id <- strsplit(brain_id, "\\s+")[[1]]
 
 ## Define some info for the samples
 sample_info <- data.frame(
-    sample_id = c(
-        "V12D07-075_C1",
-        "V13B23-285_D1",
-        "V13B23-285_C1",
-        "V13B23-285_B1",
-        "V13B23-285_A1"
-    )
+  sample_id_short = c(Sid),
+  sample_id = c(sr_sample_ids),
+  brain_id = c(brain_id),
+  age = c(65.75, rep(41.3, 8)), # last 4 ?
+  sex = c(rep("F", 5), rep("M", 4)),
+  race = c(rep("EA/CAUC", 9)), # ?
+  pmi = c(31.5, rep(10.5, 4), rep(30.5, 4)), 
+  diagnosis = c("Pilot", rep("Control", 8)),
+  rin = c(7, rep(6.3, 4), rep(7.4, 4)) 
 )
-# sample_info$subject <- gsub(".*_", "", sample_info$sample_id)
-sample_info$subject <- c("Br8112", rep("Br8518", 4))
+
 sample_info$sample_path <-
     file.path(
         here::here("processed-data", "01_spaceranger"),
@@ -33,34 +42,22 @@ sample_info$sample_path <-
     )
 stopifnot(all(file.exists(sample_info$sample_path)))
 
-## Define the donor info using information from
-## https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/raw-data/Visium_SPG_AD_ITG_MasterExcelSummarySheet.xlsx
-donor_info <- data.frame(
-    # subject = c("Br8112", rep("Br8518", 4)),
-    sample_id = c("V12D07-075_C1", "V13B23-285_D1", "V13B23-285_C1", "V13B23-285_B1", "V13B23-285_A1"),
-    age = c(65.75, rep(41.3, 4)),
-    sex = c("F", rep("F", 4)),
-    race = c("EA/CAUC", rep("EA/CAUC", 4)),
-    pmi = c(31.5, rep(10.5, 4)),
-    diagnosis = c("Pilot", rep("Control", 4)),
-    rin = c(7, rep(6.3, 4))
-)
-
-
 ## Combine sample info with the donor info
 
-sample_info[c("sample_id", "subject", "age", "sex", "race", "pmi", "diagnosis", "rin")]
+sample_info[c(colnames(sample_info))] #"sample_id", "subject", "age", "sex", "race", "pmi", "diagnosis", "rin"
 
 ## Build basic SPE
 Sys.time()
 spe <- read10xVisiumWrapper(
     sample_info$sample_path,
     sample_info$sample_id,
+    #sample_info$sample_id_short,
     type = "sparse",
     data = "raw",
     images = c("lowres", "hires", "detected", "aligned"),
-    load = TRUE # ,
-    # reference_gtf = here("raw-data", "genes.gtf") ## Not needed at JHPCE
+    load = TRUE,
+    #reference_gtf = NULL
+    reference_gtf = "/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2020-A/genes/genes.gtf"
 )
 Sys.time()
 # 2024-02-22 14:43:49.823746 SpatialExperiment::read10xVisium: reading basic data from SpaceRanger
@@ -132,24 +129,20 @@ spe <- add_design(spe)
 
 
 cat("Initial number of spots:", dim(spe)[2], "\n")
-# Initial number of spots: 4992
-# Merged samples: Initial number of spots: 24960
 
 ## Remove genes with no data
-
 expr <- which(rowSums(counts(spe)) > 0)
 cat("Number of genes with counts:", length(expr))
-# Number of genes with counts: 23439
-# Merged samples: Number of genes with counts: 26286
 
 no_expr <- which(rowSums(counts(spe)) == 0)
 cat("Number of genes with no counts:", length(no_expr))
 # Number of genes with no counts: 13162
 # Merged samples: Number of genes with no counts: 10315
 
-(length(no_expr) / nrow(spe)) * 100
-# [1] 35.96077
-# Merged samples: 28.18229
+cat("% genes with counts:", (length(expr) / nrow(spe)) * 100)
+cat("% genes with no counts:", (length(no_expr) / nrow(spe)) * 100)
+
+
 spe <- spe[-no_expr, ]
 
 ## For visualizing this later with spatialLIBD
@@ -162,7 +155,8 @@ spe_raw <- spe
 ## Size in Gb
 lobstr::obj_size(spe_raw)
 # 206.32 MB
-# Merged samples: 756.82 MB
+# Merged samples: 756.82 MB (5 samples)
+# Merged samples: 1.21 GB (9 samples)
 
 saveRDS(spe_raw, file.path(dir_rdata, "spe_raw.rds"))
 
@@ -170,12 +164,9 @@ saveRDS(spe_raw, file.path(dir_rdata, "spe_raw.rds"))
 ## Now drop the spots outside the tissue
 spe <- spe_raw[, spe_raw$in_tissue]
 dim(spe)
-# [1] 23439  3615
-# Merged samples: [1] 26286 16928
-
 cat("Spots in tissue:", dim(spe)[2], "\n")
 # Spots in tissue: 3615
-# Merged samples: Spots in tissue: 16928
+# Merged samples: Spots in tissue: 28023
 
 ## Remove spots without counts
 if (any(colSums(counts(spe)) == 0)) {
@@ -185,10 +176,8 @@ if (any(colSums(counts(spe)) == 0)) {
 }
 dim(spe)
 
-
 lobstr::obj_size(spe)
-# 194.23 MB
-# Merged samples: 718.16 MB
+# Merged samples: 1.16 MB
 
 saveRDS(spe, file.path(dir_rdata, "spe.rds"))
 
