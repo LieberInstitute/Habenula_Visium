@@ -21,7 +21,7 @@ sr_spatial_dir = here(
     'processed-data', '01_spaceranger', sample_id, 'outs', 'spatial'
 )
 plot_dir = here('plots', '09_HD_cell_level')
-raw_image_path = here('images', 'vis-hd', f'{sample_id}.tif')
+raw_image_path = here('raw-data', 'images', 'vis-hd', f'{sample_id}.tif')
 mpp = 0.3
 
 os.makedirs(stardist_dir, exist_ok=True)

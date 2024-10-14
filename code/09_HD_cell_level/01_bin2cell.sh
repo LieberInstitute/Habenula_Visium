@@ -4,8 +4,8 @@
 #SBATCH --job-name=01_bin2cell
 #SBATCH -c 1
 #SBATCH -t 1-00:00:00
-#SBATCH -o ../../processed-data/04_bin2cell/logs/01_bin2cell.txt
-#SBATCH -e ../../processed-data/04_bin2cell/logs/01_bin2cell.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/logs/01_bin2cell.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/logs/01_bin2cell.txt
 
 set -e
 
