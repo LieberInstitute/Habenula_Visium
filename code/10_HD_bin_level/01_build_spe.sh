@@ -23,7 +23,7 @@ repo_dir=$(git rev-parse --show-toplevel)
 spatial_dir=$repo_dir/processed-data/01_spaceranger/H1-W369TJK_D1_9090/outs/binned_outputs/square_008um/spatial
 
 #   Get spatial coordinates as a CSV
-if [[ ! -f $spatial_dir/tissue_positions.parquet ]]; then
+if [[ ! -f $spatial_dir/tissue_positions.csv ]]; then
     echo "Converting spatial coords to CSV..."
     module load ficture/0.0.3.1
     parquet-tools csv $spatial_dir/tissue_positions.parquet \
