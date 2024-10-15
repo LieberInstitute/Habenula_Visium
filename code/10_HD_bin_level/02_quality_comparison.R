@@ -10,9 +10,11 @@ library(sessioninfo)
 library(cowplot)
 
 dlpfc_hpc_sample_info_path = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LIBD4100/Visium_HD_DLPFC_pilot/raw-data/sample_info/sample_info.csv"
-spe_dlpfc_hpc_dir = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LIBD4100/Visium_HD_DLPFC_pilot/processed-data/07_cell_level/spe_norm"
-spe_habenula_dir = here('processed-data', '09_HD_cell_level', 'spe_norm')
-plot_dir = here('plots', '09_HD_cell_level')
+spe_dlpfc_hpc_dir = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LIBD4100/Visium_HD_DLPFC_pilot/processed-data/06_bin_level/spe_norm"
+spe_habenula_dir = here('processed-data', '10_HD_bin_level', 'spe_norm')
+plot_dir = here('plots', '10_HD_bin_level')
+
+dir.create(plot_dir, showWarnings = FALSE)
 
 dlpfc_hpc_sample_info = read_csv(
     dlpfc_hpc_sample_info_path, show_col_types = FALSE
@@ -21,8 +23,8 @@ dlpfc_hpc_sample_info = read_csv(
 spe_dlpfc_hpc = loadHDF5SummarizedExperiment(spe_dlpfc_hpc_dir)
 spe_habenula = loadHDF5SummarizedExperiment(spe_habenula_dir)
 
-#   Gather DLPFC and HPC cell-level metrics
-metrics = colData(spe_dlpfc_hpc) |>
+#   Gather DLPFC and HPC bin-level metrics
+bin_metrics = colData(spe_dlpfc_hpc) |>
     as_tibble() |>
     mutate(
         region = dlpfc_hpc_sample_info$region[
@@ -32,7 +34,7 @@ metrics = colData(spe_dlpfc_hpc) |>
     select(region, sum_umi, sum_gene, expr_chrM_ratio)
 
 #   Add habenula metrics
-metrics = metrics |>
+bin_metrics = bin_metrics |>
     rbind(
         colData(spe_habenula) |>
             as_tibble() |>
