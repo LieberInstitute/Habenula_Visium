@@ -48,6 +48,23 @@ imgData(spe) = imgData(spe_bin)
 stopifnot(all(rownames(spe) %in% rownames(spe_bin)))
 rowData(spe) = rowData(spe_bin[rownames(spe),])
 
+message(Sys.time(), " - Adding spatialLIBD metrics...")
+
+#   Add QC-related variables normally added by spatialLIBD. Taken from
+#   https://github.com/LieberInstitute/spatialLIBD/blob/c82c789d8538fe52e90d33af852a92d23b2368c4/R/read10xVisiumWrapper.R#L124-L129
+#   Note that seqnames(spe) is incorrectly defined, but no 'seqnames<-'
+#   method exists in SpatialExperiment, hence the workaround when computing
+#   'is_mito'
+spe$sum_umi <- colSums(counts(spe))
+spe$sum_gene <- colSums(counts(spe) > 0)
+rowData(spe)$gene_search <- paste0(
+    rowData(spe)$gene_name, "; ", rowData(spe)$gene_id
+)
+is_mito <- which(seqnames(spe_bin[rownames(spe),]) == 'chrM')
+spe$expr_chrM <- colSums(counts(spe)[is_mito, , drop = FALSE])
+spe$expr_chrM_ratio <- spe$expr_chrM / spe$sum_umi
+spe$ManualAnnotation <- "NA"
+
 rm(spe_bin)
 gc()
 
