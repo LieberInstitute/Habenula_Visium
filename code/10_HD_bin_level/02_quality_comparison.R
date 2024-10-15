@@ -51,14 +51,14 @@ bin_metrics = bin_metrics |>
 plot_list = list()
 for (metric in c('sum_umi', 'sum_gene', 'expr_chrM_ratio')) {
     #   Get just above the top of the highest top whisker
-    y_max = metrics |>
+    y_max = bin_metrics |>
         group_by(region) |>
         summarize(top = boxplot.stats(!!sym(metric))$stats[5]) |>
         summarize(top = max(top) * 1.05) |>
         pull(top)
 
     plot_list[[metric]] = ggplot(
-            metrics, aes(x = region, y = !!sym(metric), color = region)
+            bin_metrics, aes(x = region, y = !!sym(metric), color = region)
         ) +
         geom_boxplot(outlier.shape = NA) +
         theme_bw(base_size = 15) +
