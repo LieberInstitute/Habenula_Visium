@@ -1,5 +1,5 @@
 #   Compare the DLPFC, HPC, and habenula Visium HD samples on various quality
-#   metrics
+#   metrics. Also plot quality metrics and white matter for habenula
 
 library(here)
 library(tidyverse)
@@ -13,8 +13,13 @@ dlpfc_hpc_sample_info_path = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LI
 spe_dlpfc_hpc_dir = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LIBD4100/Visium_HD_DLPFC_pilot/processed-data/06_bin_level/spe_norm"
 spe_habenula_dir = here('processed-data', '10_HD_bin_level', 'spe_norm')
 plot_dir = here('plots', '10_HD_bin_level')
+wm_genes <- c("MBP", "GFAP", "PLP1", "AQP4")
 
 dir.create(plot_dir, showWarnings = FALSE)
+
+################################################################################
+#   Compare quality metrics among DLPFC, HPC, and habenula
+################################################################################
 
 dlpfc_hpc_sample_info = read_csv(
     dlpfc_hpc_sample_info_path, show_col_types = FALSE
@@ -63,6 +68,36 @@ for (metric in c('sum_umi', 'sum_gene', 'expr_chrM_ratio')) {
 }
 pdf(file.path(plot_dir, 'quality_comparison.pdf'), width = 10, height = 5)
 plot_grid(plotlist = plot_list, nrow = 1)
+dev.off()
+
+################################################################################
+#   Plot quality metrics and white matter spatially for habenula
+################################################################################
+
+spe_habenula$exclude_overlapping = FALSE
+
+#   Individually plot several quality metrics
+for (metric in c('sum_umi', 'sum_gene', 'expr_chrM_ratio')) {
+    p <- vis_gene(
+        spe_habenula, geneid = metric, point_size = 1, is_stitched = TRUE
+    )
+
+    png(file.path(plot_dir, paste0(metric, ".png")), width = 800, height = 800)
+    print(p)
+    dev.off()
+}
+
+#   Plot a combination of white-matter genes
+wm_genes <- rownames(spe_habenula)[
+    match(wm_genes, rowData(spe_habenula)$gene_name)
+]
+p <- vis_gene(
+    spe_habenula, geneid = wm_genes, multi_gene_method = "pca", is_stitched = TRUE,
+    point_size = 1
+)
+
+png(file.path(plot_dir, "white_matter.png"), width = 800, height = 800)
+print(p)
 dev.off()
 
 session_info()
