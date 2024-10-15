@@ -42,6 +42,7 @@ adata = b2c.read_visium(
 
 #   Use Ensembl IDs for var_names
 adata.var_names = adata.var['gene_ids']
+adata.var_names.name = None
 
 #   Require bins with nonzero counts and genes present in at least 3 bins
 sc.pp.filter_genes(adata, min_cells=3)
@@ -200,6 +201,7 @@ plt.savefig(
     os.path.join(plot_dir, f'{sample_id}_cells_aggregated.png')
 )
 plt.close('all')
+
 
 sc.write(final_out_path, adata)
 session_info.show()
