@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=64G
-#SBATCH --job-name=02_build_spe_raw
-#SBATCH -c 1
+#SBATCH --mem=100G
+#SBATCH --job-name=03_build_spe_norm
+#SBATCH -c 4
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/logs/02_build_spe_raw.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/logs/02_build_spe_raw.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/logs/03_build_spe_norm.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/logs/03_build_spe_norm.txt
 
 set -e
 
@@ -25,7 +25,7 @@ module load conda_R/4.4
 ## List current modules for reproducibility
 module list
 
-Rscript 02_build_spe_raw.R
+Rscript 03_build_spe_norm.R
 
 echo "**** Job ends ****"
 date
