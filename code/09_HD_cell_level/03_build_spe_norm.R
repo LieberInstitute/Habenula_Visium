@@ -17,7 +17,7 @@ num_cores = as.numeric(Sys.getenv("SLURM_CPUS_ON_NODE"))
 #   Drop empty genes and do cell-level QC
 ################################################################################
 
-spe = loadHDF5SummarizedExperiment(spe_bin_dir)
+spe = loadHDF5SummarizedExperiment(spe_raw_dir)
 
 #   Filter SPE: drop cells with 0 counts for all genes, and drop genes with 0
 #   counts in every cell
@@ -42,6 +42,7 @@ message(
 summary(spe$expr_chrM_ratio[spe$high_expr_chrM_ratio])
 
 #   Plot bad cells based on mitochondrial ratio
+spe$exclude_overlapping = FALSE
 p <- vis_clus(
     spe, clustervar = 'high_expr_chrM_ratio', is_stitched = TRUE, point_size = 1,
     spatial = FALSE
@@ -53,6 +54,7 @@ dev.off()
 #   Drop cells with high mitochondrial ratios
 spe = spe[, !spe$high_expr_chrM_ratio]
 spe$high_expr_chrM_ratio = NULL
+spe$exclude_overlapping = NULL
 
 ################################################################################
 #   Log normalization
