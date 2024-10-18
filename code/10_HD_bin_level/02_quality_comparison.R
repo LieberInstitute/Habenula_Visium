@@ -10,8 +10,9 @@ library(sessioninfo)
 library(cowplot)
 
 dlpfc_hpc_sample_info_path = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LIBD4100/Visium_HD_DLPFC_pilot/raw-data/sample_info/sample_info.csv"
-spe_dlpfc_hpc_dir = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LIBD4100/Visium_HD_DLPFC_pilot/processed-data/06_bin_level/spe_norm"
-spe_habenula_dir = here('processed-data', '10_HD_bin_level', 'spe_norm')
+spe_dlpfc_hpc_dir = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LIBD4100/Visium_HD_DLPFC_pilot/processed-data/06_bin_level/spe_raw"
+spe_habenula_dir = here('processed-data', '10_HD_bin_level', 'spe_raw')
+spe_habenula_norm_dir = here('processed-data', '10_HD_bin_level', 'spe_norm')
 plot_dir = here('plots', '10_HD_bin_level')
 wm_genes <- c("MBP", "GFAP", "PLP1", "AQP4")
 
@@ -27,6 +28,8 @@ dlpfc_hpc_sample_info = read_csv(
 
 spe_dlpfc_hpc = loadHDF5SummarizedExperiment(spe_dlpfc_hpc_dir)
 spe_habenula = loadHDF5SummarizedExperiment(spe_habenula_dir)
+spe_dlpfc_hpc = spe_dlpfc_hpc[, spe_dlpfc_hpc$in_tissue]
+spe_habenula = spe_habenula[, spe_habenula$in_tissue]
 
 #   Gather DLPFC and HPC bin-level metrics
 bin_metrics = colData(spe_dlpfc_hpc) |>
@@ -50,11 +53,11 @@ bin_metrics = bin_metrics |>
 #   Plot all 3 metric as boxplots in a single row
 plot_list = list()
 for (metric in c('sum_umi', 'sum_gene', 'expr_chrM_ratio')) {
-    #   Get just above the top of the highest top whisker
+    #   Get the top of the highest top whisker
     y_max = bin_metrics |>
         group_by(region) |>
         summarize(top = boxplot.stats(!!sym(metric))$stats[5]) |>
-        summarize(top = max(top) * 1.05) |>
+        summarize(top = max(top)) |>
         pull(top)
 
     plot_list[[metric]] = ggplot(
@@ -74,6 +77,7 @@ dev.off()
 #   Plot quality metrics and white matter spatially for habenula
 ################################################################################
 
+spe_habenula = loadHDF5SummarizedExperiment(spe_habenula_norm_dir)
 spe_habenula$exclude_overlapping = FALSE
 
 #   Individually plot several quality metrics
@@ -82,7 +86,10 @@ for (metric in c('sum_umi', 'sum_gene', 'expr_chrM_ratio')) {
         spe_habenula, geneid = metric, point_size = 1, is_stitched = TRUE
     )
 
-    png(file.path(plot_dir, paste0(metric, ".png")), width = 800, height = 800)
+    png(
+        file.path(plot_dir, paste0(metric, ".png")),
+        width = 1500, height = 1500
+    )
     print(p)
     dev.off()
 }
@@ -96,7 +103,7 @@ p <- vis_gene(
     point_size = 1
 )
 
-png(file.path(plot_dir, "white_matter.png"), width = 800, height = 800)
+png(file.path(plot_dir, "white_matter.png"), width = 1500, height = 1500)
 print(p)
 dev.off()
 
