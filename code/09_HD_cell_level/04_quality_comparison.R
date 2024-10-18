@@ -12,6 +12,7 @@ library(cowplot)
 dlpfc_hpc_sample_info_path = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LIBD4100/Visium_HD_DLPFC_pilot/raw-data/sample_info/sample_info.csv"
 spe_dlpfc_hpc_dir = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LIBD4100/Visium_HD_DLPFC_pilot/processed-data/07_cell_level/spe_raw"
 spe_habenula_dir = here('processed-data', '09_HD_cell_level', 'spe_raw')
+spe_habenula_norm_dir = here('processed-data', '09_HD_cell_level', 'spe_norm')
 plot_dir = here('plots', '09_HD_cell_level')
 wm_genes <- c("MBP", "GFAP", "PLP1", "AQP4")
 
@@ -25,8 +26,6 @@ dlpfc_hpc_sample_info = read_csv(
 
 spe_dlpfc_hpc = loadHDF5SummarizedExperiment(spe_dlpfc_hpc_dir)
 spe_habenula = loadHDF5SummarizedExperiment(spe_habenula_dir)
-spe_dlpfc_hpc = spe_dlpfc_hpc[, spe_dlpfc_hpc$in_tissue]
-spe_habenula = spe_habenula[, spe_habenula$in_tissue]
 
 #   Gather DLPFC and HPC cell-level metrics
 metrics = colData(spe_dlpfc_hpc) |>
@@ -74,6 +73,7 @@ dev.off()
 #   Plot quality metrics and white matter spatially for habenula
 ################################################################################
 
+spe_habenula = loadHDF5SummarizedExperiment(spe_habenula_norm_dir)
 spe_habenula$exclude_overlapping = FALSE
 
 #   Individually plot several quality metrics
