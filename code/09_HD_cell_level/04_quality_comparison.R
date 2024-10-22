@@ -27,6 +27,45 @@ marker_genes = list(
 #   Compare quality metrics among DLPFC, HPC, and habenula
 ################################################################################
 
+#-------------------------------------------------------------------------------
+#   Perform in-silico dissection of the habenula using markers
+#-------------------------------------------------------------------------------
+
+spe_habenula = loadHDF5SummarizedExperiment(spe_habenula_norm_dir)
+spe_habenula$exclude_overlapping = FALSE
+
+habenula_markers = rownames(spe_habenula)[
+    match(marker_genes[['habenula']], rowData(spe_habenula)$gene_name)
+]
+
+#   Use the Z-score method (https://github.com/LieberInstitute/spatialLIBD/blob/05e78863bbfae5addee2c80aca5a39c091d39145/R/multi_gene_z_score.R#L16)
+#   for combining several habenula genes into a single expression metric. Then
+#   use it to infer which cells belong to the habenula
+x = assays(spe_habenula[habenula_markers,])$logcounts
+spe_habenula$habenula_exp = unname(colMeans((x - rowMeans(x)) / rowSds(x)))
+spe_habenula$is_habenula = spe_habenula$habenula_exp > 0
+
+dir.create(file.path(plot_dir, 'QC'), showWarnings = FALSE)
+p <- vis_clus(
+        spe_habenula, clustervar = 'is_habenula', point_size = 1,
+        is_stitched = TRUE, spatial = FALSE
+    ) +
+    guides(fill = guide_legend(override.aes = list(size = 4)))
+
+png(file.path(plot_dir, 'QC', "is_habenula.png"), width = 1500, height = 1500)
+print(p)
+dev.off()
+
+#   Form into a tibble for joining with the raw SPE later
+habenula_df = colData(spe_habenula) |>
+    as_tibble() |>
+    mutate(key = colnames(spe_habenula)) |>
+    select(key, habenula_exp, is_habenula)
+
+#-------------------------------------------------------------------------------
+#   Gather metrics from habenula, DLPFC, and HPC into a single tibble
+#-------------------------------------------------------------------------------
+
 dlpfc_hpc_sample_info = read_csv(
     dlpfc_hpc_sample_info_path, show_col_types = FALSE
 )
@@ -44,18 +83,27 @@ metrics = colData(spe_dlpfc_hpc) |>
     ) |>
     select(region, sum_umi, sum_gene, expr_chrM_ratio)
 
-#   Add habenula metrics
-metrics = metrics |>
-    rbind(
-        colData(spe_habenula) |>
-            as_tibble() |>
-            mutate(region = "habenula") |>
-            select(region, sum_umi, sum_gene, expr_chrM_ratio)
-    )
+#   Gather habenula metrics. Include some duplicate rows: include the full
+#   habenula sample ("habenula") and the subset we think is actually habenula
+#   ("habenula_subset") as separate rows
+habenula_cd = colData(spe_habenula) |>
+    as_tibble() |>
+    mutate(key = colnames(spe_habenula)) |>
+    left_join(habenula_df, by = "key")
+
+habenula_cd = rbind(
+        habenula_cd |> 
+            mutate(region = "habenula"),
+        habenula_cd |>
+            filter(is_habenula) |>
+            mutate(region = "habenula_subset")
+    ) |>
+    select(region, sum_umi, sum_gene, expr_chrM_ratio)
+
+metrics = rbind(metrics, habenula_cd)
 
 plot_list_comparison = list()
 plot_list_violin = list()
-dir.create(file.path(plot_dir, 'QC'), showWarnings = FALSE)
 for (metric in c('sum_umi', 'sum_gene', 'expr_chrM_ratio')) {
     #   Get the top of the highest top whisker
     y_max = metrics |>
@@ -70,6 +118,7 @@ for (metric in c('sum_umi', 'sum_gene', 'expr_chrM_ratio')) {
         ) +
         geom_boxplot(outlier.shape = NA) +
         theme_bw(base_size = 15) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
         guides(color = "none") +
         labs(title = metric) +
         coord_cartesian(ylim = c(0, y_max))
