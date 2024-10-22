@@ -15,6 +15,7 @@ dlpfc_hpc_sample_info_path = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LI
 spe_dlpfc_hpc_dir = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LIBD4100/Visium_HD_DLPFC_pilot/processed-data/07_cell_level/spe_raw"
 spe_habenula_dir = here('processed-data', '09_HD_cell_level', 'spe_raw')
 spe_habenula_norm_dir = here('processed-data', '09_HD_cell_level', 'spe_norm')
+sr_metrics_path = '/dcs04/lieber/lcolladotor/with10x_LIBD001/ranger_metrics/processed-data/spaceranger/03_merged_metrics/merged_metrics.csv'
 plot_dir = here('plots', '09_HD_cell_level')
 marker_genes = list(
     white_matter = c("MBP", "GFAP", "PLP1", "AQP4"),
@@ -92,6 +93,40 @@ dev.off()
 #   Plot all 3 metric as violin plots for just habenula in a single row
 pdf(file.path(plot_dir, 'QC', 'habenula_violin.pdf'))
 plot_grid(plotlist = plot_list_violin, nrow = 1)
+dev.off()
+
+#-------------------------------------------------------------------------------
+#   Plot similar spaceranger metrics from standard Visium datasets of the same
+#   regions as a reference 
+#-------------------------------------------------------------------------------
+
+sr_metrics = read_csv(sr_metrics_path, show_col_types = FALSE) |>
+    filter(
+        study_name %in% c('spatial_hpc/spaceranger_2022-04-12_SPag033122', 'spatial_hpc/spaceranger_novaseq', 'Habenula_Visium', 'spatialDLPFC')
+    ) |>
+    mutate(
+        study_name = ifelse(
+            grepl('^spatial_hpc', study_name), 'spatial_hpc', study_name
+        )
+    )
+
+plot_list = list()
+for (metric in c('Median.UMI.Counts.per.Spot', 'Median.Genes.per.Spot')) {
+    plot_list[[metric]] = ggplot(
+            sr_metrics,
+            aes(x = study_name, y = !!sym(metric), color = study_name)
+        ) +
+        geom_boxplot() +
+        theme_bw(base_size = 15) +
+        guides(color = "none") +
+        labs(title = metric)
+}
+
+pdf(
+    file.path(plot_dir, 'QC', 'spaceranger_standard_visium.pdf'),
+    width = 10, height = 5
+)
+plot_grid(plotlist = plot_list, nrow = 1)
 dev.off()
 
 ################################################################################
