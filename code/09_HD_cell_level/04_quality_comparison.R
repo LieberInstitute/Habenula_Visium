@@ -50,8 +50,8 @@ metrics = metrics |>
             select(region, sum_umi, sum_gene, expr_chrM_ratio)
     )
 
-#   Plot all 3 metric as boxplots in a single row
-plot_list = list()
+plot_list_comparison = list()
+plot_list_violin = list()
 dir.create(file.path(plot_dir, 'QC'), showWarnings = FALSE)
 for (metric in c('sum_umi', 'sum_gene', 'expr_chrM_ratio')) {
     #   Get the top of the highest top whisker
@@ -61,7 +61,8 @@ for (metric in c('sum_umi', 'sum_gene', 'expr_chrM_ratio')) {
         summarize(top = max(top)) |>
         pull(top)
 
-    plot_list[[metric]] = ggplot(
+    #   Boxplot comparing each region
+    plot_list_comparison[[metric]] = ggplot(
             metrics, aes(x = region, y = !!sym(metric), color = region)
         ) +
         geom_boxplot(outlier.shape = NA) +
@@ -69,12 +70,26 @@ for (metric in c('sum_umi', 'sum_gene', 'expr_chrM_ratio')) {
         guides(color = "none") +
         labs(title = metric) +
         coord_cartesian(ylim = c(0, y_max))
+    
+    plot_list_violin[[metric]] = metrics |>
+        filter(region == "habenula") |>
+        ggplot(aes(x = region, y = !!sym(metric))) +
+            geom_violin() +
+            labs(title = metric) +
+            theme_bw(base_size = 15)
 }
+
+#   Plot all 3 metric as boxplots (with all regions) in a single row
 pdf(
     file.path(plot_dir, 'QC', 'quality_comparison.pdf'),
     width = 10, height = 5
 )
-plot_grid(plotlist = plot_list, nrow = 1)
+plot_grid(plotlist = plot_list_comparison, nrow = 1)
+dev.off()
+
+#   Plot all 3 metric as violin plots for just habenula in a single row
+pdf(file.path(plot_dir, 'QC', 'habenula_violin.pdf'))
+plot_grid(plotlist = plot_list_violin, nrow = 1)
 dev.off()
 
 ################################################################################
