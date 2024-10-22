@@ -8,6 +8,8 @@ library(HDF5Array)
 library(spatialLIBD)
 library(sessioninfo)
 library(cowplot)
+library(scran)
+library(viridis)
 
 dlpfc_hpc_sample_info_path = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LIBD4100/Visium_HD_DLPFC_pilot/raw-data/sample_info/sample_info.csv"
 spe_dlpfc_hpc_dir = "/dcs05/lieber/lcolladotor/Visium_HD_DLPFC_pilot_LIBD4100/Visium_HD_DLPFC_pilot/processed-data/07_cell_level/spe_raw"
@@ -116,6 +118,22 @@ for (metric in c('sum_umi', 'sum_gene', 'expr_chrM_ratio')) {
     )
     print(p)
     dev.off()
+
+    #   Do a version where high outliers are removed
+    if (metric != "expr_chrM_ratio") {
+        is_outlier = isOutlier(spe_habenula[[metric]], type = "higher")
+        p <- vis_gene(
+            spe_habenula[, !is_outlier], geneid = metric, point_size = 1,
+            is_stitched = TRUE, spatial = FALSE
+        )
+
+        png(
+            file.path(plot_dir, 'QC', paste0(metric, "_no_outliers.png")),
+            width = 1500, height = 1500
+        )
+        print(p)
+        dev.off()
+    }
 }
 
 #-------------------------------------------------------------------------------
