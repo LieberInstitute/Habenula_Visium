@@ -102,6 +102,11 @@ habenula_cd = rbind(
 
 metrics = rbind(metrics, habenula_cd)
 
+#-------------------------------------------------------------------------------
+#   Explore metrics in habenula and other regions using boxplots and violin
+#   plots
+#-------------------------------------------------------------------------------
+
 plot_list_comparison = list()
 plot_list_violin = list()
 for (metric in c('sum_umi', 'sum_gene', 'expr_chrM_ratio')) {
