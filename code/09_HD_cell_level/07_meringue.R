@@ -49,7 +49,8 @@ png(
     width = 1500, height = 1500
 )
 vis_clus(
-        spe, clustervar = 'meringue_cluster', is_stitched = TRUE, point_size = 1
+        spe, clustervar = 'meringue_cluster', is_stitched = TRUE,
+        point_size = 1, spatial = FALSE
     ) +
     guides(fill = guide_legend(override.aes = list(size = 4)))
 dev.off()
