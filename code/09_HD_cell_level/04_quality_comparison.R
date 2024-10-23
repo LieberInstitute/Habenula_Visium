@@ -22,6 +22,17 @@ marker_genes = list(
     habenula = c("POU4F1", "GPR151", "CHRNB4", "HTR2C"),
     thalamus = c("LYPD6B", "ADARB2", "RORB")
 )
+region_colors = c(
+    DLPFC = "#064789",
+    habenula = "#00AF54",
+    habenula_subset = "#035E03",
+    HPC = "#DAB785"
+)
+study_colors = c(
+    spatialDLPFC = "#064789",
+    Habenula_Visium = "#00AF54",
+    spatial_hpc = "#DAB785"
+)
 
 ################################################################################
 #   Compare quality metrics among DLPFC, HPC, and habenula
@@ -126,7 +137,8 @@ for (metric in c('sum_umi', 'sum_gene', 'expr_chrM_ratio')) {
         theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
         guides(color = "none") +
         labs(title = metric) +
-        coord_cartesian(ylim = c(0, y_max))
+        coord_cartesian(ylim = c(0, y_max)) +
+        scale_color_manual(values = region_colors)
     
     plot_list_violin[[metric]] = metrics |>
         filter(region == "habenula") |>
@@ -173,7 +185,8 @@ for (metric in c('Median.UMI.Counts.per.Spot', 'Median.Genes.per.Spot')) {
         geom_boxplot() +
         theme_bw(base_size = 15) +
         guides(color = "none") +
-        labs(title = metric)
+        labs(title = metric) +
+        scale_color_manual(values = study_colors)
 }
 
 pdf(
