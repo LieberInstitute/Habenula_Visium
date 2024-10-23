@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=300G
-#SBATCH --job-name=03_meringue_clustering
+#SBATCH --mem=400G
+#SBATCH --job-name=07_meringue
 #SBATCH -c 1
 #SBATCH -t 3-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/logs/03_meringue_clustering.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/logs/03_meringue_clustering.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/logs/07_meringue.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/logs/07_meringue.txt
 
 set -e
 
@@ -25,7 +25,7 @@ module load conda_R/4.4
 ## List current modules for reproducibility
 module list
 
-Rscript 03_meringue_clustering.R
+Rscript 07_meringue.R
 
 echo "**** Job ends ****"
 date
