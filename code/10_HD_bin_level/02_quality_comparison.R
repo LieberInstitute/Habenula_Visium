@@ -213,7 +213,7 @@ dir.create(file.path(plot_dir, 'marker_genes'), showWarnings = FALSE)
 for (marker_name in names(marker_genes)) {
     p <- vis_gene(
         spe_habenula, geneid = marker_genes[[marker_name]],
-        multi_gene_method = "pca", is_stitched = TRUE,
+        multi_gene_method = "z_score", is_stitched = TRUE,
         point_size = 1, spatial = FALSE
     )
 
