@@ -23,6 +23,7 @@ sr_spatial_dir = here(
 out_path = here('processed-data', '10_HD_bin_level', 'hergast_adata.h5ad')
 plot_dir = here('plots', '10_HD_bin_level')
 raw_image_path = here('raw-data', 'images', 'vis-hd', f'{sample_id}.tif')
+hvg_path = here('processed-data', '09_HD_cell_level', 'HVGs.txt')
 random_seed = 0
 
 os.makedirs(plot_dir, exist_ok=True)
@@ -52,10 +53,17 @@ adata = adata[
     np.sum(adata.X, axis = 1) > 0, np.sum(adata.X, axis = 0) > 0
 ]
 
+#   Read in HVGs, which we'll subset to during PCA
+with open(hvg_path, 'r') as f:
+    hvg = f.read().split('\n')[: -1]
+
+adata.var['is_hvg'] = False
+adata.var.loc[hvg, 'is_hvg'] = True
+
 #   Normalize expression and compute 200 PCs
 sc.pp.normalize_total(adata, target_sum = 1, exclude_highly_expressed = True)
 sc.pp.scale(adata)
-sc.pp.pca(adata, n_comps = 200, random_state = random_seed)
+sc.pp.pca(adata, n_comps = 200, random_state = random_seed, mask_var = 'is_hvg')
 
 ################################################################################
 #  Run HERGAST
