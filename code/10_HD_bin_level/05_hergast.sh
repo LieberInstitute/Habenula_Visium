@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -p caracol
-#SBATCH --mem=64G
+#SBATCH -p katun
+#SBATCH --mem=100G
 #SBATCH --job-name=05_hergast
 #SBATCH -c 1
 #SBATCH -t 2-00:00:00
