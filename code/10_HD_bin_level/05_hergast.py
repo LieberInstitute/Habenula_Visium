@@ -11,6 +11,7 @@ import sys
 import gzip
 from scipy.io import mmread
 import HERGAST
+import torch
 
 sample_id = 'H1-W369TJK_D1_9090'
 sr_dir = here(
@@ -28,6 +29,12 @@ random_seed = 0
 
 os.makedirs(plot_dir, exist_ok=True)
 plt.rcParams["figure.figsize"] = (15, 10)
+
+#   Report if a GPU is available
+if torch.cuda.is_available():
+    print("Running on GPU.")
+else:
+    print("Running on CPU only!")
 
 ################################################################################
 #   Build and preprocess AnnData
@@ -74,10 +81,16 @@ print(f"{datetime.datetime.now()} | Constructing relational graph")
 HERGAST.utils.Cal_Spatial_Net(adata, k_cutoff = 8)
 HERGAST.utils.Cal_Expression_Net(adata, dim_reduce = 'PCA')
 
+#   The authors recommend dividing the data into batches with 10,000 to 20,000
+#   spots each. Calculate the number of segments in each dimension to achieve
+#   this
+num_splits = int(np.round((adata.shape[0] / 10000) ** 0.5))
+assert num_splits > 1
+
 #   Train model
-print(f"{datetime.datetime.now()} | Training model")
+print(f"{datetime.datetime.now()} | Training model using num_batch_x_y=({num_splits}, {num_splits})")
 train_HERGAST = HERGAST.Train_HERGAST(
-    adata, batch_data = True, num_batch_x_y = (7,7),
+    adata, batch_data = True, num_batch_x_y = (num_splits, num_splits),
     spatial_net_arg = {'k_cutoff': 8, 'verbose': False},
     exp_net_arg = {'verbose': False}, dim_reduction = 'PCA'
 )
