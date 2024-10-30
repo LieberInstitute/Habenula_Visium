@@ -12,10 +12,10 @@ res_scalar = 1
 sample_id = 'H1-W369TJK_D1_9090'
 spe_norm_dir = here('processed-data', '10_HD_bin_level', 'spe_norm')
 spe_out_dir = here(
-    'processed-data', '06_bin_level', 'rasterized',
+    'processed-data', '10_HD_bin_level', 'rasterized',
     sprintf('spe_%s_%sx_standard_res', sample_id, res_scalar)
 )
-json_path = file.path(
+json_path = here(
     'processed-data', '01_spaceranger', sample_id, 'outs', 'binned_outputs',
     'square_008um', 'spatial', 'scalefactors_json.json'
 )
