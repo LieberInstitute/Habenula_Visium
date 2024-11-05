@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=64G
+#SBATCH --mem=400G
 #SBATCH --job-name=09_meringue_genes
 #SBATCH -c 1
 #SBATCH -t 3-0:00:00
