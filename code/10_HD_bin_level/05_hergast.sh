@@ -1,5 +1,6 @@
 #!/bin/bash
-#SBATCH -p katun
+#SBATCH -p caracol
+#SBATCH --gpus=1
 #SBATCH --mem=100G
 #SBATCH --job-name=05_hergast
 #SBATCH -c 1
