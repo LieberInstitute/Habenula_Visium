@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=200G
-#SBATCH --job-name=08_banksy
+#SBATCH --job-name=08_banksy_embedding
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/logs/08_banksy.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/logs/08_banksy.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/logs/08_banksy_embedding.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/logs/08_banksy_embedding.txt
 
 set -e
 
@@ -25,7 +25,7 @@ module load conda_R/4.4
 ## List current modules for reproducibility
 module list
 
-Rscript 08_banksy.R
+Rscript 08_banksy_embedding.R
 
 echo "**** Job ends ****"
 date
