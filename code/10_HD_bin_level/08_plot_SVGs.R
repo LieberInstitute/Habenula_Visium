@@ -64,11 +64,13 @@ for (i in seq_len(top_n)) {
             title = rowData(spe)$gene_name[match(svg[i], rownames(spe))]
         ) +
         guides(color = "none") +
+        theme_bw(base_size = 15) +
         #   Remove pretty much everything related to x- and y-axis labels
         theme(
             axis.title.x = element_blank(), axis.title.y = element_blank(),
             axis.text.x = element_blank(), axis.text.y = element_blank(),
-            axis.ticks.x = element_blank(), axis.ticks.y = element_blank()
+            axis.ticks.x = element_blank(), axis.ticks.y = element_blank(),
+            plot.title = element_text(size = 25)
         )
 }
 
