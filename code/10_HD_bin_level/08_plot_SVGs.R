@@ -6,6 +6,7 @@ library(spatialLIBD)
 library(sessioninfo)
 library(cowplot)
 library(viridis)
+library(scran)
 
 spe_dir = here('processed-data', '10_HD_bin_level', 'spe_norm')
 plot_dir = here('plots', '10_HD_bin_level')
@@ -25,12 +26,21 @@ spe$exclude_overlapping = FALSE
 
 stopifnot(all(svg %in% rownames(spe)))
 
+#   Cutoff expression at the top 1% to make the color range more dynamic
+svg_exp = as.matrix(assays(spe)$logcounts[svg,])
+for (this_gene in svg) {
+    cutoff = sort(svg_exp[this_gene,], decreasing = TRUE)[
+        as.integer(ncol(spe) / 100)
+    ]
+    assays(spe)$logcounts[this_gene,] = pmin(svg_exp[this_gene,], cutoff)
+}
+
 #   Note: a lot of manual plotting code is used in place of vis_gene because
 #   cropping the in-tissue spots for this Visium HD data is not
 #   currently possible through vis_gene, leading to excessive whitespace
 
 #   Gather expression and spatial coordinates into a tidy tibble
-exp_df = assays(spe)$logcounts[svg, ] |>
+exp_df = assays(spe)$logcounts[svg,] |>
     t() |>
     as_tibble() |>
     cbind(spatialCoords(spe)) |>
