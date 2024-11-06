@@ -4,8 +4,9 @@
 #SBATCH --job-name=10_banksy_clustering
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/logs/10_banksy_clustering.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/logs/10_banksy_clustering.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/logs/10_banksy_clustering_%a.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/logs/10_banksy_clustering_%a.txt
+#SBATCH --array=3-28%10
 
 set -e
 

@@ -15,6 +15,7 @@ out_path = here(
     'processed-data', '09_HD_cell_level', 'banksy', sprintf('k%s.csv', k)
 )
 plot_dir = here('plots', '09_HD_cell_level', 'banksy', sprintf('k%s', k))
+random_seed = 0
 
 dir.create(dirname(out_path), showWarnings = FALSE)
 dir.create(plot_dir, showWarnings = FALSE)
