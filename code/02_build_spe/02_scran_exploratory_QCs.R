@@ -29,7 +29,7 @@ raw_in_path <- here("processed-data", "02_build_spe", "spe_raw.rds")
 
 spe_raw <- readRDS(raw_in_path)
 cat("Initial number of spots:", dim(spe_raw)[2], "\n")
-# merged samples: Initial number of spots: 24960
+# merged samples: Initial number of spots: 44928
 
 spe <- readRDS(spe_in_path)
 cat("Initial number of spots:", dim(spe)[2], "\n")
@@ -40,7 +40,7 @@ var_height <- 24 # 24/3=8
 var_width <- 26 # 36/4=9
 var_point_size <- 2.5
 
-set.seed(20240330)
+set.seed(07112024)
 
 # origin code copied from https://github.com/LieberInstitute/spatialDLPFC/blob/14a1f253a92e43c01fec3cc3077a9b2cf9ce9fc0/code/analysis/01_build_spe/01_build_spe.R#L216-L221
 
@@ -58,7 +58,7 @@ vis_grid_clus(
     clustervar = "in_tissue",
     height = var_height, # 8
     width = var_width, # 9
-    point_size = 3, # 1.5
+    point_size = 2.5, # 1.5
     pdf = here(dir_plots, "all_in_tissue_grid.pdf"),
     sort_clust = FALSE,
     colors = c("TRUE" = "grey90", "FALSE" = "orange")
@@ -91,18 +91,15 @@ map2(as.vector(names(lst_out_counts)), as.vector(lst_out_counts), ~ vis_grid_gen
 print("Plots done!")
 
 summary(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)])
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
-# 42.0   323.0   513.0   715.6   869.2 33776.0
+
 map(unique(spe_raw$sample_id), ~ summary(spe_raw$sum_umi[spe_raw$sample_id == .x]))
 
 summary(spe_raw$sum_gene[which(!colData(spe_raw)$in_tissue)])
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
-# 23.0   170.0   266.0   367.6   450.0  6109.0
+
 map(unique(spe_raw$sample_id), ~ summary(spe_raw$sum_gene[spe_raw$sample_id == .x]))
 
 summary(spe_raw$expr_chrM_ratio[which(!colData(spe_raw)$in_tissue)])
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
-# 0.1246  0.2205  0.3227  0.3048  0.3711  0.5323
+
 map(unique(spe_raw$sample_id), ~ summary(spe_raw$expr_chrM_ratio[spe_raw$sample_id == .x]))
 
 # head(table(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)]))
@@ -134,18 +131,15 @@ map2(as.vector(names(lst_in_counts)), as.vector(lst_in_counts), ~ vis_grid_gene(
 
 
 summary(spe$sum_umi)
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
-# 61    2365    3873    4340    5527   27840
+
 map(unique(spe$sample_id), ~ summary(spe$sum_umi[spe$sample_id == .x]))
 
 summary(spe$sum_gene)
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
-# 56    1179    1734    1824    2290    6520
+
 map(unique(spe$sample_id), ~ summary(spe$sum_gene[spe$sample_id == .x]))
 
 summary(spe$expr_chrM_ratio)
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
-# 0.0674  0.3036  0.4946  0.4533  0.5762  0.8571
+
 map(unique(spe$sample_id), ~ summary(spe$expr_chrM_ratio[spe$sample_id == .x]))
 
 
@@ -299,9 +293,11 @@ metrics_qc <- function(spe) {
 }
 
 spe <- metrics_qc(spe)
+colnames(colData(spe))
+
 
 lobstr::obj_size(spe)
-
+# 1.16 GB
 
 ## Save object with metrics_qc()
 saveRDS(spe, file.path(dir_rdata, "spe_qc.rds"))
@@ -329,6 +325,7 @@ addmargins(table("Low_libsize_edge" = spe$scran_low_lib_size_edge))
 vis_grid_gene(
     spe = spe,
     geneid = "edge_distance",
+    assayname = "counts",
     height = var_height,
     width = var_width,
     point_size = 2.5,
@@ -405,9 +402,7 @@ cat(
 
 
 lobstr::obj_size(spe)
-# 194.23 MB
-# merged samples: 718.52 MB
-
+# 1.16 GB
 
 ## Second round to remove any remaining empty spots and/or genes with zero counts
 
