@@ -438,6 +438,12 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge_HighM.rds"))
 
 # ==============================================================================
 
+library("slurmjobs")
+job_single(
+  name = "02_scran_exploratory_QCs", memory = "50G", cores = 2, create_shell = TRUE
+)
+
+
 ## Reproducibility information
 print("Reproducibility information:")
 Sys.time()
