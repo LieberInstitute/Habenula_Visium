@@ -13,16 +13,25 @@ hvg_path = here('processed-data', '09_HD_cell_level', 'HVGs.txt')
 top_n = 12
 px_per_plot = 500
 
-hvg = readLines(hvg_path)
+hvg = readLines(hvg_path)[seq_len(top_n)]
 spe = loadHDF5SummarizedExperiment(spe_dir)
 spe$exclude_overlapping = FALSE
+
+#   Cutoff expression at the top 1% to make the color range more dynamic
+hvg_exp = as.matrix(assays(spe)$logcounts[hvg,])
+for (this_gene in hvg) {
+    cutoff = sort(hvg_exp[this_gene,], decreasing = TRUE)[
+        as.integer(ncol(spe) / 100)
+    ]
+    assays(spe)$logcounts[this_gene,] = pmin(hvg_exp[this_gene,], cutoff)
+}
 
 #   Note: a lot of manual plotting code is used in place of vis_gene because
 #   cropping the in-tissue spots for this cell-level Visium HD data is not
 #   currently possible through vis_gene, leading to excessive whitespace
 
 #   Gather expression and spatial coordinates into a tidy tibble
-exp_df = assays(spe)$logcounts[hvg[seq_len(top_n)], ] |>
+exp_df = assays(spe)$logcounts[hvg, ] |>
     t() |>
     as_tibble() |>
     cbind(spatialCoords(spe)) |>
@@ -46,11 +55,13 @@ for (i in seq_len(top_n)) {
             title = rowData(spe)$gene_name[match(hvg[i], rownames(spe))]
         ) +
         guides(color = "none") +
+        theme_bw(base_size = 15) +
         #   Remove pretty much everything related to x- and y-axis labels
         theme(
             axis.title.x = element_blank(), axis.title.y = element_blank(),
             axis.text.x = element_blank(), axis.text.y = element_blank(),
-            axis.ticks.x = element_blank(), axis.ticks.y = element_blank()
+            axis.ticks.x = element_blank(), axis.ticks.y = element_blank(),
+            plot.title = element_text(size = 25)
         )
 }
 
