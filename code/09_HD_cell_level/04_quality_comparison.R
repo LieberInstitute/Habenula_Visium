@@ -206,7 +206,7 @@ get_exp_genes = function(spe, num_points) {
 
     #   Vectors of UMI cutoffs and proportion of genes with at least one cell
     #   greater than that cutoff, respectively
-    cutoff_vals = seq_len(num_points) * max(a) / 5 / num_points
+    cutoff_vals = seq_len(num_points) * max(a) / 3 / num_points
     prop_genes = rep(0, num_points)
 
     i = 1
@@ -228,7 +228,7 @@ spe_dlpfc_hpc$region = dlpfc_hpc_sample_info$region[
 
 #   Get proportion of expressed genes with at least one cell having counts
 #   greater than various cutoffs, for each region
-num_points = 100
+num_points = 200
 exp_genes_df = rbind(
     get_exp_genes(spe_habenula, num_points) |>
         mutate(region = 'habenula'),
