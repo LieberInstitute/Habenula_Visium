@@ -156,6 +156,68 @@ pdf(file.path(plot_dir, 'QC', 'habenula_violin.pdf'))
 plot_grid(plotlist = plot_list_violin, nrow = 1)
 dev.off()
 
+#-------------------------------------------------------------------------------
+#   Proportion of expressed genes at different UMI thresholds
+#-------------------------------------------------------------------------------
+
+get_exp_genes = function(spe, num_points) {
+    #   For speed, bring into memory
+    a = as(assays(spe)$counts, "dgCMatrix")
+
+    #   Vectors of UMI cutoffs and proportion of genes with at least one cell
+    #   greater than that cutoff, respectively
+    cutoff_vals = seq_len(num_points) * max(a) / 3 / num_points
+    prop_genes = rep(0, num_points)
+
+    i = 1
+    for (umi_cutoff in cutoff_vals) {
+        #   For speed, drop genes permanently that don't meet the criterion.
+        #   Then count the proportion of the original that are left
+        a = a[rowSums(a > umi_cutoff) > 1,,drop = FALSE]
+        prop_genes[i] = nrow(a) / nrow(spe)
+        i = i + 1
+    }
+
+    return(tibble(umi_cutoff = cutoff_vals, prop_genes = prop_genes))
+}
+
+#   Add region to the DLPFC and HPC object for easy subsetting
+spe_dlpfc_hpc$region = dlpfc_hpc_sample_info$region[
+    match(spe_dlpfc_hpc$sample_id, dlpfc_hpc_sample_info$sample_id)
+]
+
+#   Get proportion of expressed genes with at least one cell having counts
+#   greater than various cutoffs, for each region
+num_points = 200
+exp_genes_df = rbind(
+    get_exp_genes(spe_habenula, num_points) |>
+        mutate(region = 'habenula'),
+    get_exp_genes(
+            spe_dlpfc_hpc[,spe_dlpfc_hpc$region == 'DLPFC'], num_points
+        ) |>
+        mutate(region = 'DLPFC'),
+    get_exp_genes(
+            spe_dlpfc_hpc[,spe_dlpfc_hpc$region == 'HPC'], num_points
+        ) |>
+        mutate(region = 'HPC')
+)
+
+#   Line plot colored by region of proportion of genes having at least one cell
+#   with counts greater than various thresholds
+p = exp_genes_df |>
+    filter(prop_genes > 0.01) |>
+    ggplot(
+            aes(x = umi_cutoff, y = prop_genes, color = region, group = region)
+        ) +
+        geom_line() +
+        scale_color_manual(values = region_colors) +
+        theme_bw(base_size = 18) +
+        labs(x = "UMI cutoff", y = "Prop. of genes")
+
+pdf(file.path(plot_dir, 'QC', 'exp_genes_umi_cutoffs.pdf'))
+print(p)
+dev.off()
+
 ################################################################################
 #   Spatial plots
 ################################################################################
