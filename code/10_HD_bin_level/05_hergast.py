@@ -92,7 +92,7 @@ print(f"{datetime.datetime.now()} | Training model using num_batch_x_y=({num_spl
 train_HERGAST = HERGAST.Train_HERGAST(
     adata, batch_data = True, num_batch_x_y = (num_splits, num_splits),
     spatial_net_arg = {'k_cutoff': 8, 'verbose': False},
-    exp_net_arg = {'verbose': False}, dim_reduction = 'PCA'
+    exp_net_arg = {'verbose': False}, dim_reduction = 'PCA', device_idx = 0
 )
 train_HERGAST.train_HERGAST(n_epochs = 200)
 
