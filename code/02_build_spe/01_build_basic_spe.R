@@ -14,24 +14,26 @@ if (!dir.exists(dir_rdata)) {
 ## Define the donor info using information from
 ## https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/raw-data/Visium_SPG_AD_ITG_MasterExcelSummarySheet.xlsx
 
-Sid <- "S1_v S2_v S3_v S4_v S5_v S6_v S7_v S8_v S9_v"
-Sid <- strsplit(Sid, "\\s+")[[1]]
-sr_sample_ids <- "V12D07-075_C1 V13B23-285_A1 V13B23-285_B1 V13B23-285_C1 V13B23-285_D1 V13B23-281_A1 V13B23-281_B1 V13B23-281_C1 V13B23-281_D1"
-sr_sample_ids <- strsplit(sr_sample_ids, "\\s+")[[1]]
-brain_id <- "Br8112 Br8518 Br8518 Br8518 Br8518 Br6522 Br6522 Br6522 Br6522"
-brain_id <- strsplit(brain_id, "\\s+")[[1]]
+## Sample ID
+Sid <- paste0("S", rep(1:13), "_v") 
+## Slide number and slide numver
+array_id <- strsplit(c("C1 A1 B1 C1 D1 A1 B1 C1 D1 A1 B1 C1 D1"), "\\s+")[[1]]
+sample_slide_id <- strsplit(c("V12D07-075 V13B23-285 V13B23-285 V13B23-285 V13B23-285 V13B23-281 V13B23-281 V13B23-281 V13B23-281 V14F07-340 V14F07-340 V14F07-340 V14F07-340"), "\\s+")[[1]]
+sample_slide_id <- paste0(sample_slide_id, "_", array_id)
+## Brain ID
+brain_id <- c("Br8112", rep("Br8518", 4), rep("Br6522", 4), rep("Br9090",4)) 
 
 ## Define some info for the samples
 sample_info <- data.frame(
-  sample_id_short = c(Sid),
-  sample_id = c(sr_sample_ids),
+  sample_id_short = c(Sid), # S10_v
+  sample_id = c(sample_slide_id), #V14F07-340_D1
   brain_id = c(brain_id),
-  age = c(65.75, rep(41.3, 8)), # last 4 ?
-  sex = c(rep("F", 5), rep("M", 4)),
-  race = c(rep("EA/CAUC", 9)), # ?
-  pmi = c(31.5, rep(10.5, 4), rep(30.5, 4)), 
-  diagnosis = c("Pilot", rep("Control", 8)),
-  rin = c(7, rep(6.3, 4), rep(7.4, 4)) 
+  age = c(65.75, rep(41.3, 8), rep(100, 4)), # need to update next week 9090
+  sex = c(rep("F", 5), rep("M", 4), rep("X", 4)), # need to update next week 9090
+  race = c(rep("EA/CAUC", 13)), # need to update next week 9090
+  pmi = c(31.5, rep(10.5, 4), rep(30.5, 4), rep(20, 4)), # need to update next week 9090 
+  diagnosis = c("Pilot", rep("Control", 12)), # need to update next week 9090
+  rin = c(7, rep(6.3, 4), rep(7.4, 4), rep(5, 4)) # need to update next week 9090
 )
 
 sample_info$sample_path <-
