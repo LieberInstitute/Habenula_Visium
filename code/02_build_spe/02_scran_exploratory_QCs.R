@@ -130,6 +130,45 @@ map2(as.vector(names(lst_in_counts)), as.vector(lst_in_counts), ~ vis_grid_gene(
 ))
 
 
+## Calculate total genes with count the first few gene sums
+counts_matrix <- (assay(spe, "counts"))
+## Combine gene names and their sums
+sum_genes <- rowSums(assay(spe, "counts"))
+## Add these sums to the rowData of the spe object
+rowData(spe)$sum_counts <- sum_genes
+gene_summary <- data.frame(
+  gene_name_ens = rownames(spe),
+  gene_name = rowData(spe)["gene_name"],
+  sum_counts = sum_genes
+)
+gene_summary <- gene_summary[order(gene_summary$sum_counts, decreasing = TRUE), ]
+tail(gene_summary)
+#                    gene_name_ens gene_name sum_counts
+# ENSG00000198804 ENSG00000198804    MT-CO1    3656352
+# ENSG00000198712 ENSG00000198712    MT-CO2    2934506
+f_name <- paste0(here(dir_rdata, "spe_gene_counts.csv"))
+write.csv(gene_summary, f_name, row.names = FALSE)
+
+# Group UMI sums by slide
+# Sum UMIs per spot (column-wise sum)
+spot_UMI_sums <- colSums(counts_matrix)
+# Add UMI sums to colData
+colData(spe)$UMI_sum <- spot_UMI_sums
+colnames(colData(spe))
+UMI_per_slide <- colData(spe) %>%
+  as.data.frame() %>%
+  group_by(sample_id) %>%
+  summarise(total_UMIs = sum(UMI_sum))
+#print(UMI_per_slide)
+
+# Count spots per slide
+spots_by_slide <- table(colData(spe)$sample_id)
+# Convert to a data frame for easier manipulation if needed
+spots_by_slide_df <- as.data.frame(spots_by_slide)
+colnames(spots_by_slide_df) <- c("Slide", "Total_Spots")
+#print(spots_by_slide_df)
+cbind(spots_by_slide_df, UMI_per_slide)
+
 summary(spe$sum_umi)
 
 map(unique(spe$sample_id), ~ summary(spe$sum_umi[spe$sample_id == .x]))
@@ -438,10 +477,10 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge_HighM.rds"))
 
 # ==============================================================================
 
-library("slurmjobs")
-job_single(
-  name = "02_scran_exploratory_QCs", memory = "50G", cores = 2, create_shell = TRUE
-)
+# library("slurmjobs")
+# job_single(
+#   name = "02_scran_exploratory_QCs", memory = "50G", cores = 2, create_shell = TRUE
+# )
 
 
 ## Reproducibility information
