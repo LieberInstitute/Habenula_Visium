@@ -1,4 +1,5 @@
 library("spatialLIBD")
+library("tidyverse")
 library("here")
 library("lobstr")
 library("sessioninfo")
@@ -28,13 +29,14 @@ sample_info <- data.frame(
   sample_id_short = c(Sid), # S10_v
   sample_id = c(sample_slide_id), #V14F07-340_D1
   brain_id = c(brain_id),
-  age = c(65.75, rep(41.3, 8), rep(100, 4)), # need to update next week 9090
-  sex = c(rep("F", 5), rep("M", 4), rep("X", 4)), # need to update next week 9090
-  race = c(rep("EA/CAUC", 13)), # need to update next week 9090
-  pmi = c(31.5, rep(10.5, 4), rep(30.5, 4), rep(20, 4)), # need to update next week 9090 
-  diagnosis = c("Pilot", rep("Control", 12)), # need to update next week 9090
+  age = c(65.75, rep(41.3, 8), rep(57.5, 4)), 
+  sex = c(rep("F", 5), rep("M", 4), rep("M", 4)), 
+  race = c(rep("EA/CAUC", 13)), 
+  pmi = c(31.5, rep(10.5, 4), rep(30.5, 4), rep(30, 4)), # need to update next week 9090 
+  diagnosis = c("Pilot", rep("Control", 12)), 
   rin = c(7, rep(6.3, 4), rep(7.4, 4), rep(5, 4)) # need to update next week 9090
 )
+sample_info$sample_id_short <- sprintf("S%02d_Hb_V", parse_number(sample_info$sample_id_short))
 
 sample_info$sample_path <-
     file.path(
@@ -45,7 +47,6 @@ sample_info$sample_path <-
 stopifnot(all(file.exists(sample_info$sample_path)))
 
 ## Combine sample info with the donor info
-
 sample_info[c(colnames(sample_info))] #"sample_id", "subject", "age", "sex", "race", "pmi", "diagnosis", "rin"
 
 ## Build basic SPE
@@ -76,6 +77,7 @@ Sys.time()
 # spe@int_colData$reducedDims
 # colnames(spe)
 # rownames(spe)
+
 colnames(colData(spe))
 head(spe$sample_id)
 tail(spe$sample_id)
