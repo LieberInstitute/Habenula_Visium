@@ -81,4 +81,26 @@ cor_broad <- mapply(
 cor_list = list(fine = cor_fine, broad = cor_broad)
 saveRDS(cor_list, file = out_path)
 
+## Make basic heatmaps (not ComplexHeatmap) versions
+
+## Fine resolution
+pdf(file = file.path(dir_plots, "snRNA-seq_registration_fineRes_basic.pdf"))
+lapply(
+    cor_fine_annotated,
+    layer_stat_cor_plot,
+    max = max(sapply(cor_fine, max)),
+    min = min(sapply(cor_fine, min))
+)
+dev.off()
+
+## Broad resolution
+pdf(file = file.path(dir_plots, "snRNA-seq_registration_broadRes_basic.pdf"))
+lapply(
+    cor_broad_annotated,
+    layer_stat_cor_plot,
+    max = max(sapply(cor_broad, max)),
+    min = min(sapply(cor_broad, min))
+)
+dev.off()
+
 session_info()
