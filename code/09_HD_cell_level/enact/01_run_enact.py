@@ -13,9 +13,7 @@ in_dir = here(
     'square_002um'
 )
 raw_image_path = here('raw-data', 'images', 'vis-hd', f'{sample_id}.tif')
-cell_typist_model = here(
-    'processed-data', '09_HD_cell_level', 'enact', 'Developing_Human_Brain.pkl'
-)
+cell_typist_model = 'Developing_Human_Brain.pkl'
 
 so_hd = ENACT(
     cache_dir = out_dir,
