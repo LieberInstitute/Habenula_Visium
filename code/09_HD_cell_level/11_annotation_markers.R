@@ -18,4 +18,16 @@ markers = findMarkers_1vAll(
     spe, assay_name = "logcounts", cellType_col = "banksy_k2", mod = NULL
 )
 
+markers_1vALL %>%
+    reframe(
+        t_stat = std.logFC,
+        gene = gene
+    ) %>%
+    mutate(cellType.target = paste0(BayesSpace_current, "_", cellType.target)) %>%
+    pivot_wider(
+        names_from = cellType.target,
+        values_from = t_stat
+    ) %>%
+    as.data.frame()
+
 session_info()
