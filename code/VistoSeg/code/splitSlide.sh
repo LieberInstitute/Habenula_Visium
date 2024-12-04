@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --mem=80G
+#SBATCH --mem=110G
 #SBATCH -o logs/slurm-o_splitSlide.txt 
 #SBATCH -e logs/slurm-e_splitSlide.txt
 #SBATCH --array=1
