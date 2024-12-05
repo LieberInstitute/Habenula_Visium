@@ -33,6 +33,19 @@ annotated_heatmap <- function(t_stats, current_var, res_name) {
         top_n = 100
     )
 
+    #   Put clusters in order
+    this_cor = lapply(
+        this_cor,
+        function(x) {
+            x[
+                rownames(x) |>
+                    str_extract('_([0-9]+)$', group = 1) |>
+                    as.numeric() |>
+                    order(),
+            ]
+        }
+    )
+
     #   Annotate clusters
     annotated_clusters = lapply(
         this_cor, annotate_registered_clusters, cutoff_merge_ratio = 0.1
