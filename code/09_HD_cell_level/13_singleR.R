@@ -15,7 +15,7 @@ this_res = res_names[as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))]
 sce_path = "/dcs04/lieber/lcolladotor/pilotHb_LIBD001/Roche_Habenula/processed-data/04_snRNA-seq/sce_objects/sce_final.Rdata"
 spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm')
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'singler', sprintf('%s.csv', res_name)
+    'processed-data', '09_HD_cell_level', 'singler', sprintf('%s.csv', this_res)
 )
 
 dir.create(dirname(out_path), showWarnings = FALSE)
@@ -29,11 +29,16 @@ shared_genes = intersect(rownames(sce_final), rownames(spe))
 spe = spe[shared_genes,]
 sce_final = sce_final[shared_genes,]
 
+sce_final$final_Annotations_broad = sub(
+    "\\.[0-9]+", "", sce_final$final_Annotations
+)
+
 #   Apply annotations and save to CSV
 SingleR(
-        test = spe, ref = sce_final, labels = sce[[this_label]], 
+        test = spe, ref = sce_final, labels = sce_final[[this_label]], 
         de.method = "wilcox"
     ) |>
+    as_tibble() |>
     write_csv(out_path)
 
 session_info()
