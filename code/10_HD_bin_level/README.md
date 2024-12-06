@@ -26,3 +26,11 @@ resolution data
 - `07_nnSVG.*`: Run `nnSVG` to find spatially variable genes on the lower-
 resolution data
 - `08_plot_SVGs.*`: Plot the top 12 SVGs by rank
+
+## Cell-cell communication (attempted)
+
+- `09_nest_preprocess.sh`: Run the `NEST` preprocessing step, one of several
+steps in a cell-cell communication pipeline. Required prohibitively large
+amounts of memory (> 1TB) for this HD data
+- `10_nest_run.sh`: Another `NEST` step that was discontinued after the first
+`09_nest_preprocess.sh` script failed to run
