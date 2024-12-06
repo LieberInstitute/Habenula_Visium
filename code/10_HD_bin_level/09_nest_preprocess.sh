@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=64G
+#SBATCH --mem=200G
 #SBATCH --job-name=09_nest_preprocess
 #SBATCH -c 1
 #SBATCH -t 1:00:00

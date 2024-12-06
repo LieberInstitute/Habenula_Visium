@@ -1,0 +1,48 @@
+**** Job starts ****
+Fri Dec  6 02:56:55 PM EST 2024
+**** JHPCE info ****
+User: neagles
+Job id: 11018367
+Job name: 09_nest_preprocess
+Node name: compute-167
+Task id: 
+Unloading LIBD SLURM module for visium_hd/1.0
+Loading LIBD SLURM module for visium_hd/1.0
+
+Currently Loaded Modules:
+  1) JHPCE_ROCKY9_DEFAULT_ENV   3) conda/3-24.3.0
+  2) JHPCE_tools/3.0            4) visium_hd/1.0
+
+ 
+
+/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/anndata/_core/anndata.py:1820: UserWarning: Variable names are not unique. To make them unique, call `.var_names_make_unique`.
+  utils.warn_names_duplicates("var")
+/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/anndata/_core/anndata.py:1820: UserWarning: Variable names are not unique. To make them unique, call `.var_names_make_unique`.
+  utils.warn_names_duplicates("var")
+/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/anndata/_core/anndata.py:1820: UserWarning: Variable names are not unique. To make them unique, call `.var_names_make_unique`.
+  utils.warn_names_duplicates("var")
+package loading
+user input reading
+input data reading
+input data read done
+Gene filtering done. Number of genes reduced from 18085 to 17012
+Number of barcodes: 450439
+Applying quantile normalization
+ligand-receptor database reading.
+ligand-receptor database reading done.
+Preprocess start.
+number of ligand-receptor pairs in this dataset 12338 
+number of ligands 643 
+Total genes in this dataset: 17012, number of genes working as ligand and/or receptor: 1335 
+Traceback (most recent call last):
+  File "/jhpce/shared/libd/core/visium_hd/1.0/NEST/data_preprocess_NEST.py", line 184, in <module>
+    distance_matrix = euclidean_distances(coordinates, coordinates)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/sklearn/utils/_param_validation.py", line 213, in wrapper
+    return func(*args, **kwargs)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/sklearn/metrics/pairwise.py", line 372, in euclidean_distances
+    return _euclidean_distances(X, Y, X_norm_squared, Y_norm_squared, squared)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/sklearn/metrics/pairwise.py", line 407, in _euclidean_distances
+    distances = -2 * safe_sparse_dot(X, Y.T, dense_output=True)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/sklearn/utils/extmath.py", line 205, in safe_sparse_dot
+    ret = a @ b
+numpy.core._exceptions._ArrayMemoryError: Unable to allocate 1.48 TiB for an array with shape (450439, 450439) and data type float64
