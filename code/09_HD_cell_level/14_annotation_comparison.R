@@ -4,6 +4,7 @@ library(SpatialExperiment)
 library(spatialLIBD)
 library(HDF5Array)
 library(sessioninfo)
+library(cowplot)
 
 spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm')
 cor_path = here(
@@ -19,6 +20,7 @@ cluster_path = here(
     'processed-data', '09_HD_cell_level', 'banksy', 'k%s.csv'
 )
 plot_dir = here('plots', '09_HD_cell_level', 'banksy')
+px_per_plot = 500
 
 parse_cor_mat = function(cor_list, res) {
     cor_df = do.call(rbind, cor_list[[res]]) |>
@@ -80,8 +82,8 @@ for (res in c('broad', 'fine')) {
         this_cor_df = cor_df |>
             filter(k == {{ k }}, res == {{ res }})
         
-        spe[[sprintf('anno_k%s_%s', k, res)]] = cor_df$cell_type[
-            match(spe[[paste0('banksy_k', k)]], cor_df$cluster_num)
+        spe[[sprintf('anno_k%s_%s', k, res)]] = this_cor_df$cell_type[
+            match(spe[[paste0('banksy_k', k)]], this_cor_df$cluster_num)
         ]
 
         conc_df_list[[paste0(k, res)]] = tibble(
@@ -106,3 +108,78 @@ p = ggplot(conc_df, aes(x = k, y = concordance, color = res, group = res)) +
 pdf(file.path(plot_dir, 'annotation_concordance.pdf'), width = 8, height = 6)
 print(p)
 dev.off()
+
+#   Define a named vector of colors for broad and fine cell types
+cell_colors = list()
+
+temp = cor_df |>
+    filter(res == 'broad') |>
+    pull(cell_type) |>
+    unique() |>
+    sort()
+cell_colors[['broad']] = rainbow(length(temp))
+names(cell_colors[['broad']]) = temp
+
+temp = cor_df |>
+    filter(res == 'fine') |>
+    pull(cell_type) |>
+    unique() |>
+    sort()
+cell_colors[['fine']] = rainbow(length(temp))
+names(cell_colors[['fine']]) = temp
+
+#   Note: a lot of manual plotting code is used in place of vis_clus because
+#   cropping the in-tissue spots for this cell-level Visium HD data is not
+#   currently possible through vis_clus, leading to excessive whitespace
+
+#   Gather cluster results and spatial coordinates into a tidy tibble
+col_names = c(
+    sprintf('anno_k%s_broad', length(cell_colors[['broad']])),
+    sprintf('anno_k%s_fine', length(cell_colors[['fine']])),
+    'singler_broad',
+    'singler_fine'
+)
+exp_df = colData(spe)[, col_names] |>
+    cbind(spatialCoords(spe)) |>
+    as_tibble() |>
+    mutate(
+        x = pxl_col_in_fullres,
+        y = max(pxl_row_in_fullres) - pxl_row_in_fullres
+    )
+
+for (res in c('broad', 'fine')) {
+    plot_list = list()
+    for (col_name in col_names[grep(res, col_names)]) {
+        plot_list[[col_name]] = ggplot(
+                exp_df,
+                aes(
+                    x = x, y = y, color = !!sym(col_name),
+                    fill = !!sym(col_name)
+                )
+            ) +
+            geom_point(size = 0.001) +
+            scale_color_manual(values = cell_colors[[res]]) +
+            labs(color = 'cell type', title = col_name) +
+            guides(
+                color = guide_legend(override.aes = list(size = 4)),
+                fill = "none"
+            ) +
+            theme_bw(base_size = 15) +
+            #   Remove pretty much everything related to x- and y-axis labels
+            theme(
+                axis.title.x = element_blank(), axis.title.y = element_blank(),
+                axis.text.x = element_blank(), axis.text.y = element_blank(),
+                axis.ticks.x = element_blank(), axis.ticks.y = element_blank(),
+                plot.title = element_text(size = 25)
+            )
+    }
+
+    png(
+        file.path(plot_dir, sprintf('annotation_spot_plots_%s.png', res)),
+        width = px_per_plot * 2, height = px_per_plot
+    )
+    print(plot_grid(plotlist = plot_list, nrow = 1))
+    dev.off()
+}
+
+session_info()
