@@ -51,3 +51,6 @@ clusters
 - `13_singleR.*`: With a similar goal as the `12_annotation_cor.*` analysis,
 directly deconvolve the Visium HD data using `SingleR` and the habenula pilot
 snRNA-seq data as a reference
+- `14_annotation_comparison.*`: Compare cell-type calls between the annotated
+Banksy clusters from  `12_annotation_cor.*` and the deconvolved cells from
+`13_singleR.*`
