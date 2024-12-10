@@ -18,6 +18,7 @@ singler_fine_path = here(
 cluster_path = here(
     'processed-data', '09_HD_cell_level', 'banksy', 'k%s.csv'
 )
+plot_dir = here('plots', '09_HD_cell_level', 'banksy')
 
 parse_cor_mat = function(cor_list, res) {
     cor_df = do.call(rbind, cor_list[[res]]) |>
@@ -92,5 +93,16 @@ for (res in c('broad', 'fine')) {
         )
     }
 }
-
 conc_df = do.call(rbind, conc_df_list)
+
+#   Explore agreement of spatial registration with SingleR results at different
+#   k values and cell-type resolutions
+p = ggplot(conc_df, aes(x = k, y = concordance, color = res, group = res)) +
+    geom_line() +
+    scale_y_continuous(limits = c(0, max(conc_df$concordance))) +
+    scale_x_continuous(breaks = seq_len(14) * 2) +
+    theme_bw(base_size = 15) +
+    labs(x = 'Banksy k value', y = '% agreement', color = 'Cell-type\nresolution')
+pdf(file.path(plot_dir, 'annotation_concordance.pdf'), width = 8, height = 6)
+print(p)
+dev.off()
