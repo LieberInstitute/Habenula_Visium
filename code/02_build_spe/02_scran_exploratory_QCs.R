@@ -38,7 +38,7 @@ cat("Initial number of spots:", dim(spe)[2], "\n")
 ## Set some initials for manage spot size in the plots
 var_height <- 24 # 24/3=8
 var_width <- 26 # 36/4=9
-var_point_size <- 2.5
+var_point_size <- 1.5
 
 set.seed(07112024)
 
@@ -58,7 +58,7 @@ vis_grid_clus(
     clustervar = "in_tissue",
     height = var_height, # 8
     width = var_width, # 9
-    point_size = 2.5, # 1.5
+    point_size = var_point_size,
     pdf = here(dir_plots, "all_in_tissue_grid.pdf"),
     sort_clust = FALSE,
     colors = c("TRUE" = "grey90", "FALSE" = "orange")
@@ -91,8 +91,11 @@ map2(as.vector(names(lst_out_counts)), as.vector(lst_out_counts), ~ vis_grid_gen
 print("Plots done!")
 
 summary(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)])
+median(spe_raw$sum_umi[which(!colData(spe_raw)$in_tissue)])
 
+unique(spe_raw$sample_id)
 map(unique(spe_raw$sample_id), ~ summary(spe_raw$sum_umi[spe_raw$sample_id == .x]))
+map(unique(spe_raw$sample_id), ~ median(spe_raw$sum_umi[spe_raw$sample_id == .x]))
 
 summary(spe_raw$sum_gene[which(!colData(spe_raw)$in_tissue)])
 
@@ -336,7 +339,7 @@ colnames(colData(spe))
 
 
 lobstr::obj_size(spe)
-# 1.16 GB
+# 1.47 GB
 
 ## Save object with metrics_qc()
 saveRDS(spe, file.path(dir_rdata, "spe_qc.rds"))
@@ -367,7 +370,7 @@ vis_grid_gene(
     assayname = "counts",
     height = var_height,
     width = var_width,
-    point_size = 2.5,
+    point_size = var_point_size,
     # return_plots = TRUE,
     pdf = here(dir_plots, "in_tissue_egde_distance.pdf"),
     spatial = FALSE,
@@ -384,7 +387,7 @@ lst_in_scran_counts <- c(
     scran_low_lib_size_edge = "in_tissue_scran_low_lib_size_edge.pdf",
     scran_high_subsets_Mito_percent = "in_tissue_scran_high_Mito_percent.pdf"
 )
-lst_size_spot <- c((var_point_size + 1), (var_point_size + 2.5), (var_point_size + 1))
+lst_size_spot <- c((var_point_size + 1), (var_point_size + 1), (var_point_size + 1))
 lst_scran_vars <- list((names(lst_in_scran_counts)), (lst_in_scran_counts), lst_size_spot)
 
 plt_scran_func <- function(idvar, pdf_name, spot_s) {
@@ -406,10 +409,12 @@ pmap(lst_scran_vars, plt_scran_func)
 ## low library size and chrM ratios
 
 low_library <- map(unique(spe$sample_id), ~ summary(spe$scran_low_lib_size[spe$sample_id == .x]))
+print(unlist(low_library))
 low_library_T <- sum(as.numeric(sapply(low_library, "[[", 1)))
 # 327
 
 low_library_edge <- map(unique(spe$sample_id), ~ summary(spe$scran_low_lib_size_edge[spe$sample_id == .x]))
+print(unlist(low_library_edge))
 low_library_edge_T <- sum(as.numeric(sapply(low_library_edge, "[[", 1)))
 # 31
 low_library_edge_F <- sum(as.numeric(sapply(low_library_edge, "[[", 2)))
@@ -465,7 +470,7 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge.rds"))
 
 spe <- spe[, spe$scran_high_subsets_Mito_percent == "FALSE"]
 cat(
-    "Number of spots after removed low library size spots on the tissue edge:",
+    "Number of spots after removed high chrM percentage spots on the tissue edge:",
     dim(spe)[2],
     "\n"
 )
