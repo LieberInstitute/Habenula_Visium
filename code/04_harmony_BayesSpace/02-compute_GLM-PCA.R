@@ -24,6 +24,7 @@ set.seed(20240613)
 
 ## load a filtered spe object
 spe <- readRDS(filtered_in_path)
+#rowData(spe)
 
 ## Verified number of TRUE spots in tissue
 in_tissue_spots <- sum(as.numeric(map(unique(spe$sample_id), ~ sum(spe$in_tissue[spe$sample_id == .x]))))
@@ -97,6 +98,15 @@ hvg <- mapply(function(block) {
   }, dec$per.block)
 
 capture.output(hvg, file = file.path(dir_rdata, "scran_Top20_hvgALL.csv"))
+
+## Add symbol gene-ids 
+hvg <- map(hvg, function(hvg_block) {
+  hvg_block$gene_name <- rowData(spe)$gene_name[match(rownames(hvg_block), rownames(spe))]
+  return(hvg_block)
+} )
+
+# map(hvg, head)
+
 
 # get the top variable genes at different thresholds
 
