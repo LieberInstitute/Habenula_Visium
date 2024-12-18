@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=50G
+#SBATCH --mem=80G
 #SBATCH --job-name=02_scran_exploratory_QCs
 #SBATCH -c 2
 #SBATCH -t 1-00:00:00
@@ -21,7 +21,7 @@ echo "Node name: ${SLURMD_NODENAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.3.x
+module load conda_R/4.4.x
 
 ## List current modules for reproducibility
 module list
