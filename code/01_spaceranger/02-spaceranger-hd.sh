@@ -2,8 +2,8 @@
 #SBATCH --mem=80G
 #SBATCH -n 8
 #SBATCH --job-name=Hb-spaceranger
-#SBATCH -o logs/Hb-spaceranger-241001_%a.o.txt
-#SBATCH --array=1
+#SBATCH -o logs/Hb-spaceranger-250110_%a.o.txt
+#SBATCH --array=1-4
 
 # -9
 
@@ -24,8 +24,8 @@ module load spaceranger/3.1.1
 module list
 
 ## Locate file
-SAMPLE=$(awk 'BEGIN {FS="\t"} {print $1}' 03-hd-sample-list.txt | awk "NR==${SLURM_ARRAY_TASK_ID}")
-IMGCYT=$(awk 'BEGIN {FS="\t"} {print $2}' 03-hd-sample-list.txt | awk "NR==${SLURM_ARRAY_TASK_ID}")
+SAMPLE=$(awk 'BEGIN {FS="\t"} {print $1}' 04-hd-sample-list-250110.txt | awk "NR==${SLURM_ARRAY_TASK_ID}")
+IMGCYT=$(awk 'BEGIN {FS="\t"} {print $2}' 04-hd-sample-list-250110.txt | awk "NR==${SLURM_ARRAY_TASK_ID}")
 # SAMPLE=$(awk "NR==${SLURM_ARRAY_TASK_ID}" 03_24-09_samples-list.txt)
 echo "Processing sample ${SAMPLE}"
 date
@@ -51,7 +51,7 @@ spaceranger count \
     --area=${CAPTUREAREA} \
     --cytaimage=/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/raw-data/images/vis-hd/${IMGCYT}.tif \
     --image=/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/raw-data/images/vis-hd/${SAMPLE}.tif \
-    --loupe-alignment=/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/Images/loupe-alignment/${SAM}-fiducials.json \
+    --loupe-alignment=/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/Images/loupe-alignment/${SAM}-fiducials-image-registration.json \
     --create-bam=false \
     --localcores=8 \
     --localmem=64 
