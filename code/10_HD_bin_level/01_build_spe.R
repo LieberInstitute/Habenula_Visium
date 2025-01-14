@@ -5,13 +5,13 @@ library(spatialLIBD)
 library(sessioninfo)
 library(HDF5Array)
 
-sample_id = 'H1-W369TJK_D1_9090'
+sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
 spe_raw_dir = here('processed-data', '10_HD_bin_level', 'spe_raw')
 spe_norm_dir = here('processed-data', '10_HD_bin_level', 'spe_norm')
-plot_dir = here('plots', '06_bin_level')
-wm_genes = c("MBP", "GFAP", "PLP1", "AQP4")
-sr_out_dir = here(
-    'processed-data', '01_spaceranger', sample_id, 'outs',
+
+sample_ids = readLines(sample_id_path)
+sr_out_dirs = here(
+    'processed-data', '01_spaceranger', sample_ids, 'outs',
     'binned_outputs', 'square_008um'
 )
 reference_gtf = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2020-A/genes/genes.gtf'
@@ -20,10 +20,12 @@ reference_gtf = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-g
 #   immediate parent to 'spatial' directory and other outputs (create a symlink
 #   named 'outs'). Note we already handled the other required workaround: create
 #   a tissue_positions.csv file (not parquet format)
-temp_sr_dir = file.path(tempdir(), sample_id, 'outs')
-dir.create(dirname(temp_sr_dir))
+temp_sr_dirs = file.path(tempdir(), sample_ids, 'outs')
+for (this_dir in temp_sr_dirs) {
+    dir.create(dirname(this_dir))
+}
 
-file.symlink(sr_out_dir, temp_sr_dir) |>
+file.symlink(sr_out_dirs, temp_sr_dirs) |>
     all() |>
     stopifnot()
 
@@ -32,8 +34,8 @@ file.symlink(sr_out_dir, temp_sr_dir) |>
 #   to infer the GTF)
 message(Sys.time(), ' | Building SpatialExperiment...')
 spe <- read10xVisiumWrapper(
-    samples = temp_sr_dir,
-    sample_id = sample_id,
+    samples = temp_sr_dirs,
+    sample_id = sample_ids,
     type = "sparse",
     data = "raw",
     images = "lowres",
@@ -41,7 +43,7 @@ spe <- read10xVisiumWrapper(
     reference_gtf = reference_gtf
 )
 
-message(Sys.time(), " - Saving raw SPE")
+message(Sys.time(), " | Saving raw SPE")
 spe <- saveHDF5SummarizedExperiment(
     spe, dir = spe_raw_dir, replace = TRUE, as.sparse = TRUE
 )
@@ -60,7 +62,7 @@ message(Sys.time(), ' | Performing log normalization...')
 spe = computeLibraryFactors(spe)
 spe = logNormCounts(spe)
 
-message(Sys.time(), " - Saving normalized SPE")
+message(Sys.time(), " | Saving normalized SPE")
 spe <- saveHDF5SummarizedExperiment(
     spe, dir = spe_norm_dir, replace = TRUE, as.sparse = TRUE
 )

@@ -20,19 +20,26 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 repo_dir=$(git rev-parse --show-toplevel)
-spatial_dir=$repo_dir/processed-data/01_spaceranger/H1-W369TJK_D1_9090/outs/binned_outputs/square_008um/spatial
+sample_id_path=$repo_dir/raw-data/sample_info/hd_sample_list.txt
 
-#   Get spatial coordinates as a CSV
-if [[ ! -f $spatial_dir/tissue_positions.csv ]]; then
-    echo "Converting spatial coords to CSV..."
-    module load ficture/0.0.3.1
-    parquet-tools csv $spatial_dir/tissue_positions.parquet \
-        > $spatial_dir/tissue_positions.csv
-    module unload ficture
-fi
+#   Get spatial coordinates as a CSV (from parquet format) for each sample where
+#   it doesn't exist
+module load visium_hd/1.0
+for i in $(seq 1 5); do
+    sample_id=$(awk "NR==${i}" $sample_id_path)
+    spatial_dir=$repo_dir/processed-data/01_spaceranger/$sample_id/outs/binned_outputs/square_008um/spatial
+
+    if [[ ! -f $spatial_dir/tissue_positions.csv ]]; then
+        echo "Converting spatial coords to CSV for sample ${sample_id}..."
+        
+        parquet-tools csv $spatial_dir/tissue_positions.parquet \
+            > $spatial_dir/tissue_positions.csv
+    fi
+done
+module unload visium_hd
 
 ## Load the R module
-module load conda_R/4.4
+module load conda_R/4.4.x
 
 ## List current modules for reproducibility
 module list
