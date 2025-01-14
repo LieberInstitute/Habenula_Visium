@@ -1,11 +1,12 @@
 #!/bin/bash
-#SBATCH -p shared
+#SBATCH -p katun
 #SBATCH --mem=5G
 #SBATCH --job-name=03_ficture_transcripts
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/10_HD_bin_level/logs/03_ficture_transcripts.log
-#SBATCH -e ../../processed-data/10_HD_bin_level/logs/03_ficture_transcripts.log
+#SBATCH -o ../../processed-data/10_HD_bin_level/logs/03_ficture_transcripts_%a.log
+#SBATCH -e ../../processed-data/10_HD_bin_level/logs/03_ficture_transcripts_%a.log
+#SBATCH --array=1-5%5
 
 set -e
 
@@ -19,16 +20,19 @@ echo "Job name: ${SLURM_JOB_NAME}"
 echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
-module load ficture/0.0.3.1
+module load visium_hd/1.0
 
 repo_dir=$(git rev-parse --show-toplevel)
+sample_id_path=$repo_dir/raw-data/sample_info/hd_sample_list.txt
 temp_dir=$MYSCRATCH
-this_sample=H1-W369TJK_D1_9090
+this_sample=$(awk "NR==${SLURM_ARRAY_TASK_ID}" $sample_id_path)
 
 data_dir=$repo_dir/processed-data/01_spaceranger/$this_sample/outs/binned_outputs/square_002um
 out_dir=$repo_dir/processed-data/10_HD_bin_level/ficture/inputs/$this_sample
 
 mkdir -p $out_dir
+
+echo "Processing sample ID ${this_sample}..."
 
 #   Get spatial coordinates as a CSV
 echo "Converting spatial coords to CSV..."
