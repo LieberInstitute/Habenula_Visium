@@ -7,7 +7,11 @@ import session_info
 import bin2cell as b2c
 import datetime
 
-sample_id = 'H1-W369TJK_D1_9090'
+sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
+with open(sample_id_path, 'r') as f:
+    all_samples = f.read().splitlines()
+sample_id = all_samples[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
+
 stardist_dir = here('processed-data', '09_HD_cell_level', 'stardist')
 final_out_path = here('processed-data', '09_HD_cell_level', f'{sample_id}.h5ad')
 pre_out_path = here(
@@ -20,7 +24,7 @@ sr_dir = here(
 sr_spatial_dir = here(
     'processed-data', '01_spaceranger', sample_id, 'outs', 'spatial'
 )
-plot_dir = here('plots', '09_HD_cell_level')
+plot_dir = here('plots', '09_HD_cell_level', 'bin2cell')
 raw_image_path = here('raw-data', 'images', 'vis-hd', f'{sample_id}.tif')
 mpp = 0.3
 
@@ -36,6 +40,7 @@ print(f"{datetime.datetime.now()} | Building and preprocessing AnnData")
 #   Read in spaceranger outputs into an AnnData
 adata = b2c.read_visium(
     sr_dir,
+    count_file = 'raw_feature_bc_matrix.h5',
     source_image_path = raw_image_path,
     spaceranger_image_path = sr_spatial_dir
 )
@@ -44,8 +49,7 @@ adata = b2c.read_visium(
 adata.var_names = adata.var['gene_ids']
 adata.var_names.name = None
 
-#   Require bins with nonzero counts and genes present in at least 3 bins
-sc.pp.filter_genes(adata, min_cells=3)
+#   Require bins with nonzero counts
 sc.pp.filter_cells(adata, min_counts=1)
 
 #   Create a scaled H&E image attached to the object (and for segmentation with
@@ -56,8 +60,31 @@ b2c.scaled_he_image(
     save_path = os.path.join(stardist_dir, f'he_{sample_id}.tiff')
 )
 
-#   Normalize counts to account for "striping" effect
-b2c.destripe(adata)
+#   In the tutorial at https://nbviewer.org/github/Teichlab/bin2cell/blob/main/notebooks/demo.ipynb,
+#   the filtered feature matrix, with additional gene-filtering steps, is used
+#   before using specific settings to segment the gene-expression-based image
+#   ('secondary segmentation'). While we're interested in retaining all genes
+#   (i.e. using the raw feature matrix as in 'adata'), we want similar secondary
+#   segmentation behavior as in the tutorial, hence 'adata_filtered'. We'll
+#   produce here an AnnData matching 'adata' except using the filtered set of
+#   genes
+adata_filtered = b2c.read_visium(
+    sr_dir,
+    count_file = 'filtered_feature_bc_matrix.h5',
+    source_image_path = raw_image_path,
+    spaceranger_image_path = sr_spatial_dir
+)
+adata_filtered = adata[:, adata_filtered.var['gene_ids']].copy()
+
+#   For the sake of secondary segmentation only, require genes be present in at
+#   least 3 bins
+sc.pp.filter_genes(adata_filtered, min_cells=3)
+
+#   Normalize counts to account for "striping" effect, but only for the gene
+#   expression image. We want integer counts in the downstream raw counts
+#   assay, and ordinary normalization techniques should properly account for
+#   this technical effect
+b2c.destripe(adata_filtered)
 
 ################################################################################
 #   Perform nuclear-based ("primary") segmentation
@@ -84,7 +111,7 @@ b2c.insert_labels(
         stardist_dir, f'he_{sample_id}.npz'
     ), 
     basis="spatial", 
-    spatial_key="spatial_cropped",
+    spatial_key="spatial_cropped_150_buffer",
     mpp=mpp, 
     labels_key="labels_he"
 )
@@ -104,7 +131,7 @@ print(f"{datetime.datetime.now()} | Performing gene-expression-based ('secondary
 
 #   Create an image from gene counts
 b2c.grid_image(
-    adata,
+    adata_filtered,
     "n_counts_adjusted",
     mpp=mpp,
     sigma=5,
@@ -112,6 +139,11 @@ b2c.grid_image(
         stardist_dir, f'gex_{sample_id}.tiff'
     )
 )
+
+#   Hack around a different object ('adata_filtered') being used to create the
+#   gene-count image as the object ('adata') we want to insert secondary labels
+#   into. 'b2c.grid_image' inserted this column silently
+adata.uns['bin2cell']['array_check'] = adata_filtered.uns['bin2cell']['array_check']
 
 #   Segment cells on the gene-count image
 b2c.stardist(
@@ -149,26 +181,66 @@ b2c.salvage_secondary_labels(
 #   Plot primary and secondary cells
 #-------------------------------------------------------------------------------
 
-#   Region for plots
-mask = (
-    (adata.obs['array_row'] >= 1000) & 
-    (adata.obs['array_row'] <= 1050) & 
-    (adata.obs['array_col'] >= 1000) & 
-    (adata.obs['array_col'] <= 1050)
-)
-
-#   Plot union of cell labels
-bdata = adata[mask]
-bdata = bdata[bdata.obs['labels_joint'] > 0]
-bdata.obs['labels_joint'] = bdata.obs['labels_joint'].astype(str)
-sc.pl.spatial(
-    bdata, color=[None, "labels_joint_source", "labels_joint"],
-    img_key=f"{mpp}_mpp", basis="spatial_cropped"
-)
-plt.savefig(
-    os.path.join(plot_dir, f'{sample_id}_cells.png')
-)
-plt.close('all')
+#   Plot 2 different subregions to get a representative idea
+for i in range(2):
+    #   Region for plots
+    mask = (
+        (adata.obs['array_row'] >= 1000 + 1000 * i) & 
+        (adata.obs['array_row'] <= 1050 + 1000 * i) & 
+        (adata.obs['array_col'] >= 1000 + 1000 * i) & 
+        (adata.obs['array_col'] <= 1050 + 1000 * i)
+    )
+    
+    #   Plot union of cell labels
+    bdata = adata[mask]
+    bdata = bdata[bdata.obs['labels_joint'] > 0]
+    bdata.obs['labels_joint'] = bdata.obs['labels_joint'].astype(str)
+    sc.pl.spatial(
+        bdata, color=[None, "labels_joint_source", "labels_joint"],
+        img_key=f"{mpp}_mpp_150_buffer", basis="spatial_cropped_150_buffer"
+    )
+    plt.savefig(
+        os.path.join(plot_dir, f'{sample_id}_cells{i+1}.png')
+    )
+    plt.close('all')
+    
+    #   Plot primary segmentations
+    crop = b2c.get_crop(
+        adata[mask], basis="spatial", spatial_key="spatial_cropped_150_buffer",
+        mpp=mpp
+    )
+    rendered = b2c.view_labels(
+        image_path = os.path.join(
+            stardist_dir, f'he_{sample_id}.tiff'
+        ),
+        labels_npz_path = os.path.join(
+            stardist_dir, f'he_{sample_id}.npz'
+        ),  
+        crop = crop
+    )
+    plt.imshow(rendered)
+    plt.savefig(
+        os.path.join(plot_dir, f'{sample_id}_primary_segmentation{i+1}.png')
+    )
+    plt.close('all')
+    
+    #   Plot secondary segmentations
+    crop = b2c.get_crop(adata[mask], basis="array", mpp=mpp)
+    rendered = b2c.view_labels(
+        image_path = os.path.join(
+            stardist_dir, f'gex_{sample_id}.tiff'
+        ),
+        labels_npz_path = os.path.join(
+            stardist_dir, f'gex_{sample_id}.npz'
+        ),  
+        crop = crop,
+        stardist_normalize = True
+    )
+    plt.imshow(rendered)
+    plt.savefig(
+        os.path.join(plot_dir, f'{sample_id}_secondary_segmentation{i+1}.png')
+    )
+    plt.close('all')
 
 #   Keep a copy of the AnnData before aggregation (to enable interactive
 #   plotting later, for example)
@@ -182,7 +254,7 @@ print(f"{datetime.datetime.now()} | Aggregating bins into cells")
 
 adata = b2c.bin_to_cell(
     adata, labels_key="labels_joint",
-    spatial_keys=["spatial", "spatial_cropped"]
+    spatial_keys=["spatial", "spatial_cropped_150_buffer"]
 )
 
 cell_mask = (
@@ -195,7 +267,8 @@ cell_mask = (
 #   Plot counts within cells after aggregation of bins
 bdata = adata[cell_mask]
 sc.pl.spatial(
-    bdata, color="bin_count", img_key=f"{mpp}_mpp", basis="spatial_cropped"
+    bdata, color="bin_count", img_key=f"{mpp}_mpp_150_buffer",
+    basis="spatial_cropped_150_buffer"
 )
 plt.savefig(
     os.path.join(plot_dir, f'{sample_id}_cells_aggregated.png')

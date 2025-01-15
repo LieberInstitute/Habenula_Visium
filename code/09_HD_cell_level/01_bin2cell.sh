@@ -4,8 +4,9 @@
 #SBATCH --job-name=01_bin2cell
 #SBATCH -c 1
 #SBATCH -t 1-00:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/logs/01_bin2cell.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/logs/01_bin2cell.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/logs/01_bin2cell_%a.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/logs/01_bin2cell_%a.txt
+#SBATCH --array=1-5%2
 
 set -e
 
@@ -19,7 +20,7 @@ echo "Job name: ${SLURM_JOB_NAME}"
 echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
-module load bin2cell/0.3.0
+module load visium_hd/1.0
 
 ## List current modules for reproducibility
 module list
