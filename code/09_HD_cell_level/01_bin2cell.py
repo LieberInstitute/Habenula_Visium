@@ -37,6 +37,26 @@ os.makedirs(plot_dir, exist_ok=True)
 
 print(f"{datetime.datetime.now()} | Building and preprocessing AnnData")
 
+#   In the tutorial at https://nbviewer.org/github/Teichlab/bin2cell/blob/main/notebooks/demo.ipynb,
+#   the filtered feature matrix, with additional gene-filtering steps, is used
+#   before using specific settings to segment the gene-expression-based image
+#   ('secondary segmentation'). While we're interested in retaining all genes
+#   (i.e. using the raw feature matrix as in 'adata'), we want similar secondary
+#   segmentation behavior as in the tutorial, hence 'adata_filtered'
+adata_filtered = b2c.read_visium(
+    sr_dir,
+    count_file = 'filtered_feature_bc_matrix.h5',
+    source_image_path = raw_image_path,
+    spaceranger_image_path = sr_spatial_dir
+)
+
+#   Require bins with nonzero counts
+sc.pp.filter_cells(adata_filtered, min_counts=1)
+sc.pp.filter_genes(adata_filtered, min_cells=3)
+
+#   Normalize counts to account for "striping" effect
+b2c.destripe(adata_filtered)
+
 #   Read in spaceranger outputs into an AnnData
 adata = b2c.read_visium(
     sr_dir,
@@ -45,12 +65,13 @@ adata = b2c.read_visium(
     spaceranger_image_path = sr_spatial_dir
 )
 
+#   Only keep in-tissue bins
+assert adata_filtered.obs.index.isin(adata.obs.index).all()
+adata = adata[adata_filtered.obs.index, :]
+
 #   Use Ensembl IDs for var_names
 adata.var_names = adata.var['gene_ids']
 adata.var_names.name = None
-
-#   Require bins with nonzero counts
-sc.pp.filter_cells(adata, min_counts=1)
 
 #   Create a scaled H&E image attached to the object (and for segmentation with
 #   stardist)
@@ -59,32 +80,6 @@ b2c.scaled_he_image(
     mpp = mpp,
     save_path = os.path.join(stardist_dir, f'he_{sample_id}.tiff')
 )
-
-#   In the tutorial at https://nbviewer.org/github/Teichlab/bin2cell/blob/main/notebooks/demo.ipynb,
-#   the filtered feature matrix, with additional gene-filtering steps, is used
-#   before using specific settings to segment the gene-expression-based image
-#   ('secondary segmentation'). While we're interested in retaining all genes
-#   (i.e. using the raw feature matrix as in 'adata'), we want similar secondary
-#   segmentation behavior as in the tutorial, hence 'adata_filtered'. We'll
-#   produce here an AnnData matching 'adata' except using the filtered set of
-#   genes
-adata_filtered = b2c.read_visium(
-    sr_dir,
-    count_file = 'filtered_feature_bc_matrix.h5',
-    source_image_path = raw_image_path,
-    spaceranger_image_path = sr_spatial_dir
-)
-adata_filtered = adata[:, adata_filtered.var['gene_ids']].copy()
-
-#   For the sake of secondary segmentation only, require genes be present in at
-#   least 3 bins
-sc.pp.filter_genes(adata_filtered, min_cells=3)
-
-#   Normalize counts to account for "striping" effect, but only for the gene
-#   expression image. We want integer counts in the downstream raw counts
-#   assay, and ordinary normalization techniques should properly account for
-#   this technical effect
-b2c.destripe(adata_filtered)
 
 ################################################################################
 #   Perform nuclear-based ("primary") segmentation
