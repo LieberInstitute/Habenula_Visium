@@ -132,19 +132,19 @@ spe <- add_design(spe)
 # colData(spe) <- cbind(colData(spe), segmentation_info)
 
 
-cat("Initial number of spots:", dim(spe)[2], "\n")
+message("Initial number of spots:", dim(spe)[2], "\n")
 
 ## Remove genes with no data
 expr <- which(rowSums(counts(spe)) > 0)
-cat("Number of genes with counts:", length(expr))
+message("Number of genes with counts:", length(expr))
 
 no_expr <- which(rowSums(counts(spe)) == 0)
-cat("Number of genes with no counts:", length(no_expr))
+message("Number of genes with no counts:", length(no_expr))
 # Number of genes with no counts: 13162
 # Merged samples: Number of genes with no counts: 10315
 
-cat("% genes with counts:", (length(expr) / nrow(spe)) * 100)
-cat("% genes with no counts:", (length(no_expr) / nrow(spe)) * 100)
+message("% genes with counts:", (length(expr) / nrow(spe)) * 100)
+message("% genes with no counts:", (length(no_expr) / nrow(spe)) * 100)
 
 
 spe <- spe[-no_expr, ]
@@ -164,11 +164,12 @@ lobstr::obj_size(spe_raw)
 
 saveRDS(spe_raw, file.path(dir_rdata, "spe_raw.rds"))
 
+message("Saved spe_raw.rds")
 
 ## Now drop the spots outside the tissue
 spe <- spe_raw[, spe_raw$in_tissue]
 dim(spe)
-cat("Spots in tissue:", dim(spe)[2], "\n")
+message("Spots in tissue:", dim(spe)[2], "\n")
 # Spots in tissue: 3615
 # Merged samples: Spots in tissue: 28023
 
@@ -184,6 +185,8 @@ lobstr::obj_size(spe)
 # Merged samples: 1.16 MB
 
 saveRDS(spe, file.path(dir_rdata, "spe.rds"))
+
+message("Saved spe.rds")
 
 # library("slurmjobs")
 # job_single(
