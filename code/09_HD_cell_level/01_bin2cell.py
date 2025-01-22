@@ -179,12 +179,26 @@ b2c.salvage_secondary_labels(
 #   Plot 2 different subregions to get a representative idea
 for i in range(2):
     #   Region for plots
+    #   Region for plots
     mask = (
-        (adata.obs['array_row'] >= 1000 + 1000 * i) & 
-        (adata.obs['array_row'] <= 1050 + 1000 * i) & 
-        (adata.obs['array_col'] >= 1000 + 1000 * i) & 
-        (adata.obs['array_col'] <= 1050 + 1000 * i)
+        (adata.obs['array_row'] >= 1000 + 500 * i) & 
+        (adata.obs['array_row'] <= 1050 + 500 * i) & 
+        (adata.obs['array_col'] >= 1000 + 500 * i) & 
+        (adata.obs['array_col'] <= 1050 + 500 * i)
     )
+
+    #   If the region has no cells, try to iterate over other regions until
+    #   cells are found
+    offset = 150
+    while not any(mask) and offset < 1000:
+        mask = (
+            (adata.obs['array_row'] >= 1000 + 500 * i + offset) & 
+            (adata.obs['array_row'] <= 1050 + 500 * i + offset) & 
+            (adata.obs['array_col'] >= 1000 + 500 * i + offset) & 
+            (adata.obs['array_col'] <= 1050 + 500 * i + offset)
+        )
+        offset += 150
+    assert any(mask), "Failed to find a region with cells for plotting"
     
     #   Plot union of cell labels
     bdata = adata[mask]
