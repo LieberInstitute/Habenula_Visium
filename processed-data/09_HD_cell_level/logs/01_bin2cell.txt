@@ -1,61 +1,0 @@
-**** Job starts ****
-Fri Oct 11 04:01:58 PM EDT 2024
-**** JHPCE info ****
-User: neagles
-Job id: 10089213
-Job name: 01_bin2cell
-Node name: compute-166
-Task id: 
-Unloading LIBD SLURM module for bin2cell/0.3.0
-Loading LIBD SLURM module for bin2cell/0.3.0
-
-Currently Loaded Modules:
-  1) JHPCE_ROCKY9_DEFAULT_ENV   3) conda/3-24.3.0
-  2) JHPCE_tools/3.0            4) bin2cell/0.3.0
-
- 
-
-2024-10-11 16:04:03.392282: I tensorflow/core/util/port.cc:110] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
-2024-10-11 16:04:03.523902: I tensorflow/tsl/cuda/cudart_stub.cc:28] Could not find cuda drivers on your machine, GPU will not be used.
-2024-10-11 16:04:04.487194: I tensorflow/tsl/cuda/cudart_stub.cc:28] Could not find cuda drivers on your machine, GPU will not be used.
-2024-10-11 16:04:04.490060: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
-To enable the following instructions: AVX2 AVX512F AVX512_VNNI AVX512_BF16 AVX_VNNI AMX_TILE AMX_INT8 AMX_BF16 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2024-10-11 16:04:06.404860: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
-2024-10-11 16:02:02.436711 | Building and preprocessing AnnData
-2024-10-11 16:04:02.477527 | Performing nuclear-based ('primary') segmentation
-Found model '2D_versatile_he' for 'StarDist2D'.
-Loading network weights from 'weights_best.h5'.
-Loading thresholds from 'thresholds.json'.
-Using default values: prob_thresh=0.692478, nms_thresh=0.3.
-effective: block_size=(4096, 4096, 3), min_overlap=(128, 128, 0), context=(128, 128, 0)
-anndata.py (1840): Variable names are not unique. To make them unique, call `.var_names_make_unique`.
-anndata.py (1840): Variable names are not unique. To make them unique, call `.var_names_make_unique`.
-  0%|          | 0/30 [00:00<?, ?it/s]  3%|▎         | 1/30 [00:11<05:40, 11.73s/it]  7%|▋         | 2/30 [00:24<05:49, 12.50s/it] 10%|█         | 3/30 [00:37<05:42, 12.69s/it] 13%|█▎        | 4/30 [00:51<05:46, 13.32s/it] 17%|█▋        | 5/30 [01:02<05:05, 12.21s/it] 20%|██        | 6/30 [01:14<04:53, 12.21s/it] 23%|██▎       | 7/30 [01:27<04:46, 12.45s/it] 27%|██▋       | 8/30 [01:40<04:38, 12.67s/it] 30%|███       | 9/30 [01:53<04:26, 12.67s/it] 33%|███▎      | 10/30 [02:05<04:11, 12.56s/it] 37%|███▋      | 11/30 [02:19<04:09, 13.12s/it] 40%|████      | 12/30 [02:31<03:47, 12.65s/it] 43%|████▎     | 13/30 [02:43<03:32, 12.48s/it] 47%|████▋     | 14/30 [02:56<03:20, 12.52s/it] 50%|█████     | 15/30 [03:07<03:02, 12.16s/it] 53%|█████▎    | 16/30 [03:21<02:58, 12.76s/it] 57%|█████▋    | 17/30 [03:34<02:48, 12.93s/it] 60%|██████    | 18/30 [03:48<02:38, 13.25s/it] 63%|██████▎   | 19/30 [04:04<02:31, 13.80s/it] 67%|██████▋   | 20/30 [04:15<02:11, 13.16s/it] 70%|███████   | 21/30 [04:29<02:00, 13.35s/it] 73%|███████▎  | 22/30 [04:43<01:47, 13.49s/it] 77%|███████▋  | 23/30 [04:56<01:33, 13.40s/it] 80%|████████  | 24/30 [05:09<01:20, 13.34s/it] 83%|████████▎ | 25/30 [05:21<01:04, 12.94s/it] 87%|████████▋ | 26/30 [05:34<00:51, 12.82s/it] 90%|█████████ | 27/30 [05:47<00:38, 12.92s/it] 93%|█████████▎| 28/30 [06:00<00:25, 12.94s/it] 97%|█████████▋| 29/30 [06:13<00:13, 13.03s/it]100%|██████████| 30/30 [06:27<00:00, 13.17s/it]100%|██████████| 30/30 [06:27<00:00, 12.90s/it]Found 55914 objects
-2024-10-11 16:11:44.510208 | Performing gene-expression-based ('secondary') segmentation
-Found model '2D_versatile_fluo' for 'StarDist2D'.
-Loading network weights from 'weights_best.h5'.
-Loading thresholds from 'thresholds.json'.
-Using default values: prob_thresh=0.479071, nms_thresh=0.3.
-effective: block_size=(4096, 4096), min_overlap=(128, 128), context=(128, 128)
-
-  0%|          | 0/36 [00:00<?, ?it/s]  3%|▎         | 1/36 [00:10<06:13, 10.66s/it]  6%|▌         | 2/36 [00:28<08:18, 14.67s/it]  8%|▊         | 3/36 [00:51<10:15, 18.65s/it] 11%|█         | 4/36 [01:09<09:43, 18.24s/it] 14%|█▍        | 5/36 [01:35<10:57, 21.21s/it] 17%|█▋        | 6/36 [01:50<09:26, 18.90s/it] 19%|█▉        | 7/36 [01:58<07:31, 15.58s/it] 22%|██▏       | 8/36 [02:17<07:40, 16.44s/it] 25%|██▌       | 9/36 [02:36<07:47, 17.30s/it] 28%|██▊       | 10/36 [02:53<07:28, 17.24s/it] 31%|███       | 11/36 [03:19<08:19, 19.98s/it] 33%|███▎      | 12/36 [03:37<07:48, 19.50s/it] 36%|███▌      | 13/36 [03:46<06:13, 16.25s/it] 39%|███▉      | 14/36 [04:07<06:25, 17.54s/it] 42%|████▏     | 15/36 [04:27<06:25, 18.34s/it] 44%|████▍     | 16/36 [04:47<06:17, 18.90s/it] 47%|████▋     | 17/36 [05:13<06:41, 21.12s/it] 50%|█████     | 18/36 [05:42<07:03, 23.51s/it] 53%|█████▎    | 19/36 [05:53<05:33, 19.62s/it] 56%|█████▌    | 20/36 [06:12<05:12, 19.52s/it] 58%|█████▊    | 21/36 [06:32<04:54, 19.66s/it] 61%|██████    | 22/36 [06:55<04:48, 20.58s/it] 64%|██████▍   | 23/36 [07:28<05:14, 24.22s/it] 67%|██████▋   | 24/36 [08:00<05:17, 26.50s/it] 69%|██████▉   | 25/36 [08:08<03:53, 21.19s/it] 72%|███████▏  | 26/36 [08:26<03:21, 20.16s/it] 75%|███████▌  | 27/36 [08:49<03:07, 20.85s/it] 78%|███████▊  | 28/36 [09:06<02:38, 19.82s/it] 81%|████████  | 29/36 [09:33<02:34, 22.04s/it] 83%|████████▎ | 30/36 [10:01<02:21, 23.63s/it] 86%|████████▌ | 31/36 [10:09<01:35, 19.16s/it] 89%|████████▉ | 32/36 [10:23<01:09, 17.40s/it] 92%|█████████▏| 33/36 [10:40<00:51, 17.28s/it] 94%|█████████▍| 34/36 [10:58<00:35, 17.67s/it] 97%|█████████▋| 35/36 [11:20<00:18, 18.91s/it]100%|██████████| 36/36 [11:50<00:00, 22.22s/it]100%|██████████| 36/36 [11:50<00:00, 19.73s/it]
-01_bin2cell.py (162): Trying to modify attribute `.obs` of view, initializing view as actual.
-anndata.py (1230): Trying to modify attribute `.obs` of view, initializing view as actual.
-Found 137803 objects
-Salvaged 70792 secondary labels
-2024-10-11 16:26:16.024597 | Aggregating bins into cells
------
-anndata             0.9.2
-bin2cell            0.3.0
-matplotlib          3.7.5
-pandas              2.0.3
-pyhere              1.0.3
-scanpy              1.9.8
-session_info        1.0.0
------
-Python 3.8.20 | packaged by conda-forge | (default, Sep 22 2024, 14:05:35) [GCC 13.3.0]
-Linux-5.14.0-427.13.1.el9_4.x86_64-x86_64-with-glibc2.17
------
-Session information updated at 2024-10-11 16:27
-**** Job ends ****
-Fri Oct 11 04:27:28 PM EDT 2024
