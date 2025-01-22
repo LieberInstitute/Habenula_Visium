@@ -15,6 +15,7 @@ same brain regions
 - `03_ficture_transcripts.sh`: Prepare inputs for `FICTURE`
 - `04_ficture_run.sh`: Run the full `FICTURE` pipeline for finding subcellular
 spatial domains
+- `04_ficture_plot.sh`: Plot a visually improved version of default FICTURE clustering plots
 - `05_hergast.*`: Find spatial domains with `HERGAST`
 
 ## Spatially variable genes
