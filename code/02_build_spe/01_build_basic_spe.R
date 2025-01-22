@@ -23,18 +23,20 @@ sample_slide_id <- strsplit(c("V12D07-075 V13B23-285 V13B23-285 V13B23-285 V13B2
 sample_slide_id <- paste0(sample_slide_id, "_", array_id)
 ## Brain ID
 brain_id <- c("Br8112", rep("Br8518", 4), rep("Br6522", 4), rep("Br9090",4), rep("Br9037",4)) 
+brain_area = strsplit(c("AL6 PR5 AR6 AR6 AR6 PR6 PR6 PR6 PR6 PL6 PL6 PL6 PL6 AL5 AL5 AL5 AL5"), "\\s+")[[1]]
 
 ## Define some info for the samples
 sample_info <- data.frame(
   sample_id_short = c(Sid), # S10_v
   sample_id = c(sample_slide_id), #V14F07-340_D1
   brain_id = c(brain_id),
+  brain_area = c(brain_area),
   age = c(65.75, rep(41.3, 8), rep(57.5, 4), rep(51.4, 4)), 
   sex = c(rep("F", 5), rep("M", 12)),  
   ethnicity  = c(rep("EA/CAUC", 13), rep("AA", 4)), 
   pmi = c(31.5, rep(10.5, 4), rep(30.5, 4), rep(26.5, 4), rep(18.5, 4)), 
   diagnosis = c("Pilot", rep("Control", 16)), 
-  rin = c(7, rep(6.3, 4), rep(7.4, 4), rep(6.1, 4), rep(7.8, 4)) 
+  rin = c(7, rep(6.3, 4), rep(7.4, 4), rep(6.1, 4), rep(7.8, 4))
 )
 sample_info$sample_id_short <- sprintf("S%02d_Hb_V", parse_number(sample_info$sample_id_short))
 
