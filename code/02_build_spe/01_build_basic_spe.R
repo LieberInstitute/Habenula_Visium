@@ -185,7 +185,10 @@ lobstr::obj_size(spe)
 
 saveRDS(spe, file.path(dir_rdata, "spe.rds"))
 
-
+# library("slurmjobs")
+# job_single(
+#   name = "01_build_basic_spe", memory = "50G", cores = 2, create_shell = TRUE
+# )
 
 # ==============================================================================
 
