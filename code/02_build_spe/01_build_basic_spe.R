@@ -16,25 +16,25 @@ if (!dir.exists(dir_rdata)) {
 ## https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/raw-data/Visium_SPG_AD_ITG_MasterExcelSummarySheet.xlsx
 
 ## Sample ID
-Sid <- paste0("S", rep(1:13), "_v") 
+Sid <- paste0("S", rep(1:17), "_v") 
 ## Slide number and slide numver
-array_id <- strsplit(c("C1 A1 B1 C1 D1 A1 B1 C1 D1 A1 B1 C1 D1"), "\\s+")[[1]]
-sample_slide_id <- strsplit(c("V12D07-075 V13B23-285 V13B23-285 V13B23-285 V13B23-285 V13B23-281 V13B23-281 V13B23-281 V13B23-281 V14F07-340 V14F07-340 V14F07-340 V14F07-340"), "\\s+")[[1]]
+array_id <- strsplit(c("C1 A1 B1 C1 D1 A1 B1 C1 D1 A1 B1 C1 D1 A1 B1 C1 D1"), "\\s+")[[1]]
+sample_slide_id <- strsplit(c("V12D07-075 V13B23-285 V13B23-285 V13B23-285 V13B23-285 V13B23-281 V13B23-281 V13B23-281 V13B23-281 V14F07-340 V14F07-340 V14F07-340 V14F07-340 V13B23-280 V13B23-280 V13B23-280 V13B23-280"), "\\s+")[[1]]
 sample_slide_id <- paste0(sample_slide_id, "_", array_id)
 ## Brain ID
-brain_id <- c("Br8112", rep("Br8518", 4), rep("Br6522", 4), rep("Br9090",4)) 
+brain_id <- c("Br8112", rep("Br8518", 4), rep("Br6522", 4), rep("Br9090",4), rep("Br9037",4)) 
 
 ## Define some info for the samples
 sample_info <- data.frame(
   sample_id_short = c(Sid), # S10_v
   sample_id = c(sample_slide_id), #V14F07-340_D1
   brain_id = c(brain_id),
-  age = c(65.75, rep(41.3, 8), rep(57.5, 4)), 
-  sex = c(rep("F", 5), rep("M", 4), rep("M", 4)), 
-  race = c(rep("EA/CAUC", 13)), 
-  pmi = c(31.5, rep(10.5, 4), rep(30.5, 4), rep(30, 4)), # need to update next week 9090 
-  diagnosis = c("Pilot", rep("Control", 12)), 
-  rin = c(7, rep(6.3, 4), rep(7.4, 4), rep(5, 4)) # need to update next week 9090
+  age = c(65.75, rep(41.3, 8), rep(57.5, 4), rep(51.4, 4)), 
+  sex = c(rep("F", 5), rep("M", 12)),  
+  ethnicity  = c(rep("EA/CAUC", 13), rep("AA", 4)), 
+  pmi = c(31.5, rep(10.5, 4), rep(30.5, 4), rep(26.5, 4), rep(18.5, 4)), 
+  diagnosis = c("Pilot", rep("Control", 16)), 
+  rin = c(7, rep(6.3, 4), rep(7.4, 4), rep(6.1, 4), rep(7.8, 4)) 
 )
 sample_info$sample_id_short <- sprintf("S%02d_Hb_V", parse_number(sample_info$sample_id_short))
 
@@ -184,8 +184,6 @@ lobstr::obj_size(spe)
 # Merged samples: 1.16 MB
 
 saveRDS(spe, file.path(dir_rdata, "spe.rds"))
-
-
 
 
 
