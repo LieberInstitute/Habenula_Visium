@@ -145,10 +145,89 @@ stopifnot(
 #   observed in the bin-level, but it doesn't have array coordinates. Instead,
 #   find the pixel col of the boundary (since there's a direct correspondence
 #   with array col) and print in the log for use in the cell-level script
-spe_boundary = small_spe[, array_col == 793]
+spe_boundary = small_spe[, small_spe$array_col == 793]
 message(
     sprintf(
         "The artifact in 'H1-MVPY9BW_A1_8433' occurs at values of 'pxl_col_in_fullres' above %s",
+        round(median(spatialCoords(spe_boundary)[, 'pxl_col_in_fullres']))
+    )
+)
+
+#   Filter out the artifact
+spe = spe[, (spe$sample_id != 'H1-MVPY9BW_A1_8433') | (spe$array_col <= 793)]
+
+################################################################################
+#   Remove artifacts in H1-XQQD7C7_A1_8518
+################################################################################
+
+small_spe = spe[, spe$sample_id == 'H1-XQQD7C7_A1_8518']
+
+#-------------------------------------------------------------------------------
+#   Remove the array-row-related artifact
+#-------------------------------------------------------------------------------
+
+p = colData(small_spe) |>
+    as_tibble() |>
+    select(array_row, sum_umi_capped) |>
+    dplyr::rename(array_coord = array_row) |>
+    scan_window(740:780, window = 1) |>
+    ggplot(aes(x = lower_threshold, y = mean_umi)) +
+        geom_line() +
+        theme_bw(base_size = 15) +
+        geom_vline(xintercept = 764)
+
+pdf(file.path(plot_dir, 'artifacts', 'H1-XQQD7C7_A1_8518_array_QC.pdf'))
+print(p)
+dev.off()
+
+#   Array row and pixel row move in the same direction
+stopifnot(
+    abs(1 - cor(small_spe$array_row, spatialCoords(small_spe)[, 'pxl_row_in_fullres']))
+    < 1e-3
+)
+
+#   Find the pixel row of the boundary (since there's a direct correspondence
+#   with array row) and print in the log for use in the cell-level script
+spe_boundary = small_spe[, small_spe$array_row == 764]
+message(
+    sprintf(
+        "The artifact in 'H1-XQQD7C7_A1_8518' occurs at values of 'pxl_row_in_fullres' above %s",
         round(median(spatialCoords(spe_boundary)[, 'pxl_row_in_fullres']))
     )
 )
+
+#   Filter out the artifact
+spe = spe[, (spe$sample_id != 'H1-XQQD7C7_A1_8518') | (spe$array_row <= 764)]
+
+#-------------------------------------------------------------------------------
+#   Remove the artifact on the right and an edge-related low-UMI strip
+#-------------------------------------------------------------------------------
+
+#   A cutoff of 4 seems to robustly catch problematic edge spots and the right-
+#   side artifact without being too stringent
+spe$low_umi = spe$sum_umi <= 4
+p = vis_clus(
+    spe, sampleid = 'H1-XQQD7C7_A1_8518', clustervar = 'low_umi',
+    is_stitched = TRUE, point_size = 1, spatial = TRUE
+)
+
+png(
+    file.path(plot_dir, 'artifacts', 'H1-XQQD7C7_A1_8518_low_umi.png'),
+    width = 1000, height = 1000
+)
+print(p)
+dev.off()
+
+#   Filter out the artifacts
+spe = spe[, (spe$sample_id != 'H1-XQQD7C7_A1_8518') | !spe$low_umi]
+spe$low_umi = NULL
+
+################################################################################
+#   Save object with problematic bins removed
+################################################################################
+
+saveHDF5SummarizedExperiment(
+    spe, dir = spe_out_dir, replace = TRUE, as.sparse = TRUE
+)
+
+session_info()
