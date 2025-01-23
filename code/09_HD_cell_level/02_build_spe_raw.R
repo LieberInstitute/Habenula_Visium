@@ -14,8 +14,11 @@ ad_in_paths = here(
     'processed-data', '09_HD_cell_level', sprintf('%s.h5ad', sample_ids)
 )
 spe_bin_dir = here('processed-data', '10_HD_bin_level', 'spe_raw')
-spe_norm_dir = here('processed-data', '09_HD_cell_level', 'spe_norm')
 spe_raw_dir = here('processed-data', '09_HD_cell_level', 'spe_raw')
+
+################################################################################
+#   Functions
+################################################################################
 
 #   Given one sample ID, the path to a single-sample AnnData from bin2cell, and
 #   a potentially multi-sample bin-level SpatialExperiment, return a
@@ -94,10 +97,6 @@ anndata_to_spe = function(sample_id, ad_in_path, spe_bin) {
 #   Main
 ################################################################################
 
-#-------------------------------------------------------------------------------
-#   Build and save raw SpatialExperiment
-#-------------------------------------------------------------------------------
-
 spe_bin = loadHDF5SummarizedExperiment(spe_bin_dir)
 
 #   Individually build single-sample SPEs from the individual AnnDatas, then
@@ -115,32 +114,10 @@ gene_sets = unname(lapply(spe_list, rownames))
 stopifnot(do.call(identical, gene_sets))
 spe = do.call(cbind, spe_list)
 
-#   Save now to allow assays to become HDF5-backed in hopes of driving memory
-#   down during log-normalization
+#   Save
 message(Sys.time(), " - Saving raw SPE")
 spe <- saveHDF5SummarizedExperiment(
     spe, dir = spe_raw_dir, replace = TRUE, as.sparse = TRUE
-)
-
-#-------------------------------------------------------------------------------
-#   Build and save log-normalized and filtered SpatialExperiment
-#-------------------------------------------------------------------------------
-
-#   Filter SPE: drop cells with 0 counts for all genes, and drop genes with 0
-#   counts in every cell
-message(Sys.time(), " - Filtering genes and spots")
-spe <- spe[rowSums(assays(spe)$counts) > 0, colSums(assays(spe)$counts) > 0]
-
-#   Use library-size normalization (normalization by deconvolution is not
-#   computationally feasible with data this large)
-message(Sys.time(), ' - Performing log normalization...')
-spe = computeLibraryFactors(spe)
-spe = logNormCounts(spe)
-
-#   Save normalized object
-message(Sys.time(), " - Saving normalized SPE")
-spe <- saveHDF5SummarizedExperiment(
-    spe, dir = spe_norm_dir, replace = TRUE, as.sparse = TRUE
 )
 
 message("Memory usage:")
