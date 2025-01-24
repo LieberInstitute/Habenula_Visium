@@ -4,6 +4,7 @@ library(SpatialExperiment)
 library(HDF5Array)
 library(scran)
 library(sessioninfo)
+library(spatialLIBD)
 
 spe_raw_dir = here('processed-data', '09_HD_cell_level', 'spe_raw')
 spe_norm_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
@@ -28,7 +29,8 @@ spatial_qc_plots = function(spe, plot_dir) {
         for (metric in c('sum_umi_capped', 'sum_gene_capped')) {
             p = vis_gene(
                     spe, sampleid = sample_id, geneid = metric,
-                    is_stitched = TRUE, point_size = 1, spatial = TRUE
+                    is_stitched = TRUE, point_size = 1, spatial = TRUE,
+                    assayname = 'counts'
                 ) +
                 scale_color_viridis_c(direction = -1) +
                 scale_fill_viridis_c(direction = -1)
@@ -43,7 +45,8 @@ spatial_qc_plots = function(spe, plot_dir) {
 
         p = vis_gene(
             spe, sampleid = sample_id, geneid = 'expr_chrM_ratio',
-            is_stitched = TRUE, point_size = 1, spatial = TRUE
+            is_stitched = TRUE, point_size = 1, spatial = TRUE,
+            assayname = 'counts'
         )
         
         png(
