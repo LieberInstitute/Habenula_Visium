@@ -90,6 +90,7 @@ anndata_to_spe = function(sample_id, ad_in_path, spe_bin) {
     spe$expr_chrM_ratio <- spe$expr_chrM / spe$sum_umi
     spe$ManualAnnotation <- "NA"
 
+    gc()
     return(spe)
 }
 
@@ -98,6 +99,7 @@ anndata_to_spe = function(sample_id, ad_in_path, spe_bin) {
 ################################################################################
 
 spe_bin = loadHDF5SummarizedExperiment(spe_bin_dir)
+stopifnot(setequal(sample_ids, unique(spe_bin$sample_id)))
 
 #   Individually build single-sample SPEs from the individual AnnDatas, then
 #   merge
@@ -111,7 +113,7 @@ for (i in seq_len(length(sample_ids))) {
 
 message(Sys.time(), " - Merging SPEs across samples")
 gene_sets = unname(lapply(spe_list, rownames))
-stopifnot(do.call(identical, gene_sets))
+stopifnot(length(unique(gene_sets)) == 1)
 spe = do.call(cbind, spe_list)
 
 #   Save

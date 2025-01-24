@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=200G
+#SBATCH --mem=300G
 #SBATCH --job-name=02_build_spe_raw
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
