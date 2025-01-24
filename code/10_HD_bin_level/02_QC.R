@@ -14,6 +14,12 @@ spe_out_dir = here('processed-data', '10_HD_bin_level', 'spe_norm_filtered')
 spe = loadHDF5SummarizedExperiment(spe_in_dir)
 spe$exclude_overlapping = FALSE
 
+dir.create(
+    file.path(plot_dir, 'before'), recursive = TRUE, showWarnings = FALSE
+)
+dir.create(file.path(plot_dir, 'after'), showWarnings = FALSE)
+dir.create(file.path(plot_dir, 'artifacts'), showWarnings = FALSE)
+
 ################################################################################
 #   Functions
 ################################################################################
@@ -47,6 +53,40 @@ scan_window = function(cd_small, start_range, window = 10) {
     return(umi_df)
 }
 
+spatial_qc_plots = function(spe, plot_dir) {
+    #   Plot the spatial distribution of UMI and gene counts, colored to best
+    #   see low values of each. Also plot mitochondrial ratio normally
+    for (sample_id in unique(spe$sample_id)) {
+        for (metric in c('sum_umi_capped', 'sum_gene_capped')) {
+            p = vis_gene(
+                    spe, sampleid = sample_id, geneid = metric,
+                    is_stitched = TRUE, point_size = 1, spatial = TRUE
+                ) +
+                scale_color_viridis_c(direction = -1) +
+                scale_fill_viridis_c(direction = -1)
+            
+            png(
+                file.path(plot_dir, sprintf('%s_%s.png', metric, sample_id)),
+                width = 1000, height = 1000
+            )
+            print(p)
+            dev.off()
+        }
+
+        p = vis_gene(
+            spe, sampleid = sample_id, geneid = 'expr_chrM_ratio',
+            is_stitched = TRUE, point_size = 1, spatial = TRUE
+        )
+        
+        png(
+            file.path(plot_dir, sprintf('expr_chrM_ratio_%s.png', sample_id)),
+            width = 1000, height = 1000
+        )
+        print(p)
+        dev.off()
+    }
+}
+
 ################################################################################
 #   Explore QC metrics spatially
 ################################################################################
@@ -78,43 +118,12 @@ temp = colData(spe) |>
 spe$sum_umi_capped = temp$sum_umi_capped
 spe$sum_gene_capped = temp$sum_gene_capped
 
-#   Plot the spatial distribution of UMI and gene counts, colored to best see
-#   low values of each. Also plot mitochondrial ratio normally
-for (sample_id in unique(spe$sample_id)) {
-    for (metric in c('sum_umi_capped', 'sum_gene_capped')) {
-        p = vis_gene(
-                spe, sampleid = sample_id, geneid = metric, is_stitched = TRUE,
-                point_size = 1, spatial = TRUE
-            ) +
-            scale_color_viridis_c(direction = -1) +
-            scale_fill_viridis_c(direction = -1)
-        
-        png(
-            file.path(plot_dir, sprintf('%s_%s.png', metric, sample_id)),
-            width = 1000, height = 1000
-        )
-        print(p)
-        dev.off()
-    }
-
-    p = vis_gene(
-        spe, sampleid = sample_id, geneid = 'expr_chrM_ratio',
-        is_stitched = TRUE, point_size = 1, spatial = TRUE
-    )
-    
-    png(
-        file.path(plot_dir, sprintf('expr_chrM_ratio_%s.png', sample_id)),
-        width = 1000, height = 1000
-    )
-    print(p)
-    dev.off()
-}
+#   Save QC plots of several metrics
+spatial_qc_plots(spe, file.path(plot_dir, 'before'))
 
 ################################################################################
 #   Remove artifact in H1-MVPY9BW_A1_8433
 ################################################################################
-
-dir.create(file.path(plot_dir, 'artifacts'), showWarnings = FALSE)
 
 #   Visually show where the UMI boundary is. In the plot, the boundary occurs at
 #   783, which indicates bad coordinates start at 793 since a sliding window of
@@ -225,6 +234,9 @@ spe$low_umi = NULL
 ################################################################################
 #   Save object with problematic bins removed
 ################################################################################
+
+#   Save QC plots of several metrics after filtering
+spatial_qc_plots(spe, file.path(plot_dir, 'after'))
 
 saveHDF5SummarizedExperiment(
     spe, dir = spe_out_dir, replace = TRUE, as.sparse = TRUE
