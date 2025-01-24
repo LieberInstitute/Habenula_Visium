@@ -251,8 +251,8 @@ spe$low_umi = NULL
 #   Save QC plots of several metrics after filtering
 spatial_qc_plots(spe, file.path(plot_dir, 'after'))
 
-# saveHDF5SummarizedExperiment(
-#     spe, dir = spe_out_dir, replace = TRUE, as.sparse = TRUE
-# )
+saveHDF5SummarizedExperiment(
+    spe, dir = spe_out_dir, replace = TRUE, as.sparse = TRUE
+)
 
 session_info()
