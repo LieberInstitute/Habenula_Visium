@@ -212,9 +212,22 @@ spe = spe[, (spe$sample_id != 'H1-XQQD7C7_A1_8518') | (spe$array_row <= 764)]
 #   Remove the artifact on the right and an edge-related low-UMI strip
 #-------------------------------------------------------------------------------
 
-#   A cutoff of 4 seems to robustly catch problematic edge spots and the right-
-#   side artifact without being too stringent
-spe$low_umi = spe$sum_umi <= 4
+#   Considering UMI counts below the median, check the distribution. It's
+#   clearly bimodal, and a cutoff of 5 UMI separates out the problematic bins
+lower_umi = small_spe$sum_umi_capped[
+    small_spe$sum_umi_capped < max(small_spe$sum_umi_capped)
+]
+p = ggplot(tibble(lower_umi = lower_umi), aes(x = lower_umi)) +
+    geom_density() +
+    geom_vline(xintercept = 5) +
+    theme_bw(base_size = 15) +
+    labs(x = "Total UMI Among Lower Half")
+pdf(file.path(plot_dir, 'artifacts', 'H1-XQQD7C7_A1_8518_umi_cutoff.pdf'))
+print(p)
+dev.off()
+
+#   Plot which bins are filtered out by the cutoff
+spe$low_umi = spe$sum_umi < 5
 p = vis_clus(
     spe, sampleid = 'H1-XQQD7C7_A1_8518', clustervar = 'low_umi',
     is_stitched = TRUE, point_size = 1, spatial = TRUE
