@@ -12,11 +12,12 @@ of the `bin2cell` step
 - `02_build_spe_raw.*`: Convert `AnnData` to `SpatialExperiment`, which will be
 the format used for the remaining analyses. Don't filter out data or perform
 normalization yet
-- `03_build_spe_norm.*`: Perform QC, filtering genes and cells. Log normalize
+- `03_build_spe_QC.*`: Perform QC, filtering genes and cells. Log normalize
 counts
 - `04_quality_comparison.*`: Generate QC plots, also comparing QC metrics to
 other Visium HD samples (DLPFC, HPC) and Visium standard experiments from the
-same brain regions
+same brain regions. A more up-to-date version of this script also includes LC
+samples and is maintained [here](https://github.com/LieberInstitute/lc_visium_hd/blob/devel/code/04_QC/01_sample_level.R)
 
 ## Highly variable genes and PCA
 
