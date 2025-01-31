@@ -28,11 +28,11 @@ raw_in_path <- here("processed-data", "02_build_spe", "spe_raw.rds")
 ## load Datasets
 
 spe_raw <- readRDS(raw_in_path)
-cat("Initial number of spots:", dim(spe_raw)[2], "\n")
+message("Initial number of spots:", dim(spe_raw)[2], "\n")
 # merged samples: Initial number of spots: 44928
 
 spe <- readRDS(spe_in_path)
-cat("Initial number of spots:", dim(spe)[2], "\n")
+message("Initial number of spots:", dim(spe)[2], "\n")
 # merged samples: Initial number of spots: 16928
 
 ## Set some initials for manage spot size in the plots
@@ -214,14 +214,14 @@ map2(as.vector(names(lst_all_counts)), as.vector(lst_all_counts), ~ vis_grid_gen
 
 ## Adapting code from https://github.com/LieberInstitute/Habenula_Visium/blob/0e020dd1a580b2bcea130057a2d7c01e5f928001/code/04_harmony_BayesSpace/01-filter_normalize.R#L29C1-L150C1
 
-cat("Initial number of spots:", dim(spe)[2], "\n")
+message("Initial number of spots:", dim(spe)[2], "\n")
 # Preliminary QC
 spe <- spe[
     rowSums(assays(spe)$counts) > 0,
     (colSums(assays(spe)$counts) > 0) & spe$in_tissue
 ]
 
-cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
+message("Number of spots after preliminary QC:", dim(spe)[2], "\n")
 # Number of spots after preliminary QC: 16928
 
 
@@ -342,7 +342,7 @@ lobstr::obj_size(spe)
 # 1.47 GB
 
 ## Save object with metrics_qc()
-saveRDS(spe, file.path(dir_rdata, "spe_qc.rds"))
+# saveRDS(spe, file.path(dir_rdata, "spe_qc.rds"))
 
 ## Locate low library size spots on the edge
 addmargins(table("Low_libsize_edge" = spe$scran_low_lib_size_edge))
@@ -435,10 +435,10 @@ map(unique(spe$sample_id), ~ head(spe$scran_high_subsets_Mito_percent[spe$sample
 # ==============================================================================
 ## Drop spots with a low library size that are on the edge
 
-cat("Initial number of spots:", dim(spe)[2], "\n")
+message("Initial number of spots:", dim(spe)[2], "\n")
 
 spe <- spe[, spe$scran_low_lib_size_edge == "FALSE"]
-cat(
+message(
     "Number of spots after removed low library size spots on the tissue edge:",
     dim(spe)[2],
     "\n"
@@ -456,12 +456,12 @@ spe <- spe[
 ]
 # spe1 <- spe$in_tissue[ (rowSums(assays(spe)$counts) > 0), (colSums(assays(spe)$counts) > 0) ]
 
-cat("Number of spots after preliminary QC:", dim(spe)[2], "\n")
+message("Number of spots after preliminary QC:", dim(spe)[2], "\n")
 # Number of spots after preliminary QC: 16897
 
 # Note: saved here the object to use in the app
 
-saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge.rds"))
+# saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge.rds"))
 
 
 # ==============================================================================
@@ -469,7 +469,7 @@ saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge.rds"))
 ## Additional QC. Drop spots with high chrM percentage marked as outlier by scran
 
 spe <- spe[, spe$scran_high_subsets_Mito_percent == "FALSE"]
-cat(
+message(
     "Number of spots after removed high chrM percentage spots on the tissue edge:",
     dim(spe)[2],
     "\n"
