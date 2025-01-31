@@ -112,7 +112,7 @@ spatial_qc_plots(spe, file.path(plot_dir, 'before'))
 #   Filter SPE: drop cells with low counts for all genes, and drop genes with 0
 #   counts in every cell
 message(Sys.time(), " | Filtering genes and spots")
-spe <- spe[rowSums(assays(spe)$counts) > 0, spe$umi >= min_umi_cutoff]
+spe <- spe[rowSums(assays(spe)$counts) > 0, spe$sum_umi >= min_umi_cutoff]
 
 #   Use library-size normalization (normalization by deconvolution is not
 #   computationally feasible with data this large)
