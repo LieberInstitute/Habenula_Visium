@@ -4,10 +4,14 @@
 #SBATCH --job-name=02_scran_exploratory_QCs
 #SBATCH -c 2
 #SBATCH -t 1-00:00:00
-#SBATCH -o logs/02_scran_exploratory_QCs.txt
-#SBATCH -e logs/02_scran_exploratory_QCs.txt
+#SBATCH -o /dev/null
+#SBATCH -e /dev/null
 # SBATCH --mail-type=ALL
 
+## Explicitly pipe script output to a log
+log_path=logs/02_scran_exploratory_QCs.txt
+
+{
 set -e
 
 echo "**** Job starts ****"
@@ -26,11 +30,12 @@ module load conda_R/4.4.x
 ## List current modules for reproducibility
 module list
 
-## Edit with your job command
 Rscript 02_scran_exploratory_QCs.R
 
 echo "**** Job ends ****"
 date
+
+} > $log_path 2>&1
 
 ## This script was made using slurmjobs version 1.2.1
 ## available from http://research.libd.org/slurmjobs/
