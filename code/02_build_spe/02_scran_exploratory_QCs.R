@@ -231,24 +231,29 @@ message("Number of spots after preliminary QC:", dim(spe)[2], "\n")
 ## Metrics QC
 
 metrics_qc <- function(spe) {
-    qc_df <- data.frame(
+  
+  spe$in_tissue <- as.logical(spe$in_tissue)
+  spe_in <- spe[, spe$in_tissue]
+  
+  ## QC in-tissue spots
+  ## define variables  
+  
+  qc_df <- data.frame(
         log2sum = log2(spe$sum_umi),
         log2detected = log2(spe$sum_gene),
         subsets_Mito_percent = spe$expr_chrM_ratio * 100,
         sample_id = spe$sample_id
     )
-    head(qc_df)
+    #head(qc_df)
+  
     qcfilter <- data.frame(
         low_lib_size = scater::isOutlier(qc_df$log2sum, type = "lower", log = FALSE, batch = qc_df$sample_id),
         low_n_features = scater::isOutlier(qc_df$log2detected, type = "lower", log = FALSE, batch = qc_df$sample_id),
         high_subsets_Mito_percent = scater::isOutlier(qc_df$subsets_Mito_percent, type = "higher", batch = qc_df$sample_id)
     ) |>
       dplyr::mutate(discard = (low_lib_size | low_n_features) | high_subsets_Mito_percent)
-    # qcfilter$discard <-
-    #     (qcfilter$low_lib_size |
-    #         qcfilter$low_n_features) | qcfilter$high_subsets_Mito_percent
 
-    ## Add qcfilter cols to colData(spe) after factoring
+    ## Add qc filter cols to colData(spe) after factoring
     ## low_lib_size_low_mito / discard / low_lib_size / low_n_features / high mito percent
     
     spe$scran_low_lib_size_low_mito <- factor(qcfilter$low_lib_size & qc_df$subsets_Mito_percent < 0.5, levels = c("TRUE", "FALSE"))
@@ -259,39 +264,78 @@ metrics_qc <- function(spe) {
 
     ## Find edge spots
     
-    spots <- data.frame(
-        row = spe$array_row,
-        col = spe$array_col,
-        sample_id = spe$sample_id
-    )
-
-    edge_spots_row <- group_by(spots, sample_id, row) %>% mutate(min_col = min(col), max_col = max(col))
-    edge_spots_col <- group_by(spots, sample_id, col) %>% mutate(min_row = min(row), max_row = max(row))
-    spots <- left_join(spots, edge_spots_row) %>% left_join(edge_spots_col)
-    spots$edge_spots <-
-        with(
-            spots,
-            row == min_row | row == max_row | col == min_col | col == max_col
+    array_row <- array_col <- edge_row <- edge_col <- row_distance <- NULL
+    col_distance <- high_subsets_Mito_percent <- NULL
+    
+    spot_coords <- colData(spe_in) |>
+      as.data.frame() |>
+      select(in_tissue, sample_id, array_row, array_col) |>
+      group_by(sample_id, array_row) |>
+      mutate(
+        edge_col = array_col == min(array_col) | array_col == max(array_col),
+        col_distance = pmin(
+          abs(array_col - min(array_col)),
+          abs(array_col - max(array_col))
         )
-
-    head(spots, n = 3)
-    # row col     sample_id min_col max_col min_row max_row edge_spots
-    # 1  50 102 V12D07-075_C1      34     126       6      72      FALSE
-    # 2  14  94 V12D07-075_C1       0     120       6      70      FALSE
-    # 3  61  97 V12D07-075_C1      43     127       5      71      FALSE
-
-    spots$row_distance <- with(spots, pmin(abs(row - min_row), abs(row - max_row)))
-    spots$col_distance <- with(spots, pmin(abs(col - min_col), abs(col - max_col)))
-    spots$edge_distance <- with(spots, pmin(row_distance, col_distance))
-    spe$edge_spots <- factor(spots$edge_spots, levels = c("TRUE", "FALSE"))
-    spe$edge_distance <- spots$edge_distance
-
-    spe$scran_low_lib_size_edge <-
-        factor(
-            qcfilter$low_lib_size &
-                spots$edge_distance < 1,
-            levels = c("TRUE", "FALSE")
+      ) |>
+      group_by(sample_id, array_col) |>
+      mutate(
+        edge_row = array_row == min(array_row) | array_row == max(array_row),
+        row_distance = pmin(
+          abs(array_row - min(array_row)),
+          abs(array_row - max(array_row))
         )
+      ) |>
+      group_by(sample_id) |>
+      mutate(
+        edge_spot = edge_row | edge_col,
+        edge_distance = pmin(row_distance, col_distance)
+      )
+    
+    
+    ## Add Edge info to spe
+    spe$edge_spot <- NA
+    spe$edge_spot[which(spe$in_tissue)] <- spot_coords$edge_spot
+    
+    spe$edge_distance <- NA
+    spe$edge_distance[which(spe$in_tissue)] <- spot_coords$edge_distance
+    
+    spe$scran_low_lib_size_edge <- NA
+    spe$scran_low_lib_size_edge[which(spe$in_tissue)] <- qcfilter$low_lib_size & spot_coords$edge_spot
+    
+    # spots <- data.frame(
+    #     row = spe$array_row,
+    #     col = spe$array_col,
+    #     sample_id = spe$sample_id
+    # )
+    # 
+    # edge_spots_row <- group_by(spots, sample_id, row) %>% mutate(min_col = min(col), max_col = max(col))
+    # edge_spots_col <- group_by(spots, sample_id, col) %>% mutate(min_row = min(row), max_row = max(row))
+    # spots <- left_join(spots, edge_spots_row) %>% left_join(edge_spots_col)
+    # spots$edge_spots <-
+    #     with(
+    #         spots,
+    #         row == min_row | row == max_row | col == min_col | col == max_col
+    #     )
+    # 
+    # head(spots, n = 3)
+    # # row col     sample_id min_col max_col min_row max_row edge_spots
+    # # 1  50 102 V12D07-075_C1      34     126       6      72      FALSE
+    # # 2  14  94 V12D07-075_C1       0     120       6      70      FALSE
+    # # 3  61  97 V12D07-075_C1      43     127       5      71      FALSE
+    # 
+    # spots$row_distance <- with(spots, pmin(abs(row - min_row), abs(row - max_row)))
+    # spots$col_distance <- with(spots, pmin(abs(col - min_col), abs(col - max_col)))
+    # spots$edge_distance <- with(spots, pmin(row_distance, col_distance))
+    # spe$edge_spots <- factor(spots$edge_spots, levels = c("TRUE", "FALSE"))
+    # spe$edge_distance <- spots$edge_distance
+    # 
+    # spe$scran_low_lib_size_edge <-
+    #     factor(
+    #         qcfilter$low_lib_size &
+    #             spots$edge_distance < 1,
+    #         levels = c("TRUE", "FALSE")
+    #     )
 
     return(spe)
 }
@@ -301,7 +345,7 @@ colnames(colData(spe))
 
 
 lobstr::obj_size(spe)
-# 1.47 GB
+# 1.92 GB
 
 ## Save object with metrics_qc()
 # saveRDS(spe, file.path(dir_rdata, "spe_qc.rds"))
@@ -373,14 +417,17 @@ pmap(lst_scran_vars, plt_scran_func)
 low_library <- map(unique(spe$sample_id), ~ summary(spe$scran_low_lib_size[spe$sample_id == .x]))
 print(unlist(low_library))
 low_library_T <- sum(as.numeric(sapply(low_library, "[[", 1)))
-# 327
+
+message(low_library_T, " spots detected with scran_low_lib_size ")
+# 332 spots detected with scran_low_lib_size
 
 low_library_edge <- map(unique(spe$sample_id), ~ summary(spe$scran_low_lib_size_edge[spe$sample_id == .x]))
-print(unlist(low_library_edge))
-low_library_edge_T <- sum(as.numeric(sapply(low_library_edge, "[[", 1)))
-# 31
 low_library_edge_F <- sum(as.numeric(sapply(low_library_edge, "[[", 2)))
+tmp <- map(seq_along(low_library_edge), ~ as.integer(low_library_edge[[.x]][3])) |> unlist() 
+low_library_edge_T <-  sum(replace(tmp, is.na(tmp), 0))
 
+message(low_library_edge_T, " spots detected with scran_low_lib_size at edge")
+# 62 spots detected with scran_low_lib_size at edge
 
 ## Get summary for chrM ratio versus high_subsets_Mito_percent detected by scran for reference
 
@@ -432,7 +479,7 @@ message("Number of spots after preliminary QC:", dim(spe)[2], "\n")
 
 spe <- spe[, spe$scran_high_subsets_Mito_percent == "FALSE"]
 message(
-    "Number of spots after removed high chrM percentage spots on the tissue edge:",
+    "Number of spots after removed high chrM percentage spots:",
     dim(spe)[2],
     "\n"
 )
