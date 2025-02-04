@@ -251,6 +251,38 @@ purrr::map(sort(unique(spe$sample_id)), ~plot_all_spot_sweep(spe = spe, sample =
 dev.off()
 
 
+
+## Only plot local outliers
+
+plot_all_local_ouliers <- function(spe, sample = unique(spe$sample_id)[1]){
+  spe <- spe[,spe$sample_id == sample]
+  plt1 <- plotQC(spe, metric = "sum_umi_log", outliers = "local_outliers", 
+                 point_size = point_size, stroke = 0.75) +  ggtitle(sample)
+}
+
+
+message("Plot local outliers for all samples")
+
+local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~ 
+                               plot_all_local_ouliers(spe = spe, sample = .x))
+
+length(local_ouliers_plts)
+# 16
+# local_ouliers_plts[[1]]
+pdf(file = here(plot_dir, "SpotSweeper_local_ouliers_v2.pdf"), width = 12, height = 10)
+
+tite_main <- "local_outliers - sum_umi"
+plt_main <- ggarrange(
+    plotlist = local_ouliers_plts,
+    ncol = 4, nrow = 4,
+    common.legend = FALSE,
+    font.label=list(color="black",size=8)
+    )
+print(plt_main)
+
+dev.off()
+
+
 ## Reproducibility information
 print("Reproducibility information:")
 Sys.time()
