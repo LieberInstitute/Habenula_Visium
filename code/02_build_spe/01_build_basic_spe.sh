@@ -4,10 +4,15 @@
 #SBATCH --job-name=01_build_basic_spe
 #SBATCH -c 2
 #SBATCH -t 1-00:00:00
-#SBATCH -o logs/01_build_basic_spe.txt
-#SBATCH -e logs/01_build_basic_spe.txt
+#SBATCH -o /dev/null
+#SBATCH -e /dev/null
 # SBATCH --mail-type=ALL
 
+## Explicitly pipe script output to a log
+log_path=logs/01_build_basic_spe.txt
+
+
+{
 set -e
 
 echo "**** Job starts ****"
@@ -30,6 +35,7 @@ Rscript 01_build_basic_spe.R
 echo "**** Job ends ****"
 date
 
+} > $log_path 2>&1
 
 ## This script was made using slurmjobs version 1.2.5
 ## available from http://research.libd.org/slurmjobs/
