@@ -251,37 +251,62 @@ purrr::map(sort(unique(spe$sample_id)), ~plot_all_spot_sweep(spe = spe, sample =
 dev.off()
 
 
+## print a list of plots
 
-## Only plot local outliers
+plt_plots <- function(plt_list, plot_name) {
+  pdf(file = here(plot_dir, plot_name), width = 12, height = 10)
+  # tite_main <- "local_outliers - sum_umi"
+  plt_main <- ggarrange(
+    plotlist = plt_list,
+    ncol = 4, nrow = 4,
+    common.legend = FALSE,
+    font.label=list(color="black",size=8)
+  )
+  print(plt_main)
+  dev.off()
+}
 
-plot_all_local_ouliers <- function(spe, sample = unique(spe$sample_id)[1]){
+## Only plot UMI local outlier 
+
+plot_all_local_ouliers_sum_umi <- function(spe, sample = unique(spe$sample_id)[1]){
   spe <- spe[,spe$sample_id == sample]
   plt1 <- plotQC(spe, metric = "sum_umi_log", outliers = "local_outliers", 
                  point_size = point_size, stroke = 0.75) +  ggtitle(sample)
 }
 
+local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~ 
+                                   plot_all_local_ouliers_sum_umi(spe = spe, sample = .x))
+plt_plots(local_ouliers_plts, "SpotSweeper_local_umi_ouliers.pdf")
 
-message("Plot local outliers for all samples")
+
+## Only plot Mito local outlier 
+
+plot_all_local_ouliers_mito <- function(spe, sample = unique(spe$sample_id)[1]){
+  spe <- spe[,spe$sample_id == sample]
+  plt1 <- plotQC(spe, metric = "expr_chrM_ratio", outliers = "local_outliers", 
+                 point_size = point_size, stroke = 0.75) +  ggtitle(sample)
+}
 
 local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~ 
-                               plot_all_local_ouliers(spe = spe, sample = .x))
+                                   plot_all_local_ouliers_mito(spe = spe, sample = .x))
+plt_plots(local_ouliers_plts, "SpotSweeper_local_mito_ouliers.pdf")
 
-length(local_ouliers_plts)
-# 16
-# local_ouliers_plts[[1]]
-pdf(file = here(plot_dir, "SpotSweeper_local_ouliers_v2.pdf"), width = 12, height = 10)
 
-tite_main <- "local_outliers - sum_umi"
-plt_main <- ggarrange(
-    plotlist = local_ouliers_plts,
-    ncol = 4, nrow = 4,
-    common.legend = FALSE,
-    font.label=list(color="black",size=8)
-    )
-print(plt_main)
+## Only plot gene local outlier 
 
-dev.off()
+plot_all_local_ouliers_gene <- function(spe, sample = unique(spe$sample_id)[1]){
+  spe <- spe[,spe$sample_id == sample]
+  plt1 <- plotQC(spe, metric = "sum_gene_log", outliers = "local_outliers", 
+                 point_size = point_size, stroke = 0.75) +  ggtitle(sample)
+}
 
+local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~ 
+                                   plot_all_local_ouliers_gene(spe = spe, sample = .x))
+plt_plots(local_ouliers_plts, "SpotSweeper_local_gene_ouliers.pdf")
+
+
+
+message("Process completed!!!")
 
 ## Reproducibility information
 print("Reproducibility information:")
