@@ -33,7 +33,7 @@ message("Initial number of spots:", dim(spe_raw)[2], "\n")
 # merged samples: Initial number of spots: 44928
 
 spe <- readRDS(spe_in_path)
-message("Initial number of spots:", dim(spe)[2], "\n")
+message("Initial number of spots :", dim(spe)[2], "\n")
 # merged samples: Initial number of spots: 16928
 
 ## Set some initials for manage spot size in the plots
@@ -54,9 +54,12 @@ in_tissue_spots_T <- sum(as.numeric(sapply(in_tissue_spots, "[[", 3)))
 
 print(paste0("Spots in tissue FALSE: ", in_tissue_spots_F, " TRUE: ", in_tissue_spots_T))
 
+lst_order <- sort(unique(spe$sample_id))
+
 vis_grid_clus(
     spe = spe_raw,
     clustervar = "in_tissue",
+    sample_order = lst_order,
     height = var_height, # 8
     width = var_width, # 9
     point_size = var_point_size,
@@ -80,6 +83,7 @@ print("Ploting out-tissues metrics")
 map2(as.vector(names(lst_out_counts)), as.vector(lst_out_counts), ~ vis_grid_gene(
     spe = spe_raw[, which(!colData(spe_raw)$in_tissue)],
     geneid = .x,
+    sample_order = lst_order,
     height = var_height, # 8
     width = var_width, # 9
     point_size = var_point_size,
@@ -128,6 +132,7 @@ print("Ploting in-tissues plots")
 map2(as.vector(names(lst_in_counts)), as.vector(lst_in_counts), ~ vis_grid_gene(
     spe = spe,
     geneid = .x,
+    sample_order = lst_order,
     height = var_height, # 8
     width = var_width, # 9
     point_size = var_point_size,
@@ -204,6 +209,7 @@ print("Ploting ALL in and out tissues plots")
 map2(as.vector(names(lst_all_counts)), as.vector(lst_all_counts), ~ vis_grid_gene(
     spe = spe_raw,
     geneid = .x,
+    sample_order = lst_order,
     height = var_height, # 8
     width = var_width, # 9
     point_size = var_point_size,
@@ -242,11 +248,10 @@ metrics_qc <- function(spe) {
         log2sum = log2(spe$sum_umi),
         log2detected = log2(spe$sum_gene),
         subsets_Mito_percent = spe$expr_chrM_ratio * 100,
-        sample_id = spe$sample_id
-    )
+        sample_id = spe$sample_id)
     #head(qc_df)
   
-    qcfilter <- data.frame(
+   qcfilter <- data.frame(
         low_lib_size = scater::isOutlier(qc_df$log2sum, type = "lower", log = FALSE, batch = qc_df$sample_id),
         low_n_features = scater::isOutlier(qc_df$log2detected, type = "lower", log = FALSE, batch = qc_df$sample_id),
         high_subsets_Mito_percent = scater::isOutlier(qc_df$subsets_Mito_percent, type = "higher", batch = qc_df$sample_id)
@@ -374,6 +379,7 @@ vis_grid_gene(
     spe = spe,
     geneid = "edge_distance",
     assayname = "counts",
+    sample_order = lst_order,
     height = var_height,
     width = var_width,
     point_size = var_point_size,
@@ -400,6 +406,7 @@ plt_scran_func <- function(idvar, pdf_name, spot_s) {
     vis_grid_clus(
         spe = spe,
         clustervar = idvar,
+        sample_order = lst_order,
         height = var_height, # 8
         width = var_width, # 9
         point_size = spot_s,
@@ -419,7 +426,6 @@ print(unlist(low_library))
 low_library_T <- sum(as.numeric(sapply(low_library, "[[", 1)))
 
 message(low_library_T, " spots detected with scran_low_lib_size ")
-# 332 spots detected with scran_low_lib_size
 
 low_library_edge <- map(unique(spe$sample_id), ~ summary(spe$scran_low_lib_size_edge[spe$sample_id == .x]))
 low_library_edge_F <- sum(as.numeric(sapply(low_library_edge, "[[", 2)))
@@ -427,7 +433,6 @@ tmp <- map(seq_along(low_library_edge), ~ as.integer(low_library_edge[[.x]][3]))
 low_library_edge_T <-  sum(replace(tmp, is.na(tmp), 0))
 
 message(low_library_edge_T, " spots detected with scran_low_lib_size at edge")
-# 62 spots detected with scran_low_lib_size at edge
 
 ## Get summary for chrM ratio versus high_subsets_Mito_percent detected by scran for reference
 
@@ -470,23 +475,25 @@ message("Number of spots after preliminary QC:", dim(spe)[2], "\n")
 
 # Note: saved here the object to use in the app
 
-# saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge.rds"))
+saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge.rds"))
 
 
 # ==============================================================================
 
 ## Additional QC. Drop spots with high chrM percentage marked as outlier by scran
 
-spe <- spe[, spe$scran_high_subsets_Mito_percent == "FALSE"]
-message(
-    "Number of spots after removed high chrM percentage spots:",
-    dim(spe)[2],
-    "\n"
-)
+# spe <- spe[, spe$scran_high_subsets_Mito_percent == "FALSE"]
+# message(
+#     "Number of spots after removed high chrM percentage spots:",
+#     dim(spe)[2],
+#     "\n"
+# )
 
 
 ## Save object with metrics_qc()
-saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge_HighM.rds"))
+
+# saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge_HighM.rds"))
+
 
 
 # ==============================================================================
