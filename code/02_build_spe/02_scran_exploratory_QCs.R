@@ -397,9 +397,10 @@ print("Ploting in tissue scran metrics")
 lst_in_scran_counts <- c(
     scran_low_lib_size = "in_tissue_scran_low_lib_size.pdf",
     scran_low_lib_size_edge = "in_tissue_scran_low_lib_size_edge.pdf",
+    scran_low_n_features = "in_tissue_scran_low_n_features.pdf",
     scran_high_subsets_Mito_percent = "in_tissue_scran_high_Mito_percent.pdf"
 )
-lst_size_spot <- c((var_point_size + 1), (var_point_size + 1), (var_point_size + 1))
+lst_size_spot <- c((var_point_size + 1), (var_point_size + 1), (var_point_size + 1), (var_point_size + 1))
 lst_scran_vars <- list((names(lst_in_scran_counts)), (lst_in_scran_counts), lst_size_spot)
 
 plt_scran_func <- function(idvar, pdf_name, spot_s) {
