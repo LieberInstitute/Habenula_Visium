@@ -20,19 +20,10 @@ set.seed(20241105)
 spe <- readRDS(here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds"))
 spe
 colnames(colData(spe))
-
-# # Remove spots without counts
-# if (any(colSums(counts(spe)) == 0)) {
-#   message("Removing spots without counts for spe")
-#   spe <- spe[, -which(colSums(counts(spe)) == 0)]
-#   dim(spe)
-# }
-
-# drop out-of-tissue spots
 table(spe$in_tissue)
 # 44681
 
-#select the in tissue spots
+## Select in-tissue spots. ONLY required if you load a data with out-issue spots
 # spe <- spe[, spe$in_tissue]
 # colnames(colData(spe))
 
@@ -40,7 +31,7 @@ dim(spe)
 # [1] 27028 44681
 
 cat("Spots in tissue:", dim(spe)[2], "\n")
-# Spots in tissue: 44681 
+# Spots in tissue: 44681
 
 lobstr::obj_size(spe)
 # 5.96 GB
@@ -49,27 +40,24 @@ message(Sys.time(), "Local Outliers - low sum_umi")
 spe <- localOutliers(spe,
                      metric = "sum_umi",
                      direction = "lower",
-                     log = TRUE
-)
+                     log = TRUE)
 table(spe$sum_umi_outliers)
 
 message(Sys.time(), "Local Outliers - low sum_gene")
 spe <- localOutliers(spe,
                      metric = "sum_gene",
                      direction = "lower",
-                     log = TRUE
-)
+                     log = TRUE)
 table(spe$sum_gene_outliers)
 
 message(Sys.time(), "Local Outliers - High expr_chrM_ratio")
 spe <- localOutliers(spe,
                      metric = "expr_chrM_ratio",
                      direction = "higher",
-                     log = FALSE
-)
+                     log = FALSE)
 table(spe$expr_chrM_ratio_outliers)
 
-# combine all outliers into "local_outliers" column
+## combine all outliers into "local_outliers" column
 spe$local_outliers <- as.logical(spe$sum_umi_outliers) |
   as.logical(spe$sum_gene_outliers) |
   as.logical(spe$expr_chrM_ratio_outliers)
@@ -77,10 +65,9 @@ spe$local_outliers <- as.logical(spe$sum_umi_outliers) |
 message("Local Outliers")
 table(spe$local_outliers)
 
-#message("Local Outliers on edge")
-# spe$edge_spot
-# NULL
-#table(spe$local_outliers, spe$edge_spot)
+message("Local Outliers on edge")
+spe$edge_spot
+table(spe$local_outliers, spe$edge_spot)
 
 #### find artifacts using SpotSweeper ####
 ## Only works one sample at a time
@@ -91,6 +78,13 @@ unique(spe$sample_id)
 # [9] "V14F07-340_A1" "V14F07-340_B1" "V14F07-340_C1" "V14F07-340_D1"
 # [13] "V13B23-280_A1" "V13B23-280_B1" "V13B23-280_C1" "V13B23-280_D1"
 # colnames(colData(spe))
+
+## Double check no NAs or zeros on the data due SpotSweeper request none zeros to compute findArtifacts()
+if (any(colSums(counts(spe)) == 0)) {
+    message("Removing spots without counts for spe")
+    spe <- spe[, -which(colSums(counts(spe)) == 0)]
+    dim(spe)
+}
 
 message(Sys.time(), " - findArtifact ring 5")
 ## default 5 neighbors
@@ -119,11 +113,11 @@ spe$artifact <- artifact_df$artifact
 #                             n_rings = 20,
 #                             name = "artifact_r20"
 #   )
-#   
+#
 #   return(as.data.frame(colData(spe_temp)[,c("sample_id", "key", "artifact_r20")]))
 # })
-# 
-# 
+#
+#
 # ## Add artifact to spe
 # identical(spe$key, artifact_df2$key) #TRUE
 # spe$artifact <- artifact_df2$artifact_r20
@@ -132,6 +126,7 @@ spe$artifact <- artifact_df$artifact
 
 #### save spot sweeper data ####
 
+## sort samples before to deploy the spatialLIBD app
 spotsweeper_data <- as.data.frame(colData(spe)[,c("sample_id", "key", "array_row", "array_col", "sum_umi_outliers", "sum_gene_outliers", "expr_chrM_ratio_outliers", "local_outliers", "artifact")])
 head(spotsweeper_data)
 write.csv(spotsweeper_data, file = here(data_dir, "SpotSweeper_data_all_both_dir.csv"))
@@ -142,29 +137,29 @@ point_size = 1.1
 #### plotting ####
 
 plot_all_spot_sweep <- function(spe, sample = unique(spe$sample_id)[1]){
-  
+
   spe <- spe[,spe$sample_id == sample]
-  
+
   # library size
   p1 <- plotQC(spe, metric = "sum_umi_log", outliers = "sum_umi_outliers", point_size = point_size) +
     ggtitle(paste(sample, "Sum UMI"))
-  
+
   # unique genes
   p2 <- plotQC(spe, metric = "sum_gene_log", outliers = "sum_gene_outliers", point_size = point_size) +
     ggtitle("Sum Genes")
-  
+
   # mitochondrial percent
   p3 <- plotQC(spe, metric = "expr_chrM_ratio", outliers = "expr_chrM_ratio_outliers", point_size = point_size) +
     ggtitle("ChrM Ratio")
-  
+
   # all local outliers
   p4 <- plotQC(spe, metric = "sum_umi_log", outliers = "local_outliers", point_size = point_size, stroke = 0.75) +
     ggtitle("All Local Outliers")
-  
+
   ## artifact
   p5 <- plotQC(spe, metric = "expr_chrM_ratio", outliers = "artifact", point_size = point_size, stroke = 0.75) + # sum_umi_log
     ggtitle("Artifact")
-  
+
   plot_list <- list(p1, p2, p3, p4, p5)
   ggarrange(
     plotlist = plot_list,
@@ -194,41 +189,41 @@ plt_plots <- function(plt_list, plot_name) {
 }
 
 
-## Only plot log sum-umi local outliers 
+## Only plot log sum-umi local outliers
 
 plot_all_local_ouliers_sum_umi <- function(spe, sample = unique(spe$sample_id)[1]){
   spe <- spe[,spe$sample_id == sample]
-  plt1 <- plotQC(spe, metric = "sum_umi_log", outliers = "local_outliers", 
+  plt1 <- plotQC(spe, metric = "sum_umi_log", outliers = "local_outliers",
                  point_size = point_size, stroke = 0.75) +  ggtitle(sample)
 }
 
-local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~ 
+local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~
                                    plot_all_local_ouliers_sum_umi(spe = spe, sample = .x))
 plt_plots(local_ouliers_plts, "SpotSweeper_local_umi_ouliers.pdf")
 
 
-## Only plot high Mito local outliers 
+## Only plot high Mito local outliers
 
 plot_all_local_ouliers_mito <- function(spe, sample = unique(spe$sample_id)[1]){
   spe <- spe[,spe$sample_id == sample]
-  plt1 <- plotQC(spe, metric = "expr_chrM_ratio", outliers = "local_outliers", 
+  plt1 <- plotQC(spe, metric = "expr_chrM_ratio", outliers = "local_outliers",
                  point_size = point_size, stroke = 0.75) +  ggtitle(sample)
 }
 
-local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~ 
+local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~
                                    plot_all_local_ouliers_mito(spe = spe, sample = .x))
 plt_plots(local_ouliers_plts, "SpotSweeper_local_mito_ouliers.pdf")
 
 
-## Only plot log sum-gene local outliers 
+## Only plot log sum-gene local outliers
 
 plot_all_local_ouliers_gene <- function(spe, sample = unique(spe$sample_id)[1]){
   spe <- spe[,spe$sample_id == sample]
-  plt1 <- plotQC(spe, metric = "sum_gene_log", outliers = "local_outliers", 
+  plt1 <- plotQC(spe, metric = "sum_gene_log", outliers = "local_outliers",
                  point_size = point_size, stroke = 0.75) +  ggtitle(sample)
 }
 
-local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~ 
+local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~
                                    plot_all_local_ouliers_gene(spe = spe, sample = .x))
 plt_plots(local_ouliers_plts, "SpotSweeper_local_gene_ouliers.pdf")
 
@@ -238,31 +233,36 @@ plt_plots(local_ouliers_plts, "SpotSweeper_local_gene_ouliers.pdf")
 # colnames(colData(spe))
 plot_all_local_artifacts <- function(spe, sample = unique(spe$sample_id)[1]){
   spe <- spe[,spe$sample_id == sample]
-  plt1 <- plotQC(spe, metric = "expr_chrM_ratio", outliers = "artifact", 
+  plt1 <- plotQC(spe, metric = "expr_chrM_ratio", outliers = "artifact",
                  point_size = 0.3, stroke = 0.75) + ggtitle("Artifact")
 }
-local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~ 
+local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~
                                    plot_all_local_artifacts(spe = spe, sample = .x))
 plt_plots(local_ouliers_plts, "SpotSweeper_mito_artifacts_r5.pdf")
 
 # plot_all_local_artifacts_r20 <- function(spe, sample = unique(spe$sample_id)[1]){
 #   spe <- spe[,spe$sample_id == sample]
-#   plt1 <- plotQC(spe, metric = "expr_chrM_ratio", outliers = "artifact_r20", 
+#   plt1 <- plotQC(spe, metric = "expr_chrM_ratio", outliers = "artifact_r20",
 #                  point_size = 0.3, stroke = 0.75) + ggtitle("Artifact_r20")
 # }
-# local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~ 
+# local_ouliers_plts <- purrr::map(sort(unique(spe$sample_id)), ~
 #                                    plot_all_local_artifacts_r20(spe = spe, sample = .x))
 # plt_plots(local_ouliers_plts, "SpotSweeper_mito_artifacts_r20.pdf")
 
 colnames(colData(spe))[grep("outliers", colnames(colData(spe)))]
-# [1] "sum_umi_outliers"         "sum_gene_outliers"       
+# [1] "sum_umi_outliers"         "sum_gene_outliers"
 # [3] "expr_chrM_ratio_outliers" "local_outliers"
 
 
-## saved new object with spotsweeper variables
+## Define order of samples for the grid plots
 
-## qc_low_lib_edge have been removed from this object
+lst_order <- sort(unique(spe$sample_id))
+sample_order <- unlist(sapply(lst_order, function(i) {
+    sort(unique(spe$sample_id)[grepl(i, unique(spe$sample_id))])
+}))
+sample_order
 
+## Note qc_low_lib_edge from scran have been removed from this object
 data_dir <- here("processed-data", "02_build_spe")
 saveRDS(spe, file.path(data_dir, "spe_scran_spotsweeper.rds"))
 
@@ -284,8 +284,8 @@ session_info()
 # > Sys.time()
 # [1] "2025-02-05 13:31:49 EST"
 # > proc.time()
-# user   system  elapsed 
-# 689.115    4.828 2503.095 
+# user   system  elapsed
+# 689.115    4.828 2503.095
 # > options(width = 120)
 # > session_info()
 # (R 4.4.2)
