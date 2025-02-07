@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=80G
-#SBATCH --job-name=02_scran_exploratory_QCs
+#SBATCH --job-name=03_SpotSweeper
 #SBATCH -c 2
 #SBATCH -t 1-00:00:00
 #SBATCH -o /dev/null
@@ -9,7 +9,7 @@
 # SBATCH --mail-type=ALL
 
 ## Explicitly pipe script output to a log
-log_path=logs/02_scran_exploratory_QCs.txt
+log_path=logs/03_SpotSweeper.txt
 
 {
 set -e
@@ -30,7 +30,7 @@ module load conda_R/4.4.x
 ## List current modules for reproducibility
 module list
 
-Rscript 02_scran_exploratory_QCs.R
+Rscript 03_SpotSweeper.R
 
 echo "**** Job ends ****"
 date
