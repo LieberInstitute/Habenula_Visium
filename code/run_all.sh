@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --partition=katun	
+#SBATCH --partition=katun
 #SBATCH --job-name=Hb_Visium_run_all
 #SBATCH -c 2
 #SBATCH -t 1-00:00:00
-#SBATCH --mem=30GB						                                    
+#SBATCH --mem=30GB
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
 # SBATCH --mail-type=ALL
@@ -77,7 +77,10 @@ echo "Running 02_scran_exploratory_QCs.sh"
 ## create log dir or rm previous log files and output files
 
 [ -f logs/02_scran_exploratory_QCs.txt ] && rm logs/02_scran_exploratory_QCs.txt
-rm ${PLOTDIR}/${SUBDIR}/*.pdf 
+rm ${PLOTDIR}/${SUBDIR}/*.pdf
+
+## mv previous rds
+[ -f ${PROCESSEDIR}/${SUBDIR}/spe_qc_low_lib_edge.rds ] && rm ${PROCESSEDIR}/${SUBDIR}/spe_qc_low_lib_edge.rds
 
 ## Run dependency job
 id2=$(sbatch --parsable --dependency=afterok:$id1 02_scran_exploratory_QCs.sh)
@@ -85,6 +88,27 @@ id2=$(sbatch --parsable --dependency=afterok:$id1 02_scran_exploratory_QCs.sh)
 echo $id2
 
 echo "Process (2) completed! ###################################### "
+
+
+echo "Running process (3) ###################################### "
+echo "Running 03_SpotSweeper.sh"
+
+## create log dir or rm previous log files and output files
+
+[ -f logs/03_SpotSweeper.txt ] && rm logs/03_SpotSweeper.txt
+rm ${PLOTDIR}/${SUBDIR}/03_SpotSweeper/*.pdf
+#[ -f ${PROCESSEDIR}/${SUBDIR}/03_SpotSweeper/*.csv ] &&
+rm ${PROCESSEDIR}/${SUBDIR}/03_SpotSweeper/*.csv
+
+## mv previous rds
+[ -f ${PROCESSEDIR}/${SUBDIR}/spe_scran_spotsweeper.rds ] && rm ${PROCESSEDIR}/${SUBDIR}/spe_scran_spotsweeper.rds
+
+## Run dependency job after scran outliers identification
+id3=$(sbatch --parsable --dependency=afterok:$id2 03_SpotSweeper.sh)
+
+echo $id3
+
+echo "Process (3) completed! ###################################### "
 
 
 echo "**** Job ends ****"
