@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import scanpy as sc
 import os
-import pandas as pd
 from pyhere import here
 import session_info
 import bin2cell as b2c
@@ -54,8 +53,10 @@ adata_filtered = b2c.read_visium(
 sc.pp.filter_cells(adata_filtered, min_counts=1)
 sc.pp.filter_genes(adata_filtered, min_cells=3)
 
-#   Normalize counts to account for "striping" effect
-b2c.destripe(adata_filtered)
+#   Note that we intentionally skip b2c.destripe(), which I've observed to
+#   dramatically worsen the technical effect it's supposed to account for
+#   (https://github.com/Teichlab/bin2cell/issues/45)
+adata_filtered.obs['sum_umi'] = adata_filtered.X.sum(axis = 1)
 
 #   Read in spaceranger outputs into an AnnData
 adata = b2c.read_visium(
@@ -127,7 +128,7 @@ print(f"{datetime.datetime.now()} | Performing gene-expression-based ('secondary
 #   Create an image from gene counts
 b2c.grid_image(
     adata_filtered,
-    "n_counts_adjusted",
+    "sum_umi",
     mpp=mpp,
     sigma=5,
     save_path=os.path.join(
