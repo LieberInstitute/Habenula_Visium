@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=100G
+#SBATCH --mem=10G
 #SBATCH --job-name=03_build_spe_QC
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
