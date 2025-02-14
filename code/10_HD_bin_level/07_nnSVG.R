@@ -6,42 +6,57 @@ library(HDF5Array)
 library(Matrix)
 library(nnSVG)
 
-sample_id = 'H1-W369TJK_D1_9090'
-spe_norm_dir = here(
+sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
+sample_id = readLines(sample_id_path)[
+    as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+]
+spe_dir = here(
     'processed-data', '10_HD_bin_level', 'rasterized',
-    sprintf('spe_%s_1x_standard_res', sample_id)
+    sprintf('spe_%s_lowres', sample_id)
 )
 out_path <- here(
     "processed-data", '10_HD_bin_level', "nnSVG_out",
     paste0(sample_id, ".csv")
 )
 
+num_cores = as.numeric(Sys.getenv("SLURM_CPUS_ON_NODE"))
 set.seed(0)
 dir.create(dirname(out_path), showWarnings = FALSE)
 
-message(Sys.time(), " | Loading SpatialExperiment")
-spe <- loadHDF5SummarizedExperiment(spe_norm_dir)
-names(assays(spe)) = 'logcounts'
-
 #-------------------------------------------------------------------------------
-#   Filter lowly expressed and mitochondrial genes
+#   Subset to this sample and bring into memory for speed
 #-------------------------------------------------------------------------------
 
-#   Rather than rasterizing the raw counts and using it to invoke filter_genes()
-#   with similar parameters to Visium standard, we'll manually filter
-#   mitochondrial genes and apply an expression cutoff the selects a similar
-#   absolute number of genes (~3000) as previous Visium standard datasets,
-#   using the rasterized logcounts
+message(Sys.time(), " | Loading, subsetting, and bringing assays into memory")
+spe <- loadHDF5SummarizedExperiment(spe_dir)
+spe <- spe[, spe$sample_id == sample_id]
+assays(spe) <- list(
+    counts = as(assays(spe)$counts, "dgCMatrix"),
+    logcounts = as(assays(spe)$logcounts, "dgCMatrix")
+)
 
-message(Sys.time(), " | Filtering genes")
+#-------------------------------------------------------------------------------
+#   Filter lowly expressed and mitochondrial genes, and low-count spots
+#-------------------------------------------------------------------------------
 
-#   Drop mitochondrial genes
-drop_vec = grepl('(^MT-)|(^mt-)', rowData(spe)$gene_name)
-message(sprintf("Dropping %s mitochondrial genes.", length(which(drop_vec))))
-spe = spe[!drop_vec,]
+message(Sys.time(), " | Filtering genes and spots")
+spe <- filter_genes(
+    spe,
+    filter_genes_ncounts = 3,
+    filter_genes_pcspots = 0.5,
+    filter_mito = TRUE
+)
 
-#   Drop genes where 70% or less of spots have >0 logcounts
-spe = spe[rowMeans(assays(spe)$logcounts > 0) > 0.7,]
+#   This step is not in the vignette but seems to eliminate BRISC estimation
+#   errors (see https://github.com/lmweber/nnSVG/issues/16)
+enough_counts = colSums(assays(spe)$counts) >= 10
+message(
+    sprintf(
+        "Dropping %.1f%% of spots with low counts", 
+        100 * (1 - mean(enough_counts))
+    )
+)
+spe = spe[, enough_counts]
 
 message("Dimensions of spe after filtering:")
 print(dim(spe))
@@ -51,7 +66,7 @@ print(dim(spe))
 #-------------------------------------------------------------------------------
 
 message(Sys.time(), " | Running nnSVG")
-spe <- nnSVG(spe)
+spe <- nnSVG(spe, n_threads = num_cores)
 
 message(Sys.time(), " | Exporting results")
 write_csv(as_tibble(rowData(spe)), out_path)
