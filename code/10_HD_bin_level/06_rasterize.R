@@ -5,6 +5,7 @@ library(sessioninfo)
 library(HDF5Array)
 library(SEraster)
 library(rjson)
+library(scran)
 
 #   Number of times more bins than a Visium experiment (per dimension)
 res_scalar = 1
