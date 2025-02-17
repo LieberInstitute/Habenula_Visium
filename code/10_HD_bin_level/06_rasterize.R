@@ -44,7 +44,7 @@ spe = loadHDF5SummarizedExperiment(spe_norm_dir)
 spe = spe[, spe$sample_id == sample_id]
 
 #   Bring into memory to speed up computations
-assays(spe)$logcounts = as(assays(spe)$logcounts, "dgCMatrix")
+assays(spe)$counts = as(assays(spe)$counts, "dgCMatrix")
 
 #   Rasterize
 message(
@@ -55,7 +55,8 @@ message(
     )
 )
 spe_raster = rasterizeGeneExpression(
-    spe, assay_name = "counts", resolution = res, n_threads = num_cores
+    spe, assay_name = "counts", resolution = res, n_threads = num_cores,
+    fun = "sum"
 )
 
 #   Fix several object attributes
