@@ -16,14 +16,30 @@ if (!dir.exists(dir_rdata)) {
 ## https://github.com/LieberInstitute/Visium_SPG_AD/blob/master/raw-data/Visium_SPG_AD_ITG_MasterExcelSummarySheet.xlsx
 
 ## Sample ID
-Sid <- paste0("S", rep(1:16), "_v") 
+
+## we kept the original samples to match with raw data before remove samples
+#Sid <- paste0("S", rep(1:12), "_v")
+Sid <- paste0("S", c(2,3,4,5,10,11,12,13,14,15,16,17), "_v")
+# [1] "S2_v"  "S3_v"  "S4_v"  "S5_v"  "S10_v" "S11_v" "S12_v" "S13_v" "S14_v"
+# [10] "S15_v" "S16_v" "S17_v"
+
 ## Slide number and slide numver
-array_id <- strsplit(c("A1 B1 C1 D1 A1 B1 C1 D1 A1 B1 C1 D1 A1 B1 C1 D1"), "\\s+")[[1]]
-sample_slide_id <- strsplit(c("V13B23-285 V13B23-285 V13B23-285 V13B23-285 V13B23-281 V13B23-281 V13B23-281 V13B23-281 V14F07-340 V14F07-340 V14F07-340 V14F07-340 V13B23-280 V13B23-280 V13B23-280 V13B23-280"), "\\s+")[[1]]
+# array_id <- strsplit(c("A1 B1 C1 D1 A1 B1 C1 D1 A1 B1 C1 D1 A1 B1 C1 D1"), "\\s+")[[1]]
+array_id <- strsplit(c("A1 B1 C1 D1 \
+                       A1 B1 C1 D1 \
+                       A1 B1 C1 D1"), "\\s+")[[1]]
+## removed samples V13B23-281 V13B23-281 V13B23-281 V13B23-281
+sample_slide_id <- strsplit(c("V13B23-285 V13B23-285 V13B23-285 V13B23-285 \
+                              V14F07-340 V14F07-340 V14F07-340 V14F07-340 \
+                              V13B23-280 V13B23-280 V13B23-280 V13B23-280"), "\\s+")[[1]]
 sample_slide_id <- paste0(sample_slide_id, "_", array_id)
 ## Brain ID
-brain_id <- c(rep("Br8518", 4), rep("Br6522", 4), rep("Br9090",4), rep("Br9037",4)) 
-brain_area = strsplit(c("PR5 AR6 AR6 AR6 PR6 PR6 PR6 PR6 PL6 PL6 PL6 PL6 AL5 AL5 AL5 AL5"), "\\s+")[[1]]
+## brain removed rep("Br6522", 4)
+brain_id <- c(rep("Br8518", 4), rep("Br9090",4), rep("Br9037",4)) 
+## area removed PR6 PR6 PR6 PR6
+brain_area = strsplit(c("PR5 AR6 AR6 AR6 \
+                        PL6 PL6 PL6 PL6 \
+                        AL5 AL5 AL5 AL5"), "\\s+")[[1]]
 
 ## Define some info for the samples
 sample_info <- data.frame(
@@ -31,12 +47,12 @@ sample_info <- data.frame(
   sample_id = c(sample_slide_id), #V14F07-340_D1
   brain_id = c(brain_id),
   brain_area = c(brain_area),
-  age = c(rep(41.3, 8), rep(57.5, 4), rep(51.4, 4)), 
-  sex = c(rep("F", 4), rep("M", 12)),  
-  ethnicity  = c(rep("EA/CAUC", 12), rep("AA", 4)), 
-  pmi = c(rep(10.5, 4), rep(30.5, 4), rep(26.5, 4), rep(18.5, 4)), 
-  diagnosis = c(rep("Control", 16)), 
-  rin = c(rep(6.3, 4), rep(7.4, 4), rep(6.1, 4), rep(7.8, 4))
+  age = c(rep(41.3, 4), rep(57.5, 4), rep(51.4, 4)), 
+  sex = c(rep("F", 4), rep("M", 8)),  
+  ethnicity  = c(rep("EA/CAUC", 8), rep("AA", 4)), 
+  pmi = c(rep(10.5, 4), rep(26.5, 4), rep(18.5, 4)), 
+  diagnosis = c(rep("Control", 12)), 
+  rin = c(rep(6.3, 4), rep(6.1, 4), rep(7.8, 4))
 )
 sample_info$sample_id_short <- sprintf("S%02d_Hb_V", parse_number(sample_info$sample_id_short))
 
