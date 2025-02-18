@@ -1,3 +1,11 @@
+########################################################################
+## Compute scran metrics and remove low-library-size at edge
+## Output: spe_qc_low_lib_edge.rds
+## Authors. CSC
+##
+## For 60 to 80k spots: $srun --pty --mem=60GB --x11 bash
+########################################################################
+
 library("spatialLIBD")
 library("scran")
 library("tidyverse")
@@ -30,11 +38,11 @@ raw_in_path <- here("processed-data", "02_build_spe", "spe_raw.rds")
 
 spe_raw <- readRDS(raw_in_path)
 message("Initial number of spots:", dim(spe_raw)[2], "\n")
-# merged samples: Initial number of spots: 44928
+# merged samples: Initial number of spots: 59904
 
 spe <- readRDS(spe_in_path)
 message("Initial number of spots :", dim(spe)[2], "\n")
-# merged samples: Initial number of spots: 16928
+# merged samples: Initial number of spots: 33639
 
 ## Set some initials for manage spot size in the plots
 var_height <- 24 # 24/3=8
@@ -48,10 +56,10 @@ set.seed(07112024)
 ## Define order of samples for the grid plots
 
 lst_order <- sort(unique(spe$sample_id))
-sample_order <- unlist(sapply(lst_order, function(i) {
-    sort(unique(spe$sample_id)[grepl(i, unique(spe$sample_id))])
-}))
-sample_order
+# sample_order <- unlist(sapply(lst_order, function(i) {
+#     sort(unique(spe$sample_id)[grepl(i, unique(spe$sample_id))])
+# }))
+# sample_order
 
 ## Inspect in vs outside of tissue
 
@@ -60,7 +68,7 @@ in_tissue_spots <- map(unique(spe_raw$sample_id), ~ summary(spe_raw$in_tissue[sp
 in_tissue_spots_F <- sum(as.numeric(sapply(in_tissue_spots, "[[", 2)))
 in_tissue_spots_T <- sum(as.numeric(sapply(in_tissue_spots, "[[", 3)))
 
-print(paste0("Spots in tissue FALSE: ", in_tissue_spots_F, " TRUE: ", in_tissue_spots_T))
+print(paste0("Spots in tissue:  ", in_tissue_spots_T, " FALSE: ", in_tissue_spots_F))
 
 lst_order <- sort(unique(spe$sample_id))
 
@@ -71,7 +79,7 @@ vis_grid_clus(
     height = var_height, # 8
     width = var_width, # 9
     point_size = var_point_size,
-    pdf = here(dir_plots, "all_in_tissue_grid.pdf"),
+    pdf = here(dir_plots, "scran_all_in_tissue_grid.pdf"),
     sort_clust = FALSE,
     colors = c("TRUE" = "grey90", "FALSE" = "orange")
 )
@@ -81,9 +89,9 @@ vis_grid_clus(
 ## Out-tissue metrics
 
 lst_out_counts <- c(
-    sum_umi = "out_tissue_sum_umi.pdf",
-    sum_gene = "out_tissue_sum_gene.pdf",
-    expr_chrM_ratio = "out_tissue_expr_chrM_ratio.pdf"
+    sum_umi = "scran_out_tissue_sum_umi.pdf",
+    sum_gene = "scran_out_tissue_sum_gene.pdf",
+    expr_chrM_ratio = "scran_out_tissue_expr_chrM_ratio.pdf"
 )
 
 print("Ploting out-tissues metrics")
@@ -130,9 +138,9 @@ map(unique(spe$sample_id), ~ summary(spe$sum_gene[spe$sample_id == .x]))
 ## in-tissue metrics
 
 lst_in_counts <- c(
-    sum_umi = "in_tissue_sum_umi.pdf",
-    sum_gene = "in_tissue_sum_gene.pdf",
-    expr_chrM_ratio = "in_tissue_expr_chrM_ratio.pdf"
+    sum_umi = "scran_in_tissue_sum_umi.pdf",
+    sum_gene = "scran_in_tissue_sum_gene.pdf",
+    expr_chrM_ratio = "scran_in_tissue_expr_chrM_ratio.pdf"
 )
 
 print("Ploting in-tissues plots")
@@ -147,7 +155,7 @@ map2(as.vector(names(lst_in_counts)), as.vector(lst_in_counts), ~ vis_grid_gene(
     # return_plots = TRUE,
     pdf = here(dir_plots, .y),
     assayname = "counts")
-    )
+)
 
 
 ## Calculate total genes with count the first few gene sums
@@ -166,7 +174,8 @@ tail(gene_summary)
 #                    gene_name_ens gene_name sum_counts
 # ENSG00000198804 ENSG00000198804    MT-CO1    3656352
 # ENSG00000198712 ENSG00000198712    MT-CO2    2934506
-f_name <- paste0(here(dir_rdata, "spe_gene_counts.csv"))
+nrow(gene_summary)
+f_name <- paste0(here(dir_rdata, "spe_gene_counts_no_QCed.csv"))
 write.csv(gene_summary, f_name, row.names = FALSE)
 
 # Group UMI sums by slide
@@ -207,9 +216,9 @@ map(unique(spe$sample_id), ~ summary(spe$expr_chrM_ratio[spe$sample_id == .x]))
 ## All in and out tissue metrics
 
 lst_all_counts <- c(
-    sum_umi = "all_sum_umi.pdf",
-    sum_gene = "all_sum_gene.pdf",
-    expr_chrM_ratio = "all_expr_chrM_ratio.pdf"
+    sum_umi = "scran_all_sum_umi.pdf",
+    sum_gene = "scran_all_sum_gene.pdf",
+    expr_chrM_ratio = "scran_all_expr_chrM_ratio.pdf"
 )
 
 print("Ploting ALL in and out tissues plots")
@@ -239,7 +248,7 @@ spe <- spe[
     (colSums(assays(spe)$counts) > 0) & spe$in_tissue]
 
 message("Number of spots after preliminary QC:", dim(spe)[2], "\n")
-# Number of spots after preliminary QC: 16928
+# Number of spots after preliminary QC: 33639
 
 
 ## Metrics QC
@@ -367,7 +376,7 @@ lobstr::obj_size(spe)
 addmargins(table("Low_libsize_edge" = spe$scran_low_lib_size_edge))
 # Low_libsize_edge
 # TRUE FALSE   Sum
-# 31 16897 16928
+# 33587    52 33639 
 
 # ==============================================================================
 ## plot low library size spots in-tissues & in the edge
@@ -392,7 +401,7 @@ vis_grid_gene(
     width = var_width,
     point_size = var_point_size,
     # return_plots = TRUE,
-    pdf = here(dir_plots, "in_tissue_egde_distance.pdf"),
+    pdf = here(dir_plots, "scran_in_tissue_egde_distance.pdf"),
     spatial = FALSE,
     minCount = -1,
     cont_colors = viridisLite::viridis(21, direction = -1)
@@ -403,10 +412,10 @@ vis_grid_gene(
 print("Ploting in tissue scran metrics")
 
 lst_in_scran_counts <- c(
-    scran_low_lib_size = "in_tissue_scran_low_lib_size.pdf",
-    scran_low_lib_size_edge = "in_tissue_scran_low_lib_size_edge.pdf",
-    scran_low_n_features = "in_tissue_scran_low_n_features.pdf",
-    scran_high_subsets_Mito_percent = "in_tissue_scran_high_Mito_percent.pdf"
+    scran_low_lib_size = "scran_in_tissue_scran_low_lib_size.pdf",
+    scran_low_lib_size_edge = "scran_in_tissue_scran_low_lib_size_edge.pdf",
+    scran_low_n_features = "scran_in_tissue_scran_low_n_features.pdf",
+    scran_high_subsets_Mito_percent = "scran_in_tissue_scran_high_Mito_percent.pdf"
 )
 lst_size_spot <- c((var_point_size + 1), (var_point_size + 1), (var_point_size + 1), (var_point_size + 1))
 lst_scran_vars <- list((names(lst_in_scran_counts)), (lst_in_scran_counts), lst_size_spot)
@@ -485,26 +494,6 @@ message("Number of spots after preliminary QC:", dim(spe)[2], "\n")
 
 saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge.rds"))
 
-
-# ==============================================================================
-
-## Additional QC. Drop spots with high chrM percentage marked as outlier by scran
-
-# spe <- spe[, spe$scran_high_subsets_Mito_percent == "FALSE"]
-# message(
-#     "Number of spots after removed high chrM percentage spots:",
-#     dim(spe)[2],
-#     "\n"
-# )
-
-
-## Save object with metrics_qc()
-
-# saveRDS(spe, file.path(dir_rdata, "spe_qc_low_lib_edge_HighM.rds"))
-
-
-
-# ==============================================================================
 
 # library("slurmjobs")
 # job_single(
