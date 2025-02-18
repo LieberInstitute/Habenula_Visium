@@ -23,7 +23,6 @@ samples and is maintained [here](https://github.com/LieberInstitute/lc_visium_hd
 
 - `05_HVG_PCA.*`: Find highly variable genes and add PCA (computed on these
 HVGs) to the normalized `SpatialExperiment` in place
-- `06_plot_HVGs.*`: Plot the top 12 HVGs by rank
 
 ## Clustering cells
 
