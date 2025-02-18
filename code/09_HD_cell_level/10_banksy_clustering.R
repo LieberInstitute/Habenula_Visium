@@ -7,60 +7,69 @@ library(sessioninfo)
 library(Banksy)
 library(cowplot)
 library(scater)
+library(getopt)
 
-k = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-
-spe_dir = here('processed-data', '09_HD_cell_level', 'spe_banksy')
-out_path = here(
-    'processed-data', '09_HD_cell_level', 'banksy', sprintf('k%s.csv', k)
+# Import command-line parameters
+spec <- matrix(
+    c(
+        c("res", "lambda"),
+        c("r", "l"),
+        rep("1", 2),
+        rep("numeric", 2),
+        c('Resolution for leiden clustering', 'Banksy hyperparameter lambda')
+    ),
+    ncol = 5
 )
-plot_dir = here('plots', '09_HD_cell_level', 'banksy', sprintf('k%s', k))
+opt <- getopt(spec)
+
+message("Using the following parameters:")
+print(opt)
+
+lambda_neat = paste0('lambda', sub('\\.', '_', as.character(opt$lambda)))
+res_neat = paste0('res', sub('\\.', '_', as.character(opt$res)))
+
+spe_dir = here(
+    'processed-data', '09_HD_cell_level', sprintf('spe_banksy_%s', lambda_neat)
+)
+out_path = here(
+    'processed-data', '09_HD_cell_level', 'banksy',
+    sprintf('leiden_%s.csv', res_neat)
+)
+plot_dir = here(
+    'plots', '09_HD_cell_level', 'banksy', lambda_neat,
+    sprintf('leiden_%s', res_neat)
+)
 random_seed = 0
 
 dir.create(dirname(out_path), showWarnings = FALSE)
-dir.create(plot_dir, showWarnings = FALSE)
+dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 
 spe = loadHDF5SummarizedExperiment(spe_dir)
 
-#   Infer value(s) of lambda from the reducedDimNames
-lambda = reducedDimNames(spe)[grep('^UMAP.*lam', reducedDimNames(spe))] |>
-    str_extract('lam(.*)$', group = 1) |>
-    as.numeric()
-
 message(Sys.time(), ' | Performing clustering')
 spe = clusterBanksy(
-    spe, use_agf = TRUE, lambda = lambda, seed = random_seed, algo = "kmeans",
-    kmeans.centers = k
+    spe, use_agf = TRUE, lambda = opt$lambda, seed = random_seed,
+    algo = "leiden", resolution = opt$res
 )
-spe = connectClusters(spe)
 
-#   Get the names of the cluster and UMAP columns corresponding to each lambda
-#   value
-cluster_names = sapply(
-        sprintf('^clust.*lam%s', lambda),
-        function(pattern) {
-            colnames(colData(spe))[grep(pattern, colnames(colData(spe)))]
-        }
-    ) |>
-    unname()
-rd_names = sapply(
-        sprintf('^UMAP.*lam%s', lambda),
-        function(pattern) {
-            reducedDimNames(spe)[grep(pattern, reducedDimNames(spe))]
-        }
-    ) |>
-    unname()
+#   Get the names of the cluster and UMAP columns from a more general regex
+cluster_name = colnames(colData(spe))[
+    grep(sprintf('^clust.*lam%s', opt$lambda), colnames(colData(spe)))
+]
+rd_name = reducedDimNames(spe)[
+    grep(sprintf('^UMAP.*lam%s', opt$lambda), reducedDimNames(spe))
+]
 
-#   Plot clusters and colored UMAP for each lambda
-for (i in seq_len(length(lambda))) {
+#   Plot clusters and colored UMAP for each sample
+for (sample_id in unique(spe$sample_id)) {
     #   First plot the clusters spatially
     p = vis_clus(
-            spe, clustervar = cluster_names[i], is_stitched = TRUE,
-            point_size = 1, spatial = FALSE
+            spe, sampleid = sample_id, clustervar = cluster_name,
+            is_stitched = TRUE, point_size = 20, spatial = FALSE
         ) +
-        guides(fill = guide_legend(override.aes = list(size = 4)))
+        guides(fill = guide_legend(override.aes = list(size = 8)))
     png(
-        file.path(plot_dir, sprintf('clusters_lambda%s.png', lambda[i])),
+        file.path(plot_dir, sprintf('clusters_%s.png', sample_id)),
         width = 1500, height = 1500
     )
     print(p)
@@ -68,13 +77,13 @@ for (i in seq_len(length(lambda))) {
 
     #   Then UMAP colored by cluster
     p = plotReducedDim(
-            spe, dimred = rd_names[i], point_size = 0.6,
-            colour_by = cluster_names[i]
+            spe[,spe$sample_id == sample_id], dimred = rd_name,
+            point_size = 0.6, colour_by = cluster_name
         ) +
         theme_bw(base_size = 20) +
         guides(color = guide_legend(override.aes = list(size = 4)))
     png(
-        file.path(plot_dir, sprintf('UMAP_lambda%s.png', lambda[i])),
+        file.path(plot_dir, sprintf('UMAP_%s.png', sample_id)),
         width = 1500, height = 1500
     )
     print(p)
@@ -84,9 +93,8 @@ for (i in seq_len(length(lambda))) {
 #   Export clusters to CSV
 cluster_df = colData(spe) |>
     as_tibble() |>
-    mutate(key = colnames(spe)) |>
-    select(key, any_of(cluster_names))
-colnames(cluster_df) = c('key', sprintf('banksy_lambda%s', lambda))
+    select(key, sym(cluster_name))
+colnames(cluster_df) = c('key', sprintf('banksy_%s', lambda_neat))
 
 write_csv(cluster_df, out_path)
 

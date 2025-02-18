@@ -11,9 +11,11 @@ lambda = c(0.2, 0.8)[as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))]
 spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
 out_dir = here(
     'processed-data', '09_HD_cell_level',
-    sprintf('spe_banksy_%s', sub('\\.', '_', as.character(lambda)))
+    sprintf('spe_banksy_lambda%s', sub('\\.', '_', as.character(lambda)))
 )
-svg_path = here('TODO')
+svg_path = here(
+    'processed-data', '10_HD_bin_level', 'nnSVG_out', 'merged_SVGs.txt'
+)
 
 random_seed = 0
 
