@@ -136,8 +136,9 @@ p = colData(spe) |>
     scan_window(760:810) |>
     ggplot(aes(x = lower_threshold, y = mean_umi)) +
         geom_line() +
-        theme_bw(base_size = 15) +
-        geom_vline(xintercept = 783)
+        theme_bw(base_size = 25) +
+        geom_vline(xintercept = 783) +
+        labs(x = "Window Start", y = "Mean UMI in Window")
 
 pdf(file.path(plot_dir, 'artifacts', 'H1-MVPY9BW_A1_8433_array_QC.pdf'))
 print(p)
@@ -182,8 +183,9 @@ p = colData(small_spe) |>
     scan_window(740:780, window = 1) |>
     ggplot(aes(x = lower_threshold, y = mean_umi)) +
         geom_line() +
-        theme_bw(base_size = 15) +
-        geom_vline(xintercept = 764)
+        theme_bw(base_size = 25) +
+        geom_vline(xintercept = 764) +
+        labs(x = "Window Start", y = "Mean UMI in Window")
 
 pdf(file.path(plot_dir, 'artifacts', 'H1-XQQD7C7_A1_8518_array_QC.pdf'))
 print(p)
