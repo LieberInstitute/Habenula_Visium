@@ -26,7 +26,8 @@ computed with similar accuracy in a computationally reasonable time with lower-
 resolution data
 - `07_nnSVG.*`: Run `nnSVG` to find spatially variable genes on the lower-
 resolution data
-- `08_plot_SVGs.*`: Plot the top 12 SVGs by rank
+- `08_gather_variable_genes.*`: Gather nnSVG results from each sample to compute
+dataset-wide SVGs. Export, then plot top SVGs and HVGs
 
 ## Cell-cell communication (attempted)
 

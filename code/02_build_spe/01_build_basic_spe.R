@@ -183,9 +183,15 @@ saveRDS(spe_raw, file.path(dir_rdata, "spe_raw.rds"))
 message("Saved spe_raw.rds")
 
 ## Now drop the spots outside the tissue
+message("Total spots: ", dim(spe_raw)[2], "\n")
 spe <- spe_raw[, spe_raw$in_tissue]
 dim(spe)
 message("Spots in tissue:", dim(spe)[2], "\n")
+## % in tissue spots
+(dim(spe)[2] *100) / dim(spe_raw)[2]
+## % out tissue spots
+((dim(spe_raw)[2]-dim(spe)[2]) *100) / dim(spe_raw)[2]
+
 
 ## Remove spots without counts
 if (any(colSums(counts(spe)) == 0)) {
@@ -194,6 +200,7 @@ if (any(colSums(counts(spe)) == 0)) {
     dim(spe)
 }
 dim(spe)
+
 
 lobstr::obj_size(spe)
 # Merged samples: 1.16 MB

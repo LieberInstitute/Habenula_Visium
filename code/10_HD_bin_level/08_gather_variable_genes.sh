@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=10G
-#SBATCH --job-name=08_plot_SVGs
+#SBATCH --job-name=08_gather_variable_genes
 #SBATCH -c 1
 #SBATCH -t 1:00:00
-#SBATCH -o ../../processed-data/10_HD_bin_level/logs/08_plot_SVGs.txt
-#SBATCH -e ../../processed-data/10_HD_bin_level/logs/08_plot_SVGs.txt
+#SBATCH -o ../../processed-data/10_HD_bin_level/logs/08_gather_variable_genes.txt
+#SBATCH -e ../../processed-data/10_HD_bin_level/logs/08_gather_variable_genes.txt
 
 set -e
 
@@ -25,7 +25,7 @@ module load conda_R/4.4
 ## List current modules for reproducibility
 module list
 
-Rscript 08_plot_SVGs.R
+Rscript 08_gather_variable_genes.R
 
 echo "**** Job ends ****"
 date
