@@ -8,10 +8,10 @@ library("ggpubr")
 
 ## code adapted from https://github.com/LieberInstitute/LFF_spatial_ERC/blob/ad7546fddf48d4047bbc95ab7c980961ac0a3549/code/02_build_spe/04_SpotSweeper.R
 
-plot_dir <- here("plots", "02_build_spe", "03_SpotSweeper")
+plot_dir <- here("plots", "02_build_spe")
 if(!dir.exists(plot_dir)) dir.create(plot_dir, recursive = TRUE)
 
-data_dir <- here("processed-data", "02_build_spe", "03_SpotSweeper")
+data_dir <- here("processed-data", "02_build_spe")
 if(!dir.exists(data_dir)) dir.create(data_dir, recursive = TRUE)
 
 
@@ -20,13 +20,6 @@ set.seed(20241105)
 spe <- readRDS(here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds"))
 spe
 colnames(colData(spe))
-table(spe$in_tissue)
-# 44681
-
-## Select in-tissue spots. ONLY required if you load a data with out-issue spots
-# spe <- spe[, spe$in_tissue]
-# colnames(colData(spe))
-
 dim(spe)
 # [1] 27028 44681
 
@@ -36,6 +29,7 @@ cat("Spots in tissue:", dim(spe)[2], "\n")
 lobstr::obj_size(spe)
 # 5.96 GB
 
+## SpotSweeper variables sum_umi, sum_gene and expr_chrM_ratio are created
 message(Sys.time(), "Local Outliers - low sum_umi")
 spe <- localOutliers(spe,
                      metric = "sum_umi",
@@ -55,7 +49,6 @@ spe <- localOutliers(spe,
                      metric = "expr_chrM_ratio",
                      direction = "higher",
                      log = FALSE)
-table(spe$expr_chrM_ratio_outliers)
 
 ## combine all outliers into "local_outliers" column
 spe$local_outliers <- as.logical(spe$sum_umi_outliers) |
@@ -126,10 +119,9 @@ spe$artifact <- artifact_df$artifact
 
 #### save spot sweeper data ####
 
-## sort samples before to deploy the spatialLIBD app
 spotsweeper_data <- as.data.frame(colData(spe)[,c("sample_id", "key", "array_row", "array_col", "sum_umi_outliers", "sum_gene_outliers", "expr_chrM_ratio_outliers", "local_outliers", "artifact")])
 head(spotsweeper_data)
-write.csv(spotsweeper_data, file = here(data_dir, "SpotSweeper_data_all_both_dir.csv"))
+write.csv(spotsweeper_data, file = here(data_dir, "SpotSweeper_outliers_detected.csv"))
 
 point_size = 1.1
 
@@ -141,23 +133,23 @@ plot_all_spot_sweep <- function(spe, sample = unique(spe$sample_id)[1]){
   spe <- spe[,spe$sample_id == sample]
 
   # library size
-  p1 <- plotQC(spe, metric = "sum_umi_log", outliers = "sum_umi_outliers", point_size = point_size) +
+  p1 <- plotQC(spe, metric = "sum_umi_log", outliers = "SpotSweeper_sum_umi_outliers", point_size = point_size) +
     ggtitle(paste(sample, "Sum UMI"))
 
   # unique genes
-  p2 <- plotQC(spe, metric = "sum_gene_log", outliers = "sum_gene_outliers", point_size = point_size) +
+  p2 <- plotQC(spe, metric = "sum_gene_log", outliers = "SpotSweeper_sum_gene_outliers", point_size = point_size) +
     ggtitle("Sum Genes")
 
   # mitochondrial percent
-  p3 <- plotQC(spe, metric = "expr_chrM_ratio", outliers = "expr_chrM_ratio_outliers", point_size = point_size) +
+  p3 <- plotQC(spe, metric = "expr_chrM_ratio", outliers = "SpotSweeper_expr_chrM_ratio_outliers", point_size = point_size) +
     ggtitle("ChrM Ratio")
 
   # all local outliers
-  p4 <- plotQC(spe, metric = "sum_umi_log", outliers = "local_outliers", point_size = point_size, stroke = 0.75) +
+  p4 <- plotQC(spe, metric = "sum_umi_log", outliers = "SpotSweeper_local_outliers", point_size = point_size, stroke = 0.75) +
     ggtitle("All Local Outliers")
 
   ## artifact
-  p5 <- plotQC(spe, metric = "expr_chrM_ratio", outliers = "artifact", point_size = point_size, stroke = 0.75) + # sum_umi_log
+  p5 <- plotQC(spe, metric = "expr_chrM_ratio", outliers = "SpotSweeper_artifact", point_size = point_size, stroke = 0.75) + # sum_umi_log
     ggtitle("Artifact")
 
   plot_list <- list(p1, p2, p3, p4, p5)
@@ -256,11 +248,20 @@ colnames(colData(spe))[grep("outliers", colnames(colData(spe)))]
 
 ## Define order of samples for the grid plots
 
-lst_order <- sort(unique(spe$sample_id))
-sample_order <- unlist(sapply(lst_order, function(i) {
+slide_order <- sort(unique(spe$sample_id))
+sample_order <- unlist(sapply(slide_order, function(i) {
     sort(unique(spe$sample_id)[grepl(i, unique(spe$sample_id))])
 }))
-sample_order
+## Re-order samples
+new_order <- unlist(lapply(sample_order, function(i) {
+  which(spe$sample_id == i)
+}))
+stopifnot(all(seq_len(ncol(spe)) %in% new_order))
+spe <- spe[, new_order]
+unique(spe$sample_id)
+# [1] "V13B23-280_A1" "V13B23-280_B1" "V13B23-280_C1" "V13B23-280_D1"
+# [5] "V13B23-285_A1" "V13B23-285_B1" "V13B23-285_C1" "V13B23-285_D1"
+# [9] "V14F07-340_A1" "V14F07-340_B1" "V14F07-340_C1" "V14F07-340_D1"
 
 ## Note qc_low_lib_edge from scran have been removed from this object
 data_dir <- here("processed-data", "02_build_spe")
