@@ -11,7 +11,8 @@ library("HDF5Array")
 
 ## set path directories
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
-filtered_in_path <- here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds")
+# filtered_in_path <- here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds")
+spe_in_path <- here("processed-data", "02_build_spe", "spe_scran_spotsweeper.rds")
 filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
 
@@ -22,14 +23,29 @@ set.seed(20240223)
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 
-## load a filtered spe object
-spe <- readRDS(filtered_in_path)
 
+## load a filtered spe object
+spe <- readRDS(spe_in_path)
+spe
 cat("Number of spots after removed any remaining empty spots and/or genes with zero counts:", dim(spe)[2], "\n")
 
 
+## Check initial outliers detected by both scran and SpotSweeper
 
-################################################################################
+colnames(colData(spe))
+# From scran: discard = (low_lib_size | low_n_features) | high_subsets_Mito_percent)         
+message("scran_low_lib_size\t\t", table(spe$scran_low_lib_size)[[1]])
+message("scran_low_n_features\t\t", table(spe$scran_low_n_features)[[1]])
+message("scran_high_subsets_Mito_percent\t\t", table(spe$scran_high_subsets_Mito_percent)[[1]])
+message("scran_discard\t\t",table(spe$scran_discard)[[1]])
+
+message("SpotSweeper_sum_umi_outliers\t\t", table(spe$sum_umi_outliers)[[2]])
+message("SpotSweeper_sum_gene_outliers\t\t", table(spe$sum_gene_outliers)[[2]])
+message("SpotSweeper_expr_chrM_ratio_outliers\t\t", table(spe$expr_chrM_ratio_outliers)[[2]])
+
+
+
+###############################################################################
 #   Manually selection of spots to drop (issue #7)
 ################################################################################
 
