@@ -14,9 +14,11 @@ svg_paths = here('processed-data', '10_HD_bin_level', 'nnSVG_out', '%s.csv')
 svg_path_out = here(
     'processed-data', '10_HD_bin_level', 'nnSVG_out', 'merged_SVGs.txt'
 )
+hvg_path = here('processed-data', '09_HD_cell_level', 'HVGs.txt')
 
+num_svg = 1000
 top_n = 12
-px_per_plot = 800
+px_per_plot = 300
 
 dir.create(plot_dir, showWarnings = FALSE)
 
@@ -102,11 +104,28 @@ for (sample_id in unique(spe$sample_id)) {
         mutate(sample_id = sample_id)
 }
 
+#   Quite a few genes were considered (passed expression cutoffs) in all
+#   samples, so the "filter(n() == 5)" step is not merely selecting for
+#   high-expression genes
 svg = do.call(rbind, svg_list) |>
     group_by(gene_id) |>
+    filter(n() == 5)
+
+message(
+    sprintf(
+        "%s unique genes were considered as candidate SVGs in all 5 samples",
+        svg |>
+            pull(gene_id) |>
+            unique() |>
+            length()        
+    )
+)
+
+#   Take top SVGs by average rank across samples
+svg = svg |>
     summarize(avg_rank = mean(rank)) |>
     arrange(avg_rank) |>
-    slice_head(n = length(hvg)) |>
+    slice_head(n = num_svg) |>
     pull(gene_id)
 
 writeLines(svg, svg_path_out)
