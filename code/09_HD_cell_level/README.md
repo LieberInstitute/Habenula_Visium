@@ -18,6 +18,8 @@ counts
 other Visium HD samples (DLPFC, HPC) and Visium standard experiments from the
 same brain regions. A more up-to-date version of this script also includes LC
 samples and is maintained [here](https://github.com/LieberInstitute/lc_visium_hd/blob/devel/code/04_QC/01_sample_level.R)
+- `15_xenium_genes.*`: Check how thoroughly the Xenium gene panel is expressed
+in Visium HD
 
 ## Highly variable genes and PCA
 
@@ -31,7 +33,7 @@ HVGs) to the normalized `SpatialExperiment` in place
 is by far the most computationally expensive step in finding spatially informed
 cellular clusters with `Banksy`. See `10_banksy_clustering.*` for the rest
 - `10_banksy_clustering.*`: Cluster the `Banksy` embedding computed in
-`08_banksy_embedding.*` using k means for many values of k
+`08_banksy_embedding.*` using Leiden clustering at several resolutions
 
 ## Finding spatial expression patterns
 
