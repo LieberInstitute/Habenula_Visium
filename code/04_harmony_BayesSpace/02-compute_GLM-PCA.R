@@ -10,10 +10,12 @@ library("BiocSingular")
 library("bluster")
 library("PCAtools")
 library("sessioninfo")
-library("HDF5Array")
+# library("HDF5Array")
 
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
-filtered_in_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log.rds")
+# filtered_in_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log.rds")
+## temporal testing
+filtered_in_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log_not_QCed.rds")
 filtered_ordinary_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log_GLM-PCA.rds") # new SPE with GLM-PCAs
 filtered_hdf5_dir <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log_GLM-PCA_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
@@ -115,25 +117,26 @@ message(Sys.time(), " - Running getTopHVGs()")
 #     - prop define a numeric scalar specifying the proportion of genes to report as HVGs
 #     _ further we subset to genes that have FDR less than or equal to fdr.threshold
 top.hvgs.p1 <- getTopHVGs(dec, prop = 0.1)
-print(paste("Num HVGs for top 10 proportion:", length(top.hvgs.p1)))
-top.hvgs.p2 <- getTopHVGs(dec, prop = 0.2)
-print(paste("Num HVGs for top 20 proportion:", length(top.hvgs.p2)))
-top.hvgs.p5 <- getTopHVGs(dec, prop = 0.5)
-print(paste("Num HVGs for top 50 proportion:", length(top.hvgs.p5)))
+print(paste("10% HVGs genes:", length(top.hvgs.p1)))
+# top.hvgs.p2 <- getTopHVGs(dec, prop = 0.2)
+# print(paste("Num HVGs for top 20 proportion:", length(top.hvgs.p2)))
+# top.hvgs.p5 <- getTopHVGs(dec, prop = 0.5)
+# print(paste("Num HVGs for top 50 proportion:", length(top.hvgs.p5)))
+# 
+# top.hvgs.fdr5 <- getTopHVGs(dec, fdr.threshold = 0.05)
+# print(paste("Num HVGs at FDR = 0.05:", length(top.hvgs.fdr5)))
+# top.hvgs.fdr1 <- getTopHVGs(dec, fdr.threshold = 0.01)
+# print(paste("Num HVGs at FDR = 0.01:", length(top.hvgs.fdr1)))
 
-top.hvgs.fdr5 <- getTopHVGs(dec, fdr.threshold = 0.05)
-print(paste("Num HVGs at FDR = 0.05:", length(top.hvgs.fdr5)))
-top.hvgs.fdr1 <- getTopHVGs(dec, fdr.threshold = 0.01)
-print(paste("Num HVGs at FDR = 0.01:", length(top.hvgs.fdr1)))
-
-save(
-    top.hvgs.p1,
-    top.hvgs.p2,
-    top.hvgs.p5,
-    top.hvgs.fdr5,
-    top.hvgs.fdr1,
-    file = file.path(dir_rdata, "top.hvgs.Rdata")
-)
+save(top.hvgs.p1,file = file.path(dir_rdata, "top.hvgs.Rdata"))
+# save(
+#     top.hvgs.p1,
+#     top.hvgs.p2,
+#     top.hvgs.p5,
+#     top.hvgs.fdr5,
+#     top.hvgs.fdr1,
+#     file = file.path(dir_rdata, "top.hvgs.Rdata")
+# )
 
 message(Sys.time(), " - Running runPCA()")
 Sys.time()
@@ -146,43 +149,46 @@ spe <-
          ncomponents = num_red_dims,
          name = "PCA"
   )
-spe <- # 20p
-  runPCA(spe,
-         subset_row = top.hvgs.p2,
-         ncomponents = num_red_dims,
-         name = "PCA_p2"
-  )
-spe <- # 50p
-  runPCA(spe,
-         subset_row = top.hvgs.p5,
-         ncomponents = num_red_dims,
-         name = "PCA_p5"
-  )
+# spe <- # 20p
+#   runPCA(spe,
+#          subset_row = top.hvgs.p2,
+#          ncomponents = num_red_dims,
+#          name = "PCA_p2"
+#   )
+# spe <- # 50p
+#   runPCA(spe,
+#          subset_row = top.hvgs.p5,
+#          ncomponents = num_red_dims,
+#          name = "PCA_p5"
+#   )
+
 # HVG by Fold Discovery Rate
-spe <-
-    runPCA(spe,
-        subset_row = top.hvgs.fdr5,
-        ncomponents = num_red_dims,
-        name = "PCA_fdr5"
-    )
-spe <-
-    runPCA(spe,
-        subset_row = top.hvgs.fdr1,
-        ncomponents = num_red_dims,
-        name = "PCA_fdr1"
-    )
+# spe <-
+#     runPCA(spe,
+#         subset_row = top.hvgs.fdr5,
+#         ncomponents = num_red_dims,
+#         name = "PCA_fdr5"
+#     )
+# spe <-
+#     runPCA(spe,
+#         subset_row = top.hvgs.fdr1,
+#         ncomponents = num_red_dims,
+#         name = "PCA_fdr1"
+#     )
+
 Sys.time()
 reducedDimNames(spe)
 plotReducedDim(spe, dimred = "PCA", colour_by = "sample_id") 
-plotReducedDim(spe, dimred = "PCA_p2", colour_by = "sample_id") 
+# plotReducedDim(spe, dimred = "PCA_p2", colour_by = "sample_id") 
 
 # head(reducedDims(spe)$PCA_fdr1)
 
 ##   Plot all elbow plots in the same plot and add legends including hvg used and inflection point
 
-lst_PCA_elbow <- list(
-  PCA = length(top.hvgs.p1), PCA_p2 = length(top.hvgs.p2), PCA_p5 = length(top.hvgs.p5),
-  PCA_fdr5 = length(top.hvgs.fdr5), PCA_fdr1 = length(top.hvgs.fdr1))
+lst_PCA_elbow <- list(PCA = length(top.hvgs.p1))
+# lst_PCA_elbow <- list(
+#   PCA = length(top.hvgs.p1), PCA_p2 = length(top.hvgs.p2), PCA_p5 = length(top.hvgs.p5),
+#   PCA_fdr5 = length(top.hvgs.fdr5), PCA_fdr1 = length(top.hvgs.fdr1))
 
 ## Get max axis range
 max_percentVar <- map(names(lst_PCA_elbow), ~ max(attr(reducedDim(spe, .x), "percentVar")))
@@ -190,6 +196,7 @@ y_axis <- ceiling(max(unlist(max_percentVar)) + 0.5)
 x_axis <- num_red_dims
 
 pdf(file.path(dir_plots, 'pca_elbow.pdf'), useDingbats = FALSE)
+
 plot(
   attr(reducedDim(spe, names(lst_PCA_elbow[1])), "percentVar"), 
   #xlab = gsub("^PCA_", "PC_", .x), 
@@ -219,6 +226,7 @@ for (i in 2:length(names(lst_PCA_elbow))) {
 }
 legend("topright", legend = legend_label,
        col=c(color_v), lty=1:2, cex=0.8)
+
 dev.off()
 
 ################################################################################
@@ -278,16 +286,17 @@ spe <- nullResiduals( # default params
 ## Get HVDG
 hdgs.hb.1000 <-
       rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:1000]
-hdgs.hb.2000 <-
-    rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:2000]
-hdgs.hb.5000 <-
-   rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:5000]
+# hdgs.hb.2000 <-
+#     rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:2000]
+# hdgs.hb.5000 <-
+#    rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:5000]
 
-save(hdgs.hb.1000,
-    hdgs.hb.2000,
-    hdgs.hb.5000,
-    file = file.path(dir_rdata, "hdgs.hb.Rdata")
-)
+save(hdgs.hb.1000, file = file.path(dir_rdata, "hdgs.hb.Rdata"))
+# save(hdgs.hb.1000,
+#     hdgs.hb.2000,
+#     hdgs.hb.5000,
+#     file = file.path(dir_rdata, "hdgs.hb.Rdata")
+# )
 
 message(Sys.time(), " - Running GLM-PCA")
 spe <- runPCA(
@@ -299,28 +308,29 @@ spe <- runPCA(
     BSPARAM = BiocSingular::IrlbaParam()
 )
 
-spe <- runPCA(
-    spe,
-    exprs_values = "binomial_deviance_residuals",
-    subset_row = hdgs.hb.2000,
-    ncomponents = num_red_dims,
-    name = "GLMPCA_approx_2000",
-    BSPARAM = BiocSingular::IrlbaParam()
-)
+# spe <- runPCA(
+#     spe,
+#     exprs_values = "binomial_deviance_residuals",
+#     subset_row = hdgs.hb.2000,
+#     ncomponents = num_red_dims,
+#     name = "GLMPCA_approx_2000",
+#     BSPARAM = BiocSingular::IrlbaParam()
+# )
 
 plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sample_id") 
-plotReducedDim(spe, dimred = "GLMPCA_approx_2000", colour_by = "sample_id") 
+# plotReducedDim(spe, dimred = "GLMPCA_approx_2000", colour_by = "sample_id") 
 
 ## Save the processed SPE object
 
-message(Sys.time(), " - Saving HDF5-backed filtered spe")
-spe = saveHDF5SummarizedExperiment(
-    spe, dir = filtered_hdf5_dir, replace = TRUE
-)
-spe = realize(spe)
+# message(Sys.time(), " - Saving HDF5-backed filtered spe")
+# spe = saveHDF5SummarizedExperiment(
+#     spe, dir = filtered_hdf5_dir, replace = TRUE
+# )
+# spe = realize(spe)
 
 message(Sys.time(), " - Saving ordinary filtered spe")
 saveRDS(spe, filtered_ordinary_path)
+
 
 ## Reproducibility information
 print("Reproducibility information:")
