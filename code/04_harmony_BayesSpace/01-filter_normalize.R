@@ -2,6 +2,8 @@ library("spatialLIBD")
 library("here")
 library("tidyverse")
 library("scran")
+library("purrr")
+library("ggplot2")
 library("BiocParallel")
 library("scater")
 library("scry")
@@ -16,7 +18,7 @@ spe_in_path <- here("processed-data", "02_build_spe", "spe_scran_spotsweeper.rds
 filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
 
-num_cores <- 2 # Sys.getenv('SLURM_CPUS_ON_NODE')
+num_cores <- 2
 set.seed(20240223)
 
 ## Create output directories
@@ -37,90 +39,62 @@ colnames(colData(spe))
 message("scran_low_lib_size\t\t", table(spe$scran_low_lib_size)[[1]])
 message("scran_low_n_features\t\t", table(spe$scran_low_n_features)[[1]])
 message("scran_high_subsets_Mito_percent\t\t", table(spe$scran_high_subsets_Mito_percent)[[1]])
-message("scran_discard\t\t",table(spe$scran_discard)[[1]])
-
+message("scran_discard\t\t", table(spe$scran_discard)[[1]])
+# From SS: SpotSweeper local_outliers = sum_umi_outliers | sum_gene_outliers | expr_chrM_ratio_outliers
 message("SpotSweeper_sum_umi_outliers\t\t", table(spe$sum_umi_outliers)[[2]])
 message("SpotSweeper_sum_gene_outliers\t\t", table(spe$sum_gene_outliers)[[2]])
 message("SpotSweeper_expr_chrM_ratio_outliers\t\t", table(spe$expr_chrM_ratio_outliers)[[2]])
-
+message("SpotSweeper_\t\t", table(spe$local_outliers)[[2]])
 
 
 ###############################################################################
-#   Manually selection of spots to drop (issue #7)
+#   Automatic selection of spots detected by scran and SpotSweeper 
 ################################################################################
 
-#  Re-upload the spots manually annotated to resume the work as noted here https://github.com/LieberInstitute/spatialLIBD/blob/77a5303f91edb7b9ffb1ce00b4193dae5d16a8a1/R/app_server.R#L1118-L1152)
 
-spatialLIBD_ann_file <- here(
-    "processed-data", "03_spatialLIBD_app", "Manual_annotations", 
-    "spatialLIBD_ManAnn_2024-05-16_CSC_quality_controls_v2.csv"
-)
+message("Merging scran and spot sweeper outliers to remove")
+v_scran_discard_keys <- unlist(spe$key[spe$scran_discard==T])
+length(v_scran_discard_keys)
+v_spotS_outlier_keys <- unlist(spe$key[spe$local_outliers==T])
+length(v_spotS_outlier_keys)
+v_keys_bad_spots <- append(as.vector(v_scran_discard_keys), as.vector(v_spotS_outlier_keys))
+message("Total ouliers merged: ", length(v_keys_bad_spots))
+v_keys_bad_spots <- unique(v_keys_bad_spots)
+df_bad_spots <- as.data.frame(v_keys_bad_spots)
 
-# read the annotation file made with the spatialLIBD shiny app
-previous_work <-
-    read.csv(
-        spatialLIBD_ann_file,
-        header = TRUE,
-        stringsAsFactors = FALSE,
-        na.strings = ""
-    )
+message("Total unique outliers: ", nrow(df_bad_spots))
 
-head(previous_work) # list
+## Remove all the outliers detected automatically
 
-## Update the non-NA
-previous_work <-
-    subset(previous_work, ManualAnnotation != "NA")
-
-unique(previous_work["sample_id"])
-
-# add a unique keys identificator
-previous_work$key <-
-    paste0(
-        previous_work$spot_name,
-        "_",
-        previous_work$sample_id
-    )
-head(previous_work["key"], 3)
-
+head(df_bad_spots, 3)
 # match de unique IDs and get the index row from spe
 m <- match(previous_work$key, spe$key)
+m <- match(df_bad_spots$v_keys_bad_spots, spe$key)
+m
 length(m) # for example: 284 manual annotations
 
+spe <- spe[, !spe$key %in% spe$key[c(m)]] 
 
-# set and transfer the label
-spe$ManualAnnotation[m[!is.na(m)]] <- previous_work$ManualAnnotation[!is.na(m)]
-spe$key[m[!is.na(m)]]
-# [1] "AACGAAAGTCGTCCCA-1_V13B23-285_B1" "AACGTTATCAGCACCT-1_V13B23-285_B1"
-# [3] "ACATAAGTCGTGGTGA-1_V13B23-285_B1" "ACCATCCGCCAACTAG-1_V13B23-285_B1"
-# [5] "ACTCGATGTATTTCAT-1_V13B23-285_B1" "ACTGCTCGGAAGGATG-1_V13B23-285_B1"
+# for (bad_spot in v_keys_bad_spots) { 
+#   #spe <- spe[, !spe$key == outlier] 
+#   spe <- spe[, spe$key != bad_spot] 
+#   }
 
-lst_manual_ann <- as.list(unique(spe$ManualAnnotation))
-lst_manual_ann <- lst_manual_ann[!lst_manual_ann %in% c("NA")]
 
-## Additional QC. Drop spots with manual annotations for tissue artifacts and atypicals
-# spe$key[m[63]] # TTGTGAGGCATGACGC-1_V13B23-285_C1
-colnames(colData(spe))
+message("Outliers removed!")
+message(" - Current spots: ", length(spe$key))
 
-# Remove all the manual annotation labels provided in the list
-for (ann in lst_manual_ann) {
-    print(paste0("Removing spots for `", ann, "` manual annotation"))
-    spe <- spe[, spe$ManualAnnotation != ann]
-}
-# for example:
-# [1] "Removing spots for `scran_low_library` manual annotation"
-# [1] "Removing spots for `very_high_umi` manual annotation"
-# [1] "Removing spots for `tissue_roll` manual annotation"
-# [1] "Removing spots for `scran_high_chrMT` manual annotation"
-
-unique(spe$ManualAnnotation)
-cat("Number of spots after removed low library size spots on the tissue edge:", dim(spe)[2], "\n")
 
 ## Double check any remaining empty spots and/or genes with zero counts
+length(spe$key[spe$in_tissue])
 spe <- spe[
-    rowSums(assays(spe)$counts) > 0,
-    (colSums(assays(spe)$counts) > 0) & spe$in_tissue
+  rowSums(assays(spe)$counts) > 0,
+  (colSums(assays(spe)$counts) > 0)
 ]
-cat("Number of spots after removed any remaining empty spots and/or genes with zero counts:", dim(spe)[2], "\n")
+spe[, colSums(counts(spe)) > 0] #33409
+spe[rowSums(assays(spe)$counts) > 0] #33409
+
+message("Number of spots after removed any remaining empty spots and/or genes with zero counts:", dim(spe)[2], "\n")
 
 ## Save new spe object with spots manually annotated drop
 saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD.rds"))
@@ -138,19 +112,28 @@ saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD.rds"))
 message(Sys.time(), " - Running quickCluster()")
 
 # pre-clustering step where cells in each cluster are normalized separately and the size factors are rescaled to be comparable across clusters
+
 Sys.time()
 spe$scran_quick_cluster <- quickCluster(
     spe,
     BPPARAM = MulticoreParam(num_cores),
     block = spe$sample_id,
-    block.BPPARAM = MulticoreParam(num_cores)
+    block.BPPARAM = MulticoreParam(num_cores),
+    #use.ranks=TRUE
+    #min.mean = 0.1
 )
 Sys.time()
+
+## Test to avoid warning in computeSumFactors() which generate error on logNormCounts() final step:
+# (1) I applied `use.ranks=TRUE`, which removes low-abundance genes with many tied ranks, especially due to zeros, which may reduce the precision of the clustering
+# (2) I applied `min.mean = 0.1` for UMI data - the function will automatically try to determine this from the data if min.mean=NULL.
+
 
 print("Quick cluster table:")
 table(spe$scran_quick_cluster)
 
-# deconvolution size factors normalization
+## deconvolution size factors normalization
+
 message(Sys.time(), " - Running computeSumFactors()")
 Sys.time()
 spe <- computeSumFactors(spe,
@@ -159,31 +142,47 @@ spe <- computeSumFactors(spe,
 )
 Sys.time()
 
+# Warning message: -> I used use.ranks=TRUE to perform quickCluster()
+#   In .rescale_clusters(clust.profile, ref.col = ref.clust, min.mean = min.mean) :
+#   inter-cluster rescaling factor for cluster 7 is not strictly positive,
+# reverting to the ratio of average library sizes
+
 message(Sys.time(), " - Running checking sizeFactors()")
 summary(sizeFactors(spe))
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 0.0000  0.1491  0.4805  1.0000  1.2669 27.5203 
 
-# plot deconvolution size factor for each cell compared to the equivalent size factor derived from the library size
+## plot deconvolution size factor for each cell compared to the equivalent size factor derived from the library size
+
 lib.sf <- librarySizeFactors(spe)
+
+pdf(here(dir_plots, "Histogram_log10_size_factor.pdf"))
 hist(log10(lib.sf), xlab="Log10[Size factor]", col='grey80')
+dev.off()
+
+pdf(here(dir_plots, "Deconvolution_size_factor.pdf"))
 plot(lib.sf, sizeFactors(spe), xlab="Library size factor",
-     ylab="Deconvolution size factor", log='xy', pch=16,
+     ylab="Deconvolution size factor", pch=16, # log='xy',
      col=as.integer(factor(spe$sizeFactor)))
 abline(a=0, b=1, col="red")
+dev.off()
 
-# run log normalization
+## run log normalization
+
 message(Sys.time(), " - Running logNormCounts()")
-spe <- logNormCounts(spe)
 
-# Save a copy of the SPE with HDF5-backed assays, which will be important to
-# control memory consumption later
+spe <- logNormCounts(spe) # Error in .local(x, ...) : size factors should be positive
+assayNames(spe)
 
-saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_log.rds"))
+# Save spe QCed with log-counts 
 
-spe <- saveHDF5SummarizedExperiment(
-    spe,
-    dir = paste0(filtered_hdf5_dir, "_temp"), replace = TRUE
-)
-gc()
+saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_log_not_QCed.rds"))
+
+# spe <- saveHDF5SummarizedExperiment(
+#     spe,
+#     dir = paste0(filtered_hdf5_dir, "_temp"), replace = TRUE
+# )
+# gc()
 
 
 
