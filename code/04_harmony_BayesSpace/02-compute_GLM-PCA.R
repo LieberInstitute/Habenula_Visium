@@ -331,6 +331,10 @@ plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sample_id")
 message(Sys.time(), " - Saving ordinary filtered spe")
 saveRDS(spe, filtered_ordinary_path)
 
+# library("slurmjobs")
+# job_single(
+#   name = "02-compute_GLM-PCA", memory = "80G", cores = 2, create_shell = TRUE
+# )
 
 ## Reproducibility information
 print("Reproducibility information:")
