@@ -89,7 +89,6 @@ exp_df = do.call(
 #   with counts greater than various thresholds
 p = exp_df |>
     filter(prop_genes > 0.01) |>
-    mutate(sample_id = str_extract(sample_id, '[AD]1$')) |>
     ggplot(
             aes(
                 x = umi_cutoff, y = prop_genes, color = sample_id,
@@ -100,7 +99,7 @@ p = exp_df |>
         theme_bw(base_size = 25) +
         labs(x = "UMI cutoff", y = "Prop. of genes", color = "Sample ID")
 
-pdf(file.path(plot_dir, 'xenium_exp_genes_umi_cutoffs.pdf'))
+pdf(file.path(plot_dir, 'xenium_exp_genes_umi_cutoffs.pdf'), width = 10)
 print(p)
 dev.off()
 
