@@ -5,6 +5,7 @@ library("tidyverse")
 library("scran")
 library("scater")
 library("scry")
+library("ggpubr")
 library("BiocParallel")
 library("BiocSingular")
 library("bluster")
@@ -14,8 +15,7 @@ library("sessioninfo")
 
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 # filtered_in_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log.rds")
-## temporal testing
-filtered_in_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log_not_QCed.rds")
+filtered_in_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log_QCed.rds")
 filtered_ordinary_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log_GLM-PCA.rds") # new SPE with GLM-PCAs
 filtered_hdf5_dir <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log_GLM-PCA_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
@@ -31,6 +31,8 @@ spe <- readRDS(filtered_in_path)
 ## Verified number of TRUE spots in tissue
 in_tissue_spots <- sum(as.numeric(map(unique(spe$sample_id), ~ sum(spe$in_tissue[spe$sample_id == .x]))))
 print(paste0(" Spots in tissue: ", in_tissue_spots))
+# [1] " Spots in tissue: 33409"
+
 
 ################################################################################
 #   Compute PCA
@@ -177,8 +179,26 @@ spe <-
 #     )
 
 Sys.time()
+
 reducedDimNames(spe)
-plotReducedDim(spe, dimred = "PCA", colour_by = "sample_id") 
+plt1 <- plotReducedDim(spe, dimred = "PCA", colour_by = "sample_id")  + theme_bw()
+ggsave(plt1, filename = here(dir_plots, "DimRed_PCA.png"))
+
+pdf(here(dir_plots, "DimRed_PCA_other_features.pdf"))
+plt1 <- plotReducedDim(spe, dimred = "PCA", colour_by = "brain_area") + font("x.text", size = 8) + theme_bw()
+plt2 <- plotReducedDim(spe, dimred = "PCA", colour_by = "brain_id") + font("x.text", size = 8) + theme_bw()
+plt3 <- plotReducedDim(spe, dimred = "PCA", colour_by = "ethnicity") + font("x.text", size = 8) + theme_bw()
+plt4 <- plotReducedDim(spe, dimred = "PCA", colour_by = "age") + font("x.text", size = 8) + theme_bw()
+plt_all <- ggarrange(plt1, plt2, plt3, plt4 + rremove("x.text"), 
+          labels = c("A", "B", "C", "D"),
+          ncol = 2, nrow = 2)
+annotate_figure(plt_all,
+                top = text_grob("Variance explained", face = "bold", size = 10))
+print(plt_all)
+dev.off()
+
+message("DimRed plot saved!")
+
 # plotReducedDim(spe, dimred = "PCA_p2", colour_by = "sample_id") 
 
 # head(reducedDims(spe)$PCA_fdr1)
@@ -215,19 +235,22 @@ hvg.used <- paste0("(HVG = ", as.character(lst_PCA_elbow[1]), ")")
 leg <- paste(hvg.threshold, hvg.used) #, ' elbow = ', chosen.elbow)
 legend_label <- c(leg)
 
-for (i in 2:length(names(lst_PCA_elbow))) {
-  percent.var <- attr(reducedDim(spe, names(lst_PCA_elbow[i])), "percentVar") 
-  points(percent.var, col=color_v[i]) 
-  #chosen.elbow <- findElbowPoint(percent.var)
-  hvg.threshold <- names(lst_PCA_elbow[i])
-  hvg.used <- paste0("(HVG = ", as.character(lst_PCA_elbow[i]), ")")
-  leg <- paste(hvg.threshold, hvg.used) #, ' elbow = ', chosen.elbow)
-  legend_label <- append(legend_label, leg)
-}
-legend("topright", legend = legend_label,
-       col=c(color_v), lty=1:2, cex=0.8)
+# for (i in 2:length(names(lst_PCA_elbow))) {
+#   percent.var <- attr(reducedDim(spe, names(lst_PCA_elbow[i])), "percentVar") 
+#   points(percent.var, col=color_v[i]) 
+#   #chosen.elbow <- findElbowPoint(percent.var)
+#   hvg.threshold <- names(lst_PCA_elbow[i])
+#   hvg.used <- paste0("(HVG = ", as.character(lst_PCA_elbow[i]), ")")
+#   leg <- paste(hvg.threshold, hvg.used) #, ' elbow = ', chosen.elbow)
+#   legend_label <- append(legend_label, leg)
+# }
+# legend("topright", legend = legend_label,
+#        col=c(color_v), lty=1:2, cex=0.8)
 
 dev.off()
+
+message("Elbow plot saved!")
+
 
 ################################################################################
 #   Compute GLM-PCA
@@ -284,12 +307,9 @@ spe <- nullResiduals( # default params
 # plot(binom_dev_residuals) 
 
 ## Get HVDG
-hdgs.hb.1000 <-
-      rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:1000]
-# hdgs.hb.2000 <-
-#     rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:2000]
-# hdgs.hb.5000 <-
-#    rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:5000]
+hdgs.hb.1000 <- rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:1000]
+# hdgs.hb.2000 <- rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:2000]
+# hdgs.hb.5000 <- rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:5000]
 
 save(hdgs.hb.1000, file = file.path(dir_rdata, "hdgs.hb.Rdata"))
 # save(hdgs.hb.1000,
@@ -317,7 +337,42 @@ spe <- runPCA(
 #     BSPARAM = BiocSingular::IrlbaParam()
 # )
 
-plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sample_id") 
+plt1 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sample_id") + theme_bw()
+ggsave(plt1, filename = here(dir_plots, "DimRed_GLM-PCA.png"))
+
+pdf(here(dir_plots, "DimRed_GLM-PCA_other_features.pdf"))
+plt1 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_area") + font("x.text", size = 8) + theme_bw()
+plt2 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_id") + font("x.text", size = 8) + theme_bw()
+plt3 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "ethnicity") + font("x.text", size = 8) + theme_bw()
+plt4 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "age") + font("x.text", size = 8) + theme_bw()
+plt_all <- ggarrange(plt1, plt2, plt3, plt4 + rremove("x.text"), 
+                     labels = c("A", "B", "C", "D"),
+                     ncol = 2, nrow = 2)
+annotate_figure(plt_all,
+                top = text_grob("Variance explained GLM-PCA", face = "bold", size = 10))
+print(plt_all)
+dev.off()
+
+message("DimRed plot saved!")
+
+
+lst_GLMPCA_elbow <- list(GLMPCA_approx = length(hdgs.hb.1000))
+
+pdf(file.path(dir_plots, 'GLM-pca_elbow.pdf'), useDingbats = FALSE)
+
+plot(
+  attr(reducedDim(spe, names(lst_GLMPCA_elbow[1])), "percentVar"), 
+  xlab = "Dimension", 
+  ylab = "Variance explained (%)",
+  ylim =c(0, y_axis), xlim =c(0, x_axis),
+  col = color_v[1],
+  main = "GLM-PCA Elbow plots")
+
+dev.off()
+
+message("GLM-PCA Elbow plot saved!")
+
+
 # plotReducedDim(spe, dimred = "GLMPCA_approx_2000", colour_by = "sample_id") 
 
 ## Save the processed SPE object
