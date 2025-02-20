@@ -64,40 +64,6 @@ df_bad_spots <- as.data.frame(v_keys_bad_spots)
 
 message("Total unique outliers: ", nrow(df_bad_spots))
 
-## Remove all the outliers detected automatically
-
-head(df_bad_spots, 3)
-# match de unique IDs and get the index row from spe
-m <- match(previous_work$key, spe$key)
-m <- match(df_bad_spots$v_keys_bad_spots, spe$key)
-m
-length(m) # for example: 284 manual annotations
-
-spe <- spe[, !spe$key %in% spe$key[c(m)]] 
-
-# for (bad_spot in v_keys_bad_spots) { 
-#   #spe <- spe[, !spe$key == outlier] 
-#   spe <- spe[, spe$key != bad_spot] 
-#   }
-
-
-message("Outliers removed!")
-message(" - Current spots: ", length(spe$key))
-
-
-## Double check any remaining empty spots and/or genes with zero counts
-length(spe$key[spe$in_tissue])
-spe <- spe[
-  rowSums(assays(spe)$counts) > 0,
-  (colSums(assays(spe)$counts) > 0)
-]
-spe[, colSums(counts(spe)) > 0] #33409
-spe[rowSums(assays(spe)$counts) > 0] #33409
-
-message("Number of spots after removed any remaining empty spots and/or genes with zero counts:", dim(spe)[2], "\n")
-
-## Save new spe object with spots manually annotated drop
-saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD.rds"))
 
 
 
@@ -119,12 +85,15 @@ spe$scran_quick_cluster <- quickCluster(
     BPPARAM = MulticoreParam(num_cores),
     block = spe$sample_id,
     block.BPPARAM = MulticoreParam(num_cores),
+    method="igraph", # SNN graph is used, the function define clusters based on highly connected communities
+    #min.size=10     # ONLY use if you have enough data to control/avoid aggregation of small clusters
     #use.ranks=TRUE
     #min.mean = 0.1
 )
 Sys.time()
 
 ## Test to avoid warning in computeSumFactors() which generate error on logNormCounts() final step:
+# (1) On the method="igraph, If the smallest cluster contains fewer cells than min.size, it is merged with the closest neighbouring cluster
 # (1) I applied `use.ranks=TRUE`, which removes low-abundance genes with many tied ranks, especially due to zeros, which may reduce the precision of the clustering
 # (2) I applied `min.mean = 0.1` for UMI data - the function will automatically try to determine this from the data if min.mean=NULL.
 
@@ -149,8 +118,8 @@ Sys.time()
 
 message(Sys.time(), " - Running checking sizeFactors()")
 summary(sizeFactors(spe))
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-# 0.0000  0.1491  0.4805  1.0000  1.2669 27.5203 
+# Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+# 0.000069  0.153549  0.478955  1.000000  1.267384 26.885066 
 
 ## plot deconvolution size factor for each cell compared to the equivalent size factor derived from the library size
 
@@ -171,12 +140,13 @@ dev.off()
 
 message(Sys.time(), " - Running logNormCounts()")
 
-spe <- logNormCounts(spe) # Error in .local(x, ...) : size factors should be positive
+spe <- logNormCounts(spe)
 assayNames(spe)
+# [1] "counts"    "logcounts"
 
 # Save spe QCed with log-counts 
 
-saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_log_not_QCed.rds"))
+# saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_log_QCed.rds"))
 
 # spe <- saveHDF5SummarizedExperiment(
 #     spe,
@@ -185,6 +155,37 @@ saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_log_not_QCed.rds"))
 # gc()
 
 
+################################################################################
+#   Remove all the outliers detected automatically
+################################################################################
+
+head(df_bad_spots, 3)
+# # match de unique IDs and get the index row from spe
+# m <- match(previous_work$key, spe$key)
+# m <- match(df_bad_spots$v_keys_bad_spots, spe$key)
+# m
+# length(m) # for example: 284 manual annotations
+# spe <- spe[, !spe$key %in% spe$key[c(m)]] 
+
+spe <- spe[, !spe$key %in% v_keys_bad_spots] 
+
+message("Outliers removed!")
+message(" - Current spots: ", length(spe$key))
+
+
+## Double check any remaining empty spots and/or genes with zero counts
+length(spe$key[spe$in_tissue])
+spe <- spe[
+  rowSums(assays(spe)$counts) > 0,
+  (colSums(assays(spe)$counts) > 0)
+]
+
+message("Number of spots after removed any remaining empty spots and/or genes with zero counts:", dim(spe)[2], "\n")
+
+saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_log_QCed.rds"))
+
+## Save new spe object with spots manually annotated drop
+# saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD.rds"))
 
 # ################################################################################
 
