@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=80G
+#SBATCH --mem=100G
 #SBATCH --job-name=02-compute_GLM-PCA
 #SBATCH -c 2
 #SBATCH -t 1-00:00:00
@@ -9,8 +9,9 @@
 # SBATCH --mail-type=ALL
 
 ## Explicitly pipe script output to a log
-log_path=logs/02-compute_GLM-PCA.txt
+log_path=logs/02-compute_GLM-PCA_${id}.txt
 
+{
 set -e
 
 echo "**** Job starts ****"
