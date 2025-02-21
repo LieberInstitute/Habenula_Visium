@@ -7,6 +7,7 @@ library("parallel")
 library("scater")
 library("BiocParallel")
 library("ggplot2")
+library("ggpubr")
 library("scran")
 library("Polychrome")
 library("sessioninfo")
@@ -72,13 +73,12 @@ RunHarmony_mod <- function(
     return(object)
 }
 
-tsne_perplex_vals <- c("05", "20", "50") #, "80"
+tsne_perplex_vals <- c("30", "50") #, "05", "80"
 num_cores <- detectCores() - 1
 
 ## Create output directories
 dir_plots <- here("plots", "04_harmony_BayesSpace")
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
-filtered_hdf5_dir <- here("processed-data", "04_harmony_BayesSpace", "spe_qcED_spatialLIBD_log_GLM-PCA_hdf5")
 harmony_hdf5_dir <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony")
 
 dir.create(dir_plots, showWarnings = FALSE)
@@ -93,13 +93,16 @@ set.seed(20240614)
 spe <- readRDS(file.path(dir_rdata, "spe_qcED_spatialLIBD_log_GLM-PCA.rds")) 
 # colnames(colData(spe))
 reducedDimNames(spe)
+# [1] "10x_pca"       "10x_tsne"      "10x_umap"      "PCA"          
+# [5] "GLMPCA_approx"
 
 ## Plot initial low-dimensional representations prior to batch correction
 
 # Build a list with the reductions PCA and GLM-PCA to plot
 
 lst_PCA <- c(reducedDimNames(spe)[grep("^PCA", reducedDimNames(spe))])
-# [1] "PCA"      "PCA_fdr1" "PCA_p1"   "PCA_p2"   "PCA_p5"
+
+## DimRed plots before Harmony
 pdf(file.path(dir_plots, 'reduction_dimension_PCA.pdf'), useDingbats = FALSE)
 map(lst_PCA, ~ plotReducedDim(spe,
                               dimred = .x, 
@@ -117,32 +120,34 @@ map(lst_GLMPCA, ~ plotReducedDim(spe,
 )) 
 dev.off()
 
-lst_PCA_GMLPCA <- c(lst_PCA, lst_GLMPCA)
-pdf(file.path(dir_plots, 'reduction_dimension_ALL.pdf'), useDingbats = FALSE)
-map(lst_PCA_GMLPCA, ~ plotReducedDim(spe,
-                                 dimred = .x, 
-                                 ncomponents = 3,
-                                 colour_by = "subject" #scran_discard
-)) 
+## plot other GML-PCA features
+point_size = 0.5
+font_size = 7
+pdf(file.path(dir_plots, 'reduction_dimension_GLMPCA_other_features.pdf'), useDingbats = FALSE)
+plotReducedDim(spe, dimred = "GLMPCA_approx", ncomponents = 3, colour_by = "brain_id", point_size = point_size) + 
+  theme(axis.text=element_text(size=font_size) ,axis.title=element_text(size=font_size))
+plotReducedDim(spe, dimred = "GLMPCA_approx", ncomponents = 3, colour_by = "brain_area", point_size = point_size) + 
+  theme(axis.text=element_text(size=font_size) ,axis.title=element_text(size=font_size))
+plotReducedDim(spe, dimred = "GLMPCA_approx", ncomponents = 3, colour_by = "ethnicity", point_size = point_size) + 
+  theme(axis.text=element_text(size=font_size) ,axis.title=element_text(size=font_size))
+plotReducedDim(spe, dimred = "GLMPCA_approx", ncomponents = 3, colour_by = "sex", point_size = point_size) + 
+  theme(axis.text=element_text(size=font_size) ,axis.title=element_text(size=font_size))
+#gridExtra::grid.arrange(plt1, plt2, plt3, plt4, ncol=1, nrow=2)
 dev.off()
-
-# ggcells(
-#     spe,
-#     aes(x = PCA_p1, y = PCA_p1, colour = sample_id)
-# ) +
-#     geom_point(size = 0.5) +
-#     facet_wrap(~sample_id) +
-#     labs(x = "GLMPC1", y = "GLMPC2", colour = "Discard") + theme_classic()
 
 ## Perform harmony batch correction
 message("Running RunHarmony()")
 Sys.time()
 set.seed(20240614)
 
+## add additional co-variables
+colnames(colData(spe))
+covars <- c("sample_id") # This is the highest technical level / includes subsets of "brain_id" and "ethnicity"
+
 spe <-
     RunHarmony_mod(
         spe,
-        group.by.vars = "sample_id",
+        group.by.vars = covars, #"sample_id",
         verbose = TRUE,
         plot_convergence = TRUE,
         #reduction.use = "PCA",   # HVGs at FDR = 0.05 = 8009
@@ -152,25 +157,30 @@ spe <-
         kmeans_init_iter_max = 1000
     )
 
-spe <-
-    RunHarmony_mod(
-        spe,
-        group.by.vars = "sample_id",
-        verbose = TRUE,
-        #reduction.use = "PCA",
-        reduction.use = "GLMPCA_approx",  # Top 1000
-        reduction.save = "harmony_subject_no_lambda",
-        plot_convergence = TRUE,
-        lambda = NULL,
-        max_iter = 30
-    )
+# spe <-
+#     RunHarmony_mod(
+#         spe,
+#         group.by.vars = covars, #"sample_id",
+#         verbose = TRUE,
+#         #reduction.use = "PCA",
+#         reduction.use = "GLMPCA_approx",  # Top 1000
+#         reduction.save = "harmony_subject_no_lambda",
+#         plot_convergence = TRUE,
+#         lambda = NULL,
+#         max_iter = 30
+#     )
+
 Sys.time()
+reducedDimNames(spe)
+# [1] "10x_pca"       "10x_tsne"      "10x_umap"      "PCA"          
+# [5] "GLMPCA_approx" "HARMONY"     
 
 ## Run Harmony on GLMPCA too, with and without lambda = NULL
 
 #   Perform dimensionality reduction using both PCA and harmony's reduced
 #   dimensions
-for (dimred_var in c("PCA", "HARMONY", "harmony_subject_no_lambda")) {
+# for (dimred_var in c("PCA", "HARMONY", "harmony_subject_no_lambda")) {
+for (dimred_var in c("GLMPCA_approx", "HARMONY")) {
     #   Run TSNE with several perplexity values
     for (perplex in tsne_perplex_vals) {
         message(
@@ -261,11 +271,28 @@ for (dimred_var in c("PCA", "HARMONY", "harmony_subject_no_lambda")) {
 ##  Plot the UMAP by sum of UMIs to verified low/zero UMIs
 colnames(colData(spe))
 reducedDimNames(spe)
-glm_plt1 <- plotReducedDim(spe, dimred = "GLMPCA_approx", by_exprs_values = "logcounts", shape_by = "sample_id", colour_by = "sum_umi") + ggtitle("GLMPCA (1000 hvdg)") 
-# plotReducedDim(spe, dimred = "GLMPCA_approx_2000",  by_exprs_values = "logcounts", shape_by = "sample_id", colour_by = "sum_umi") 
-glm_plt2 <- plotReducedDim(spe, dimred = "TSNE_perplexity50.harmony_subject_no_lambda", by_exprs_values = "logcounts", shape_by = "sample_id", colour_by = "sum_umi") + ggtitle("perplexity = 50 / no lambda")
-glm_plt3 <- plotReducedDim(spe, dimred = "TSNE_perplexity50.HARMONY", by_exprs_values = "logcounts", shape_by = "sample_id", colour_by = "sum_umi") + ggtitle("perplexity = 50 / lambda 1")
-gridExtra::grid.arrange(glm_plt1, glm_plt3, glm_plt2, ncol=3)
+
+## plots to compare GLMPCA_approx against HARMONY
+gridExtra::grid.arrange(plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sample_id")  + theme(legend.position = "none"), 
+                        plotReducedDim(spe, dimred = "HARMONY", colour_by = "sample_id"), ncol=2) 
+gridExtra::grid.arrange(plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_id")  + theme(legend.position = "none"), 
+                        plotReducedDim(spe, dimred = "HARMONY", colour_by = "brain_id"), ncol=2) 
+gridExtra::grid.arrange(plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "ethnicity")  + theme(legend.position = "none"), 
+                        plotReducedDim(spe, dimred = "HARMONY", colour_by = "ethnicity"), ncol=2) 
+gridExtra::grid.arrange(plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "age")  + theme(legend.position = "none"), 
+                        plotReducedDim(spe, dimred = "HARMONY", colour_by = "age"), ncol=2) 
+gridExtra::grid.arrange(plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sex")  + theme(legend.position = "none"), 
+                        plotReducedDim(spe, dimred = "HARMONY", colour_by = "sex"), ncol=2) 
+gridExtra::grid.arrange(plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_area")  + theme(legend.position = "none"), 
+                        plotReducedDim(spe, dimred = "HARMONY", colour_by = "brain_area"), ncol=2) 
+
+glm_plt1 <- plotReducedDim(spe, dimred = "GLMPCA_approx", by_exprs_values = "logcounts", 
+                           shape_by = "sample_id", colour_by = "sum_umi") + 
+  ggtitle("GLMPCA (1000 HDVG)") 
+glm_plt2 <- plotReducedDim(spe, dimred = "TSNE_perplexity50.HARMONY", by_exprs_values = "logcounts", 
+                           shape_by = "sample_id", colour_by = "sum_umi") + 
+  ggtitle("Harmony (GLMPCA_approx - Top 1000 HDVG")
+gridExtra::grid.arrange(glm_plt1, glm_plt2, ncol=2)
 
 
 ## Perform graph-based clustering on batch corrected-data. Smaller 'k' usually yields finer clusters (ex. 5)

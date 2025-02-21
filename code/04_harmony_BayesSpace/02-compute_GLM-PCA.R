@@ -184,16 +184,22 @@ reducedDimNames(spe)
 plt1 <- plotReducedDim(spe, dimred = "PCA", colour_by = "sample_id")  + theme_bw()
 ggsave(plt1, filename = here(dir_plots, "DimRed_PCA.png"))
 
-pdf(here(dir_plots, "DimRed_PCA_other_features.pdf"))
-plt1 <- plotReducedDim(spe, dimred = "PCA", colour_by = "brain_area") + font("x.text", size = 8) + theme_bw()
-plt2 <- plotReducedDim(spe, dimred = "PCA", colour_by = "brain_id") + font("x.text", size = 8) + theme_bw()
-plt3 <- plotReducedDim(spe, dimred = "PCA", colour_by = "ethnicity") + font("x.text", size = 8) + theme_bw()
-plt4 <- plotReducedDim(spe, dimred = "PCA", colour_by = "age") + font("x.text", size = 8) + theme_bw()
+## plot other PCA features
+point_size = 0.5
+font_size = 7
+plt1 <- plotReducedDim(spe, dimred = "PCA", colour_by = "brain_area", point_size = point_size) + 
+  theme_bw() + theme(axis.text=element_text(size=font_size) ,axis.title=element_text(size=font_size))
+plt2 <- plotReducedDim(spe, dimred = "PCA", colour_by = "brain_id", point_size = point_size) + 
+  theme_bw() + theme(axis.text=element_text(size=font_size) ,axis.title=element_text(size=font_size))
+plt3 <- plotReducedDim(spe, dimred = "PCA", colour_by = "ethnicity", point_size = point_size) + 
+  theme_bw() + theme(axis.text=element_text(size=font_size) ,axis.title=element_text(size=font_size))
+plt4 <- plotReducedDim(spe, dimred = "PCA", colour_by = "age", point_size = point_size) + 
+  theme_bw() + theme(axis.text=element_text(size=font_size) ,axis.title=element_text(size=font_size))
 plt_all <- ggarrange(plt1, plt2, plt3, plt4 + rremove("x.text"), 
           labels = c("A", "B", "C", "D"),
           ncol = 2, nrow = 2)
-annotate_figure(plt_all,
-                top = text_grob("Variance explained", face = "bold", size = 10))
+annotate_figure(plt_all, top = text_grob("Variance explained", face = "bold", size = 10))
+pdf(here(dir_plots, "DimRed_PCA_other_features.pdf"))
 print(plt_all)
 dev.off()
 
