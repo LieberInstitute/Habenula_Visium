@@ -272,27 +272,37 @@ for (dimred_var in c("GLMPCA_approx", "HARMONY")) {
 colnames(colData(spe))
 reducedDimNames(spe)
 
-## plots to compare GLMPCA_approx against HARMONY
-gridExtra::grid.arrange(plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sample_id")  + theme(legend.position = "none"), 
-                        plotReducedDim(spe, dimred = "HARMONY", colour_by = "sample_id"), ncol=2) 
-gridExtra::grid.arrange(plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_id")  + theme(legend.position = "none"), 
-                        plotReducedDim(spe, dimred = "HARMONY", colour_by = "brain_id"), ncol=2) 
-gridExtra::grid.arrange(plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "ethnicity")  + theme(legend.position = "none"), 
-                        plotReducedDim(spe, dimred = "HARMONY", colour_by = "ethnicity"), ncol=2) 
-gridExtra::grid.arrange(plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "age")  + theme(legend.position = "none"), 
-                        plotReducedDim(spe, dimred = "HARMONY", colour_by = "age"), ncol=2) 
-gridExtra::grid.arrange(plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sex")  + theme(legend.position = "none"), 
-                        plotReducedDim(spe, dimred = "HARMONY", colour_by = "sex"), ncol=2) 
-gridExtra::grid.arrange(plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_area")  + theme(legend.position = "none"), 
-                        plotReducedDim(spe, dimred = "HARMONY", colour_by = "brain_area"), ncol=2) 
+## plots after Harmony to compare against GLMPCA_approx
+point_size = 0.5
+font_size = 7
+pdf(file.path(dir_plots, 'reduction_dimension_Harmony_vs_GLMPCA.pdf'), useDingbats = FALSE)
+plt1 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sample_id", point_size = point_size) 
+plt2 <- plotReducedDim(spe, dimred = "HARMONY", colour_by = "sample_id", point_size = point_size)
+plt3 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_area", point_size = point_size) 
+plt4 <- plotReducedDim(spe, dimred = "HARMONY", colour_by = "brain_area", point_size = point_size)
+plt5 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_id", point_size = point_size) 
+plt6 <- plotReducedDim(spe, dimred = "HARMONY", colour_by = "brain_id", point_size = point_size)
+plt7 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "ethnicity", point_size = point_size) 
+plt8 <- plotReducedDim(spe, dimred = "HARMONY", colour_by = "ethnicity", point_size = point_size)
+plt_all <- ggarrange(plt1, plt2, plt3, plt4, plt5, plt6, plt7, plt8, 
+                     labels = c("A", "B", "C", "D"),
+                     ncol = 2, nrow = 2)
+plt_all
+dev.off()
 
-glm_plt1 <- plotReducedDim(spe, dimred = "GLMPCA_approx", by_exprs_values = "logcounts", 
-                           shape_by = "sample_id", colour_by = "sum_umi") + 
+## plots sum_umi from Harmony against GLMPCA_approx colored by brain_id (3 levels)
+# Note shape_by is restricted to 10 levels
+pdf(file.path(dir_plots, 'reduction_dimension_Harmony_vs_GLMPCA_sumUMI_sumGene.pdf'), useDingbats = FALSE)
+plt1 <- plotReducedDim(spe, dimred = "HARMONY", by_exprs_values = "logcounts", shape_by = "brain_id", colour_by = "sum_umi") + 
+  ggtitle("HARMONY (GLMPCA - 1000 HDVG)")
+plt2 <- plotReducedDim(spe, dimred = "HARMONY", by_exprs_values = "logcounts", shape_by = "brain_id", colour_by = "sum_gene")
+plt3 <- plotReducedDim(spe, dimred = "GLMPCA_approx", by_exprs_values = "logcounts", shape_by = "brain_id", colour_by = "sum_umi") + 
   ggtitle("GLMPCA (1000 HDVG)") 
-glm_plt2 <- plotReducedDim(spe, dimred = "TSNE_perplexity50.HARMONY", by_exprs_values = "logcounts", 
-                           shape_by = "sample_id", colour_by = "sum_umi") + 
-  ggtitle("Harmony (GLMPCA_approx - Top 1000 HDVG")
-gridExtra::grid.arrange(glm_plt1, glm_plt2, ncol=2)
+plt4 <- plotReducedDim(spe, dimred = "GLMPCA_approx", by_exprs_values = "logcounts", shape_by = "brain_id", colour_by = "sum_gene")
+plt_all <- ggarrange(plt1, plt2, plt3, plt4,
+                        labels = c("A", "B", "C", "D"), ncol = 2, nrow = 2, common.legend = TRUE, legend="right")
+plt_all
+dev.off()
 
 
 ## Perform graph-based clustering on batch corrected-data. Smaller 'k' usually yields finer clusters (ex. 5)
