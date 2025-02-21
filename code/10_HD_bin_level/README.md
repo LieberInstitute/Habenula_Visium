@@ -36,3 +36,8 @@ steps in a cell-cell communication pipeline. Required prohibitively large
 amounts of memory (> 1TB) for this HD data
 - `10_nest_run.sh`: Another `NEST` step that was discontinued after the first
 `09_nest_preprocess.sh` script failed to run
+
+## Other
+
+- `15_plot_markers.*`: Plot habenula, thalamus, and white-matter markers for
+each sample
