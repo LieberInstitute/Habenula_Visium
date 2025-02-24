@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH -p shared
+#SBATCH -p katun
 #SBATCH --mem=80G
 #SBATCH --job-name=BayesSpace_k_search
 #SBATCH -c 1
 #SBATCH -t 1-00:00:00
-#SBATCH -o logs/03-BayesSpace_k_search.%a.txt
-#SBATCH -e logs/03-BayesSpace_k_search.%a.txt
-#SBATCH --mail-type=ALL
+#SBATCH -o logs/04-BayesSpace_k_search.%a.txt
+#SBATCH -e logs/04-BayesSpace_k_search.%a.txt
+# SBATCH --mail-type=ALL
 #SBATCH --array=2-28%20
 
 set -e
@@ -22,7 +22,7 @@ echo "Node name: ${SLURMD_NODENAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.3.x
+module load conda_R/4.4.x
 
 ## List current modules for reproducibility
 module list
