@@ -37,7 +37,19 @@ for (sample_id in unique(spe$sample_id)) {
             spe, sampleid = sample_id, geneid = marker_genes[[marker_name]],
             multi_gene_method = "z_score", is_stitched = TRUE,
             point_size = 10, spatial = TRUE, cap_percentile = 0.995
-        )
+        ) +
+            #   Essentially, make legend bigger while preserving most other
+            #   vis_gene defaults for theme
+            theme_bw(base_size = 30) +
+            theme(
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_blank(),
+                axis.line = element_blank(),
+                axis.text = element_blank(),
+                axis.ticks = element_blank(),
+                legend.box.spacing = unit(0, "pt")
+            )
 
         png(
             file.path(plot_dir, sprintf("%s_%s.png", marker_name, sample_id)),
