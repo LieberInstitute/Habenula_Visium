@@ -2,8 +2,12 @@ library(here)
 library(tidyverse)
 library(SpatialExperiment)
 library(HDF5Array)
-library(spatialLIBD)
 library(sessioninfo)
+
+#   Manually load a fork of spatialLIBD that has a 'cap_percentile' parameter
+#   accepted by 'vis_gene', which is critical for dynamic range of color
+spatialLIBD_dir = '/users/neagles/spatialLIBD_fork/spatialLIBD'
+devtools::load_all(path = spatialLIBD_dir)
 
 spe_dir = here('processed-data', '10_HD_bin_level', 'spe_norm_filtered')
 plot_dir = here('plots', '10_HD_bin_level', 'marker_genes')
@@ -32,14 +36,12 @@ for (sample_id in unique(spe$sample_id)) {
         p <- vis_gene(
             spe, sampleid = sample_id, geneid = marker_genes[[marker_name]],
             multi_gene_method = "z_score", is_stitched = TRUE,
-            point_size = 1, spatial = FALSE
+            point_size = 10, spatial = TRUE, cap_percentile = 0.995
         )
 
-        #   Using tiff here for a lossless image. PNG seems to have visual
-        #   artifacts, while vector formats like PDF are too large (many points)
-        tiff(
-            file.path(plot_dir, sprintf("%s_%s.tiff", marker_name, sample_id)),
-            width = 1500, height = 1500
+        png(
+            file.path(plot_dir, sprintf("%s_%s.png", marker_name, sample_id)),
+            width = 2000, height = 2000
         )
         print(p)
         dev.off()
