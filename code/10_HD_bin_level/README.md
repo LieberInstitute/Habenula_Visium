@@ -39,5 +39,5 @@ amounts of memory (> 1TB) for this HD data
 
 ## Other
 
-- `15_plot_markers.*`: Plot habenula, thalamus, and white-matter markers for
+- `11_plot_markers.*`: Plot habenula, thalamus, and white-matter markers for
 each sample
