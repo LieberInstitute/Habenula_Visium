@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=10G
-#SBATCH --job-name=15_plot_markers
+#SBATCH --job-name=11_plot_markers
 #SBATCH -c 1
 #SBATCH -t 1:00:00
-#SBATCH -o ../../processed-data/10_HD_bin_level/logs/15_plot_markers.txt
-#SBATCH -e ../../processed-data/10_HD_bin_level/logs/15_plot_markers.txt
+#SBATCH -o ../../processed-data/10_HD_bin_level/logs/11_plot_markers.txt
+#SBATCH -e ../../processed-data/10_HD_bin_level/logs/11_plot_markers.txt
 
 set -e
 
@@ -25,7 +25,7 @@ module load conda_R/4.4.x
 ## List current modules for reproducibility
 module list
 
-Rscript 15_plot_markers.R
+Rscript 11_plot_markers.R
 
 echo "**** Job ends ****"
 date
