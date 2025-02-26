@@ -4,11 +4,15 @@
 #SBATCH --job-name=BayesSpace_k_search
 #SBATCH -c 1
 #SBATCH -t 1-00:00:00
-#SBATCH -o logs/04-BayesSpace_k_search.%a.txt
-#SBATCH -e logs/04-BayesSpace_k_search.%a.txt
+#SBATCH -o /dev/null
+#SBATCH -e /dev/null
 # SBATCH --mail-type=ALL
 #SBATCH --array=2-28%20
 
+## Explicitly pipe script output to a log
+log_path=logs/BayesSpace_k_${SLURM_ARRAY_TASK_ID}_glm.txt
+
+{
 set -e
 
 echo "**** Job starts ****"
@@ -27,10 +31,13 @@ module load conda_R/4.4.x
 ## List current modules for reproducibility
 module list
 
-Rscript 04-BayesSpace_k_search.R
+Rscript 04-BayesSpace_k_search.R 
 
 echo "**** Job ends ****"
 date
+
+} > $log_path 2>&1
+
 
 ## This script was made using slurmjobs version 1.2.0
 ## available from http://research.libd.org/slurmjobs/
