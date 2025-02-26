@@ -7,24 +7,24 @@ import pandas as pd
 import numpy as np
 from scipy.sparse import csr_matrix
 
-# sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-# with open(sample_id_path, 'r') as f:
-#     all_samples = f.read().splitlines()
-# sample_id = all_samples[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
-sample_id = 'H1-MVPY9BW_A1_8433'
+#   Grab sample ID using the array task ID
+sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
+with open(sample_id_path, 'r') as f:
+    all_samples = f.read().splitlines()
+sample_id = all_samples[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
 
 adata_in_path = here(
     'processed-data', '09_HD_cell_level', f'{sample_id}_pre_bin2cell.h5ad'
 )
-adata_out_path = here(
+out_path = here(
     'processed-data', '09_HD_cell_level', 'ficture_aggregate', 'bin2cell_out', 
-    f'{sample_id}.h5ad'
+    f'{sample_id}.csv'
 )
 ficture_input_path = here(
     'processed-data', '09_HD_cell_level', 'ficture_aggregate', 'synthetic_input.tsv.gz'
 )
 
-os.makedirs(os.path.dirname(adata_out_path), exist_ok=True)
+os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
 ficture_input = pd.read_csv(ficture_input_path, sep = '\t')
 
@@ -75,6 +75,12 @@ adata_ficture = b2c.bin_to_cell(
     spatial_keys=["spatial", "spatial_cropped_150_buffer"]
 )
 
-sc.write(adata_out_path, adata_ficture)
+#   Export a CSV containing cell key and scores for each cluster
+cluster_df = pd.DataFrame(
+    adata_ficture.X.toarray()
+)
+cluster_df.columns = [f'FICTURE_{i}' for i in range(12)]
+cluster_df['key'] = [f'{i}_{sample_id}' for i in cluster_df.index]
+cluster_df.to_csv(out_path, index = False)
 
 session_info.show()
