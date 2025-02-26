@@ -1,0 +1,40 @@
+#   Compare FICTURE output plots to the cell-level FICTURE clusters determined
+#   through the bin2cell-based method to confirm that method works
+
+library(here)
+library(tidyverse)
+library(spatialLIBD)
+library(HDF5Array)
+
+sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
+spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
+ficture_paths = here(
+    'processed-data', '09_HD_cell_level', 'ficture_aggregate', 'bin2cell_out', 
+    sprintf('%s.csv', readLines(sample_id_path))
+)
+
+spe = loadHDF5SummarizedExperiment(spe_dir)
+
+#   Read in and concatenate cell-level FICTURE results for all samples
+ficture_df_list = list()
+for (ficture_path in ficture_paths) {
+    ficture_df_list[[ficture_path]] = read_csv(
+        ficture_path, show_col_types = FALSE
+    )
+}
+ficture_df = do.call(rbind, ficture_df_list)
+
+#   Compute the top FICTURE cluster
+ficture_df$FICTURE_cluster = ficture_df |>
+    select(matches('^FICTURE_[0-9]+')) |>
+    as.matrix() |>
+    apply(1, function(x) which.max(x) - 1)
+
+#   Add top FICTURE cluster to colData
+stopifnot(all(ficture_df$key %in% spe$key))
+col_data = colData(spe) |>
+    as_tibble() |>
+    left_join(ficture_df |> select(key, FICTURE_cluster), by = "key") |>
+    DataFrame()
+rownames(col_data) = colnames(spe)
+colData(spe) = col_data
