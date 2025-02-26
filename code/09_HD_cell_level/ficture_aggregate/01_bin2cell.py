@@ -16,6 +16,7 @@ sample_id = all_samples[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
 adata_in_path = here(
     'processed-data', '09_HD_cell_level', f'{sample_id}_pre_bin2cell.h5ad'
 )
+adata_final_path = here('processed-data', '09_HD_cell_level', f'{sample_id}.h5ad')
 out_path = here(
     'processed-data', '09_HD_cell_level', 'ficture_aggregate', 'bin2cell_out', 
     f'{sample_id}.csv'
@@ -74,6 +75,12 @@ adata_ficture = b2c.bin_to_cell(
     adata_ficture, labels_key="labels_joint",
     spatial_keys=["spatial", "spatial_cropped_150_buffer"]
 )
+
+#   Sanity check: the number of cells should be identical to the ordinary
+#   bin2cell run (it should be the same input data and the algorithm should be
+#   deterministic)
+adata_final = sc.read(adata_final_path)
+assert adata_final.shape[0] == adata_ficture.shape[0], f'Actual vs. expected shapes: {adata_ficture.shape[0]} vs. {adata_final.shape[0]}'
 
 #   Export a CSV containing cell key and scores for each cluster
 cluster_df = pd.DataFrame(
