@@ -17,6 +17,8 @@ if (is.na(k)) {
 }
 k_nice <- sprintf("%02d", k)
 
+message("Running BayesSpace at k ", k_nice)
+
 ## Create output directories
 dir_plots <- here("plots", "04_harmony_BayesSpace", "BayesSpace")
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
@@ -66,7 +68,7 @@ p_list <- vis_grid_clus(
     sort_clust = FALSE,
     colors = cols,
     spatial = FALSE,
-    point_size = 1,
+    point_size = 2,
     auto_crop = FALSE,
     return_plots = TRUE
 )
