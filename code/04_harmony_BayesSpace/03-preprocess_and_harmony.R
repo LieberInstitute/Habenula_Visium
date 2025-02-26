@@ -79,7 +79,7 @@ num_cores <- detectCores() - 1
 ## Create output directories
 dir_plots <- here("plots", "04_harmony_BayesSpace")
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
-harmony_hdf5_dir <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony")
+#harmony_hdf5_dir <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony")
 
 dir.create(dir_plots, showWarnings = FALSE)
 dir.create(dir_rdata, showWarnings = FALSE)
@@ -142,7 +142,8 @@ set.seed(20240614)
 
 ## add additional co-variables
 colnames(colData(spe))
-covars <- c("sample_id") # This is the highest technical level / includes subsets of "brain_id" and "ethnicity"
+#covars <- c("sample_id") # This is the highest technical level / includes subsets of "brain_id" and "ethnicity"
+covars <- c("sample_id", "brain_id")
 
 spe <-
     RunHarmony_mod(
