@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=10G
+#SBATCH --mem=30G
 #SBATCH --job-name=10_banksy_clustering
 #SBATCH -c 1
-#SBATCH -t 1-0:00:00
+#SBATCH -t 2-0:00:00
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
-#SBATCH --array=1-20%20
+#SBATCH --array=4
 
 ## Define loops and appropriately subset each variable for the array task ID
 all_res=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1)
