@@ -32,7 +32,7 @@ ficture_df = do.call(rbind, ficture_df_list)
 ficture_df$FICTURE_cluster = ficture_df |>
     select(matches('^FICTURE_[0-9]+')) |>
     as.matrix() |>
-    apply(1, function(x) which.max(x) - 1)
+    apply(1, function(x) ifelse(all(x == 0), NA, which.max(x) - 1))
 
 #   Add top FICTURE cluster to colData
 stopifnot(all(spe$key %in% ficture_df$key))
