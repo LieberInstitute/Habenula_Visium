@@ -76,18 +76,18 @@ adata_ficture = b2c.bin_to_cell(
     spatial_keys=["spatial", "spatial_cropped_150_buffer"]
 )
 
-#   Sanity check: the number of cells should be identical to the ordinary
-#   bin2cell run (it should be the same input data and the algorithm should be
-#   deterministic)
+#   Sanity check: the number and identity of cells should be identical to the
+#   ordinary bin2cell run (it should be the same input data and the algorithm
+#   should be deterministic)
 adata_final = sc.read(adata_final_path)
-assert adata_final.shape[0] == adata_ficture.shape[0], f'Actual vs. expected shapes: {adata_ficture.shape[0]} vs. {adata_final.shape[0]}'
+assert all(adata_final.obs.index == adata_ficture.obs.index)
 
 #   Export a CSV containing cell key and scores for each cluster
 cluster_df = pd.DataFrame(
     adata_ficture.X.toarray()
 )
 cluster_df.columns = [f'FICTURE_{i}' for i in range(12)]
-cluster_df['key'] = [f'{i}_{sample_id}' for i in cluster_df.index]
+cluster_df['key'] = [f'{i}_{sample_id}' for i in adata_ficture.obs.index]
 cluster_df.to_csv(out_path, index = False)
 
 session_info.show()

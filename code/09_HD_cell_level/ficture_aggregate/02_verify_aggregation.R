@@ -31,7 +31,7 @@ ficture_df$FICTURE_cluster = ficture_df |>
     apply(1, function(x) which.max(x) - 1)
 
 #   Add top FICTURE cluster to colData
-stopifnot(all(ficture_df$key %in% spe$key))
+stopifnot(all(spe$key %in% ficture_df$key))
 col_data = colData(spe) |>
     as_tibble() |>
     left_join(ficture_df |> select(key, FICTURE_cluster), by = "key") |>
