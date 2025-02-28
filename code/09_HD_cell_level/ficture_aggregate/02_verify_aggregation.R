@@ -1,5 +1,7 @@
 #   Compare FICTURE output plots to the cell-level FICTURE clusters determined
-#   through the bin2cell-based method to confirm that method works
+#   through the bin2cell-based method to confirm that method works. Also
+#   aggregate FICTURE results across samples, compute the top cluster per bin,
+#   and export to a single CSV
 
 library(here)
 library(tidyverse)
@@ -12,6 +14,10 @@ spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
 ficture_paths = here(
     'processed-data', '09_HD_cell_level', 'ficture_aggregate', 'bin2cell_out', 
     sprintf('%s.csv', readLines(sample_id_path))
+)
+ficture_path_out = here(
+    'processed-data', '09_HD_cell_level', 'ficture_aggregate',
+    'ficture_merged.csv'
 )
 plot_dir = here('plots', '09_HD_cell_level', 'ficture_aggregate')
 
@@ -33,6 +39,8 @@ ficture_df$FICTURE_cluster = ficture_df |>
     select(matches('^FICTURE_[0-9]+')) |>
     as.matrix() |>
     apply(1, function(x) ifelse(all(x == 0), NA, which.max(x) - 1))
+
+write_csv(ficture_df, ficture_path_out)
 
 #   Add top FICTURE cluster to colData
 stopifnot(all(spe$key %in% ficture_df$key))
