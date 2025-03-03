@@ -76,7 +76,9 @@ for (lambda in all_lambda) {
     print(p)
     dev.off()
 
-    message("Top correlations with habenula markers:")
+    message(
+        sprintf("(lambda = %s) Top correlations with habenula markers:", lambda)
+    )
     do.call(rbind, cor_df_list) |>
         arrange(desc(cor_val)) |>
         head() |>
