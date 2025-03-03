@@ -32,7 +32,7 @@ spe_dir = here(
     'processed-data', '09_HD_cell_level', sprintf('spe_banksy_%s', lambda_neat)
 )
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'banksy',
+    'processed-data', '09_HD_cell_level', 'banksy', lambda_neat,
     sprintf('leiden_%s.csv', res_neat)
 )
 plot_dir = here(
@@ -41,7 +41,7 @@ plot_dir = here(
 )
 random_seed = 0
 
-dir.create(dirname(out_path), showWarnings = FALSE)
+dir.create(dirname(out_path), showWarnings = FALSE, recursive = TRUE)
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 
 spe = loadHDF5SummarizedExperiment(spe_dir)

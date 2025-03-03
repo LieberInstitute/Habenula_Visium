@@ -6,7 +6,7 @@
 #SBATCH -t 2-0:00:00
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
-#SBATCH --array=4
+#SBATCH --array=1-20%10
 
 ## Define loops and appropriately subset each variable for the array task ID
 all_res=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1)
