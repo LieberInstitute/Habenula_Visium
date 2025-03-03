@@ -59,7 +59,7 @@ vars <- c(
 #  "age",
   "sample_id",
   "BayesSpace",
-  "subject"#,
+  "brain_id" # subject
 #  "sex" 
 )
 
@@ -69,6 +69,7 @@ vars <- c(
 
 pdf(file = file.path(dir_plots, paste0("sce_pseudo_PCs_k", sprintf("%02d", k), ".pdf")), width = 8, height = 8)
 for (var in vars) {
+  # var = "brain_id"
   p <- plotPCA(
     spe_pseudo,
     colour_by = var,
@@ -88,6 +89,7 @@ dev.off()
 
 ## Obtain percent of variance explained at the gene level
 ## using scater::getVarianceExplained()
+# variance_expl <- getVarianceExplained(spe_pseudo, variables = "brain_id") 
 variance_expl <- getVarianceExplained(spe_pseudo,
                              variables = vars
 ) 
