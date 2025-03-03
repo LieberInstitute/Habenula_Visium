@@ -3,6 +3,7 @@ library(SpatialExperiment)
 library(HDF5Array)
 library(sessioninfo)
 library(Banksy)
+library(tidyverse)
 library(getopt)
 
 #   Corresponding to "cell typing" and "domain segmentation"
