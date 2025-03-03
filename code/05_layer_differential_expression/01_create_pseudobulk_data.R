@@ -4,6 +4,7 @@
 # slurmjobs::job_single('01_create_pseudobulk_data', create_shell = TRUE, memory = '20G', command = "01_create_pseudobulk_data.R")
 # To submit the job use: sbatch 01_create_pseudobulk_data.sh
 
+
 k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 ## For testing
@@ -63,7 +64,8 @@ colData(spe_pseudo) <- colData(spe_pseudo)[, sort(c(
   "age",
   "sample_id",
   "BayesSpace",
-  "subject",
+  "brain_id", # equivalent to subject / donor / ethnicity
+  # "subject",
   "sex",
   "diagnosis",
   "ncells"
@@ -80,6 +82,7 @@ message('Processing PCA')
 
 pca <- prcomp(t(assays(spe_pseudo)$logcounts))
 dim(pca$x)
+names(pca)
 ## Explore pca
 # length(pca$sdev) 
 # summary(pca) 
@@ -93,9 +96,9 @@ if (n_components > 21) { n_components <- 20 }
 
 message(Sys.time(), " % of variance explained for the top ", n_components ," PCs:")
 metadata(spe_pseudo) <- list("PCA_var_explained" = jaffelab::getPcaVars(pca)[seq_len(n_components)]) #[seq_len(20)])
-metadata(spe_pseudo)
+# metadata(spe_pseudo)
 colnames(pca$x) <- paste0("PC", sprintf("%02d", seq_len(ncol(pca$x))))
-head(pca$x)
+# head(pca$x)
 reducedDims(spe_pseudo) <- list(PCA = pca$x)
 #plotPCA(spe_pseudo, colour_by = "sample_id", n_components, point_size = 1) 
 
@@ -104,7 +107,7 @@ message('/nProcessing MDS and scarter runPCA')
 
 set.seed(20240626)
 spe_pseudo <- scater::runMDS(spe_pseudo, name = "runMDS", ncomponents = (n_components-1)) #20
-spe_pseudo <- scater::runPCA(spe_pseudo, name = "runPCA", ncomponents = n_components)
+spe_pseudo <- scater::runPCA(spe_pseudo, name = "runPCA", ncomponents = n_components) 
 
 ## Double check the BayesSpace meta are factors
 stopifnot(is.factor(spe_pseudo$BayesSpace))
