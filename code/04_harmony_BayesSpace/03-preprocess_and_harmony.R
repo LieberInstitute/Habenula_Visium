@@ -274,20 +274,49 @@ colnames(colData(spe))
 reducedDimNames(spe)
 
 ## plots after Harmony to compare against GLMPCA_approx
-point_size = 0.5
-font_size = 7
+
+plotsGLMPCA_Harmony_facets <- function(dimred_name, feature_by) {
+
+  point_size = 0.5
+  point_sizef = 0.3
+  title_name <- paste0(dimred_name, ": ", feature_by)
+  
+  plt1 <- plotReducedDim(spe, dimred = dimred_name, colour_by = feature_by, point_size = point_size) + ggtitle(title_name) 
+  plt1b <- plotReducedDim(spe, dimred = dimred_name, colour_by = feature_by, point_size = point_sizef) +
+    facet_wrap(~ spe[[feature_by]]) +
+    theme(legend.position="none",
+          plot.background = element_rect(fill = "white", color = "white"),  # White background
+          panel.background = element_rect(fill = "white", color = "white"))  # White panel bg
+  plt1_f <- ggarrange(plt1, plt1b, ncol = 1, nrow = 2)
+
+  return(plt1_f)
+}
+
+
+  
 pdf(file.path(dir_plots, 'reduction_dimension_Harmony_vs_GLMPCA.pdf'), useDingbats = FALSE)
-plt1 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sample_id", point_size = point_size) 
-plt2 <- plotReducedDim(spe, dimred = "HARMONY", colour_by = "sample_id", point_size = point_size)
-plt3 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_area", point_size = point_size) 
-plt4 <- plotReducedDim(spe, dimred = "HARMONY", colour_by = "brain_area", point_size = point_size)
-plt5 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_id", point_size = point_size) 
-plt6 <- plotReducedDim(spe, dimred = "HARMONY", colour_by = "brain_id", point_size = point_size)
-plt7 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "ethnicity", point_size = point_size) 
-plt8 <- plotReducedDim(spe, dimred = "HARMONY", colour_by = "ethnicity", point_size = point_size)
+
+plt1 <- plotsGLMPCA_Harmony_facets("GLMPCA_approx", "sample_id")
+plt2 <- plotsGLMPCA_Harmony_facets("HARMONY", "sample_id")
+plt3 <- plotsGLMPCA_Harmony_facets("GLMPCA_approx", "brain_id")
+plt4 <- plotsGLMPCA_Harmony_facets("HARMONY", "brain_id")
+plt5 <- plotsGLMPCA_Harmony_facets("GLMPCA_approx", "brain_area")
+plt6 <- plotsGLMPCA_Harmony_facets("HARMONY", "brain_area") 
+plt7 <- plotsGLMPCA_Harmony_facets("GLMPCA_approx", "ethnicity")
+plt8 <- plotsGLMPCA_Harmony_facets("HARMONY", "ethnicity")
+
+# plt1 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sample_id", point_size = point_size)
+# plt2 <- plotReducedDim(spe, dimred = "HARMONY", colour_by = "sample_id", point_size = point_size)
+# plt3 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_id", point_size = point_size) 
+# plt4 <- plotReducedDim(spe, dimred = "HARMONY", colour_by = "brain_id", point_size = point_size)
+# plt5 <- plotsGLMPCA_Harmony_facets("GLMPCA_approx", "brain_area", "GLMPCA: brain_area")
+# plt6 <- plotReducedDim(spe, dimred = "HARMONY", colour_by = "brain_area", point_size = point_size) 
+# plt7 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "ethnicity", point_size = point_size) 
+# plt8 <- plotReducedDim(spe, dimred = "HARMONY", colour_by = "ethnicity", point_size = point_size)
+
 plt_all <- ggarrange(plt1, plt2, plt3, plt4, plt5, plt6, plt7, plt8, 
                      labels = c("A", "B", "C", "D"),
-                     ncol = 2, nrow = 2)
+                     ncol = 1, nrow = 1)
 plt_all
 dev.off()
 
