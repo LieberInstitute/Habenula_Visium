@@ -1,14 +1,18 @@
 #!/bin/bash
-#SBATCH -p shared
-#SBATCH --mem=20G
+#SBATCH -p katun
+#SBATCH --mem=60G
 #SBATCH --job-name=01_create_pseudobulk_data
-#SBATCH -c 1
+#SBATCH -c 2
 #SBATCH -t 1-00:00:00
-#SBATCH -o logs/01_create_pseudobulk_data.%a.out
-#SBATCH -e logs/01_create_pseudobulk_data.%a.err
-#SBATCH --mail-type=ALL
+#SBATCH -o /dev/null
+#SBATCH -e /dev/null
+# SBATCH --mail-type=ALL
 #SBATCH --array=2-28%20
 
+## Explicitly pipe script output to a log
+log_path=logs/01_create_pseudobulk_data_${SLURM_ARRAY_TASK_ID}.txt
+
+{
 set -e
 
 echo "**** Job starts ****"
@@ -22,7 +26,7 @@ echo "Node name: ${SLURMD_NODENAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.3.x
+module load conda_R/4.4.x
 
 ## List current modules for reproducibility
 module list
@@ -32,6 +36,8 @@ Rscript 01_create_pseudobulk_data.R
 
 echo "**** Job ends ****"
 date
+
+} > $log_path 2>&1
 
 ## This script was made using slurmjobs version 1.2.1
 ## available from http://research.libd.org/slurmjobs/
