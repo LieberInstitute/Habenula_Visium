@@ -27,7 +27,7 @@ for (lambda in all_lambda) {
         cluster_df = sprintf(banksy_paths, lambda_neat, res_neat) |>
             read_csv(show_col_types = FALSE) |>
             rename(banksy_cluster = paste0('banksy_', lambda_neat)) |>
-            right_join(ficture_df, by = "key")
+            inner_join(ficture_df, by = "key")
 
         #   Compute the Jaccard index for each pair of FICTURE and Banksy clusters
         jaccard_df_list = list()
