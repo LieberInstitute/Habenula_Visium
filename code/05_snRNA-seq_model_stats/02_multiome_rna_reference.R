@@ -1,8 +1,38 @@
 library("here")
+library("Seurat")
 library("SingleCellExperiment")
 library("spatialLIBD")
 library("sessioninfo")
 
+## set hard path to Habenula multiome project
+inputRDS <- "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/05_Clustering_ARCr/05_rename_idents"
+
+rds_name <- here(inputRDS, "seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2.rds")
+
+SeuratOBJ <- readRDS(rds_name)
+# An object of class Seurat 
+# 299552 features across 55702 samples within 2 assays 
+# Active assay: RNA (36601 features, 2000 variable features)
+# 3 layers present: data, counts, scale.data
+# 1 other assay present: ATAC
+# 13 dimensional reductions calculated: pca, umap.unintegrated, integrated.cca, umap, integrated.harmony, lsi, umap.lsi.unintegrated, umap.integrated, tsne.integrated, integrated.lsi.harmony, umap.lsi.integrated, tsne.lsi.integrated, wnn.umap
+
+colnames(SeuratOBJ@meta.data)
+table(SeuratOBJ$seurat_clusters)
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 3906 3371 3271 2911 2771 2667 2610 2537 2430 2344 2212 2187 2036 2026 1625 1607 
+# 17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32 
+# 1587 1535 1380 1343 1341 1327 1269  825  707  638  587  543  343  213  209  196 
+# 33   34   35   36   37   38   39   40   41   42 
+# 186  184  165  145  111  105   90   84   76    2 
+
+
+## Import RNA assay in sce object
+sce <- as.SingleCellExperiment(SeuratOBJ, assay = "RNA")
+
+total_unfiltered_cells <- ncol(sce) # cells in cols
+total_unfiltered_cells 
+# [1] 55702
 
 # ## Create output directories
 # dir_rdata <- here("processed-data", "05_snRNA-seq_model_stats")
