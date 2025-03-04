@@ -47,19 +47,43 @@ spe$BayesSpace <- factor(
 # head(unique(spe$BayesSpace))
 
 ## pseudobulk across a given BayesSpace k
+colnames(colData(spe))
+table(spe$brain_id)
+levels(spe$brain_id)
+# Br8518 Br9037 Br9090 
+# 13241  13133   7035
+table(spe$sample_id)
+levels(spe$sample_id)
+
 spe_pseudo <-
   registration_pseudobulk(spe,
                           var_registration = "BayesSpace",
                           var_sample_id = "sample_id",
+                          covars = "brain_id",
                           min_ncells = 10
   )
 dim(spe_pseudo)
+#colnames(colData(spe_pseudo))
+## list domains created 
+rownames(colData(spe_pseudo))
+table(spe_pseudo$sample_id)
+table(spe_pseudo$brain_id)
+
+# droplevels((spe_pseudo)$BayesSpace)
+## drop levels not used
+table(spe_pseudo$BayesSpace)
+unique(spe_pseudo$BayesSpace)
+levels(spe_pseudo$BayesSpace)
+spe_pseudo$BayesSpace <- droplevels(spe_pseudo$BayesSpace)
+levels(spe_pseudo$BayesSpace)
+table(spe_pseudo$BayesSpace)
+
+message('Levels unused on pseudobulk `BayesSpace` dropped ')
 
 message('Pseudobulk completed ')
 
-
 ## Simplify the colData()  for the pseudo-bulked data
-colnames(colData(spe_pseudo))
+
 colData(spe_pseudo) <- colData(spe_pseudo)[, sort(c(
   "age",
   "sample_id",
