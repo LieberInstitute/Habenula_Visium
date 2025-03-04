@@ -3,10 +3,10 @@
 #SBATCH --mem=20G
 #SBATCH --job-name=01_pseudobulk
 #SBATCH -c 1
-#SBATCH -t 2-0:00:00
+#SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/09_HD_cell_level/registration_banksy/logs/01_pseudobulk_%a.txt
 #SBATCH -e ../../../processed-data/09_HD_cell_level/registration_banksy/logs/01_pseudobulk_%a.txt
-#SBATCH --array=1
+#SBATCH --array=2-10%10
 
 set -e
 
