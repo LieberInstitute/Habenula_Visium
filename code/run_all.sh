@@ -188,4 +188,51 @@ squeue -u csoto
 echo "BayesSpace ###################################### "
 
 
+echo "############################################################################ "
+echo "#########   Layer differential expression.     ############################# "
+echo "#########                                      ############################# "
+echo "############################################################################ "
+
+echo "Running pseudobulk ###################################### "
+echo "01_create_pseudobulk_data.sh"
+
+## change directory
+SUBDIR="05_layer_differential_expression"
+
+cd ${CODEDIR}/${SUBDIR}
+
+echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
+
+## First remove old plots
+rm -f logs/01_create_pseudobulk_data_*.txt
+rm -f ${PLOTDIR}/${SUBDIR}/sce_pseudo_gene_explanatory_vars_k*.pdf
+rm -f ${PROCESSEDIR}/${SUBDIR}/sce_pseudo_BayesSpace_k*.rds
+
+sbatch 01_create_pseudobulk_data.sh
+squeue -u csoto
+
+
+echo "Running exploring variance ###################################### "
+echo "02_explore_expr_variability.sh"
+
+## First remove old plots
+rm -f logs/02_explore_expr_variability_*.txt
+rm -f ${PLOTDIR}/${SUBDIR}/sce_pseudo_PCs_k*.pdf
+rm -f ${PLOTDIR}/${SUBDIR}/sce_pseudo_gene_explanatory_vars_k*.pdf
+
+sbatch 02_explore_expr_variability.sh
+squeue -u csoto
+
+
+echo "Running model BayesSpace ###################################### "
+echo "03_model_BayesSpace.sh"
+
+## First remove old plots
+rm -f logs/03_model_BayesSpace*.err
+rm -f logs/03_model_BayesSpace*.out
+
+03_model_BayesSpace.sh
+
+
+
 ## Cynthia SC - Feb, 2025
