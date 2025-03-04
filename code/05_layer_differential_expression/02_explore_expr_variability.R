@@ -8,6 +8,8 @@
 k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 ## For testing
+## k = 8
+## k = 9 (failed from 9 to up)
 if (is.na(k)) {
   k <- 2
 }
@@ -42,6 +44,10 @@ spe_pseudo <-
       paste0("sce_pseudo_BayesSpace_k", sprintf("%02d", k), ".rds")
     )
   )
+## list domains created 
+dim(spe_pseudo)
+rownames(colData(spe_pseudo))
+table(spe_pseudo$BayesSpace)
 
 # Calculates the percent of variance explained for first 12 principal components / LieberInstitute/jaffelab
 pca <- prcomp(t(assays(spe_pseudo)$logcounts))
@@ -55,8 +61,8 @@ pca <- prcomp(t(assays(spe_pseudo)$logcounts))
 
 
 ## Define variables to use
+colnames(colData(spe_pseudo))
 vars <- c(
-#  "age",
   "sample_id",
   "BayesSpace",
   "brain_id" # subject
@@ -74,7 +80,7 @@ for (var in vars) {
     spe_pseudo,
     colour_by = var,
     ncomponents = min(12, length(metadata(spe_pseudo)$PCA_var_explained)),
-    point_size = 1,
+    point_size = 0.8,
     label_format = c("%s %02i", " (%i%%)"),
     percentVar = metadata(spe_pseudo)$PCA_var_explained
   )  + ggtitle(paste0("PCA of pseudobulk data with BS k=", as.character(k))) + 
@@ -86,10 +92,16 @@ for (var in vars) {
 }
 dev.off()
 
+message("Plot PCs with different variables done!")
+
+table(spe_pseudo$sample_id)
+table(spe_pseudo$brain_id)
+table(spe_pseudo$BayesSpace)
+
+message("Getting variance explained ...")
 
 ## Obtain percent of variance explained at the gene level
 ## using scater::getVarianceExplained()
-# variance_expl <- getVarianceExplained(spe_pseudo, variables = "brain_id") 
 variance_expl <- getVarianceExplained(spe_pseudo,
                              variables = vars
 ) 
@@ -97,10 +109,18 @@ variance_expl <- getVarianceExplained(spe_pseudo,
 # head(variance_expl)
 # summary(variance_expl)
 
+
 ## Now visualize the percent of variance explained across all genes
 pdf(file = file.path(dir_plots, paste0("sce_pseudo_gene_explanatory_vars_k", sprintf("%02d", k), ".pdf")))
 plotExplanatoryVariables(variance_expl) + ggtitle(paste0("PCA of pseudobulk data with BS k=", as.character(k))) 
 dev.off()
+
+
+message("Plot percent of variance explained across all genes done!")
+
+message("Process completed!!!")
+
+
 
 ## Reproducibility information
 print("Reproducibility information:")
