@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=10G
+#SBATCH --mem=20G
 #SBATCH --job-name=01_pseudobulk
 #SBATCH -c 1
 #SBATCH -t 2-0:00:00

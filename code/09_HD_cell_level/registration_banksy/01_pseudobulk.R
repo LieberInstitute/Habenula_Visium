@@ -11,7 +11,7 @@ res_neat = sub('\\.', '_', as.character(res))
 spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
 cluster_path = here(
     'processed-data', '09_HD_cell_level', 'banksy', 'lambda0_8',
-    sprintf('leiden_res0_8.csv', res_neat)
+    sprintf('leiden_res%s.csv', res_neat)
 )
 out_path = here(
     'processed-data', '09_HD_cell_level', 'registration_banksy',
@@ -20,7 +20,11 @@ out_path = here(
 
 dir.create(dirname(out_path), showWarnings = FALSE, recursive = TRUE)
 
+#   Load and bring counts into memory to speed up computations. Despite the huge
+#   size of the data, the memory footprint is manageable due to the extreme
+#   sparsity of the data
 spe = loadHDF5SummarizedExperiment(spe_dir)
+assays(spe)$counts = as(assays(spe)$counts, "dgCMatrix")
 
 #   Add in cluster assignments to 'spe'
 cluster_df = read_csv(cluster_path, show_col_types = FALSE)
