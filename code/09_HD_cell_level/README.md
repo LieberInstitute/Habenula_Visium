@@ -34,6 +34,8 @@ is by far the most computationally expensive step in finding spatially informed
 cellular clusters with `Banksy`. See `10_banksy_clustering.*` for the rest
 - `10_banksy_clustering.*`: Cluster the `Banksy` embedding computed in
 `08_banksy_embedding.*` using Leiden clustering at several resolutions
+- `16_banksy_plots.*`: Re-plot specific Banksy results with a better color scale
+for a figure
 
 ## Finding spatial expression patterns
 
