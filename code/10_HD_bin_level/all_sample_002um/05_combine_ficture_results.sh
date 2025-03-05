@@ -34,14 +34,22 @@ for i in $(seq 1 5); do
     this_sample=$(awk "NR==$i" "$sample_id_path")
     out_dir="$repo_dir/processed-data/10_HD_bin_level/ficture/inputs/$this_sample"
 
+    #   Append each TSV to an ongoing merged file. Add sample ID as a constant
+    #   column
     if [ "$i" -eq 1 ]; then
-        zcat "$out_dir/transcripts_moved_with_barcodes_sorted.tsv.gz" > "temp_file"
+        zcat "$out_dir/transcripts_moved_with_barcodes_sorted.tsv.gz" \
+            | awk -F '\t' -v this_sample=$this_sample 'NR==1 {print $0 "\tsample_id"} NR>1 {print $0 "\t" this_sample}' \
+            > $temp_dir/temp_$this_sample.tsv
     else
-        zcat "$out_dir/transcripts_moved_with_barcodes_sorted.tsv.gz" | tail -n +2 >> "temp_file"
+        zcat "$out_dir/transcripts_moved_with_barcodes_sorted.tsv.gz" \
+            | awk -F '\t' -v this_sample=$this_sample '{print $0 "\t" this_sample}' \
+            | tail -n +2 \
+            >> $temp_dir/temp_$this_sample.tsv
     fi
 done
 
-gzip -c "temp_file" > "$merged_output"
+gzip -c $temp_dir/temp_$this_sample.tsv > "$merged_output"
+rm $temp_dir/temp_$this_sample.tsv
 
 
 #rerun the join-pixel-tsv
