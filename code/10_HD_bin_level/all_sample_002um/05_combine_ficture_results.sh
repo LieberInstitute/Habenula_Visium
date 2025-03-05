@@ -39,18 +39,18 @@ for i in $(seq 1 5); do
     if [ "$i" -eq 1 ]; then
         zcat "$out_dir/transcripts_moved_with_barcodes_sorted.tsv.gz" \
             | awk -F '\t' -v this_sample=$this_sample 'NR==1 {print $0 "\tsample_id"} NR>1 {print $0 "\t" this_sample}' \
-            > $temp_dir/temp_$this_sample.tsv
+            > $temp_dir/temp.tsv
     else
         zcat "$out_dir/transcripts_moved_with_barcodes_sorted.tsv.gz" \
             | awk -F '\t' -v this_sample=$this_sample '{print $0 "\t" this_sample}' \
             | tail -n +2 \
-            >> $temp_dir/temp_$this_sample.tsv
+            >> $temp_dir/temp.tsv
     fi
 done
 
-gzip -c $temp_dir/temp_$this_sample.tsv > "$merged_output"
-rm $temp_dir/temp_$this_sample.tsv
-
+#   Compress merged file
+gzip -c $temp_dir/temp.tsv > "$merged_output"
+rm $temp_dir/temp.tsv
 
 #rerun the join-pixel-tsv
 out_dir=$repo_dir/processed-data/10_HD_bin_level/ficture/outputs/all_samples/analysis/nF12.d_12
