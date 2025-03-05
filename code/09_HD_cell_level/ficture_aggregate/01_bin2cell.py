@@ -32,11 +32,13 @@ factor_cols = [
 
 os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
+#   Read in FICTURE clusters and subset to this sample
 ficture_input = pd.read_csv(
     ficture_input_path,
     sep = '\t',
-    usecols = ['barcode'] + factor_cols
+    usecols = ['barcode', 'sample_id'] + factor_cols
 )
+ficture_input = ficture_input[ficture_input['sample_id'] == sample_id]
 
 #   Read in AnnData for this sample, but replace counts assay with zeros.
 #   Instead of genes, create 12 columns in this assay that will correspond

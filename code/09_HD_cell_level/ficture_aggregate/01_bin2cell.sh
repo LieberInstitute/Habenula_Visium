@@ -6,7 +6,7 @@
 #SBATCH -t 1-00:00:00
 #SBATCH -o ../../../processed-data/09_HD_cell_level/ficture_aggregate/logs/01_bin2cell_%a.txt
 #SBATCH -e ../../../processed-data/09_HD_cell_level/ficture_aggregate/logs/01_bin2cell_%a.txt
-#SBATCH --array=4
+#SBATCH --array=1-5%5
 
 set -e
 
