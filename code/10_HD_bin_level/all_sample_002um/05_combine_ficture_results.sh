@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=50G
+#SBATCH --mem=30G
 #SBATCH --job-name=05_combine_ficture_results
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
@@ -68,8 +68,6 @@ spatula join-pixel-tsv \
     --mol-tsv $in_tsv \
     --pix-prefix-tsv factor_,$out_dir/nF12.d_12.decode.prj_12.r_4_5.pixel.sorted_by_major_axis.tsv.gz \
     --out-prefix $out_dir/transcripts_ficture_joined_moved_with_barcodes \
-    --max-dist-um 2 \
-    --bin-um 4 \
     --out-max-k 3 \
     --out-max-p 3 \
     --mu-scale 1
