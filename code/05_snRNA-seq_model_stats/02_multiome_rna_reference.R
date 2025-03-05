@@ -20,7 +20,10 @@ SeuratOBJ <- readRDS(rds_name)
 # 1 other assay present: ATAC
 # 13 dimensional reductions calculated: pca, umap.unintegrated, integrated.cca, umap, integrated.harmony, lsi, umap.lsi.unintegrated, umap.integrated, tsne.integrated, integrated.lsi.harmony, umap.lsi.integrated, tsne.lsi.integrated, wnn.umap
 
-# get annotations stored in metadata
+message("WNN clustering loaded!\nCells: ", length(Cells(x = SeuratOBJ)))
+message("WNN containing ", nrow(unique(SeuratOBJ[["seurat_clusters"]])), " clusters")
+
+# brief exploration of the annotations stored in metadata
 levels(SeuratOBJ)
 # [1] "C.01 DD_LHb (7.01%)"   "C.02"                  "C.03"                 
 # [4] "C.04 DD_LHb (5.23%)"   "C.05 DD_LHb (4.97%)"   "C.06"                 
@@ -37,8 +40,52 @@ levels(SeuratOBJ)
 # [37] "C.37"                  "C.38"                  "C.39"                 
 # [40] "C.40 DD_LHb (0.15%)"   "C.41"                  "C.42"
 
+
+## Identified and subset clusters annotated as putative `habenula`. Use length of cluster ID as criteria
+
+## extract clusters IDs
+
+message("Cluster-IDs from `WNN`")
+SeuOBJ_clusters <- Idents(SeuratOBJ)
+head(SeuOBJ_clusters)
+no_hb_clust = list()
+hb_clusters <- unlist(levels(SeuOBJ_clusters))
+hb_clusters
+
+## filter hb clusters only 
+
+for (idx in seq_along(hb_clusters)) { if (nchar(hb_clusters[idx]) <= 4) { no_hb_clust <- append(no_hb_clust, hb_clusters[idx]) } }
+hb_clusters <- hb_clusters[! hb_clusters %in% c(no_hb_clust)]
+as.vector(hb_clusters)
+# [1] "C.01 DD_LHb (7.01%)"   "C.04 DD_LHb (5.23%)"   "C.05 DD_LHb (4.97%)"  
+# [4] "C.07 DD_MHb (4.69%)"   "C.08 DD_LHb (4.55%)"   "C.10 DD_MHb (4.21%)"  
+# [7] "C.11 DD_MHb (3.97%)"   "C.12 DD_LHb (3.93%)"   "C.14 DD_MHb (3.64%)"  
+# [10] "C.16 DD_MHb (2.88%)"   "C.17 LB_Hb ne (2.85%)" "C.18 DD_LHb (2.76%)"  
+# [13] "C.23 DD_LHb (2.28%)"   "C.24 DD_LHb (1.48%)"   "C.30 DD_LHb (0.38%)"  
+# [16] "C.32 DD_LHb (0.35%)"   "C.33 DD_LHb (0.33%)"   "C.36 DD_MHb (0.26%)"  
+# [19] "C.40 DD_LHb (0.15%)"
+
+
+## subset clusters with Hb cell-types
+
+unique(Idents(SeuratOBJ))
+SeuratOBJ <- subset(SeuratOBJ, idents = as.vector(hb_clusters))
+levels(SeuratOBJ)
+length(Cells(SeuratOBJ))
+# [1] 31151
+
+## removed unused levels
+
 colnames(SeuratOBJ@meta.data)
 head(SeuratOBJ$seurat_clusters)
+SeuratOBJ@meta.data$seurat_clusters <- droplevels(SeuratOBJ@meta.data$seurat_clusters)
+
+# check successful
+levels(SeuratOBJ)
+levels(SeuratOBJ@meta.data$seurat_clusters)
+# [1] "1"  "4"  "5"  "7"  "8"  "10" "11" "12" "14" "16" "17" "18" "23" "24" "30"
+# [16] "32" "33" "36" "40"
+
 
 
 ## Retrieve Ensembl IDs for Gene Symbols
