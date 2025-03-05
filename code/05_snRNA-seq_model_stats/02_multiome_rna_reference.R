@@ -87,6 +87,17 @@ levels(SeuratOBJ@meta.data$seurat_clusters)
 # [16] "32" "33" "36" "40"
 
 
+## rename levels in a fancy way to easy Hb clusterID identification
+
+oldname_clusters <- SeuratOBJ@meta.data$seurat_clusters
+newname_clusters <- paste0("HbM.C.", oldname_clusters)
+head(newname_clusters)
+SeuratOBJ@meta.data$seurat_clusters <- newname_clusters
+#levels(SeuratOBJ)
+head(SeuratOBJ@meta.data$seurat_clusters)
+# [1] "HbM.C.Hb.C.4" "HbM.C.Hb.C.4" "HbM.C.Hb.C.1" "HbM.C.Hb.C.1" "HbM.C.Hb.C.1"
+# [6] "HbM.C.Hb.C.4"
+
 
 ## Retrieve Ensembl IDs for Gene Symbols
 ## need to be polish, some gene_id(s) does not match the gene-ensembl id(s)
