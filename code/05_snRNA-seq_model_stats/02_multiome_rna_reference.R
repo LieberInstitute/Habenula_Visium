@@ -29,17 +29,7 @@ levels(SeuratOBJ)
 # [4] "C.04 DD_LHb (5.23%)"   "C.05 DD_LHb (4.97%)"   "C.06"                 
 # [7] "C.07 DD_MHb (4.69%)"   "C.08 DD_LHb (4.55%)"   "C.09"                 
 # [10] "C.10 DD_MHb (4.21%)"   "C.11 DD_MHb (3.97%)"   "C.12 DD_LHb (3.93%)"  
-# [13] "C.13"                  "C.14 DD_MHb (3.64%)"   "C.15"                 
-# [16] "C.16 DD_MHb (2.88%)"   "C.17 LB_Hb ne (2.85%)" "C.18 DD_LHb (2.76%)"  
-# [19] "C.19"                  "C.20"                  "C.21"                 
-# [22] "C.22"                  "C.23 DD_LHb (2.28%)"   "C.24 DD_LHb (1.48%)"  
-# [25] "C.25"                  "C.26"                  "C.27"                 
-# [28] "C.28"                  "C.29"                  "C.30 DD_LHb (0.38%)"  
-# [31] "C.31"                  "C.32 DD_LHb (0.35%)"   "C.33 DD_LHb (0.33%)"  
-# [34] "C.34"                  "C.35"                  "C.36 DD_MHb (0.26%)"  
-# [37] "C.37"                  "C.38"                  "C.39"                 
-# [40] "C.40 DD_LHb (0.15%)"   "C.41"                  "C.42"
-
+# ...
 
 ## Identified and subset clusters annotated as putative `habenula`. Use length of cluster ID as criteria
 
@@ -48,22 +38,30 @@ levels(SeuratOBJ)
 message("Cluster-IDs from `WNN`")
 SeuOBJ_clusters <- Idents(SeuratOBJ)
 head(SeuOBJ_clusters)
-no_hb_clust = list()
 hb_clusters <- unlist(levels(SeuOBJ_clusters))
 hb_clusters
 
 ## filter hb clusters only 
 
+no_hb_clust = list()
+
 for (idx in seq_along(hb_clusters)) { if (nchar(hb_clusters[idx]) <= 4) { no_hb_clust <- append(no_hb_clust, hb_clusters[idx]) } }
+no_hb_clust <- c(unlist(no_hb_clust))
+
+## Additionally, I make a manual selection of Hb clusters with low-Hb to be removed
+#   - based on % of Hb cells contained in the clusters. More details: https://github.com/LieberInstitute/Hb_multiome/blob/0275ce2f6824b8f22a6efcb1acc9543ca4e1f195/data/06_FULL_SUMMARY_LEIDENr2_knn30_All-Cluster_All-CellTypes_02_11_2025_v3.pdf 
+
+## join all the cluster with no-hab or low-hab signal
+tmp_hb <- hb_clusters[! hb_clusters %in% c(no_hb_clust)]
+low_hb_clusters <- tmp_hb[c(1, 2, 5, 8, 11, 16)]
+no_hb_clust <- append(no_hb_clust, low_hb_clusters)
+
 hb_clusters <- hb_clusters[! hb_clusters %in% c(no_hb_clust)]
 as.vector(hb_clusters)
-# [1] "C.01 DD_LHb (7.01%)"   "C.04 DD_LHb (5.23%)"   "C.05 DD_LHb (4.97%)"  
-# [4] "C.07 DD_MHb (4.69%)"   "C.08 DD_LHb (4.55%)"   "C.10 DD_MHb (4.21%)"  
-# [7] "C.11 DD_MHb (3.97%)"   "C.12 DD_LHb (3.93%)"   "C.14 DD_MHb (3.64%)"  
-# [10] "C.16 DD_MHb (2.88%)"   "C.17 LB_Hb ne (2.85%)" "C.18 DD_LHb (2.76%)"  
-# [13] "C.23 DD_LHb (2.28%)"   "C.24 DD_LHb (1.48%)"   "C.30 DD_LHb (0.38%)"  
-# [16] "C.32 DD_LHb (0.35%)"   "C.33 DD_LHb (0.33%)"   "C.36 DD_MHb (0.26%)"  
-# [19] "C.40 DD_LHb (0.15%)"
+# [1] "C.05 DD_LHb (4.97%)" "C.07 DD_MHb (4.69%)" "C.10 DD_MHb (4.21%)"
+# [4] "C.11 DD_MHb (3.97%)" "C.14 DD_MHb (3.64%)" "C.16 DD_MHb (2.88%)"
+# [7] "C.18 DD_LHb (2.76%)" "C.23 DD_LHb (2.28%)" "C.24 DD_LHb (1.48%)"
+# [10] ...
 
 
 ## subset clusters with Hb cell-types
@@ -73,6 +71,7 @@ SeuratOBJ <- subset(SeuratOBJ, idents = as.vector(hb_clusters))
 levels(SeuratOBJ)
 length(Cells(SeuratOBJ))
 # [1] 31151
+
 
 ## removed unused levels
 
@@ -103,17 +102,20 @@ head(SeuratOBJ@meta.data$seurat_clusters)
 ## need to be polish, some gene_id(s) does not match the gene-ensembl id(s)
 
 # Connect to Ensembl database
+
 mart <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")  # For human genes
 
 # Extract gene symbols from Seurat object
+
 gene_symbols <- rownames(SeuratOBJ)  # Modify if needed for different slot
 head(gene_symbols)
 # [1] "MIR1302-2HG" "FAM138A"     "OR4F5"       "AL627309.1"  "AL627309.3" 
-# [6] "AL627309.2" 
+
 length(gene_symbols)
 # [1] 36601
 
 # Convert gene symbols to Ensembl IDs
+
 annotations <- getBM(
   attributes = c("hgnc_symbol", "ensembl_gene_id"),
   filters = "hgnc_symbol",
@@ -136,11 +138,9 @@ head(annotations)
 gene_map <- setNames(annotations$ensembl_gene_id, annotations$hgnc_symbol)
 length(gene_map)
 # [1] 26664
-head(gene_map)
-# A3GALT2           AADACL3           AADACL4              AAK1 
-# "ENSG00000184389" "ENSG00000188984" "ENSG00000204518" "ENSG00000115977" 
-# ABCA4            ABCB10 
-# "ENSG00000198691" "ENSG00000135776" 
+head(unname(gene_map))
+# [1] "ENSG00000184389" "ENSG00000188984" "ENSG00000204518" "ENSG00000115977"
+# [5] "ENSG00000198691" "ENSG00000135776"
 
 
 
@@ -150,12 +150,14 @@ colnames(SeuratOBJ@meta.data)
 table(SeuratOBJ[["orig.ident"]])
 
 table(SeuratOBJ$seurat_clusters)
-# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 3906 3371 3271 2911 2771 2667 2610 2537 2430 2344 2212 2187 2036 2026 1625 1607 
-# 17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32 
-# 1587 1535 1380 1343 1341 1327 1269  825  707  638  587  543  343  213  209  196 
-# 33   34   35   36   37   38   39   40   41   42 
-# 186  184  165  145  111  105   90   84   76    2 
+# HbM.C.Hb.C.1 HbM.C.Hb.C.10 HbM.C.Hb.C.11 HbM.C.Hb.C.12 HbM.C.Hb.C.14 
+# 3906          2344          2212          2187          2026 
+# HbM.C.Hb.C.16 HbM.C.Hb.C.17 HbM.C.Hb.C.18 HbM.C.Hb.C.23 HbM.C.Hb.C.24 
+# 1607          1587          1535          1269           825 
+# HbM.C.Hb.C.30 HbM.C.Hb.C.32 HbM.C.Hb.C.33 HbM.C.Hb.C.36  HbM.C.Hb.C.4 
+# 213           196           186           145          2911 
+# HbM.C.Hb.C.40  HbM.C.Hb.C.5  HbM.C.Hb.C.7  HbM.C.Hb.C.8 
+# 84          2771          2610          2537
 
 
 
