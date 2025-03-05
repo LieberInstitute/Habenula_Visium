@@ -22,16 +22,21 @@ out_path = here(
     f'{sample_id}.csv'
 )
 ficture_input_path = here(
-    'processed-data', '09_HD_cell_level', 'ficture_aggregate', 'synthetic_input.tsv.gz'
+    'processed-data', '10_HD_bin_level', 'ficture', 'outputs', 'all_samples',
+    'analysis', 'nF12.d_12',
+    'transcripts_ficture_joined_moved_with_barcodes.tsv.gz'
 )
+factor_cols = [
+    'factor_K1', 'factor_K2', 'factor_K3', 'factor_P1', 'factor_P2', 'factor_P3'
+]
 
 os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
-ficture_input = pd.read_csv(ficture_input_path, sep = '\t')
-
-#   For now, randomly assign clusters to each bin just to have some working data
-for i in range(3):
-    ficture_input[f'factor_K{i+1}'] = np.random.randint(0, 12, ficture_input.shape[0])
+ficture_input = pd.read_csv(
+    ficture_input_path,
+    sep = '\t',
+    usecols = ['barcode'] + factor_cols
+)
 
 #   Read in AnnData for this sample, but replace counts assay with zeros.
 #   Instead of genes, create 12 columns in this assay that will correspond
@@ -45,25 +50,24 @@ adata_ficture = sc.AnnData(
 )
 
 #   Join FICTURE cluster info into the AnnData
-adata_ficture.obs[['factor_K1', 'factor_K2', 'factor_K3']] = (
+adata_ficture.obs[factor_cols] = (
     ficture_input
+        .dropna()
         .groupby('barcode')
         .first()
-        [['factor_K1', 'factor_K2', 'factor_K3']]
+        [factor_cols]
 )
 
 #   Loop through and add up scores for each potential FICTURE cluster for each
-#   bin. Add 3 points for the top-ranked cluster call (i.e. 'factor_K1'), 2
-#   for 'factor_K2', and 1 for 'factor_K3'. In this way, each bin that was
-#   assigned a FICTURE cluster (some will be null) has a total of 6 points to
-#   allocate across 3 clusters
+#   bin. Scores are equal to the probabilities of the top three clusters
 for factor_num in range(12):
     for factor_rank in range(3):
-        adata_ficture.X[
-            ~adata_ficture.obs[f'factor_K{factor_rank + 1}'].isna() & 
-            (adata_ficture.obs[f'factor_K{factor_rank + 1}'] == factor_num),
-            factor_num
-        ] += 3 - factor_rank
+        #   Grab non-NA rows matching this particular cluster
+        mask = ~adata_ficture.obs[f'factor_K{factor_rank + 1}'].isna() & \
+            (adata_ficture.obs[f'factor_K{factor_rank + 1}'] == factor_num)
+        
+        #   Add the probability for this cluster to the corresponding column
+        adata_ficture.X[mask, factor_num] += adata_ficture.obs[f'factor_P{factor_rank + 1}'][mask]
 
 #   Apply bin_to_cell on the scores matrix. The idea is that a cell will add
 #   up scores for each potential cluster across constituent bins. A cell by this

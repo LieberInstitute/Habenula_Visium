@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=32G
+#SBATCH --mem=64G
 #SBATCH --job-name=01_bin2cell
 #SBATCH -c 1
 #SBATCH -t 1-00:00:00
