@@ -1,14 +1,17 @@
 library("here")
 library("Seurat")
 library("SingleCellExperiment")
+library("biomaRt")
+# library(EnsDb.Hsapiens.v86)
+# library(BSgenome.Hsapiens.UCSC.hg38)
 library("spatialLIBD")
 library("sessioninfo")
 
-## set hard path to Habenula multiome project
+## set hard path to Habenula multiome project WNN Ledien knn=30 resolution=2 
 inputRDS <- "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/05_Clustering_ARCr/05_rename_idents"
 
+## Read seurat object
 rds_name <- here(inputRDS, "seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2.rds")
-
 SeuratOBJ <- readRDS(rds_name)
 # An object of class Seurat 
 # 299552 features across 55702 samples within 2 assays 
@@ -17,7 +20,77 @@ SeuratOBJ <- readRDS(rds_name)
 # 1 other assay present: ATAC
 # 13 dimensional reductions calculated: pca, umap.unintegrated, integrated.cca, umap, integrated.harmony, lsi, umap.lsi.unintegrated, umap.integrated, tsne.integrated, integrated.lsi.harmony, umap.lsi.integrated, tsne.lsi.integrated, wnn.umap
 
+# get annotations stored in metadata
+levels(SeuratOBJ)
+# [1] "C.01 DD_LHb (7.01%)"   "C.02"                  "C.03"                 
+# [4] "C.04 DD_LHb (5.23%)"   "C.05 DD_LHb (4.97%)"   "C.06"                 
+# [7] "C.07 DD_MHb (4.69%)"   "C.08 DD_LHb (4.55%)"   "C.09"                 
+# [10] "C.10 DD_MHb (4.21%)"   "C.11 DD_MHb (3.97%)"   "C.12 DD_LHb (3.93%)"  
+# [13] "C.13"                  "C.14 DD_MHb (3.64%)"   "C.15"                 
+# [16] "C.16 DD_MHb (2.88%)"   "C.17 LB_Hb ne (2.85%)" "C.18 DD_LHb (2.76%)"  
+# [19] "C.19"                  "C.20"                  "C.21"                 
+# [22] "C.22"                  "C.23 DD_LHb (2.28%)"   "C.24 DD_LHb (1.48%)"  
+# [25] "C.25"                  "C.26"                  "C.27"                 
+# [28] "C.28"                  "C.29"                  "C.30 DD_LHb (0.38%)"  
+# [31] "C.31"                  "C.32 DD_LHb (0.35%)"   "C.33 DD_LHb (0.33%)"  
+# [34] "C.34"                  "C.35"                  "C.36 DD_MHb (0.26%)"  
+# [37] "C.37"                  "C.38"                  "C.39"                 
+# [40] "C.40 DD_LHb (0.15%)"   "C.41"                  "C.42"
+
 colnames(SeuratOBJ@meta.data)
+head(SeuratOBJ$seurat_clusters)
+
+
+## Retrieve Ensembl IDs for Gene Symbols
+## need to be polish, some gene_id(s) does not match the gene-ensembl id(s)
+
+# Connect to Ensembl database
+mart <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")  # For human genes
+
+# Extract gene symbols from Seurat object
+gene_symbols <- rownames(SeuratOBJ)  # Modify if needed for different slot
+head(gene_symbols)
+# [1] "MIR1302-2HG" "FAM138A"     "OR4F5"       "AL627309.1"  "AL627309.3" 
+# [6] "AL627309.2" 
+length(gene_symbols)
+# [1] 36601
+
+# Convert gene symbols to Ensembl IDs
+annotations <- getBM(
+  attributes = c("hgnc_symbol", "ensembl_gene_id"),
+  filters = "hgnc_symbol",
+  values = gene_symbols,
+  mart = mart
+)
+
+dim(annotations)
+# [1] 26664     2
+head(annotations)
+#   hgnc_symbol ensembl_gene_id
+# 1     A3GALT2 ENSG00000184389
+# 2     AADACL3 ENSG00000188984
+# 3     AADACL4 ENSG00000204518
+# 4        AAK1 ENSG00000115977
+# 5       ABCA4 ENSG00000198691
+# 6      ABCB10 ENSG00000135776
+
+# Merge Ensembl IDs with Seurat object genes
+gene_map <- setNames(annotations$ensembl_gene_id, annotations$hgnc_symbol)
+length(gene_map)
+# [1] 26664
+head(gene_map)
+# A3GALT2           AADACL3           AADACL4              AAK1 
+# "ENSG00000184389" "ENSG00000188984" "ENSG00000204518" "ENSG00000115977" 
+# ABCA4            ABCB10 
+# "ENSG00000198691" "ENSG00000135776" 
+
+
+
+##### identify clusters 
+
+colnames(SeuratOBJ@meta.data)
+table(SeuratOBJ[["orig.ident"]])
+
 table(SeuratOBJ$seurat_clusters)
 # 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
 # 3906 3371 3271 2911 2771 2667 2610 2537 2430 2344 2212 2187 2036 2026 1625 1607 
@@ -27,12 +100,55 @@ table(SeuratOBJ$seurat_clusters)
 # 186  184  165  145  111  105   90   84   76    2 
 
 
+
 ## Import RNA assay in sce object
 sce <- as.SingleCellExperiment(SeuratOBJ, assay = "RNA")
+
+rowData(sce)
 
 total_unfiltered_cells <- ncol(sce) # cells in cols
 total_unfiltered_cells 
 # [1] 55702
+# unname(gene_map[match(rownames(sce), names(gene_map))])
+
+length(gene_map) # [1] 26664
+head(rownames(sce))
+# [1] "MIR1302-2HG" "FAM138A"     "OR4F5"       "AL627309.1"  "AL627309.3" 
+# [6] "AL627309.2" 
+# rowData(sce)$gene_id <- gene_map
+
+rowData(sce)$gene_id <- unname(gene_map[match(rownames(sce), names(gene_map))])
+rowData(sce)$gene_symbol <- rownames(sce)
+rowData(sce)
+any(is.na(rownames(sce)))
+
+colnames(colData(sce))
+
+
+# ## Perform the spatial registration
+# sce_modeling_results <- registration_wrapper(
+#   sce = sce,
+#   var_registration = "seurat_clusters",
+#   var_sample_id = "orig.ident",
+#   gene_ensembl = "gene_id", # gene ensembl ids
+#   gene_name = "gene_symbol" # gene_names 
+# )
+
+sce_modeling_results <- registration_wrapper(
+  sce = sce,
+  var_registration = "seurat_clusters", # Character vector, C1 / t_stat_C12
+  var_sample_id = "orig.ident",
+  gene_ensembl = "gene_symbol", # gene ensembl ids
+  gene_name = "gene_symbol" # gene_names 
+)
+
+
+## check out table on enrichment t-statistics
+sce_modeling_results$enrichment[1:5, 1:5]
+
+
+
+
 
 # ## Create output directories
 # dir_rdata <- here("processed-data", "05_snRNA-seq_model_stats")
