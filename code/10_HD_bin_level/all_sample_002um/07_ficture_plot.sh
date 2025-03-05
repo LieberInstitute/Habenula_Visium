@@ -32,7 +32,9 @@ plot_dir=$repo_dir/plots/10_HD_bin_level/ficture
 
 mkdir -p $plot_dir
 
-#   Subset the output to just this sample for plotting
+#   Subset the output to just this sample for plotting. Manually set the image
+#   size to 7000 pixels wide (slightly larger than one sample), then adjust
+#   coordinates to remove the offset originally applied to separate samples
 zcat $out_dir/analysis/nF12.d_12/nF12.d_12.decode.prj_12.r_4_5.pixel.sorted.tsv.gz \
     | sed -E 's|SIZE_X=([0-9]+)|SIZE_X=7000|' \
     | awk -F '\t' -v low_cutoff=$((7000 * ($SLURM_ARRAY_TASK_ID - 1))) '
