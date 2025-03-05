@@ -62,7 +62,7 @@ as.vector(hb_clusters)
 # [4] "C.11 DD_MHb (3.97%)" "C.14 DD_MHb (3.64%)" "C.16 DD_MHb (2.88%)"
 # [7] "C.18 DD_LHb (2.76%)" "C.23 DD_LHb (2.28%)" "C.24 DD_LHb (1.48%)"
 # [10] ...
-
+length(hb_clusters)
 
 ## subset clusters with Hb cell-types
 
@@ -70,7 +70,7 @@ unique(Idents(SeuratOBJ))
 SeuratOBJ <- subset(SeuratOBJ, idents = as.vector(hb_clusters))
 levels(SeuratOBJ)
 length(Cells(SeuratOBJ))
-# [1] 31151
+# [1] 17827
 
 
 ## removed unused levels
@@ -82,8 +82,7 @@ SeuratOBJ@meta.data$seurat_clusters <- droplevels(SeuratOBJ@meta.data$seurat_clu
 # check successful
 levels(SeuratOBJ)
 levels(SeuratOBJ@meta.data$seurat_clusters)
-# [1] "1"  "4"  "5"  "7"  "8"  "10" "11" "12" "14" "16" "17" "18" "23" "24" "30"
-# [16] "32" "33" "36" "40"
+# [1] "5"  "7"  "10" "11" "14" "16" "18" "23" "24" "30" "33" "36" "40"
 
 
 ## rename levels in a fancy way to easy Hb clusterID identification
@@ -94,8 +93,7 @@ head(newname_clusters)
 SeuratOBJ@meta.data$seurat_clusters <- newname_clusters
 #levels(SeuratOBJ)
 head(SeuratOBJ@meta.data$seurat_clusters)
-# [1] "HbM.C.Hb.C.4" "HbM.C.Hb.C.4" "HbM.C.Hb.C.1" "HbM.C.Hb.C.1" "HbM.C.Hb.C.1"
-# [6] "HbM.C.Hb.C.4"
+# [1] "HbM.C.11" "HbM.C.23" "HbM.C.11" "HbM.C.5"  "HbM.C.11" "HbM.C.11"
 
 
 ## Retrieve Ensembl IDs for Gene Symbols
@@ -147,45 +145,53 @@ head(unname(gene_map))
 ##### identify clusters 
 
 colnames(SeuratOBJ@meta.data)
+
+## samples included 
+
 table(SeuratOBJ[["orig.ident"]])
 
+## number of cells by cluster
+
 table(SeuratOBJ$seurat_clusters)
-# HbM.C.Hb.C.1 HbM.C.Hb.C.10 HbM.C.Hb.C.11 HbM.C.Hb.C.12 HbM.C.Hb.C.14 
-# 3906          2344          2212          2187          2026 
-# HbM.C.Hb.C.16 HbM.C.Hb.C.17 HbM.C.Hb.C.18 HbM.C.Hb.C.23 HbM.C.Hb.C.24 
-# 1607          1587          1535          1269           825 
-# HbM.C.Hb.C.30 HbM.C.Hb.C.32 HbM.C.Hb.C.33 HbM.C.Hb.C.36  HbM.C.Hb.C.4 
-# 213           196           186           145          2911 
-# HbM.C.Hb.C.40  HbM.C.Hb.C.5  HbM.C.Hb.C.7  HbM.C.Hb.C.8 
-# 84          2771          2610          2537
+# HbM.C.10 HbM.C.11 HbM.C.14 HbM.C.16 HbM.C.18 HbM.C.23 HbM.C.24 HbM.C.30 
+# 2344     2212     2026     1607     1535     1269      825      213 
+# HbM.C.33 HbM.C.36 HbM.C.40  HbM.C.5  HbM.C.7 
+# 186      145       84     2771     2610 
 
 
 
 ## Import RNA assay in sce object
+
 sce <- as.SingleCellExperiment(SeuratOBJ, assay = "RNA")
 
 rowData(sce)
 
 total_unfiltered_cells <- ncol(sce) # cells in cols
 total_unfiltered_cells 
-# [1] 55702
+# [1] 55702 / 17827
 # unname(gene_map[match(rownames(sce), names(gene_map))])
 
 length(gene_map) # [1] 26664
 head(rownames(sce))
 # [1] "MIR1302-2HG" "FAM138A"     "OR4F5"       "AL627309.1"  "AL627309.3" 
-# [6] "AL627309.2" 
-# rowData(sce)$gene_id <- gene_map
 
 rowData(sce)$gene_id <- unname(gene_map[match(rownames(sce), names(gene_map))])
 rowData(sce)$gene_symbol <- rownames(sce)
 rowData(sce)
 any(is.na(rownames(sce)))
+rowData(sce)
+#colnames(colData(sce))
+# DataFrame with 36601 rows and 2 columns
+# gene_id gene_symbol
+# <character> <character>
+#   MIR1302-2HG ENSG00000243485 MIR1302-2HG
+# FAM138A     ENSG00000237613     FAM138A
+# OR4F5       ENSG00000186092       OR4F5
+# AL627309.1               NA  AL627309.1
+# AL627309.3               NA  AL627309.3
 
-colnames(colData(sce))
 
-
-# ## Perform the spatial registration
+## Perform the spatial registration using ensembl genes ( need to be polish)
 # sce_modeling_results <- registration_wrapper(
 #   sce = sce,
 #   var_registration = "seurat_clusters",
@@ -194,6 +200,7 @@ colnames(colData(sce))
 #   gene_name = "gene_symbol" # gene_names 
 # )
 
+## Perform the spatial registration using genes symbols from rna-multiome
 sce_modeling_results <- registration_wrapper(
   sce = sce,
   var_registration = "seurat_clusters", # Character vector, C1 / t_stat_C12
@@ -205,6 +212,12 @@ sce_modeling_results <- registration_wrapper(
 
 ## check out table on enrichment t-statistics
 sce_modeling_results$enrichment[1:5, 1:5]
+# t_stat_HbM.C.10 t_stat_HbM.C.11 t_stat_HbM.C.14 t_stat_HbM.C.16
+# AL627309.1      -0.1159839      -0.8339642     0.357303106      0.06155168
+# AL627309.5       0.3170415      -0.3913761     1.876669973     -0.57031746
+# LINC01409        0.5457288      -1.6630007    -1.192579619     -0.01104049
+# LINC01128       -1.0905454       0.9819776     0.255499148     -1.86840108
+# LINC00115        0.7564815      -0.2602102     0.005601157     -0.90005001
 
 
 
