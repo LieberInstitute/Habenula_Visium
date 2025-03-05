@@ -34,7 +34,13 @@ mkdir -p $plot_dir
 
 #   Subset the output to just this sample for plotting
 zcat $out_dir/analysis/nF12.d_12/nF12.d_12.decode.prj_12.r_4_5.pixel.sorted.tsv.gz \
-    | awk -F '\t' -v low_cutoff=$((7000 * ($SLURM_ARRAY_TASK_ID - 1))) 'NR<=4 {print $0} NR>4 && ($2 >= low_cutoff) && ($2 < low_cutoff + 7000)' \
+    | sed -E 's|SIZE_X=([0-9]+)|SIZE_X=7000|' \
+    | awk -F '\t' -v low_cutoff=$((7000 * ($SLURM_ARRAY_TASK_ID - 1))) '
+        BEGIN {OFS="\t"}
+        NR<=4 {print $0}
+        NR>4 && ($2 / 100 >= low_cutoff) && ($2 / 100 < low_cutoff + 7000) {
+            $2 = $2 - low_cutoff * 100; print $0
+        }' \
     | gzip -c > $temp_dir/${this_sample}.tsv.gz
 
 ficture plot_pixel_full \
