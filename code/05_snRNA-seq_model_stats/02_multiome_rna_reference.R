@@ -254,7 +254,10 @@ sce_modeling_results$enrichment[1:5, 1:5]
 
 message(" rna-multiome reference completed!")
 
-
+# library("slurmjobs")
+# 
+# ## A regular job with 10 cores on the 'imaginary' partition
+# job_single("02_multiome_rna_reference", cores = 2, partition = "katun", create_shell = TRUE)
 
 # ## Create output directories
 # dir_rdata <- here("processed-data", "05_snRNA-seq_model_stats")
