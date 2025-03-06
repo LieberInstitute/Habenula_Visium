@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -p shared
-#SBATCH --mem=20G
+#SBATCH -p katun
+#SBATCH --mem=30G
 #SBATCH --job-name=01_compute_cor
 #SBATCH -c 1
 #SBATCH -t 1-00:00:00
@@ -22,7 +22,7 @@ echo "Node name: ${SLURMD_NODENAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.3.x
+module load conda_R/4.4.x
 
 ## List current modules for reproducibility
 module list
