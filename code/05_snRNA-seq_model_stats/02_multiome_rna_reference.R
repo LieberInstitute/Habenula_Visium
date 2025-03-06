@@ -104,6 +104,7 @@ head(SeuratOBJ@meta.data$seurat_clusters)
 reference_gtf <- "/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-cellranger-arc-GRCh38-2020-A-2.0.0/genes/genes.gtf.gz"
 # Transcriptome	GRCh38-2020-A
 # reference_gtf_rna <- "/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-cellranger-arc-GRCh38-2020-A-2.0.0/genes/genes.gtf.gz"
+# reference_gtf_atac <- "/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-cellranger-arc-GRCh38-2020-A-2.0.0/genes/genes.gtf.gz
 
 ## Read in the gene information from the annotation GTF file
 
@@ -127,37 +128,6 @@ head(gene_symbols)
 
 length(gene_symbols)
 # [1] 36601
-
-# # Convert gene symbols to Ensembl IDs
-# 
-# annotations <- getBM(
-#   attributes = c("hgnc_symbol", "ensembl_gene_id"),
-#   filters = "hgnc_symbol",
-#   values = gene_symbols,
-#   mart = mart
-# )
-# 
-# dim(annotations)
-# # [1] 26664     2
-# head(annotations)
-# #   hgnc_symbol ensembl_gene_id
-# # 1     A3GALT2 ENSG00000184389
-# # 2     AADACL3 ENSG00000188984
-# # 3     AADACL4 ENSG00000204518
-# # 4        AAK1 ENSG00000115977
-# # 5       ABCA4 ENSG00000198691
-# # 6      ABCB10 ENSG00000135776
-# 
-# # Merge Ensembl IDs with Seurat object genes
-# gene_map <- setNames(annotations$ensembl_gene_id, annotations$hgnc_symbol)
-# length(gene_map)
-# # [1] 26664
-# head(unname(gene_map))
-# # [1] "ENSG00000184389" "ENSG00000188984" "ENSG00000204518" "ENSG00000115977"
-# # [5] "ENSG00000198691" "ENSG00000135776"
-
-
-
 
 
 ##### identify clusters 
@@ -200,7 +170,7 @@ head(rownames(sce))
 # [1] "MIR1302-2HG" "FAM138A"     "OR4F5"       "AL627309.1"  "AL627309.3" 
 rowData(sce)
 # DataFrame with 36601 rows and 2 columns
-# gene_id gene_symbol
+#                 gene_id     gene_symbol
 # <character> <character>
 #   MIR1302-2HG ENSG00000243485 MIR1302-2HG
 # FAM138A     ENSG00000237613     FAM138A
@@ -210,34 +180,66 @@ rowData(sce)
 
 ## some validations
 
-table(is.na(rowData(sce)$gene_id))
+table(is.na(rowData(sce)$gene_id)) # ensembl
 table(is.na(rowData(sce)$gene_symbol))
 table(rownames(sce) %in% gtf$gene_name)
 # FALSE  TRUE 
 # 10    36591 
 ## genes that does not match the reference
-setdiff(rownames(sce), gtf$gene_name)
+dup_genes <- setdiff(rownames(sce), gtf$gene_name)
 # [1] "TBCE.1"           "LINC01238.1"      "CYB561D2.1"       "MATR3.1"         
 # [5] "LINC01505.1"      "HSPA14.1"         "GOLGA8M.1"        "GGT1.1"          
 # [9] "ARMCX5-GPRASP2.1" "TMSB15B.1" 
 
-# Perform the spatial registration using ensembl genes ( need to be polish)
-# sce_modeling_results <- registration_wrapper(
-#   sce = sce,
-#   var_registration = "seurat_clusters",
-#   var_sample_id = "orig.ident",
-#   gene_ensembl = "gene_id", # gene ensembl ids
-#   gene_name = "gene_symbol" # gene_names
-# )
+## remove `.1` prefix from row data
 
-## Perform the spatial registration using genes symbols from rna-multiome
+# rownames(sce)[rownames(sce) ==  "TBCE.1"]
+# rownames(sce)[rownames(sce) ==  "TBCE.1"]  <- "TBCE"
+
+
+## genes duplicated need to be fix
+
+if (length(dup_genes) > 1) {
+  ## remove .1 from gene name
+  for (gen in dup_genes) {
+    gen_new_name = sub('\\.1','', gen)
+    # print(gen_new_name)
+    rownames(sce)[rownames(sce) ==  gen]  <- gen_new_name
+  }
+  ## match reference again
+  rowData(sce)$gene_id <- unname(gtf$gene_id[match(rownames(sce), gtf$gene_name)])
+  rowData(sce)$gene_symbol <- rownames(sce)
+  ## verify
+  setdiff(rownames(sce), gtf$gene_name)
+}
+# [1] "TBCE"
+# [1] "LINC01238"
+# [1] "CYB561D2"
+# [1] "MATR3"
+# [1] "LINC01505"
+# [1] "HSPA14"
+# [1] "GOLGA8M"
+# [1] "GGT1"
+# [1] "ARMCX5-GPRASP2"
+# [1] "TMSB15B"
+
+## Perform the spatial registration using ensembl genes ( need to be polish)
 sce_modeling_results <- registration_wrapper(
   sce = sce,
-  var_registration = "seurat_clusters", # Character vector, C1 / t_stat_C12
+  var_registration = "seurat_clusters",
   var_sample_id = "orig.ident",
-  gene_ensembl = "gene_symbol", # gene ensembl ids
-  gene_name = "gene_symbol" # gene_names 
+  gene_ensembl = "gene_id", # gene ensembl ids
+  gene_name = "gene_symbol" # gene_names
 )
+
+# ## Perform the spatial registration using genes symbols from rna-multiome
+# sce_modeling_results <- registration_wrapper(
+#   sce = sce,
+#   var_registration = "seurat_clusters", # Character vector, C1 / t_stat_C12
+#   var_sample_id = "orig.ident",
+#   gene_ensembl = "gene_symbol", # gene ensembl ids
+#   gene_name = "gene_symbol" # gene_names 
+# )
 
 
 ## check out table on enrichment t-statistics
@@ -250,14 +252,7 @@ sce_modeling_results$enrichment[1:5, 1:5]
 # LINC00115        0.7564815      -0.2602102     0.005601157     -0.90005001
 
 
-## Correlate statistic with Layer Reference
-
-cor_layer <- layer_stat_cor(
-  stats = sce_modeling_results$enrichment,
-  modeling_results = layer_modeling_results,
-  model_type = "enrichment",
-  top_n = 100
-)
+message(" rna-multiome reference completed!")
 
 
 
