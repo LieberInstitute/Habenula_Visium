@@ -1,9 +1,7 @@
 library("here")
 library("Seurat")
 library("SingleCellExperiment")
-library("biomaRt")
-# library(EnsDb.Hsapiens.v86)
-# library(BSgenome.Hsapiens.UCSC.hg38)
+# library("biomaRt")
 library("spatialLIBD")
 library("sessioninfo")
 
@@ -41,117 +39,136 @@ head(SeuOBJ_clusters)
 hb_clusters <- unlist(levels(SeuOBJ_clusters))
 hb_clusters
 
-## filter hb clusters only 
-
-no_hb_clust = list()
-
-for (idx in seq_along(hb_clusters)) { if (nchar(hb_clusters[idx]) <= 4) { no_hb_clust <- append(no_hb_clust, hb_clusters[idx]) } }
-no_hb_clust <- c(unlist(no_hb_clust))
-
-## Additionally, I make a manual selection of Hb clusters with low-Hb to be removed
-#   - based on % of Hb cells contained in the clusters. More details: https://github.com/LieberInstitute/Hb_multiome/blob/0275ce2f6824b8f22a6efcb1acc9543ca4e1f195/data/06_FULL_SUMMARY_LEIDENr2_knn30_All-Cluster_All-CellTypes_02_11_2025_v3.pdf 
-
-## join all the cluster with no-hab or low-hab signal
-tmp_hb <- hb_clusters[! hb_clusters %in% c(no_hb_clust)]
-low_hb_clusters <- tmp_hb[c(1, 2, 5, 8, 11, 16)]
-no_hb_clust <- append(no_hb_clust, low_hb_clusters)
-
-hb_clusters <- hb_clusters[! hb_clusters %in% c(no_hb_clust)]
-as.vector(hb_clusters)
-# [1] "C.05 DD_LHb (4.97%)" "C.07 DD_MHb (4.69%)" "C.10 DD_MHb (4.21%)"
-# [4] "C.11 DD_MHb (3.97%)" "C.14 DD_MHb (3.64%)" "C.16 DD_MHb (2.88%)"
-# [7] "C.18 DD_LHb (2.76%)" "C.23 DD_LHb (2.28%)" "C.24 DD_LHb (1.48%)"
-# [10] ...
-length(hb_clusters)
-
-## subset clusters with Hb cell-types
-
-unique(Idents(SeuratOBJ))
-SeuratOBJ <- subset(SeuratOBJ, idents = as.vector(hb_clusters))
-levels(SeuratOBJ)
-length(Cells(SeuratOBJ))
-# [1] 17827
-
-
-## removed unused levels
-
-colnames(SeuratOBJ@meta.data)
-head(SeuratOBJ$seurat_clusters)
-SeuratOBJ@meta.data$seurat_clusters <- droplevels(SeuratOBJ@meta.data$seurat_clusters)
-
-# check successful
-levels(SeuratOBJ)
-levels(SeuratOBJ@meta.data$seurat_clusters)
-# [1] "5"  "7"  "10" "11" "14" "16" "18" "23" "24" "30" "33" "36" "40"
+# ## filter hb clusters only 
+# 
+# no_hb_clust = list()
+# for (idx in seq_along(hb_clusters)) { if (nchar(hb_clusters[idx]) <= 4) { no_hb_clust <- append(no_hb_clust, hb_clusters[idx]) } }
+# no_hb_clust <- c(unlist(no_hb_clust))
+# 
+# ## Additionally, I make a manual selection of Hb clusters with low-Hb to be removed
+# #   - based on % of Hb cells contained in the clusters. More details: https://github.com/LieberInstitute/Hb_multiome/blob/0275ce2f6824b8f22a6efcb1acc9543ca4e1f195/data/06_FULL_SUMMARY_LEIDENr2_knn30_All-Cluster_All-CellTypes_02_11_2025_v3.pdf 
+# 
+# ## join all the cluster with no-hab or low-hab signal
+# tmp_hb <- hb_clusters[! hb_clusters %in% c(no_hb_clust)]
+# low_hb_clusters <- tmp_hb[c(1, 2, 5, 8, 11, 16)]
+# no_hb_clust <- append(no_hb_clust, low_hb_clusters)
+# 
+# hb_clusters <- hb_clusters[! hb_clusters %in% c(no_hb_clust)]
+# as.vector(hb_clusters)
+# # [1] "C.05 DD_LHb (4.97%)" "C.07 DD_MHb (4.69%)" "C.10 DD_MHb (4.21%)"
+# # [4] "C.11 DD_MHb (3.97%)" "C.14 DD_MHb (3.64%)" "C.16 DD_MHb (2.88%)"
+# # [7] "C.18 DD_LHb (2.76%)" "C.23 DD_LHb (2.28%)" "C.24 DD_LHb (1.48%)"
+# # [10] ...
+# length(hb_clusters)
+# 
+# ## subset clusters with Hb cell-types
+# 
+# unique(Idents(SeuratOBJ))
+# SeuratOBJ <- subset(SeuratOBJ, idents = as.vector(hb_clusters))
+# levels(SeuratOBJ)
+# length(Cells(SeuratOBJ))
+# # [1] 17827
+# 
+# 
+# ## removed unused levels
+# 
+# colnames(SeuratOBJ@meta.data)
+# head(SeuratOBJ$seurat_clusters)
+# SeuratOBJ@meta.data$seurat_clusters <- droplevels(SeuratOBJ@meta.data$seurat_clusters)
+# 
+# # check successful
+# levels(SeuratOBJ)
+# levels(SeuratOBJ@meta.data$seurat_clusters)
+# # [1] "5"  "7"  "10" "11" "14" "16" "18" "23" "24" "30" "33" "36" "40"
 
 
 ## rename levels in a fancy way to easy Hb clusterID identification
 
 oldname_clusters <- SeuratOBJ@meta.data$seurat_clusters
-newname_clusters <- paste0("HbM.C.", oldname_clusters)
+newname_clusters <- paste0("Multiome.C.", oldname_clusters)
 head(newname_clusters)
 SeuratOBJ@meta.data$seurat_clusters <- newname_clusters
 #levels(SeuratOBJ)
 head(SeuratOBJ@meta.data$seurat_clusters)
-# [1] "HbM.C.11" "HbM.C.23" "HbM.C.11" "HbM.C.5"  "HbM.C.11" "HbM.C.11"
+# Previous format: [1] "HbM.C.11" "HbM.C.23" "HbM.C.11" "HbM.C.5"  "HbM.C.11" "HbM.C.11"
+# New format: [1] "Multiome.C.25" "Multiome.C.4"  "Multiome.C.9"  "Multiome.C.4" 
 
 
-## Retrieve Ensembl IDs for Gene Symbols
-## need to be polish, some gene_id(s) does not match the gene-ensembl id(s)
+###################### Retrieve Ensembl IDs for Gene Symbols. ######################
+## Note.Cell Ranger ARC reanalyze are barcodes identified as valid barcodes from both 
+#       `cell-ranger-count` (rna) and `cell-ranger-atac` pipelines run separately 
 
-# Connect to Ensembl database
+## We assumed to be using the same reference 
 
-mart <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")  # For human genes
+# Cellranger-ARC	
+reference_gtf <- "/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-cellranger-arc-GRCh38-2020-A-2.0.0/genes/genes.gtf.gz"
+# Transcriptome	GRCh38-2020-A
+# reference_gtf_rna <- "/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-cellranger-arc-GRCh38-2020-A-2.0.0/genes/genes.gtf.gz"
+
+## Read in the gene information from the annotation GTF file
+
+gtf <- rtracklayer::import(reference_gtf)
+#class(gtf)
+#"GenomicRanges"
+
+gtf <- gtf[gtf$type == "gene"]
+head(gtf)
+names(gtf) <- gtf$gene_id # ensembl ids
+# Here:
+# gene_name = gene symbols (multiome)
+# gene_id = gene ensembl
+
 
 # Extract gene symbols from Seurat object
 
 gene_symbols <- rownames(SeuratOBJ)  # Modify if needed for different slot
 head(gene_symbols)
-# [1] "MIR1302-2HG" "FAM138A"     "OR4F5"       "AL627309.1"  "AL627309.3" 
+# [1] "MIR1302-2HG" "FAM138A"     "OR4F5"       "AL627309.1"  "AL627309.3"
 
 length(gene_symbols)
 # [1] 36601
 
-# Convert gene symbols to Ensembl IDs
+# # Convert gene symbols to Ensembl IDs
+# 
+# annotations <- getBM(
+#   attributes = c("hgnc_symbol", "ensembl_gene_id"),
+#   filters = "hgnc_symbol",
+#   values = gene_symbols,
+#   mart = mart
+# )
+# 
+# dim(annotations)
+# # [1] 26664     2
+# head(annotations)
+# #   hgnc_symbol ensembl_gene_id
+# # 1     A3GALT2 ENSG00000184389
+# # 2     AADACL3 ENSG00000188984
+# # 3     AADACL4 ENSG00000204518
+# # 4        AAK1 ENSG00000115977
+# # 5       ABCA4 ENSG00000198691
+# # 6      ABCB10 ENSG00000135776
+# 
+# # Merge Ensembl IDs with Seurat object genes
+# gene_map <- setNames(annotations$ensembl_gene_id, annotations$hgnc_symbol)
+# length(gene_map)
+# # [1] 26664
+# head(unname(gene_map))
+# # [1] "ENSG00000184389" "ENSG00000188984" "ENSG00000204518" "ENSG00000115977"
+# # [5] "ENSG00000198691" "ENSG00000135776"
 
-annotations <- getBM(
-  attributes = c("hgnc_symbol", "ensembl_gene_id"),
-  filters = "hgnc_symbol",
-  values = gene_symbols,
-  mart = mart
-)
 
-dim(annotations)
-# [1] 26664     2
-head(annotations)
-#   hgnc_symbol ensembl_gene_id
-# 1     A3GALT2 ENSG00000184389
-# 2     AADACL3 ENSG00000188984
-# 3     AADACL4 ENSG00000204518
-# 4        AAK1 ENSG00000115977
-# 5       ABCA4 ENSG00000198691
-# 6      ABCB10 ENSG00000135776
-
-# Merge Ensembl IDs with Seurat object genes
-gene_map <- setNames(annotations$ensembl_gene_id, annotations$hgnc_symbol)
-length(gene_map)
-# [1] 26664
-head(unname(gene_map))
-# [1] "ENSG00000184389" "ENSG00000188984" "ENSG00000204518" "ENSG00000115977"
-# [5] "ENSG00000198691" "ENSG00000135776"
 
 
 
 ##### identify clusters 
 
 colnames(SeuratOBJ@meta.data)
-
-## samples included 
-
 table(SeuratOBJ[["orig.ident"]])
-
+# S03_Hb_r S04_Hb_r S05_Hb_r S06_Hb_r S07_Hb_r S08_Hb_r S09_Hb_r S10_Hb_r 
+# 4375     6364     1990     7059     7207     4735     5959     5914 
+# S11_Hb_r S12_Hb_r 
+# 8054     4045
 ## number of cells by cluster
-
 table(SeuratOBJ$seurat_clusters)
 # HbM.C.10 HbM.C.11 HbM.C.14 HbM.C.16 HbM.C.18 HbM.C.23 HbM.C.24 HbM.C.30 
 # 2344     2212     2026     1607     1535     1269      825      213 
@@ -162,25 +179,26 @@ table(SeuratOBJ$seurat_clusters)
 
 ## Import RNA assay in sce object
 
-sce <- as.SingleCellExperiment(SeuratOBJ, assay = "RNA")
-
+SeuratOBJx <- DietSeurat(SeuratOBJ, dimreducs = NULL)
+sce <- as.SingleCellExperiment(SeuratOBJx, assay = "RNA")
 rowData(sce)
 
 total_unfiltered_cells <- ncol(sce) # cells in cols
 total_unfiltered_cells 
 # [1] 55702 / 17827
-# unname(gene_map[match(rownames(sce), names(gene_map))])
 
-length(gene_map) # [1] 26664
+
+### match gene symbols to Ensembl IDs
+
+# unname(gtf$gene_id[match(rownames(sce), gtf$gene_name)])
+
+rowData(sce)$gene_id <- unname(gtf$gene_id[match(rownames(sce), gtf$gene_name)])
+rowData(sce)$gene_symbol <- rownames(sce)
+table(is.na(rownames(sce)))
+length(rownames(sce)) # [1] 36601
 head(rownames(sce))
 # [1] "MIR1302-2HG" "FAM138A"     "OR4F5"       "AL627309.1"  "AL627309.3" 
-
-rowData(sce)$gene_id <- unname(gene_map[match(rownames(sce), names(gene_map))])
-rowData(sce)$gene_symbol <- rownames(sce)
 rowData(sce)
-any(is.na(rownames(sce)))
-rowData(sce)
-#colnames(colData(sce))
 # DataFrame with 36601 rows and 2 columns
 # gene_id gene_symbol
 # <character> <character>
@@ -190,14 +208,26 @@ rowData(sce)
 # AL627309.1               NA  AL627309.1
 # AL627309.3               NA  AL627309.3
 
+## some validations
 
-## Perform the spatial registration using ensembl genes ( need to be polish)
+table(is.na(rowData(sce)$gene_id))
+table(is.na(rowData(sce)$gene_symbol))
+table(rownames(sce) %in% gtf$gene_name)
+# FALSE  TRUE 
+# 10    36591 
+## genes that does not match the reference
+setdiff(rownames(sce), gtf$gene_name)
+# [1] "TBCE.1"           "LINC01238.1"      "CYB561D2.1"       "MATR3.1"         
+# [5] "LINC01505.1"      "HSPA14.1"         "GOLGA8M.1"        "GGT1.1"          
+# [9] "ARMCX5-GPRASP2.1" "TMSB15B.1" 
+
+# Perform the spatial registration using ensembl genes ( need to be polish)
 # sce_modeling_results <- registration_wrapper(
 #   sce = sce,
 #   var_registration = "seurat_clusters",
 #   var_sample_id = "orig.ident",
 #   gene_ensembl = "gene_id", # gene ensembl ids
-#   gene_name = "gene_symbol" # gene_names 
+#   gene_name = "gene_symbol" # gene_names
 # )
 
 ## Perform the spatial registration using genes symbols from rna-multiome
@@ -220,6 +250,14 @@ sce_modeling_results$enrichment[1:5, 1:5]
 # LINC00115        0.7564815      -0.2602102     0.005601157     -0.90005001
 
 
+## Correlate statistic with Layer Reference
+
+cor_layer <- layer_stat_cor(
+  stats = sce_modeling_results$enrichment,
+  modeling_results = layer_modeling_results,
+  model_type = "enrichment",
+  top_n = 100
+)
 
 
 
