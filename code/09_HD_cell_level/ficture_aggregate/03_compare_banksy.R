@@ -58,10 +58,11 @@ for (lambda in all_lambda) {
             ) +
             geom_tile() +
             scale_fill_viridis_c() +
-            theme_bw(base_size = 20) +
+            coord_cartesian(expand = FALSE) +
+            theme_bw(base_size = 25) +
             labs(
                 x = 'FICTURE Cluster', y = 'Banksy Cluster',
-                fill = 'Jaccard Index',
+                fill = 'Jaccard\nIndex',
                 title = sprintf('Banksy: lambda = %s, res = %s', lambda, res)
             )
     }
