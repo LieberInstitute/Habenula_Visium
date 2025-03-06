@@ -4,6 +4,7 @@
 # # To submit the job use: sbatch 01_compute_cor.sh
 
 library("here")
+library("purrr")
 library("spatialLIBD")
 library("sessioninfo")
 
