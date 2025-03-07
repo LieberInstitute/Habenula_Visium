@@ -277,7 +277,7 @@ sce_modeling_results$enrichment[1:5, 1:5]
 # 3: Count matrix has duplicated rownames 
 
 
-saveRDS(sce_modeling_results, here(dir_outRDS, "enrichment_snRNA-multiome.RDS"))
+saveRDS(sce_modeling_results, here(dir_outRDS, "enrichment_snRNA-multiome.rds"))
 
 message(" rna-multiome reference completed!")
 
