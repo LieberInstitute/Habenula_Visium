@@ -22,7 +22,8 @@ model_path = here(
     'modeling_results', sprintf('%s.rds', res_neat)
 )
 
-dir.create(dirname(out_path), showWarnings = FALSE, recursive = TRUE)
+dir.create(dirname(pseudo_path), showWarnings = FALSE, recursive = TRUE)
+dir.create(dirname(model_path), showWarnings = FALSE)
 
 #   Load and bring counts into memory to speed up computations. Despite the huge
 #   size of the data, the memory footprint is manageable due to the extreme
