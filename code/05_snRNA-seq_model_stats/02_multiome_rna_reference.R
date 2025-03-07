@@ -6,6 +6,7 @@ library("spatialLIBD")
 library("sessioninfo")
 
 ## set hard path to Habenula multiome project WNN Ledien knn=30 resolution=2 
+dir_outRDS <- here("processed-data", "05_snRNA-seq_model_stats")
 inputRDS <- "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/05_Clustering_ARCr/05_rename_idents"
 
 ## Read seurat object
@@ -22,7 +23,7 @@ message("WNN clustering loaded!\nCells: ", length(Cells(x = SeuratOBJ)))
 message("WNN containing ", nrow(unique(SeuratOBJ[["seurat_clusters"]])), " clusters")
 
 # brief exploration of the annotations stored in metadata
-levels(SeuratOBJ)
+# levels(SeuratOBJ)
 # [1] "C.01 DD_LHb (7.01%)"   "C.02"                  "C.03"                 
 # [4] "C.04 DD_LHb (5.23%)"   "C.05 DD_LHb (4.97%)"   "C.06"                 
 # [7] "C.07 DD_MHb (4.69%)"   "C.08 DD_LHb (4.55%)"   "C.09"                 
@@ -31,14 +32,15 @@ levels(SeuratOBJ)
 
 ## Identified and subset clusters annotated as putative `habenula`. Use length of cluster ID as criteria
 
-## extract clusters IDs
-
-message("Cluster-IDs from `WNN`")
-SeuOBJ_clusters <- Idents(SeuratOBJ)
-head(SeuOBJ_clusters)
-hb_clusters <- unlist(levels(SeuOBJ_clusters))
-hb_clusters
-
+# ## extract clusters IDs
+# 
+# message("Cluster-IDs from `WNN`")
+# 
+# SeuOBJ_clusters <- Idents(SeuratOBJ)
+# head(SeuOBJ_clusters)
+# hb_clusters <- unlist(levels(SeuOBJ_clusters))
+# hb_clusters
+#
 # ## filter hb clusters only 
 # 
 # no_hb_clust = list()
@@ -80,18 +82,40 @@ hb_clusters
 # levels(SeuratOBJ)
 # levels(SeuratOBJ@meta.data$seurat_clusters)
 # # [1] "5"  "7"  "10" "11" "14" "16" "18" "23" "24" "30" "33" "36" "40"
-
+# 
+# 
 
 ## rename levels in a fancy way to easy Hb clusterID identification
 
-oldname_clusters <- SeuratOBJ@meta.data$seurat_clusters
-newname_clusters <- paste0("Multiome.C.", oldname_clusters)
-head(newname_clusters)
-SeuratOBJ@meta.data$seurat_clusters <- newname_clusters
-#levels(SeuratOBJ)
-head(SeuratOBJ@meta.data$seurat_clusters)
-# Previous format: [1] "HbM.C.11" "HbM.C.23" "HbM.C.11" "HbM.C.5"  "HbM.C.11" "HbM.C.11"
-# New format: [1] "Multiome.C.25" "Multiome.C.4"  "Multiome.C.9"  "Multiome.C.4" 
+## Faster mode to rename all cluster idents
+
+levels(SeuratOBJ)
+# [1] "C.01 DD_LHb (7.01%)"   "C.02"                  "C.03"                 
+# [4] "C.04 DD_LHb (5.23%)"   "C.05 DD_LHb (4.97%)"   "C.06"                 
+# [7] "C.07 DD_MHb (4.69%)"   "C.08 DD_LHb (4.55%)"   "C.09"                 
+# [10] "C.10 DD_MHb (4.21%)"   "C.11 DD_MHb (3.97%)"   "C.12 DD_LHb (3.93%)"  
+# [13] "C.13"                  "C.14 DD_MHb (3.64%)"   "C.15" 
+# ...
+new_clust_name <- substr(levels(SeuratOBJ), 1, 11)
+names(new_clust_name) <- levels(SeuratOBJ)
+SeuratOBJ <- RenameIdents(SeuratOBJ, new_clust_name)
+newname_clusters <- levels(SeuratOBJ)
+# [1] "C.01 DD_LHb" "C.02"        "C.03"        "C.04 DD_LHb" "C.05 DD_LHb"
+# [6] "C.06"        "C.07 DD_MHb" "C.08 DD_LHb" "C.09"        "C.10 DD_MHb"
+# [11] "C.11 DD_MHb" "C.12 DD_LHb" "C.13"        "C.14 DD_MHb" "C.15"       
+# [16] "C.16 DD_MHb" "C.17 LB_Hb " "C.18 DD_LHb" "C.19"        "C.20"   
+# ...
+
+## rename Seurat clusters
+
+Idents(SeuratOBJ) <- SeuratOBJ$seurat_clusters
+SeuratOBJ$seurat_clusters <- Idents(SeuratOBJ)
+
+# oldname_clusters <- SeuratOBJ@meta.data$seurat_clusters
+# newname_clusters <- paste0("Multiome.C.", oldname_clusters)
+# head(newname_clusters)
+# SeuratOBJ@meta.data$seurat_clusters <- newname_clusters
+# head(SeuratOBJ@meta.data$seurat_clusters)
 
 
 ###################### Retrieve Ensembl IDs for Gene Symbols. ######################
@@ -140,17 +164,17 @@ table(SeuratOBJ[["orig.ident"]])
 # 8054     4045
 ## number of cells by cluster
 table(SeuratOBJ$seurat_clusters)
-# HbM.C.10 HbM.C.11 HbM.C.14 HbM.C.16 HbM.C.18 HbM.C.23 HbM.C.24 HbM.C.30 
-# 2344     2212     2026     1607     1535     1269      825      213 
-# HbM.C.33 HbM.C.36 HbM.C.40  HbM.C.5  HbM.C.7 
-# 186      145       84     2771     2610 
+# C.01 DD_LHb        C.02        C.03 C.04 DD_LHb C.05 DD_LHb        C.06 
+# 3906        3371        3271        2911        2771        2667 
+# C.07 DD_MHb C.08 DD_LHb        C.09 C.10 DD_MHb C.11 DD_MHb C.12 DD_LHb 
+# 2610        2537        2430        2344        2212        2187 
+# C.13 C.14 DD_MHb        C.15 C.16 DD_MHb C.17 LB_Hb  C.18 DD_LHb 
+# 2036        2026        1625        1607        1587        1535 
 
+## Import RNA assay into sce object
 
-
-## Import RNA assay in sce object
-
-SeuratOBJx <- DietSeurat(SeuratOBJ, dimreducs = NULL)
-sce <- as.SingleCellExperiment(SeuratOBJx, assay = "RNA")
+SeuratOBJ <- DietSeurat(SeuratOBJ, dimreducs = NULL)
+sce <- as.SingleCellExperiment(SeuratOBJ, assay = "RNA")
 rowData(sce)
 
 total_unfiltered_cells <- ncol(sce) # cells in cols
@@ -158,7 +182,7 @@ total_unfiltered_cells
 # [1] 55702 / 17827
 
 
-### match gene symbols to Ensembl IDs
+### match gene symbols to Ensembl IDs in the sce object
 
 # unname(gtf$gene_id[match(rownames(sce), gtf$gene_name)])
 
@@ -197,7 +221,7 @@ dup_genes <- setdiff(rownames(sce), gtf$gene_name)
 # rownames(sce)[rownames(sce) ==  "TBCE.1"]  <- "TBCE"
 
 
-## genes duplicated need to be fix
+## manage duplicated genes
 
 if (length(dup_genes) > 1) {
   ## remove .1 from gene name
@@ -210,8 +234,9 @@ if (length(dup_genes) > 1) {
   rowData(sce)$gene_id <- unname(gtf$gene_id[match(rownames(sce), gtf$gene_name)])
   rowData(sce)$gene_symbol <- rownames(sce)
   ## verify
-  setdiff(rownames(sce), gtf$gene_name)
+  dup_genes <- setdiff(rownames(sce), gtf$gene_name)
 }
+## genes with .1 suffix fixed
 # [1] "TBCE"
 # [1] "LINC01238"
 # [1] "CYB561D2"
@@ -223,7 +248,10 @@ if (length(dup_genes) > 1) {
 # [1] "ARMCX5-GPRASP2"
 # [1] "TMSB15B"
 
-## Perform the spatial registration using ensembl genes ( need to be polish)
+if (length(dup_genes)==0) { message("Annotation ready!") } else { stop() }
+
+## Perform the spatial registration using ensembl genes 
+
 sce_modeling_results <- registration_wrapper(
   sce = sce,
   var_registration = "seurat_clusters",
@@ -232,25 +260,24 @@ sce_modeling_results <- registration_wrapper(
   gene_name = "gene_symbol" # gene_names
 )
 
-# ## Perform the spatial registration using genes symbols from rna-multiome
-# sce_modeling_results <- registration_wrapper(
-#   sce = sce,
-#   var_registration = "seurat_clusters", # Character vector, C1 / t_stat_C12
-#   var_sample_id = "orig.ident",
-#   gene_ensembl = "gene_symbol", # gene ensembl ids
-#   gene_name = "gene_symbol" # gene_names 
-# )
-
 
 ## check out table on enrichment t-statistics
 sce_modeling_results$enrichment[1:5, 1:5]
-# t_stat_HbM.C.10 t_stat_HbM.C.11 t_stat_HbM.C.14 t_stat_HbM.C.16
-# AL627309.1      -0.1159839      -0.8339642     0.357303106      0.06155168
-# AL627309.5       0.3170415      -0.3913761     1.876669973     -0.57031746
-# LINC01409        0.5457288      -1.6630007    -1.192579619     -0.01104049
-# LINC01128       -1.0905454       0.9819776     0.255499148     -1.86840108
-# LINC00115        0.7564815      -0.2602102     0.005601157     -0.90005001
+# t_stat_C.01.DD_LHb t_stat_C.02 t_stat_C.03 t_stat_C.04.DD_LHb
+# ENSG00000238009          1.4486161  -1.5812290   1.9542309          1.9335732
+# ENSG00000241860          1.6045860  -1.2039448   1.2864945          2.1393666
+# ENSG00000237491          2.6221958  -0.7505787  -0.1465673          1.5780745
+# ENSG00000228794          1.1455886  -3.3670794   0.4186114          1.0890923
+# ENSG00000225880          0.6636483  -0.2710459   0.3707127          0.5807029
 
+# Warning messages:
+#   1: var_registration "seurat_clusters" contains non-syntatic variables: C.04 DD_LHb, C.01 DD_LHb, C.08 DD_LHb, C.11 DD_MHb, C.23 DD_LHb, C.12 DD_LHb, C.17 LB_Hb , C.05 DD_LHb, C.18 DD_LHb, C.14 DD_MHb, C.32 DD_LHb, C.24 DD_LHb, C.07 DD_MHb, C.36 DD_MHb, C.10 DD_MHb, C.33 DD_LHb, C.30 DD_LHb, C.16 DD_MHb, C.40 DD_LHb
+# converting to C.04.DD_LHb, C.01.DD_LHb, C.08.DD_LHb, C.11.DD_MHb, C.23.DD_LHb, C.12.DD_LHb, C.17.LB_Hb., C.05.DD_LHb, C.18.DD_LHb, C.14.DD_MHb, C.32.DD_LHb, C.24.DD_LHb, C.07.DD_MHb, C.36.DD_MHb, C.10.DD_MHb, C.33.DD_LHb, C.30.DD_LHb, C.16.DD_MHb, C.40.DD_LHb 
+# 2: Count matrix has duplicated rownames 
+# 3: Count matrix has duplicated rownames 
+
+
+saveRDS(sce_modeling_results, here(dir_outRDS, "enrichment_snRNA-multiome.RDS"))
 
 message(" rna-multiome reference completed!")
 
