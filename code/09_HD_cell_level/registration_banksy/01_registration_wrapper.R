@@ -13,9 +13,13 @@ cluster_path = here(
     'processed-data', '09_HD_cell_level', 'banksy', 'lambda0_8',
     sprintf('leiden_res%s.csv', res_neat)
 )
-out_path = here(
+pseudo_path = here(
     'processed-data', '09_HD_cell_level', 'registration_banksy',
     'pseudobulk_spe', sprintf('%s.rds', res_neat)
+)
+model_path = here(
+    'processed-data', '09_HD_cell_level', 'registration_banksy',
+    'modeling_results', sprintf('%s.rds', res_neat)
 )
 
 dir.create(dirname(out_path), showWarnings = FALSE, recursive = TRUE)
@@ -32,11 +36,13 @@ stopifnot(all(spe$key %in% cluster_df$key))
 spe$banksy = cluster_df$banksy_lambda0_8[match(spe$key, cluster_df$key)]
 
 #   Pseudobulk
-spe_pseudo = registration_pseudobulk(
+model_results = registration_wrapper(
     spe,
     var_registration = 'banksy',
     var_sample_id = 'sample_id',
-    pseudobulk_rds_file = out_path
+    pseudobulk_rds_file = pseudo_path
 )
+
+saveRDS(model_results, model_path)
 
 session_info()
