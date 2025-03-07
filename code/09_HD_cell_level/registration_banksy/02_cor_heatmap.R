@@ -42,20 +42,6 @@ annotated_heatmap <- function(t_stats, ref_path, res_name) {
         this_cor, annotate_registered_clusters, cutoff_merge_ratio = 0.1
     )
 
-    #   Use annotation labels on the correlation matrices
-    this_cor <- mapply(
-        function(cor_df, label_data) {
-            rownames(cor_df) = paste0(
-                rownames(cor_df),
-                " ~ ",
-                label_data$layer_label[match(rownames(cor_df), label_data$cluster)]
-            )
-            return(cor_df)
-        },
-        this_cor,
-        annotated_clusters
-    )
-
     #   Make heatmaps
     pdf(
         file.path(
