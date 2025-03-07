@@ -1,7 +1,6 @@
 library("here")
 library("Seurat")
 library("SingleCellExperiment")
-# library("biomaRt")
 library("spatialLIBD")
 library("sessioninfo")
 
@@ -22,13 +21,6 @@ SeuratOBJ <- readRDS(rds_name)
 message("WNN clustering loaded!\nCells: ", length(Cells(x = SeuratOBJ)))
 message("WNN containing ", nrow(unique(SeuratOBJ[["seurat_clusters"]])), " clusters")
 
-# brief exploration of the annotations stored in metadata
-# levels(SeuratOBJ)
-# [1] "C.01 DD_LHb (7.01%)"   "C.02"                  "C.03"                 
-# [4] "C.04 DD_LHb (5.23%)"   "C.05 DD_LHb (4.97%)"   "C.06"                 
-# [7] "C.07 DD_MHb (4.69%)"   "C.08 DD_LHb (4.55%)"   "C.09"                 
-# [10] "C.10 DD_MHb (4.21%)"   "C.11 DD_MHb (3.97%)"   "C.12 DD_LHb (3.93%)"  
-# ...
 
 ## Identified and subset clusters annotated as putative `habenula`. Use length of cluster ID as criteria
 
@@ -87,7 +79,7 @@ message("WNN containing ", nrow(unique(SeuratOBJ[["seurat_clusters"]])), " clust
 
 ## rename levels in a fancy way to easy Hb clusterID identification
 
-## Faster mode to rename all cluster idents
+## Faster mode to rename all cluster idents (shorter the name)
 
 levels(SeuratOBJ)
 # [1] "C.01 DD_LHb (7.01%)"   "C.02"                  "C.03"                 
@@ -100,15 +92,15 @@ new_clust_name <- substr(levels(SeuratOBJ), 1, 11)
 names(new_clust_name) <- levels(SeuratOBJ)
 SeuratOBJ <- RenameIdents(SeuratOBJ, new_clust_name)
 newname_clusters <- levels(SeuratOBJ)
+newname_clusters
 # [1] "C.01 DD_LHb" "C.02"        "C.03"        "C.04 DD_LHb" "C.05 DD_LHb"
 # [6] "C.06"        "C.07 DD_MHb" "C.08 DD_LHb" "C.09"        "C.10 DD_MHb"
 # [11] "C.11 DD_MHb" "C.12 DD_LHb" "C.13"        "C.14 DD_MHb" "C.15"       
 # [16] "C.16 DD_MHb" "C.17 LB_Hb " "C.18 DD_LHb" "C.19"        "C.20"   
 # ...
 
-## rename Seurat clusters
+## rename all Seurat clusters
 
-Idents(SeuratOBJ) <- SeuratOBJ$seurat_clusters
 SeuratOBJ$seurat_clusters <- Idents(SeuratOBJ)
 
 # oldname_clusters <- SeuratOBJ@meta.data$seurat_clusters
