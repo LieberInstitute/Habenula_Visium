@@ -76,7 +76,8 @@ save(cor_top100,
 
 ## Plot all for portability
 pdf(here(plot_dir, "cor_top100_spatial_registration.pdf"))
-map(cor_top100, layer_stat_cor_plot, max = 1)
+#map(cor_top100, layer_stat_cor_plot, max = 1) # unused argument (max = 1)
+map(cor_top100, layer_stat_cor_plot)
 dev.off()
 
 
