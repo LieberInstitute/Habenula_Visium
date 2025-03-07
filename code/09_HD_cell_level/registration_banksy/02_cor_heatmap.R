@@ -37,19 +37,6 @@ annotated_heatmap <- function(t_stats, ref_path, res_name) {
         top_n = 100
     )
 
-    #   Put clusters in order
-    this_cor = lapply(
-        this_cor,
-        function(x) {
-            x[
-                rownames(x) |>
-                    str_extract('^X([0-9]+)$', group = 1) |>
-                    as.numeric() |>
-                    order(),
-            ]
-        }
-    )
-
     #   Annotate clusters
     annotated_clusters = lapply(
         this_cor, annotate_registered_clusters, cutoff_merge_ratio = 0.1
@@ -69,19 +56,16 @@ annotated_heatmap <- function(t_stats, ref_path, res_name) {
         annotated_clusters
     )
 
-    #   Make basic heatmap (not ComplexHeatmap)
+    #   Make heatmaps
     pdf(
         file.path(
             plot_dir,
             sprintf("snRNA-seq_registration_%sRes_basic.pdf", res_name)
         )
     )
-    lapply(
-        this_cor,
-        layer_stat_cor_plot,
-        max = max(sapply(this_cor, max)),
-        min = min(sapply(this_cor, min))
-    )
+    for (i in seq_len(length(this_cor))) {
+        print(layer_stat_cor_plot(this_cor[[i]], annotation = annotated_clusters[[i]]))
+    }
     dev.off()
 
     return(this_cor)
