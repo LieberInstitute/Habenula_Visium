@@ -1,0 +1,82 @@
+library("here")
+library("spatialLIBD")
+library("sessioninfo")
+
+## Create output directories
+dir_rdata <-
+    here("processed-data", "06_spatial_registration_vs_snRNA-seq")
+dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
+dir_plots <-
+    here("plots", "06_spatial_registration_vs_snRNA-seq")
+dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
+
+## Load correlation values
+load(file.path(dir_rdata, "cor_BayesSpace_vs_snRNA-seq.Rdata"),
+    verbose = TRUE
+)
+# head(cor_fine)
+# head(cor_broad)
+
+
+## Make basic heatmaps (not ComplexHeatmap) versions
+
+## Fine resolution
+pdf(file = file.path(dir_plots, "snRNA-seq_registration_fineRes_basic.pdf"))
+lapply(
+    cor_fine,
+    layer_stat_cor_plot,
+    max = max(sapply(cor_fine, max)),
+    min = min(sapply(cor_fine, min))
+)
+dev.off()
+
+## Broad resolution
+pdf(file = file.path(dir_plots, "snRNA-seq_registration_broadRes_basic.pdf"))
+lapply(
+    cor_broad,
+    layer_stat_cor_plot,
+    max = max(sapply(cor_broad, max)),
+    min = min(sapply(cor_broad, min))
+)
+dev.off()
+
+str(cor_broad)
+head(cor_broad[7])
+
+k08_broad <- cor_broad[[7]]
+#rownames(k08_broad) <- gsub("^k08_", "", rownames(k08_broad))
+
+## set min and max correlation
+max_corr <- max(sapply(k08_broad, max))
+min_corr <- min(sapply(k08_broad, min))
+
+pdf(file = file.path(dir_plots, "snRNA-seq_registration_broadRes_basic_k08_square.pdf"))
+layer_stat_cor_plot(k08_broad,
+  max = max_corr,
+  min = min_corr
+)
+dev.off()
+
+pdf(file = file.path(dir_plots, "snRNA-seq_registration_broadRes_basic_k08_tall.pdf"), height = 10)
+layer_stat_cor_plot(
+  k08_broad,
+  max = max_corr,
+  min = min_corr
+)
+dev.off()
+
+pdf(file = file.path(dir_plots, "snRNA-seq_registration_broadRes_basic_k08_wide.pdf"), width = 10)
+layer_stat_cor_plot(
+  k08_broad,
+  max = max_corr,
+  min = min_corr
+)
+dev.off()
+
+
+## Reproducibility information
+print("Reproducibility information:")
+Sys.time()
+proc.time()
+options(width = 120)
+session_info()
