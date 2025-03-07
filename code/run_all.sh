@@ -231,7 +231,75 @@ echo "03_model_BayesSpace.sh"
 rm -f logs/03_model_BayesSpace*.err
 rm -f logs/03_model_BayesSpace*.out
 
-03_model_BayesSpace.sh
+sbatch 03_model_BayesSpace.sh
+
+
+
+echo "############################################################################ "
+echo "#########   Compute enrichment with registration_wrapper  ################## "
+echo "#########   From RNA multiome modality (WNN Leiden res=2, knn=30) ########## "
+echo "############################################################################ "
+
+## change directory
+SUBDIR="05_snRNA-seq_model_stats"
+
+cd ${CODEDIR}/${SUBDIR}
+
+echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
+
+## First remove old plots
+rm -f logs/02_multiome_rna_reference.txt
+rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_snRNA-multiome.rds
+
+sbatch 02_multiome_rna_reference.sh
+
+
+
+echo "############################################################################ "
+echo "#########   Spatial Registrattion              ############################# "
+echo "#########                                      ############################# "
+echo "############################################################################ "
+
+
+## change directory
+SUBDIR="06_spatial_registration_vs_snRNA-seq"
+
+cd ${CODEDIR}/${SUBDIR}
+
+echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
+
+## First remove old plots
+rm -f logs/01_compute_cor.*.out
+rm -f logs/01_compute_cor.*.err
+rm -f ${PROCESSEDIR}/${SUBDIR}/cor_BayesSpace_vs_snRNA-seq.Rdata
+
+sbatch 01_compute_cor.sh
+
+
+
+echo "Compute layer correlation annotation ###################################### "
+
+echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
+
+rm -f ${PROCESSEDIR}/${SUBDIR}/bayesSpacce_layer_cor_top100.Rdata
+rm -f ${PLOTDIR}/${SUBDIR}/cor_top100_spatial_registration.pdf
+
+Rscript 01_layer_correlation_annotation.R
+
+
+
+echo "Plot correlation  ######################################################### "
+
+echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
+
+rm -f ${PLOTDIR}/${SUBDIR}/snRNA-seq_registration_fineRes_*.pdf
+rm -f ${PLOTDIR}/${SUBDIR}/snRNA-seq_registration_broadRes_*.pdf
+
+Rscript 02_plot_cor_basic.R
+
+
+
+
 
 
 
