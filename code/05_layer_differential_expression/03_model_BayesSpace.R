@@ -39,7 +39,8 @@ sce_pseudo$registration_variable <- sce_pseudo$BayesSpace
 sce_pseudo$registration_sample_id <- sce_pseudo$sample_id
 
 ## Set arguments used in spatialLIBD::registration_wrapper()
-covars <- c("subject")   # add sex, age when we have more than 2 classes
+# covars <- c("subject")   # add sex, age when we have more than 2 classes
+covars <- c("sample_id")   # add sex, age when we have more than 2 classes
 gene_ensembl <- "gene_id"
 gene_name <- "gene_name"
 suffix <- "all"
@@ -48,6 +49,7 @@ suffix <- "all"
 
 ## Taken from spatialLIBD::registration_wrapper()
 ## https://github.com/LieberInstitute/spatialLIBD/blob/master/R/registration_wrapper.R
+table(sce_pseudo[["brain_id"]])
 registration_mod <-
   registration_model(sce_pseudo, covars = covars)
 
