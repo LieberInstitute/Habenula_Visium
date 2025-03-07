@@ -35,12 +35,15 @@ assays(spe)$counts = as(assays(spe)$counts, "dgCMatrix")
 cluster_df = read_csv(cluster_path, show_col_types = FALSE)
 stopifnot(all(spe$key %in% cluster_df$key))
 spe$banksy = cluster_df$banksy_lambda0_8[match(spe$key, cluster_df$key)]
+spe$banksy = factor(spe$banksy, levels = sort(unique(spe$banksy)))
 
 #   Pseudobulk
 model_results = registration_wrapper(
     spe,
     var_registration = 'banksy',
     var_sample_id = 'sample_id',
+    gene_ensembl = 'gene_id',
+    gene_name = 'gene_name',
     pseudobulk_rds_file = pseudo_path
 )
 
