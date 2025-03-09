@@ -42,7 +42,7 @@ message("WNN containing ", nrow(unique(SeuratOBJ[["seurat_clusters"]])), " clust
 # ## Additionally, I make a manual selection of Hb clusters with low-Hb to be removed
 # #   - based on % of Hb cells contained in the clusters. More details: https://github.com/LieberInstitute/Hb_multiome/blob/0275ce2f6824b8f22a6efcb1acc9543ca4e1f195/data/06_FULL_SUMMARY_LEIDENr2_knn30_All-Cluster_All-CellTypes_02_11_2025_v3.pdf 
 # 
-# ## join all the cluster with no-hab or low-hab signal
+## join all the cluster with no-hab or low-hab signal
 # tmp_hb <- hb_clusters[! hb_clusters %in% c(no_hb_clust)]
 # low_hb_clusters <- tmp_hb[c(1, 2, 5, 8, 11, 16)]
 # no_hb_clust <- append(no_hb_clust, low_hb_clusters)
@@ -92,16 +92,33 @@ new_clust_name <- substr(levels(SeuratOBJ), 1, 11)
 names(new_clust_name) <- levels(SeuratOBJ)
 SeuratOBJ <- RenameIdents(SeuratOBJ, new_clust_name)
 newname_clusters <- levels(SeuratOBJ)
-newname_clusters
 # [1] "C.01 DD_LHb" "C.02"        "C.03"        "C.04 DD_LHb" "C.05 DD_LHb"
 # [6] "C.06"        "C.07 DD_MHb" "C.08 DD_LHb" "C.09"        "C.10 DD_MHb"
 # [11] "C.11 DD_MHb" "C.12 DD_LHb" "C.13"        "C.14 DD_MHb" "C.15"       
 # [16] "C.16 DD_MHb" "C.17 LB_Hb " "C.18 DD_LHb" "C.19"        "C.20"   
 # ...
 
+## Hb clusters mixed with other cell-types will be removed 
+low_hb_clusters <- c(1, 4, 8, 12, 17, 32)
+low_hb_clusters <- paste0("C.", str_pad(low_hb_clusters, width = 2, pad = "0"))
+# [1] "C.01" "C.04" "C.08" "C.12" "C.17" "C.32"
+low_c <- paste0("^", low_hb_clusters[1], "*")
+# low_c = "^C\\.01\\s\\w*"   # "C.01 DD_LHb"
+# low_c %in% c(newname_clusters)
+
+# Rename identity classes
+SeuratOBJ <- RenameIdents(SeuratOBJ, "C.01 DD_LHb" = "C.01")
+SeuratOBJ <- RenameIdents(SeuratOBJ, "C.04 DD_LHb" = "C.04")
+SeuratOBJ <- RenameIdents(SeuratOBJ, "C.08 DD_LHb" = "C.08")
+SeuratOBJ <- RenameIdents(SeuratOBJ, "C.12 DD_LHb" = "C.12")
+SeuratOBJ <- RenameIdents(SeuratOBJ, "C.17 LB_Hb " = "C.17")
+SeuratOBJ <- RenameIdents(SeuratOBJ, "C.32 DD_LHb" = "C.32")
+levels(SeuratOBJ)
+
 ## rename all Seurat clusters
 
 SeuratOBJ$seurat_clusters <- Idents(SeuratOBJ)
+unique(SeuratOBJ$seurat_clusters)
 
 # oldname_clusters <- SeuratOBJ@meta.data$seurat_clusters
 # newname_clusters <- paste0("Multiome.C.", oldname_clusters)
