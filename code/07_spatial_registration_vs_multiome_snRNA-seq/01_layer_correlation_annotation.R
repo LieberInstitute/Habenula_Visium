@@ -9,11 +9,6 @@ library("here")
 library("sessioninfo")
 
 ## Input dir
-# dir_input <- here::here(
-#   "processed-data",
-#   "rdata",
-#   "spe",
-#   "07_layer_differential_expression"
 dir_input <- here("processed-data", "05_layer_differential_expression", "modeling_results_BS")
 
 ## Set up plotting
@@ -31,7 +26,6 @@ if (!dir.exists(data_dir)) { dir.create(data_dir, showWarnings = FALSE, recursiv
 rds_input <- here("processed-data", "05_snRNA-seq_model_stats", "enrichment_snRNA-multiome.rds") 
 
 sn_multiome_data <- readRDS(rds_input)
-ls()
 head(sn_multiome_data$enrichment[1:4])
 #                     t_stat_C.01.DD_LHb t_stat_C.02 t_stat_C.03 t_stat_C.04.DD_LHb
 # ENSG00000238009          1.4486161  -1.5812290   1.9542309          1.9335732
@@ -41,13 +35,16 @@ head(sn_multiome_data$enrichment[1:4])
 # ENSG00000225880          0.6636483  -0.2710459   0.3707127          0.5807029
 # ENSG00000230368          0.2200720   0.8031336   1.1624824          2.2581398
 
-# colnames(unique(sn_multiome_data$enrichment))
-
+## colnames(unique(sn_multiome_data$enrichment))
+# [1] "t_stat_C.01.DD_LHb"  "t_stat_C.02"         "t_stat_C.03"        
+# [4] "t_stat_C.04.DD_LHb"  "t_stat_C.05.DD_LHb"  "t_stat_C.06"        
+# [7] "t_stat_C.07.DD_MHb"  "t_stat_C.08.DD_LHb"  "t_stat_C.09"        
+# [10] "t_stat_C.10.DD_MHb"  "t_stat_C.11.DD_MHb"  "t_stat_C.12.DD_LHb" 
 
 ## Load Registration Results 
 
 # k_list <- c(9, 16, 28)
-k_list <- c(2, 7, 9, 16, 28)
+k_list <- c(2:28)
 names(k_list) <-
   paste0("k", sprintf("%02d", k_list)) ## Use paper naming convention
 
@@ -65,43 +62,69 @@ bayesSpace_registration <-
     get(load(x))
   })
 
+
 ## Select t-stats from the registration enrichment data
 
-registration_t_stats <-
-  map(bayesSpace_registration, function(data) {
-    x <- data$enrichment
-    t_stats <- x[, grep("^t_stat_", colnames(x))]
-    colnames(t_stats) <- gsub("^t_stat_", "", colnames(t_stats))
-    return(t_stats)
-  })
+# registration_t_stats <-
+#   map(bayesSpace_registration, function(data) {
+#     x <- data$enrichment
+#     t_stats <- x[, grep("^t_stat_", colnames(x))]
+#     colnames(t_stats) <- gsub("^t_stat_", "", colnames(t_stats))
+#     return(t_stats)
+#   })
+# 
+# map(registration_t_stats, jaffelab::corner)
 
-#map(registration_t_stats, jaffelab::corner)
-
-str(registration_t_stats)
-map(registration_t_stats, sn_multiome_data) 
-# CSC. failed
-# Error in `map()`:
-#   ℹ In index: 1.
-# ℹ With name: k02.
-# Caused by error in `pluck_raw()`:
-#   ! Index 1 must have length 1, not 0.
 
 #### Calculate Correlation Matrix ####
+
 ## get layer data
 layer_modeling_results <- fetch_data(type = "modeling_results")
 
 
 ## CSC. Added from https://research.libd.org/spatialLIBD/articles/guide_to_spatial_registration.html#correlate-statsics-with-layer-reference
-cor_layer <- layer_stat_cor(
-  stats = sn_multiome_data$enrichment,
-  modeling_results = layer_modeling_results,
-  model_type = "enrichment",
-  top_n = 100
-)
-# Error in `.rowNamesDF<-`(x, value = value) : 
-#   duplicate 'row.names' are not allowed
-# In addition: Warning message:
-#   non-unique values when setting 'row.names': ‘ENSG00000158427’, ‘ENSG00000188626’, ‘ENSG00000271147’, ‘ENSG00000280987’, ‘ENSG00000284024’, ‘ENSG00000285053’ 
+#str(registration_t_stats$k09)
+
+#colnames(bayesSpace_registration$k09$enrichment)
+
+## correlate registration bayes space registration vs snRNA multiome enrichment
+
+## loop on the k(s) 
+pdf(here(plot_dir, "cor_top100_spatial_registration_snMultiome.pdf"))
+
+for (k in names(k_list)) {
+  # k = "k02"
+  print(k)
+  bayesSpace_registration_k <- bayesSpace_registration[[k]]$enrichment
+  # head(bayesSpace_registration_k)
+  cor_layer <- layer_stat_cor(
+    stats = bayesSpace_registration_k, #bayesSpace_registration$k09$enrichment,
+    modeling_results = sn_multiome_data,
+    model_type = "enrichment",
+    top_n = 100
+  )
+  # colnames(cor_layer)
+  save(cor_layer,
+       file = here(data_dir, paste0("bayesSpacce_layer_cor_top100_",k,".Rdata"))
+  )
+  ## print layer correlation plot for specific k
+  plt1 <- layer_stat_cor_plot(cor_layer)
+  print(plt1)
+}
+
+dev.off()
+
+# head(bayesSpace_registration$k09$enrichment)
+# head(bayesSpace_registration_k)
+#
+# cor_layer <- layer_stat_cor(
+#   stats = bayesSpace_registration$k09$enrichment,
+#   modeling_results = sn_multiome_data,
+#   model_type = "enrichment",
+#   top_n = 100
+# )
+# layer_stat_cor_plot(cor_layer)
+
 
 
 #### Correlate with modeling results ####
@@ -117,21 +140,9 @@ cor_layer <- layer_stat_cor(
 # )
 
 
-### Correlate with modeling results ####
-cor_top100 <- map(
-  registration_t_stats,
-  ~ layer_stat_cor(
-    .x,
-    layer_modeling_results,
-    model_type = "enrichment",
-    reverse = FALSE,
-    top_n = 100
-  )
-)
-
-save(cor_top100,
-     file = here(data_dir, "bayesSpacce_layer_cor_top100.Rdata")
-)
+# save(cor_top100,
+#      file = here(data_dir, "bayesSpacce_layer_cor_top100.Rdata")
+# )
 
 ## Plot all for portability
 pdf(here(plot_dir, "cor_top100_spatial_registration.pdf"))
