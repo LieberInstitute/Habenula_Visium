@@ -13,6 +13,7 @@ model_paths = here(
 
 #   List all paths and names for reference data
 ref_paths = c(
+    #   Fine and broad snRNA-seq data
     here(
         "processed-data", "05_snRNA-seq_model_stats",
         sprintf(
@@ -20,12 +21,22 @@ ref_paths = c(
             c("final_Annotations", "final_Annotations_broad")
         )
     ),
+    #   Multiome data
     here(
         'processed-data', '05_snRNA-seq_model_stats',
         'enrichment_snRNA-multiome_v2.rds'
+    ),
+    #    Visium BayesSpace clusters (k 2 through 28)
+    here(
+        "processed-data", "05_layer_differential_expression",
+        "modeling_results_BS",
+        sprintf("modeling_results_BayesSpace_k%02d.Rdata", 2:28)
     )
 )
-ref_names = c('snRNAseq_fine', 'snRNAseq_broad', 'multiome')
+ref_names = c(
+    'snRNAseq_fine', 'snRNAseq_broad', 'multiome',
+    sprintf('Visium_BayesSpace_k%02d', 2:28)
+)
 
 #   Get the reference data for this task
 task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
@@ -43,17 +54,19 @@ dir.create(plot_dir, showWarnings = FALSE)
 t_stats = lapply(model_paths, function(path) readRDS(path)$enrichment)
 
 #   Load reference data
-results_enrichment <- readRDS(ref_path)
-if (ref_name == 'multiome') {
-    results_enrichment = results_enrichment$enrichment
+if (grepl('^Visium', ref_name)) {
+    results_enrichment = get(load(ref_path))
+} else if (grepl('^snRNAseq', ref_name)) {
+    results_enrichment = list("enrichment" = readRDS(ref_path))
+} else {
+    results_enrichment <- readRDS(ref_path)
 }
-modeling_results_sn <- list("enrichment" = results_enrichment)
 
 #   Correlate Banksy clusters with reference data
 this_cor = lapply(
     t_stats,
     layer_stat_cor,
-    modeling_results = modeling_results_sn,
+    modeling_results = results_enrichment,
     model_type = "enrichment",
     top_n = 100
 )
