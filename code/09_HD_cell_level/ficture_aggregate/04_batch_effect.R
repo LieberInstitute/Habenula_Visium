@@ -25,10 +25,23 @@ ficture_df = read_csv(ficture_path, show_col_types = FALSE) |>
         by = "key"
     )
 
+#   Distribution of samples by cluster
 p = ggplot(ficture_df, aes(x = FICTURE_cluster, fill = sample_id)) +
     geom_bar(position = "fill") +
-    theme_bw(base_size = 18) +
+    theme_bw(base_size = 20) +
     labs(x = "FICTURE Cluster", y = "Proportion of Cells", fill = "Sample ID")
-pdf(file.path(plot_dir, 'batch_effect_cluster.pdf'))
+pdf(file.path(plot_dir, 'batch_effect_cluster.pdf'), width = 10)
 print(p)
 dev.off()
+
+#   Distribution of clusters by sample
+p = ggplot(ficture_df, aes(x = sample_id, fill = factor(FICTURE_cluster))) +
+    geom_bar(position = "fill") +
+    theme_bw(base_size = 20) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+    labs(x = "Sample ID", y = "Proportion of Cells", fill = "FICTURE\nCluster")
+pdf(file.path(plot_dir, 'batch_effect_sample.pdf'), height = 10)
+print(p)
+dev.off()
+
+session_info()
