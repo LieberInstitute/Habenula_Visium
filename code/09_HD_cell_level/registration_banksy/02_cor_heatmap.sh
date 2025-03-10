@@ -4,8 +4,9 @@
 #SBATCH --job-name=02_cor_heatmap
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/09_HD_cell_level/registration_banksy/logs/02_cor_heatmap.txt
-#SBATCH -e ../../../processed-data/09_HD_cell_level/registration_banksy/logs/02_cor_heatmap.txt
+#SBATCH -o ../../../processed-data/09_HD_cell_level/registration_banksy/logs/02_cor_heatmap_%a.txt
+#SBATCH -e ../../../processed-data/09_HD_cell_level/registration_banksy/logs/02_cor_heatmap_%a.txt
+#SBATCH --array=1-2%2
 
 set -e
 
