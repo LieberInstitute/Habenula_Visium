@@ -14,6 +14,9 @@ plot_path = here(
 )
 sample_id = 'H1-MVPY9BW_A1_8433'
 habenula_clusters = c(4, 6, 11)
+cluster_colors = c(
+    '4' = '#0150B8', '6' = '#C23853', '11' = '#E3AA25', 'Other' = '#ACB3B6'
+)
 
 #   Load ans subset to a good-looking sample
 spe = loadHDF5SummarizedExperiment(spe_dir)
@@ -29,9 +32,9 @@ spe$banksy = ifelse(spe$banksy %in% habenula_clusters, spe$banksy, 'Other')
 p = vis_clus(
         spe, sampleid = sample_id, clustervar = 'banksy',
         is_stitched = TRUE, point_size = 20, spatial = FALSE,
-        colors = colors
+        colors = cluster_colors
     ) +
-    guides(fill = guide_legend(override.aes = list(size = 10)))
+    guides(fill = guide_legend(override.aes = list(size = 15)))
 png(plot_path, width = 1500, height = 1500)
 print(p)
 dev.off()
