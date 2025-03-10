@@ -5,6 +5,7 @@ library(here)
 library(tidyverse)
 library(SpatialExperiment)
 library(HDF5Array)
+library(paletteer)
 library(sessioninfo)
 
 spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
@@ -37,6 +38,7 @@ dev.off()
 #   Distribution of clusters by sample
 p = ggplot(ficture_df, aes(x = sample_id, fill = factor(FICTURE_cluster))) +
     geom_bar(position = "fill") +
+    scale_fill_manual(values = paletteer_d("Polychrome::palette36", 12)) +
     theme_bw(base_size = 20) +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
     labs(x = "Sample ID", y = "Proportion of Cells", fill = "FICTURE\nCluster")
