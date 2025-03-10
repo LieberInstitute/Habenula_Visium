@@ -51,24 +51,27 @@ out_path = here(
 dir.create(plot_dir, showWarnings = FALSE)
 
 #   Read in enrichment stats for Banksy clusters at all Leiden resolutions
-t_stats = lapply(model_paths, function(path) readRDS(path)$enrichment)
+t_stats = lapply(model_paths, function(path) readRDS(path))
 
 #   Load reference data
 if (grepl('^Visium', ref_name)) {
-    results_enrichment = get(load(ref_path))
+    results_enrichment = get(load(ref_path))$enrichment
 } else if (grepl('^snRNAseq', ref_name)) {
-    results_enrichment = list("enrichment" = readRDS(ref_path))
+    results_enrichment = readRDS(ref_path)
 } else {
-    results_enrichment <- readRDS(ref_path)
+    results_enrichment <- readRDS(ref_path)$enrichment |>
+        filter(!duplicated(ensembl))
 }
 
 #   Correlate Banksy clusters with reference data
 this_cor = lapply(
     t_stats,
-    layer_stat_cor,
-    modeling_results = results_enrichment,
-    model_type = "enrichment",
-    top_n = 100
+    function(x) {
+        layer_stat_cor(
+            results_enrichment, modeling_results = x, model_type = "enrichment",
+            top_n = 100
+        )
+    }
 )
 
 #   Annotate clusters
