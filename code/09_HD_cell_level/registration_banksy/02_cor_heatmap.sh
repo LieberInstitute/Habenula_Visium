@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/09_HD_cell_level/registration_banksy/logs/02_cor_heatmap_%a.txt
 #SBATCH -e ../../../processed-data/09_HD_cell_level/registration_banksy/logs/02_cor_heatmap_%a.txt
-#SBATCH --array=4-30%10
+#SBATCH --array=1-30%10
 
 set -e
 
