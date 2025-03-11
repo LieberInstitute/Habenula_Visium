@@ -74,6 +74,11 @@ this_cor = lapply(
     }
 )
 
+#   Remove 'X' from Banksy cluster names
+for (i in seq_len(length(this_cor))) {
+    colnames(this_cor[[i]]) = sub('^X', '', colnames(this_cor[[i]]))
+}
+
 #   Annotate clusters
 annotated_clusters = lapply(
     this_cor, annotate_registered_clusters, cutoff_merge_ratio = 0.1
