@@ -36,6 +36,7 @@ spe = RunHarmony(spe, group.by.vars = "sample_id", dims.use = "PCA")
 #   Write just the Harmony embedding
 reducedDims(spe)$HARMONY |>
     rownames_to_column('key') |>
+    mutate(X = spatialCoords(spe)[, 1], Y = spatialCoords(spe)[, 2]) |>
     as_tibble() |>
     write_csv(out_path)
 
