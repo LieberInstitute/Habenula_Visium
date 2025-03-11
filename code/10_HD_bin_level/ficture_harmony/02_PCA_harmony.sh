@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=32G
-#SBATCH --job-name=02_PCA
+#SBATCH --job-name=02_PCA_harmony
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/02_PCA.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/02_PCA.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/02_PCA_harmony.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/02_PCA_harmony.txt
 
 set -e
 
@@ -25,7 +25,7 @@ module load conda_R/4.4.x
 ## List current modules for reproducibility
 module list
 
-Rscript 02_PCA.R
+Rscript 02_PCA_harmony.R
 
 echo "**** Job ends ****"
 date
