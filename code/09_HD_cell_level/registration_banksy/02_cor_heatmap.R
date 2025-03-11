@@ -83,7 +83,10 @@ annotated_clusters = lapply(
 pdf(file.path(plot_dir, sprintf("%s.pdf", ref_name)))
 for (i in seq_len(length(this_cor))) {
     print(
-        layer_stat_cor_plot(this_cor[[i]], annotation = annotated_clusters[[i]])
+        layer_stat_cor_plot(
+            this_cor[[i]], annotation = annotated_clusters[[i]],
+            heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
+        )
     )
 }
 dev.off()
