@@ -27,7 +27,12 @@ cluster_df = read_csv(cluster_path, show_col_types = FALSE)
 stopifnot(all(spe$key %in% cluster_df$key))
 spe$banksy = cluster_df$banksy_lambda0_8[match(spe$key, cluster_df$key)]
 
-spe$banksy = ifelse(spe$banksy %in% habenula_clusters, spe$banksy, 'Other')
+spe$banksy = factor(
+    ifelse(
+        spe$banksy %in% habenula_clusters, as.character(spe$banksy), 'Other'
+    ),
+    levels = c(as.character(habenula_clusters), 'Other')
+)
 
 p = vis_clus(
         spe, sampleid = sample_id, clustervar = 'banksy',
