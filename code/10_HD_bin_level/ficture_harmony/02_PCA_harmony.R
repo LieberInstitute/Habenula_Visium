@@ -23,6 +23,17 @@ set.seed(0)
 
 spe <- readRDS(spe_in_path)
 
+#   Filter raw SPE: drop bins with 0 counts for all genes, and drop genes with
+#   0 counts in every bin
+message(Sys.time(), ' | Filtering bins and genes...')
+spe <- spe[rowSums(assays(spe)$counts) > 0, colSums(assays(spe)$counts) > 0]
+
+#   Use library-size normalization (normalization by deconvolution is not
+#   computationally feasible with data this large)
+message(Sys.time(), ' | Performing log normalization...')
+spe = computeLibraryFactors(spe)
+spe = logNormCounts(spe)
+
 #   Perform PCA (subsetting by SVGs). Use IrlbaParam() for speed and memory,
 #   inspired by https://pachterlab.github.io/voyager/articles/vig6_merfish.html#pca-for-larger-datasets
 message(Sys.time(), " | Running PCA...")
