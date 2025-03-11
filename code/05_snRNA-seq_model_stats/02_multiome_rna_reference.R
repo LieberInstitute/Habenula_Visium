@@ -7,6 +7,9 @@ library("sessioninfo")
 ## set hard path to Habenula multiome project WNN Ledien knn=30 resolution=2 
 dir_outRDS <- here("processed-data", "05_snRNA-seq_model_stats")
 inputRDS <- "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/05_Clustering_ARCr/05_rename_idents"
+outputRDS <- "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/05_Clustering_ARCr/08_wnn_gene_expression_plts_renamed_idents/"
+
+if (!dir.exists(outputRDS)) { dir.create(outputRDS, showWarnings = FALSE, recursive = TRUE) }
 
 ## Read seurat object
 rds_name <- here(inputRDS, "seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2.rds")
@@ -99,6 +102,7 @@ newname_clusters <- levels(SeuratOBJ)
 # ...
 
 ## Hb clusters mixed with other cell-types will be removed 
+
 low_hb_clusters <- c(1, 4, 8, 12, 17, 32)
 low_hb_clusters <- paste0("C.", str_pad(low_hb_clusters, width = 2, pad = "0"))
 # [1] "C.01" "C.04" "C.08" "C.12" "C.17" "C.32"
@@ -106,7 +110,8 @@ low_c <- paste0("^", low_hb_clusters[1], "*")
 # low_c = "^C\\.01\\s\\w*"   # "C.01 DD_LHb"
 # low_c %in% c(newname_clusters)
 
-# Rename identity classes
+##  Rename specific identity classes
+
 SeuratOBJ <- RenameIdents(SeuratOBJ, "C.01 DD_LHb" = "C.01")
 SeuratOBJ <- RenameIdents(SeuratOBJ, "C.04 DD_LHb" = "C.04")
 SeuratOBJ <- RenameIdents(SeuratOBJ, "C.08 DD_LHb" = "C.08")
@@ -115,16 +120,49 @@ SeuratOBJ <- RenameIdents(SeuratOBJ, "C.17 LB_Hb " = "C.17")
 SeuratOBJ <- RenameIdents(SeuratOBJ, "C.32 DD_LHb" = "C.32")
 levels(SeuratOBJ)
 
-## rename all Seurat clusters
+## rename all Seurat clusters as idents
 
 SeuratOBJ$seurat_clusters <- Idents(SeuratOBJ)
 unique(SeuratOBJ$seurat_clusters)
 
-# oldname_clusters <- SeuratOBJ@meta.data$seurat_clusters
-# newname_clusters <- paste0("Multiome.C.", oldname_clusters)
-# head(newname_clusters)
-# SeuratOBJ@meta.data$seurat_clusters <- newname_clusters
-# head(SeuratOBJ@meta.data$seurat_clusters)
+## re-order clusters 
+
+newname_clusters <- levels(SeuratOBJ)
+
+## extract hb and not hb clusters and sort them 
+
+no_hb_clust = list()
+desired_order = list()
+hb_clusters = list()
+for (idx in newname_clusters) { if (nchar(idx) <= 4) { no_hb_clust <- append(no_hb_clust, idx) } }
+no_hb_clust <- sort(c(unlist(no_hb_clust)))
+hb_clusters <- sort(newname_clusters[! newname_clusters %in% c(no_hb_clust)])
+desired_order <- c(hb_clusters, no_hb_clust)
+
+# Set new identity order
+Idents(SeuratOBJ) <- factor(Idents(SeuratOBJ), levels = desired_order)
+levels(SeuratOBJ)
+# [1] "C.05 DD_LHb" "C.07 DD_MHb" "C.10 DD_MHb" "C.11 DD_MHb" "C.14 DD_MHb"
+# [6] "C.16 DD_MHb" "C.18 DD_LHb" "C.23 DD_LHb" "C.24 DD_LHb" "C.30 DD_LHb"
+# [11] "C.33 DD_LHb" "C.36 DD_MHb" "C.40 DD_LHb" "C.01"        "C.02"       
+# [16] "C.03"        "C.04"        "C.06"        "C.08"        "C.09"       
+# [21] "C.12"        "C.13"        "C.15"        "C.17"        "C.19"       
+# [26] "C.20"        "C.21"        "C.22"        "C.25"        "C.26"       
+# [31] "C.27"        "C.28"        "C.29"        "C.31"        "C.32"       
+# [36] "C.34"        "C.35"        "C.37"        "C.38"        "C.39"       
+# [41] "C.41"        "C.42" 
+
+## rename all Seurat clusters as idents
+
+SeuratOBJ$seurat_clusters <- Idents(SeuratOBJ)
+unique(SeuratOBJ$seurat_clusters)
+
+rdsName <- paste0(outputRDS, )
+## save RDS
+rds_file_name <- paste0(outputRDS, "seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2_renamed_visium.rds")
+saveRDS(SeuratOBJ, rds_file_name)
+
+message("New seurat with clusters renamed saved on Hb multiome project!")
 
 
 ###################### Retrieve Ensembl IDs for Gene Symbols. ######################
@@ -171,14 +209,16 @@ table(SeuratOBJ[["orig.ident"]])
 # 4375     6364     1990     7059     7207     4735     5959     5914 
 # S11_Hb_r S12_Hb_r 
 # 8054     4045
-## number of cells by cluster
+
+## number of cells by cluster sorted by group (hb and not-hb)
 table(SeuratOBJ$seurat_clusters)
-# C.01 DD_LHb        C.02        C.03 C.04 DD_LHb C.05 DD_LHb        C.06 
-# 3906        3371        3271        2911        2771        2667 
-# C.07 DD_MHb C.08 DD_LHb        C.09 C.10 DD_MHb C.11 DD_MHb C.12 DD_LHb 
-# 2610        2537        2430        2344        2212        2187 
-# C.13 C.14 DD_MHb        C.15 C.16 DD_MHb C.17 LB_Hb  C.18 DD_LHb 
-# 2036        2026        1625        1607        1587        1535 
+# C.05 DD_LHb C.07 DD_MHb C.10 DD_MHb C.11 DD_MHb C.14 DD_MHb C.16 DD_MHb 
+# 2771        2610        2344        2212        2026        1607 
+# C.18 DD_LHb C.23 DD_LHb C.24 DD_LHb C.30 DD_LHb C.33 DD_LHb C.36 DD_MHb 
+# 1535        1269         825         213         186         145 
+# C.40 DD_LHb        C.01        C.02        C.03        C.04        C.06 
+# 84        3906        3371        3271        2911        2667 
+
 
 ## Import RNA assay into sce object
 
@@ -271,8 +311,10 @@ sce_modeling_results <- registration_wrapper(
 
 
 ## check out table on enrichment t-statistics
+
+colnames(sce_modeling_results$enrichment)
 sce_modeling_results$enrichment[1:5, 1:5]
-# t_stat_C.01.DD_LHb t_stat_C.02 t_stat_C.03 t_stat_C.04.DD_LHb
+#                   t_stat_C.01.DD_LHb t_stat_C.02 t_stat_C.03 t_stat_C.04.DD_LHb
 # ENSG00000238009          1.4486161  -1.5812290   1.9542309          1.9335732
 # ENSG00000241860          1.6045860  -1.2039448   1.2864945          2.1393666
 # ENSG00000237491          2.6221958  -0.7505787  -0.1465673          1.5780745
@@ -286,7 +328,11 @@ sce_modeling_results$enrichment[1:5, 1:5]
 # 3: Count matrix has duplicated rownames 
 
 
-saveRDS(sce_modeling_results, here(dir_outRDS, "enrichment_snRNA-multiome.rds"))
+# saveRDS(sce_modeling_results, here(dir_outRDS, "enrichment_snRNA-multiome.rds"))
+
+## V2 is a 'polished' and 'sorted' reference version. Here some clusters with low hb cells were removed
+##        and the dataset was arranged by first the hb-groups followed by the other cell-types
+saveRDS(sce_modeling_results, here(dir_outRDS, "enrichment_snRNA-multiome_v2.rds")) 
 
 message(" rna-multiome reference completed!")
 
