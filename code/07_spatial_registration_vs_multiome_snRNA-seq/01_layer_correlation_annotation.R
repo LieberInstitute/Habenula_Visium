@@ -76,11 +76,11 @@ snRNA_t_stats_sorted <- function(sn_data) {
 
 ## Load Registration Results 
 
-# k_list <- c(9, 16, 28)
 k_list <- c(2:28)
 names(k_list) <-
   paste0("k", sprintf("%02d", k_list)) ## Use paper naming convention
 
+## Load Registration Results 
 bayesSpace_registration_fn <-
   map(k_list, ~ here(
     dir_input,
@@ -90,29 +90,37 @@ bayesSpace_registration_fn <-
       ".Rdata"
     )
   ))
+## Load the 3 model results (anova, enrichment, pairwise) for each domain in the BS
 bayesSpace_registration <-
   lapply(bayesSpace_registration_fn, function(x) {
     get(load(x))
   })
-
+stopifnot(is.list(bayesSpace_registration))
+# names(bayesSpace_registration[[1]])
+# [1] "anova"      "enrichment" "pairwise"  
 
 ## Select t-stats from the registration enrichment data
+registration_t_stats <-
+  map(bayesSpace_registration, function(data) {
+    x <- data$enrichment
+    t_stats <- x[, grep("^t_stat_", colnames(x))]
+    colnames(t_stats) <- gsub("^t_stat_", "", colnames(t_stats))
+    return(t_stats)
+  })
+stopifnot(is.list(registration_t_stats))
+# head(registration_t_stats[[1]])
+                  # Sp02D01    Sp02D02
+# ENSG00000237491 -1.6855500  1.6855500
+# ENSG00000228794 -1.6513162  1.6513162
+# ENSG00000223764 -0.8991561  0.8991561
 
-# registration_t_stats <-
-#   map(bayesSpace_registration, function(data) {
-#     x <- data$enrichment
-#     t_stats <- x[, grep("^t_stat_", colnames(x))]
-#     colnames(t_stats) <- gsub("^t_stat_", "", colnames(t_stats))
-#     return(t_stats)
-#   })
-# 
-# map(registration_t_stats, jaffelab::corner)
+map(registration_t_stats, jaffelab::corner)
 
 
 #### Calculate Correlation Matrix ####
 
 ## get layer data
-layer_modeling_results <- fetch_data(type = "modeling_results")
+# layer_modeling_results <- fetch_data(type = "modeling_results")
 
 
 ## CSC. Added from https://research.libd.org/spatialLIBD/articles/guide_to_spatial_registration.html#correlate-statsics-with-layer-reference
@@ -133,7 +141,7 @@ plt_corr_snmultiome <- function(suffix_name) {
   pdf(here(plot_dir, plt_name))
 
   for (k in names(k_list)) {
-    # k = "k02"
+    # k = "k09"
     print(k)
     bayesSpace_registration_k <- bayesSpace_registration[[k]]$enrichment
     # head(bayesSpace_registration_k)
@@ -143,12 +151,35 @@ plt_corr_snmultiome <- function(suffix_name) {
       model_type = "enrichment",
       top_n = 100
     )
+    head(cor_layer)
+    #             C.01       C.02       C.03       C.04 C.05.DD_LHb       C.06
+    # Sp02D01 -0.2444767  0.5483361 -0.1990111 -0.1114921   -0.150348 -0.1617148
+    # Sp02D02  0.2444767 -0.5483361  0.1990111  0.1114921    0.150348  0.1617148
     # colnames(cor_layer)
+
+    annotated_clusters <- annotate_registered_clusters(cor_layer, confidence_threshold = 0.25, cutoff_merge_ratio = 0.1)
+    head(annotated_clusters)
+    # cluster     layer_confidence layer_label
+    # 1 Sp02D01             good   C.02/C.22
+    # 2 Sp02D02             good        C.37
+    
+    # cor_layer <- 
+    #   rownames(cor_layer) <- paste0(rownames(cor_layer), " ~ ", annotated_clusters[match(rownames(cor_layer), annotated_clusters$cluster)])
+
     rdata_name <- paste0("bayesSpacce_layer_cor_top100_", k,"_", suffix_name, ".Rdata")
     save(cor_layer, file = here(data_dir, rdata_name))
+    
     ## print layer correlation plot for specific k
-    plt1 <- layer_stat_cor_plot(cor_layer)
-    print(plt1)
+    # plt1 <- layer_stat_cor_plot(cor_layer)
+    
+    print(
+      layer_stat_cor_plot(
+        cor_layer, annotation = annotated_clusters,
+        heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
+      )
+    )
+    
+    # print(plt1)
   }
   
   dev.off()
