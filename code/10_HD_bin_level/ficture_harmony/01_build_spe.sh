@@ -3,9 +3,10 @@
 #SBATCH --mem=64G
 #SBATCH --job-name=01_build_spe
 #SBATCH -c 1
-#SBATCH -t 2-0:00:00
-#SBATCH -o ../../processed-data/10_HD_bin_level/ficture_harmony/logs/01_build_spe.txt
-#SBATCH -e ../../processed-data/10_HD_bin_level/ficture_harmony/logs/01_build_spe.txt
+#SBATCH -t 1-0:00:00
+#SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/01_build_spe.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/01_build_spe.txt
+#SBATCH --open-mode=append
 
 set -e
 
