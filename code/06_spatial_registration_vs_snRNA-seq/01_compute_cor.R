@@ -167,8 +167,10 @@ save(cor_fine,
 pdf(here(dir_plot, "cor_top100_visium_snRNAseq_registration_broadRes.pdf"))
 for (i in seq_len(length(cor_broad))) {
   print(
-    layer_stat_cor_plot(cor_broad[[i]], annotation = annotated_clusters_broad[[i]])
-    # layer_stat_cor_plot(cor_broad[[8]], annotation = annotated_clusters_broad[[8]])
+    layer_stat_cor_plot(
+      cor_broad[[i]], annotation = annotated_clusters_broad[[i]],
+      heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
+    )
   )
 }
 dev.off()
@@ -178,7 +180,10 @@ dev.off()
 pdf(here(dir_plot, "cor_top100_visium_snRNAseq_registration_fineRes.pdf"))
 for (i in seq_len(length(cor_fine))) {
   print(
-    layer_stat_cor_plot(cor_fine[[i]], annotation = annotated_clusters_fine[[i]])
+    layer_stat_cor_plot(
+      cor_fine[[i]], annotation = annotated_clusters_fine[[i]],
+      heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
+    )
   )
 }
 dev.off()
