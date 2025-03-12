@@ -42,6 +42,16 @@ visium_manual_row_order = sprintf('Sp09D0%s', c(4, 8, 6, 2, 9, 5, 3, 7, 1))
 visium_manual_col_order = as.character(
     c(6, 1, 14, 16, 11, 4, 5, 9, 13, 15, 3, 12, 17, 18, 10, 7, 2, 8)
 )
+multiome_manual_row_order = paste0(
+    'C.',
+    c(
+        '16.DD_MHb', '11.DD_MHb', '07.DD_MHb', '10.DD_MHb', '14.DD_MHb', '34',
+        '02', '22', '29', '26', '20', '21', '27', '41', '05.DD_LHb',
+        '18.DD_LHb', '23.DD_LHb', '33.DD_LHb', '08', '36.DD_MHb', '24.DD_LHb',
+        '30.DD_LHb', '40.DD_LHb', '13', '09', '31', '06', '04', '32', '12',
+        '25', '17', '15', '35', '03', '37', '39', '28', '38', '19', '01'
+    )
+)
 
 #   Get the reference data for this task
 task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
@@ -102,6 +112,16 @@ for (i in seq_len(length(this_cor))) {
                 heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
                 row_order = visium_manual_row_order,
                 column_order = visium_manual_col_order
+            )
+        )
+    } else if ((ref_name == 'multiome') && (i == 10)) {
+        #   For a progress report figure, use a special ordering just for
+        #   multiome and Banksy res = 1
+        print(
+            layer_stat_cor_plot(
+                this_cor[[i]], annotation = annotated_clusters[[i]],
+                heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
+                row_order = multiome_manual_row_order
             )
         )
     } else {
