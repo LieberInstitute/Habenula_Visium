@@ -38,7 +38,10 @@ ref_names = c(
     sprintf('Visium_BayesSpace_k%02d', 2:28)
 )
 
-visium_manual_order = sprintf('Sp09D0%s', c(4, 8, 6, 2, 9, 5, 3, 7, 1))
+visium_manual_row_order = sprintf('Sp09D0%s', c(4, 8, 6, 2, 9, 5, 3, 7, 1))
+visium_manual_col_order = as.character(
+    c(6, 1, 14, 16, 11, 4, 5, 9, 13, 15, 3, 12, 17, 18, 10, 7, 2, 8)
+)
 
 #   Get the reference data for this task
 task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
@@ -90,14 +93,15 @@ annotated_clusters = lapply(
 #   Make heatmaps
 pdf(file.path(plot_dir, sprintf("%s.pdf", ref_name)))
 for (i in seq_len(length(this_cor))) {
-    if (ref_name == 'Visium_BayesSpace_k09') {
+    if ((ref_name == 'Visium_BayesSpace_k09') && (i == 10)) {
         #   For a progress report figure, use a special ordering just for
-        #   Visium BayesSpace k = 9
+        #   Visium BayesSpace k = 9 and Banksy res = 1
         print(
             layer_stat_cor_plot(
                 this_cor[[i]], annotation = annotated_clusters[[i]],
                 heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
-                row_order = visium_manual_order
+                row_order = visium_manual_row_order,
+                column_order = visium_manual_col_order
             )
         )
     } else {
