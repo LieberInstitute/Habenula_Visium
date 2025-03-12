@@ -125,31 +125,31 @@ annotated_clusters_broad <-
 annotated_clusters_fine <-
   lapply(cor_fine, annotate_registered_clusters, confidence_threshold = 0.25, cutoff_merge_ratio = 0.25)
 
-## Use annotation labels on the correlation matrices
-cor_fine <- mapply(function(cor, label_data) {
-    rownames(cor) <-
-        paste0(rownames(cor), " ~ ", label_data$layer_label[match(rownames(cor), label_data$cluster)])
-    return(cor)
-}, cor_fine, annotated_clusters_fine)
-
-cor_broad <- mapply(function(cor, label_data) {
-    rownames(cor) <-
-        paste0(rownames(cor), " ~ ", label_data$layer_label[match(rownames(cor), label_data$cluster)])
-    return(cor)
-}, cor_broad, annotated_clusters_broad)
+# ## Use annotation labels on the correlation matrices
+# cor_fine <- mapply(function(cor, label_data) {
+#     rownames(cor) <-
+#         paste0(rownames(cor), " ~ ", label_data$layer_label[match(rownames(cor), label_data$cluster)])
+#     return(cor)
+# }, cor_fine, annotated_clusters_fine)
+# 
+# cor_broad <- mapply(function(cor, label_data) {
+#     rownames(cor) <-
+#         paste0(rownames(cor), " ~ ", label_data$layer_label[match(rownames(cor), label_data$cluster)])
+#     return(cor)
+# }, cor_broad, annotated_clusters_broad)
 
 stopifnot(is.list(cor_fine))
 head(cor_fine[[1]])
 stopifnot(is.list(cor_broad))
 head(cor_broad[[1]])
 
-## Confidence marks "x" need to be re-loaded ?
-annotated_clusters_broad <-
-  lapply(cor_broad, annotate_registered_clusters, confidence_threshold = 0.25, cutoff_merge_ratio = 0.1)
-
-## With default confidence and cutoff_merge_ratio 
-annotated_clusters_fine <-
-  lapply(cor_fine, annotate_registered_clusters, confidence_threshold = 0.25, cutoff_merge_ratio = 0.25)
+# ## Confidence marks "x" need to be re-loaded ?
+# annotated_clusters_broad <-
+#   lapply(cor_broad, annotate_registered_clusters, confidence_threshold = 0.25, cutoff_merge_ratio = 0.1)
+# 
+# ## With default confidence and cutoff_merge_ratio 
+# annotated_clusters_fine <-
+#   lapply(cor_fine, annotate_registered_clusters, confidence_threshold = 0.25, cutoff_merge_ratio = 0.25)
 
 # data.frame(
 #   "broad" = sort(rownames(cor_broad[[8]])),
