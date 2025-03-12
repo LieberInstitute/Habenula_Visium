@@ -4,6 +4,7 @@ library(SpatialExperiment)
 library(scran)
 library(scater)
 library(BiocSingular)
+library(BiocParallel)
 library(harmony)
 library(tidyverse)
 
@@ -19,6 +20,7 @@ out_path = here(
 )
 num_pcs = 50
 
+num_cores = as.numeric(Sys.getenv("SLURM_CPUS_ON_NODE"))
 set.seed(0)
 
 spe <- readRDS(spe_in_path)
@@ -39,10 +41,12 @@ spe = logNormCounts(spe)
 message(Sys.time(), " | Running PCA...")
 spe = runPCA(
     spe, subset_row = readLines(svg_path), ncomponents = num_pcs,
-    BSPARAM = IrlbaParam()
+    BPPARAM = MulticoreParam(num_cores), qBSPARAM = IrlbaParam()
 )
 message(Sys.time(), " | Running Harmony...")
-spe = RunHarmony(spe, group.by.vars = "sample_id", dims.use = "PCA")
+spe = RunHarmony(
+    spe, group.by.vars = "sample_id", dims.use = "PCA", ncores = num_cores
+)
 
 #   Write just the Harmony embedding
 reducedDims(spe)$HARMONY |>
