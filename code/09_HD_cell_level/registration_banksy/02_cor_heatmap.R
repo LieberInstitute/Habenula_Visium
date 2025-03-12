@@ -38,6 +38,8 @@ ref_names = c(
     sprintf('Visium_BayesSpace_k%02d', 2:28)
 )
 
+visium_manual_order = sprintf('Sp09D0%s', c(4, 8, 6, 2, 9, 5, 3, 7, 1))
+
 #   Get the reference data for this task
 task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 ref_path = ref_paths[task_id]
@@ -64,6 +66,7 @@ if (grepl('^Visium', ref_name)) {
 }
 
 #   Correlate Banksy clusters with reference data
+
 this_cor = lapply(
     t_stats,
     function(x) {
@@ -87,12 +90,24 @@ annotated_clusters = lapply(
 #   Make heatmaps
 pdf(file.path(plot_dir, sprintf("%s.pdf", ref_name)))
 for (i in seq_len(length(this_cor))) {
-    print(
-        layer_stat_cor_plot(
-            this_cor[[i]], annotation = annotated_clusters[[i]],
-            heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
+    if (ref_name == 'Visium_BayesSpace_k09') {
+        #   For a progress report figure, use a special ordering just for
+        #   Visium BayesSpace k = 9
+        print(
+            layer_stat_cor_plot(
+                this_cor[[i]], annotation = annotated_clusters[[i]],
+                heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
+                row_order = visium_manual_order
+            )
         )
-    )
+    } else {
+        print(
+            layer_stat_cor_plot(
+                this_cor[[i]], annotation = annotated_clusters[[i]],
+                heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
+            )
+        )
+    }
 }
 dev.off()
 
