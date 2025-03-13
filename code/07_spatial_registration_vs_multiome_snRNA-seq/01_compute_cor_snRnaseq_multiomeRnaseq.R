@@ -3,12 +3,15 @@
 # 
 # # To submit the job use: sbatch 01_compute_cor.sh
 
+#################### Compute correlation of Fine clusters snRNAseq vs Multiome snRNAseq ##########################
+
 library("here")
 library("purrr")
 library("spatialLIBD")
 library("ComplexHeatmap")
 library("sessioninfo")
 library("tidyverse")
+
 
 
 ## Input dir
@@ -19,33 +22,16 @@ dir_plot <- here("plots", "07_spatial_registration_vs_multiome_snRNA-seq")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 dir.create(dir_plot, showWarnings = FALSE, recursive = TRUE)
 
-# ## specify the number of BayesSpace k to use 
-# k <- seq(2,28)
+## read input arguments (plot vertical or horizontal format)
+args = commandArgs(trailingOnly = TRUE)
 
-#################### Fine clusters snRNAseq vs Multiome snRNAseq ##################################
+designF = args[2]
 
-## load multiome snRNAseq t-stats enrichment data
-
-sn_multiome_data <- readRDS(rds_input)
-head(sn_multiome_data$enrichment[5:10])
-#                 t_stat_C.05.DD_LHb t_stat_C.06 t_stat_C.07.DD_MHb t_stat_C.08
-# ENSG00000238009          1.2234449    1.759594         -0.5585619  2.26415183
-# ENSG00000241860          0.2151696    1.234082         -0.2209549  0.07914740
-# ENSG00000237491          0.4194972    1.935467         -0.7272817  1.36389851
-
-results_enrichment_multiome <- readRDS(rds_input)$enrichment |>
-  filter(!duplicated(ensembl))
-rownames(results_enrichment_multiome)
-class(results_enrichment_multiome) # [1] "data.frame"
+message("Compute correlation and plot in ", designF, " format")
 
 ## load snRNAseq t-stats enrichment data (fine resolution)
 
-results_enrichment <-
-  readRDS(here(
-    "processed-data",
-    "05_snRNA-seq_model_stats",
-    paste0("enrichment_final_Annotations.rds")
-  ))
+results_enrichment <- readRDS(here("processed-data", "05_snRNA-seq_model_stats", "enrichment_final_Annotations.rds"))
 colnames(results_enrichment)
 
 ## filter only enrichment t-stats
@@ -53,57 +39,87 @@ colnames(results_enrichment)
 modeling_res_enrichment <- results_enrichment[, grep("^t_stat_", colnames(results_enrichment))]
 colnames(modeling_res_enrichment) <- gsub("^t_stat_", "", colnames(modeling_res_enrichment))
 # modeling_res_enrichment[1:3,]
-# Astrocyte        Endo Excit.Thal Inhib.Thal      LHb.1
+#                 Astrocyte        Endo Excit.Thal Inhib.Thal      LHb.1
 # ENSG00000238009  0.6873346  1.23174976  1.2820563   1.526893 -0.6502180
 # ENSG00000241860  0.7626024 -2.42952913  1.4923036   2.026956  1.2102714
 # ENSG00000237491 -0.2347861 -0.06842523  0.8264148   1.981078 -0.1328745
-# modeling_res_enrichment <- list(enrichment = modeling_res_enrichment)
-# class(modeling_res_enrichment)
-
-cor_fine <- layer_stat_cor(
-  stats = results_enrichment_multiome, # data.frame / y-axis
-  modeling_results = list(enrichment = modeling_res_enrichment), # list / x-axis
-  model_type = "enrichment",
-  top_n = 100
-)
-
-table(rownames(results_enrichment_multiome) %in% rownames(modeling_res_enrichment))
 
 
-## Old version to correlate multiome vs snRNAseq 
 
-cor_fine <- layer_stat_cor(
-  stats = modeling_res_enrichment, # data.frame
-  modeling_results = sn_multiome_data,
-  model_type = "enrichment",
-  top_n = 100
-)
-head(modeling_res_enrichment)
-## With default confidence and cutoff_merge_ratio 
 
-annotated_clusters_fine <- annotate_registered_clusters(cor_fine, confidence_threshold = 0.25, cutoff_merge_ratio = 0.25)
+if (designF=="vertical") {
+  # designF="vertical"
+  
+  ## x-axis = snRNAseq cell-types
+  ## y-axis = snRNAseq multiome cell-types
+  
+  results_enrichment_multiome <- readRDS(rds_input)$enrichment |>
+    filter(!duplicated(ensembl))
+  # rownames(results_enrichment_multiome)
+  class(results_enrichment_multiome) # [1] "data.frame"
+  head(results_enrichment_multiome[5:10])
+  #                 t_stat_C.05.DD_LHb t_stat_C.06 t_stat_C.07.DD_MHb t_stat_C.08
+  # ENSG00000238009          1.2234449    1.759594         -0.5585619  2.26415183
+  # ENSG00000241860          0.2151696    1.234082         -0.2209549  0.07914740
+  # ENSG00000237491          0.4194972    1.935467         -0.7272817  1.36389851
 
-# ## Use annotation labels on the correlation matrices
-# rownames(cor_fine) <- paste0(rownames(cor_fine), " ~ ", 
-#                              annotated_clusters_fine$layer_label[match(rownames(cor_fine), annotated_clusters_fine$cluster)])
-# 
-# ## With default confidence and cutoff_merge_ratio 
-# annotated_clusters_fine <- annotate_registered_clusters(cor_fine, confidence_threshold = 0.25, cutoff_merge_ratio = 0.25)
+  cor_fine <- layer_stat_cor(
+    stats = results_enrichment_multiome, # data.frame / y-axis
+    modeling_results = list(enrichment = results_enrichment), # list / x-axis
+    model_type = "enrichment",
+    top_n = 100
+  )
 
-head(cor_fine)
-#           C.01        C.02       C.03        C.04  C.05.DD_LHb        C.06
-# LHb.2 -0.1959626 -0.06687099 -0.1797187 -0.04842418  0.636548725  0.01036223
-# LHb.7 -0.1068896 -0.01307742 -0.1562915 -0.02322458  0.735296169 -0.01500998
-# LHb.6 -0.1717414  0.01985625 -0.1635756 -0.22551095  0.147718838 -0.22087233
+  annotated_clusters_fine <- annotate_registered_clusters(cor_fine, confidence_threshold = 0.25, cutoff_merge_ratio = 0.25)
 
-save(cor_fine,
-     file = file.path(dir_rdata, "cor_multiome_vs_snRNA-seq_top100.Rdata")
-)
+  # ## Use annotation labels on the correlation matrices
+  # rownames(cor_fine) <- paste0(rownames(cor_fine), " ~ ", 
+  #                              annotated_clusters_fine$layer_label[match(rownames(cor_fine), annotated_clusters_fine$cluster)])
+  # 
+  # ## With default confidence and cutoff_merge_ratio 
+  # annotated_clusters_fine <- annotate_registered_clusters(cor_fine, confidence_threshold = 0.25, cutoff_merge_ratio = 0.25)
 
+  head(cor_fine)
+  #           C.01        C.02       C.03        C.04  C.05.DD_LHb        C.06
+  # LHb.2 -0.1959626 -0.06687099 -0.1797187 -0.04842418  0.636548725  0.01036223
+  # LHb.7 -0.1068896 -0.01307742 -0.1562915 -0.02322458  0.735296169 -0.01500998
+  # LHb.6 -0.1717414  0.01985625 -0.1635756 -0.22551095  0.147718838 -0.22087233
+
+} else { # designF=="horizontal"
+
+  ## x-axis = snRNAseq multiome cell-types
+  ## y-axis = snRNAseq cell-types
+  
+  ## load multiome snRNAseq t-stats enrichment data
+  
+  sn_multiome_data <- readRDS(rds_input)
+  head(sn_multiome_data$enrichment[5:10])
+  #                 t_stat_C.05.DD_LHb t_stat_C.06 t_stat_C.07.DD_MHb t_stat_C.08
+  # ENSG00000238009          1.2234449    1.759594         -0.5585619  2.26415183
+  # ENSG00000241860          0.2151696    1.234082         -0.2209549  0.07914740
+  # ENSG00000237491          0.4194972    1.935467         -0.7272817  1.36389851
+  
+  cor_fine <- layer_stat_cor(
+    stats = modeling_res_enrichment, # data.frame
+    modeling_results = sn_multiome_data,
+    model_type = "enrichment",
+    top_n = 100
+  )
+
+  annotated_clusters_fine <- annotate_registered_clusters(cor_fine, confidence_threshold = 0.25, cutoff_merge_ratio = 0.25)
+  head(modeling_res_enrichment)  
+
+    
+}
+
+## save t-stats rData and Plots
+
+f_name <- paste0("cor_multiome_vs_snRNA-seq_top100_", designF,".Rdata")
+save(cor_fine, file = file.path(dir_rdata, f_name))
 
 ##   Make heatmaps fine clusters snRNAseq vs Multiome snRNAseq
-                    
-plt_name <- paste0("cor_top100_registration_snMultiome_snRNAseq_v2.pdf")
+
+plt_name <- paste0("cor_top100_registration_snMultiome_snRNAseq_v2_", designF ,".pdf")
 pdf(here(dir_plot, plt_name))
 
 layer_stat_cor_plot(
@@ -114,6 +130,18 @@ layer_stat_cor_plot(
 )
 
 dev.off()
+
+
+
+message("Compute correlation and plot in ", designF, " format DONE!!!")
+
+
+# library("slurmjobs")
+# 
+# ## A regular job with 10 cores on the 'imaginary' partition
+# job_single("01_compute_cor_snRnaseq_multiomeRnaseq", cores = 2, partition = "katun", create_shell = TRUE)
+
+
 
 ## Reproducibility information
 print("Reproducibility information:")
