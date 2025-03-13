@@ -189,7 +189,7 @@ echo "BayesSpace ###################################### "
 
 
 echo "############################################################################ "
-echo "#########   Layer differential expression.     ############################# "
+echo "#########   cell-type differential expression  ############################# "
 echo "#########                                      ############################# "
 echo "############################################################################ "
 
@@ -240,6 +240,11 @@ echo "#########   Compute enrichment with registration_wrapper  ################
 echo "#########   From RNA multiome modality (WNN Leiden res=2, knn=30) ########## "
 echo "############################################################################ "
 
+## FYI. The reference with the scRNAseq data are processed with: 
+## 01_pseudobulk_reference.R
+
+## Build enrichment stats objects from multiome scRNAseq data
+
 ## change directory
 SUBDIR="05_snRNA-seq_model_stats"
 
@@ -260,6 +265,9 @@ echo "#########   Spatial Registrattion              ###########################
 echo "#########                                      ############################# "
 echo "############################################################################ "
 
+## Compute Spatial registration for both Fine and Broad snRNAseq vs Multiome snRNAseq (CSC)
+## x-axis = snRNAseq cell-types
+## y-axis = spatial Habenula Visium domains 
 
 ## change directory
 SUBDIR="06_spatial_registration_vs_snRNA-seq"
@@ -268,34 +276,41 @@ cd ${CODEDIR}/${SUBDIR}
 
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
-## First remove old plots
+## First remove old data and plots
 rm -f logs/01_compute_cor.*.out
 rm -f logs/01_compute_cor.*.err
-rm -f ${PROCESSEDIR}/${SUBDIR}/cor_BayesSpace_vs_snRNA-seq.Rdata
+rm -f ${PROCESSEDIR}/${SUBDIR}/cor_BayesSpace_vs_snRNA-seq_top100.Rdata
+rm -f ${PLOTDIR}/${SUBDIR}/*_broadRes.pdf
+rm -f ${PLOTDIR}/${SUBDIR}/*_fineRes.pdf
 
 sbatch 01_compute_cor.sh
 
 
+## change directory
+SUBDIR="07_spatial_registration_vs_multiome_snRNA-seq"
 
-echo "Compute layer correlation annotation ###################################### "
-
-echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
-
-rm -f ${PROCESSEDIR}/${SUBDIR}/bayesSpacce_layer_cor_top100.Rdata
-rm -f ${PLOTDIR}/${SUBDIR}/cor_top100_spatial_registration.pdf
-
-Rscript 01_layer_correlation_annotation.R
-
-
-
-echo "Plot correlation  ######################################################### "
+cd ${CODEDIR}/${SUBDIR}
 
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
-rm -f ${PLOTDIR}/${SUBDIR}/snRNA-seq_registration_fineRes_*.pdf
-rm -f ${PLOTDIR}/${SUBDIR}/snRNA-seq_registration_broadRes_*.pdf
+## Compute correlations for snRNAseq vs Multiome snRNAseq (CSC)
+## Plot in both verical and horizontal formatR 
 
-Rscript 02_plot_cor_basic.R
+## First remove old data and plots
+rm -f logs/01_compute_cor_snRnaseq_multiomeRnaseq_*.txt
+rm -f ${PROCESSEDIR}/${SUBDIR}/cor_multiome_vs_snRNA-seq_top100_*.Rdata
+rm -f ${PLOTDIR}/${SUBDIR}/cor_top100_registration_snMultiome_snRNAseq_v2_*.pdf
+
+sbatch 01_compute_cor_snRnaseq_multiomeRnaseq.sh
+
+## Compute correlations for visium vs snRNAseq fine and broad resolution (CSC)
+
+rm -f logs/02_compute_cor_visium_multiomeRnaseq.txt
+rm -f ${PROCESSEDIR}/${SUBDIR}/bayesSpace_cor_top100_*.Rdata
+rm -f ${PLOTDIR}/${SUBDIR}/cor_top100_spatial_registration_snMultiome_v2.pdf
+
+sbatch 02_compute_cor_visium_multiomeRnaseq.sh
+
 
 
 
