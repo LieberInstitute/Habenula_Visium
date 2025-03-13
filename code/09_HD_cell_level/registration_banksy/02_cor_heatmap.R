@@ -39,9 +39,10 @@ ref_names = c(
 )
 
 visium_manual_row_order = sprintf('Sp09D0%s', c(4, 8, 6, 2, 9, 5, 3, 7, 1))
-visium_manual_col_order = as.character(
-    c(6, 1, 14, 16, 11, 4, 5, 9, 13, 15, 3, 12, 17, 18, 10, 7, 2, 8)
+visium_manual_col_order = paste0(
+    'C', c(6, 1, 14, 16, 11, 4, 5, 9, 13, 15, 3, 12, 17, 18, 10, 7, 2, 8), ' '
 )
+
 multiome_manual_row_order = paste0(
     'C.',
     c(
@@ -90,9 +91,9 @@ this_cor = lapply(
     }
 )
 
-#   Remove 'X' from Banksy cluster names
+#  Modify Banksy cluster names
 for (i in seq_len(length(this_cor))) {
-    colnames(this_cor[[i]]) = sub('^X', '', colnames(this_cor[[i]]))
+    colnames(this_cor[[i]]) = paste0(sub('^X', 'C', colnames(this_cor[[i]])), ' ')
 }
 
 #   Annotate clusters
@@ -106,22 +107,25 @@ for (i in seq_len(length(this_cor))) {
     if ((ref_name == 'Visium_BayesSpace_k09') && (i == 10)) {
         #   For a progress report figure, use a special ordering just for
         #   Visium BayesSpace k = 9 and Banksy res = 1
+        this_cor[[i]] = this_cor[[i]][
+            visium_manual_row_order, visium_manual_col_order
+        ]
         print(
             layer_stat_cor_plot(
                 this_cor[[i]], annotation = annotated_clusters[[i]],
                 heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
-                row_order = visium_manual_row_order,
-                column_order = visium_manual_col_order
+                cluster_rows = FALSE, cluster_columns = FALSE
             )
         )
     } else if ((ref_name == 'multiome') && (i == 10)) {
         #   For a progress report figure, use a special ordering just for
         #   multiome and Banksy res = 1
+        this_cor[[i]] = this_cor[[i]][multiome_manual_row_order,]
         print(
             layer_stat_cor_plot(
                 this_cor[[i]], annotation = annotated_clusters[[i]],
                 heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
-                row_order = multiome_manual_row_order
+                cluster_rows = FALSE
             )
         )
     } else {
