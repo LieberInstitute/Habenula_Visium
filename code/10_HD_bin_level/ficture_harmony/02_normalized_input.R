@@ -14,23 +14,25 @@ scalefactors_path = here(
     'processed-data', '01_spaceranger', '%s', 'outs', 'binned_outputs',
     'square_002um', 'spatial', 'scalefactors_json.json'
 )
-out_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony',
+counts_out_path = here(
+    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'ficture_inputs',
     'normalized_input.tsv.gz'
 )
 minmax_out_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'ficture_inputs',
     'normalized_minmax.tsv'
 )
 buffer_prop = 0.05
 
-spe <- readRDS(spe_in_path)
+dir.create(dirname(counts_out_path), showWarnings = FALSE)
+
+spe = readRDS(spe_in_path)
 sample_ids = readLines(sample_id_path)
 
 #   Filter raw SPE: drop bins with 0 counts for all genes, and drop genes with
 #   0 counts in every bin
 message(Sys.time(), ' | Filtering bins and genes...')
-spe <- spe[rowSums(assays(spe)$counts) > 0, colSums(assays(spe)$counts) > 0]
+spe = spe[rowSums(assays(spe)$counts) > 0, colSums(assays(spe)$counts) > 0]
 
 #   Use library-size normalization (normalization by deconvolution is not
 #   computationally feasible with data this large). Don't log scale, as for
@@ -81,6 +83,14 @@ counts_df = counts_df |>
     ungroup() |>
     arrange(X)
 
-write_tsv(counts_df, out_path)
+write_tsv(counts_df, counts_out_path)
+
+#   Also write coordinate ranges to a TSV file (another required FICTURE input)
+counts_df |>
+    summarize(xmin = min(X), xmax = max(X), ymin = min(Y), ymax = max(Y)) |>
+    t() |>
+    as.data.frame() |>
+    rownames_to_column('coord_type') |>
+    write_tsv(minmax_out_path, col_names = FALSE)
 
 session_info()
