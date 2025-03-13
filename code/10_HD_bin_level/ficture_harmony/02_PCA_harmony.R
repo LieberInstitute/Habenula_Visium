@@ -41,7 +41,7 @@ spe = logNormCounts(spe)
 message(Sys.time(), " | Running PCA...")
 spe = runPCA(
     spe, subset_row = readLines(svg_path), ncomponents = num_pcs,
-    BPPARAM = MulticoreParam(num_cores), qBSPARAM = IrlbaParam()
+    BPPARAM = MulticoreParam(num_cores), BSPARAM = IrlbaParam()
 )
 message(Sys.time(), " | Running Harmony...")
 spe = RunHarmony(
