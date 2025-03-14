@@ -14,9 +14,8 @@ spe_in_path = here(
 svg_path = here(
     'processed-data', '10_HD_bin_level', 'nnSVG_out', 'merged_SVGs.txt'
 )
-out_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony',
-    'harmony_embedding.csv.gz'
+spe_out_path = here(
+    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'spe_harmony.rds'
 )
 num_pcs = 50
 
@@ -45,14 +44,10 @@ spe = runPCA(
 )
 message(Sys.time(), " | Running Harmony...")
 spe = RunHarmony(
-    spe, group.by.vars = "sample_id", dims.use = "PCA", ncores = num_cores
+    spe, group.by.vars = "sample_id", reduction.use = "PCA", ncores = num_cores
 )
 
-#   Write just the Harmony embedding
-reducedDims(spe)$HARMONY |>
-    rownames_to_column('key') |>
-    mutate(X = spatialCoords(spe)[, 1], Y = spatialCoords(spe)[, 2]) |>
-    as_tibble() |>
-    write_csv(out_path)
+message(Sys.time(), " | Saving result...")
+saveRDS(spe, spe_out_path)
 
 session_info()

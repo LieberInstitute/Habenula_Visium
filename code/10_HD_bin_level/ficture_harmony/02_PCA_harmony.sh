@@ -3,7 +3,7 @@
 #SBATCH --mem=150G
 #SBATCH --job-name=02_PCA_harmony
 #SBATCH -c 5
-#SBATCH -t 2-0:00:00
+#SBATCH -t 3-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/02_PCA_harmony.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/02_PCA_harmony.txt
 
