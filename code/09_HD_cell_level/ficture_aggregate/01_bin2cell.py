@@ -13,6 +13,7 @@ with open(sample_id_path, 'r') as f:
     all_samples = f.read().splitlines()
 sample_id = all_samples[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
 
+num_factors = 12
 adata_in_path = here(
     'processed-data', '09_HD_cell_level', f'{sample_id}_pre_bin2cell.h5ad'
 )
@@ -23,7 +24,7 @@ out_path = here(
 )
 ficture_input_path = here(
     'processed-data', '10_HD_bin_level', 'ficture', 'outputs', 'all_samples',
-    'analysis', 'nF12.d_12',
+    'analysis', f'nF{num_factors}.d_{num_factors}',
     'transcripts_ficture_joined_moved_with_barcodes.tsv.gz'
 )
 factor_cols = [
@@ -41,11 +42,11 @@ ficture_input = pd.read_csv(
 ficture_input = ficture_input[ficture_input['sample_id'] == sample_id]
 
 #   Read in AnnData for this sample, but replace counts assay with zeros.
-#   Instead of genes, create 12 columns in this assay that will correspond
-#   to "scores" for each FICTURE cluster
+#   Instead of genes, create [num_factors] columns in this assay that will
+#   correspond to "scores" for each FICTURE cluster
 adata = sc.read(adata_in_path)
 adata_ficture = sc.AnnData(
-    X = np.zeros((adata.shape[0], 12), dtype = np.float32),
+    X = np.zeros((adata.shape[0], num_factors), dtype = np.float32),
     obs = adata.obs,
     obsm = adata.obsm,
     uns = adata.uns
@@ -62,7 +63,7 @@ adata_ficture.obs[factor_cols] = (
 
 #   Loop through and add up scores for each potential FICTURE cluster for each
 #   bin. Scores are equal to the probabilities of the top three clusters
-for factor_num in range(12):
+for factor_num in range(num_factors):
     for factor_rank in range(3):
         #   Grab non-NA rows matching this particular cluster
         mask = ~adata_ficture.obs[f'factor_K{factor_rank + 1}'].isna() & \
@@ -92,7 +93,7 @@ assert all(adata_final.obs.index == adata_ficture.obs.index)
 cluster_df = pd.DataFrame(
     adata_ficture.X.toarray()
 )
-cluster_df.columns = [f'FICTURE_{i}' for i in range(12)]
+cluster_df.columns = [f'FICTURE_{i}' for i in range(num_factors)]
 cluster_df['key'] = [f'{i}_{sample_id}' for i in adata_ficture.obs.index]
 cluster_df.to_csv(out_path, index = False)
 
