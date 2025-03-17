@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=10G
+#SBATCH --mem=40G
 #SBATCH --job-name=03_ficture_run
 #SBATCH -c 1
-#SBATCH -t 1-0:00:00
+#SBATCH -t 3-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/logs/all_sample_002um/03_ficture_run_%a.log
 #SBATCH -e ../../../processed-data/10_HD_bin_level/logs/all_sample_002um/03_ficture_run_%a.log
 #SBATCH --array=2-25%10
