@@ -7,6 +7,7 @@ library(here)
 library(tidyverse)
 library(spatialLIBD)
 library(HDF5Array)
+library(paletteer)
 library(sessioninfo)
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
@@ -20,6 +21,8 @@ ficture_path_out = here(
     'ficture_merged.csv'
 )
 plot_dir = here('plots', '09_HD_cell_level', 'ficture_aggregate')
+cluster_colors = paletteer_d("Polychrome::palette36", 13)
+cluster_colors[2] = "#00B850FF"
 
 dir.create(plot_dir, showWarnings = FALSE)
 
@@ -55,7 +58,7 @@ colData(spe) = col_data
 for (sample_id in unique(spe$sample_id)) {
     p = vis_clus(
             spe, sampleid = sample_id, clustervar = "FICTURE_cluster",
-            is_stitched = TRUE, point_size = 20
+            is_stitched = TRUE, point_size = 20, colors = cluster_colors
         ) +
         guides(fill = guide_legend(override.aes = list(size = 8)))
     png(
