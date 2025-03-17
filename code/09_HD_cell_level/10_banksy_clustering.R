@@ -49,7 +49,7 @@ spe = loadHDF5SummarizedExperiment(spe_dir)
 message(Sys.time(), ' | Performing clustering')
 spe = clusterBanksy(
     spe, use_agf = TRUE, lambda = opt$lambda, seed = random_seed,
-    algo = "leiden", resolution = opt$res
+    algo = "leiden", resolution = opt$res, dimred = "HARMONY"
 )
 
 #   Get the names of the cluster and UMAP columns from a more general regex

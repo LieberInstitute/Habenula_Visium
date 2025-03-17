@@ -3,6 +3,7 @@ library(SpatialExperiment)
 library(HDF5Array)
 library(sessioninfo)
 library(Banksy)
+library(harmony)
 library(getopt)
 
 #   Corresponding to "cell typing" and "domain segmentation"
@@ -57,7 +58,13 @@ spe = runBanksyUMAP(
     seed = random_seed
 )
 
-message(Sys.time(), ' | Saving Banksy embedding (in full SPE object)')
+message(Sys.time(), " | Running Harmony...")
+rd_name = reducedDimNames(spe)[
+    grep(sprintf('^PCA.*lam%s', lambda), reducedDimNames(spe))
+]
+spe = RunHarmony(spe, group.by.vars = "sample_id", reduction.use = rd_name)
+
+message(Sys.time(), ' | Saving full SPE object')
 saveHDF5SummarizedExperiment(
     spe, dir = out_dir, replace = TRUE, as.sparse = TRUE
 )
