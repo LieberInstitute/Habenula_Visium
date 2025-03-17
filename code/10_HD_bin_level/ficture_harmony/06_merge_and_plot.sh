@@ -3,7 +3,7 @@
 #SBATCH --mem=10G
 #SBATCH --job-name=06_merge_and_plot
 #SBATCH -c 1
-#SBATCH -t 1-0:00:00
+#SBATCH -t 4:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/06_merge_and_plot.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/06_merge_and_plot.txt
 

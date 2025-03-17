@@ -6,6 +6,7 @@ library(here)
 library(tidyverse)
 library(spatialLIBD)
 library(HDF5Array)
+library(paletteer)
 library(sessioninfo)
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
@@ -67,7 +68,8 @@ for (sample_id in unique(spe$sample_id)) {
 
 ficture_df = colData(spe) |>
     as_tibble() |>
-    select(FICTURE_cluster, sample_id)
+    select(FICTURE_cluster, sample_id) |>
+    filter(!is.na(FICTURE_cluster))
 
 #   Distribution of samples by cluster
 p = ggplot(ficture_df, aes(x = FICTURE_cluster, fill = sample_id)) +
