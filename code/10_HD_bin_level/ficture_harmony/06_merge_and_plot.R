@@ -20,6 +20,8 @@ ficture_path_out = here(
     'ficture_merged.csv'
 )
 plot_dir = here('plots', '10_HD_bin_level', 'ficture_harmony')
+cluster_colors = paletteer_d("Polychrome::palette36", 13)
+cluster_colors[2] = "#00B850FF"
 
 dir.create(plot_dir, showWarnings = FALSE)
 
@@ -55,7 +57,7 @@ colData(spe) = col_data
 for (sample_id in unique(spe$sample_id)) {
     p = vis_clus(
             spe, sampleid = sample_id, clustervar = "FICTURE_cluster",
-            is_stitched = TRUE, point_size = 20
+            is_stitched = TRUE, point_size = 20, colors = cluster_colors
         ) +
         guides(fill = guide_legend(override.aes = list(size = 8)))
     png(
@@ -83,7 +85,7 @@ dev.off()
 #   Distribution of clusters by sample
 p = ggplot(ficture_df, aes(x = sample_id, fill = factor(FICTURE_cluster))) +
     geom_bar(position = "fill") +
-    scale_fill_manual(values = paletteer_d("Polychrome::palette36", 12)) +
+    scale_fill_manual(values = cluster_colors) +
     theme_bw(base_size = 20) +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
     labs(x = "Sample ID", y = "Proportion of Cells", fill = "FICTURE\nCluster")
