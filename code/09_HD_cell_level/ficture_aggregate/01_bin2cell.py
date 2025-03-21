@@ -24,7 +24,7 @@ out_path = here(
 )
 ficture_input_path = here(
     'processed-data', '10_HD_bin_level', 'ficture', 'outputs', 'all_samples',
-    'analysis', f'nF{num_factors}.d_{num_factors}',
+    'analysis', f'nF{num_factors}.d_12',
     'transcripts_ficture_joined_moved_with_barcodes.tsv.gz'
 )
 factor_cols = [
