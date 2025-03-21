@@ -1,0 +1,1774 @@
+**** Job starts ****
+Thu Mar 20 10:28:01 PM EDT 2025
+**** JHPCE info ****
+User: neagles
+Job id: 15274286
+Job name: 03_ficture_run
+Node name: compute-166
+Task id: 18
+Loading LIBD SLURM module for ficture/dev_a455e5c
+Loading LIBD SLURM module for htslib/1.18
+--------------------------------------------------------------
+Creating LDA for 12um and 18 factors...
+--------------------------------------------------------------
+mkdir -p /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/figure
+ficture fit_model --input /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/hexagon.d_12.tsv.gz --output /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12  --nFactor 18 --epoch 3 --epoch_id_length 2 --unit_attr X Y --key Count --min_ct_per_feature 20 --test_split 0.5 --R 10 --thread 1
+INFO:root:Read data with 1099027 units, 16718 features
+INFO:root:0: -2025.10, -2019.65
+INFO:root:Counter({np.int64(8): 107911, np.int64(4): 86309, np.int64(16): 51232, np.int64(13): 43565, np.int64(10): 33703, np.int64(14): 31246, np.int64(0): 27121, np.int64(5): 25198, np.int64(11): 25079, np.int64(3): 23589, np.int64(7): 21715, np.int64(2): 17340, np.int64(1): 16889, np.int64(6): 12647, np.int64(17): 8552, np.int64(15): 6869, np.int64(12): 6732, np.int64(9): 3817})
+INFO:root:Computing naive DE for 15127 genes
+INFO:root:R=0, 9.11, 7.25, 519.60s
+INFO:root:1: -2025.33, -2019.89
+INFO:root:Counter({np.int64(8): 98927, np.int64(15): 88523, np.int64(13): 54130, np.int64(16): 52104, np.int64(11): 42333, np.int64(10): 34130, np.int64(7): 27023, np.int64(4): 25769, np.int64(17): 23847, np.int64(5): 23473, np.int64(3): 21028, np.int64(0): 18664, np.int64(6): 9893, np.int64(1): 8080, np.int64(2): 8027, np.int64(9): 6500, np.int64(12): 4779, np.int64(14): 2284})
+INFO:root:Computing naive DE for 15125 genes
+INFO:root:R=1, 9.57, 5.94, 498.53s
+INFO:root:2: -2026.41, -2020.93
+INFO:root:Counter({np.int64(10): 119765, np.int64(8): 116847, np.int64(3): 49181, np.int64(13): 44420, np.int64(11): 34821, np.int64(1): 26337, np.int64(9): 25557, np.int64(5): 23672, np.int64(7): 20837, np.int64(17): 20172, np.int64(0): 15334, np.int64(15): 14281, np.int64(6): 12519, np.int64(2): 10777, np.int64(4): 8046, np.int64(16): 2589, np.int64(14): 2444, np.int64(12): 1915})
+INFO:root:Computing naive DE for 15127 genes
+INFO:root:R=2, 9.19, 6.21, 507.97s
+INFO:root:3: -2025.28, -2019.82
+INFO:root:Counter({np.int64(8): 108463, np.int64(4): 84018, np.int64(16): 52450, np.int64(11): 43962, np.int64(6): 42677, np.int64(10): 32577, np.int64(3): 32393, np.int64(0): 27626, np.int64(9): 26246, np.int64(5): 24706, np.int64(13): 19472, np.int64(1): 18177, np.int64(2): 10864, np.int64(17): 9835, np.int64(15): 6163, np.int64(14): 3604, np.int64(7): 3331, np.int64(12): 2950})
+INFO:root:Computing naive DE for 15129 genes
+INFO:root:R=3, 11.14, 7.33, 511.39s
+INFO:root:4: -2025.10, -2019.65
+INFO:root:Counter({np.int64(8): 106486, np.int64(11): 86651, np.int64(16): 54004, np.int64(10): 33204, np.int64(6): 32014, np.int64(13): 28007, np.int64(4): 26814, np.int64(17): 26043, np.int64(12): 25513, np.int64(5): 24810, np.int64(7): 23397, np.int64(9): 21613, np.int64(0): 18038, np.int64(2): 16992, np.int64(1): 11178, np.int64(15): 10570, np.int64(14): 2102, np.int64(3): 2078})
+INFO:root:Computing naive DE for 15129 genes
+INFO:root:R=4, 9.83, 6.87, 519.50s
+INFO:root:5: -2025.01, -2019.54
+INFO:root:Counter({np.int64(8): 110982, np.int64(1): 75157, np.int64(16): 49870, np.int64(10): 44186, np.int64(11): 40091, np.int64(13): 38031, np.int64(3): 31751, np.int64(9): 25889, np.int64(5): 22976, np.int64(7): 21058, np.int64(6): 19949, np.int64(17): 16417, np.int64(14): 12677, np.int64(0): 10524, np.int64(2): 10017, np.int64(4): 8647, np.int64(15): 8112, np.int64(12): 3180})
+INFO:root:Computing naive DE for 15128 genes
+INFO:root:R=5, 10.59, 8.26, 506.18s
+INFO:root:6: -2025.40, -2019.93
+INFO:root:Counter({np.int64(8): 101644, np.int64(4): 84964, np.int64(16): 53993, np.int64(13): 53543, np.int64(11): 44343, np.int64(10): 33483, np.int64(3): 29718, np.int64(9): 27249, np.int64(7): 25482, np.int64(5): 24496, np.int64(0): 22464, np.int64(17): 17764, np.int64(2): 7631, np.int64(15): 7316, np.int64(1): 6297, np.int64(14): 3330, np.int64(12): 3022, np.int64(6): 2775})
+INFO:root:Computing naive DE for 15127 genes
+INFO:root:R=6, 10.61, 7.21, 490.11s
+INFO:root:7: -2024.88, -2019.44
+INFO:root:Counter({np.int64(8): 110823, np.int64(10): 87080, np.int64(16): 53192, np.int64(12): 38243, np.int64(7): 30158, np.int64(11): 29024, np.int64(0): 26357, np.int64(5): 22757, np.int64(9): 22711, np.int64(3): 20444, np.int64(13): 19219, np.int64(17): 18879, np.int64(6): 17977, np.int64(15): 15381, np.int64(2): 15109, np.int64(1): 10984, np.int64(4): 8706, np.int64(14): 2470})
+INFO:root:Computing naive DE for 15128 genes
+INFO:root:R=7, 9.52, 6.23, 523.37s
+INFO:root:8: -2025.38, -2019.93
+INFO:root:Counter({np.int64(8): 109634, np.int64(10): 87001, np.int64(13): 50488, np.int64(1): 34020, np.int64(11): 31855, np.int64(7): 31097, np.int64(16): 28361, np.int64(0): 26473, np.int64(3): 25455, np.int64(5): 22899, np.int64(2): 20317, np.int64(9): 18874, np.int64(17): 17595, np.int64(12): 13850, np.int64(6): 9108, np.int64(4): 8604, np.int64(14): 7656, np.int64(15): 6227})
+INFO:root:Computing naive DE for 15128 genes
+INFO:root:R=8, 9.10, 5.60, 515.91s
+INFO:root:9: -2026.55, -2021.10
+INFO:root:Counter({np.int64(8): 122292, np.int64(10): 119151, np.int64(16): 49960, np.int64(13): 49766, np.int64(0): 25104, np.int64(5): 24920, np.int64(17): 22615, np.int64(1): 21814, np.int64(7): 21569, np.int64(2): 18622, np.int64(3): 18473, np.int64(11): 18022, np.int64(4): 7536, np.int64(14): 7337, np.int64(9): 6664, np.int64(12): 5962, np.int64(15): 5900, np.int64(6): 3807})
+INFO:root:Computing naive DE for 15126 genes
+INFO:root:R=9, 8.37, 6.92, 509.35s
+INFO:root:Result file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.fit_result.tsv.gz
+R
+3    11.141777
+6    10.605729
+5    10.589151
+4     9.832706
+1     9.568756
+7     9.516266
+2     9.193596
+0     9.111784
+8     9.098516
+9     8.373377
+Name: Score, dtype: float64
+ficture choose_color --input /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.fit_result.tsv.gz --output /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/figure/nF18.d_12 --cmap_name turbo
+ficture plot_base --input /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.fit_result.tsv.gz --output /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/figure/nF18.d_12.coarse --fill_range 7.0 --color_table /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/figure/nF18.d_12.rgb.tsv --plot_um_per_pixel 1 --plot_discretized
+/jhpce/shared/libd/core/ficture/dev_a455e5c/ficture/ficture/scripts/plot_base.py:131: FutureWarning: The provided callable <function mean at 0x7f8c0fa62b80> is currently using SeriesGroupBy.mean. In a future version of pandas, the provided callable will be used directly. To keep current behavior pass the string "mean" instead.
+  chunk = chunk.groupby(by = ['x_indx', 'y_indx']).agg({ x:np.mean for x in factor_header }).reset_index()
+/jhpce/shared/libd/core/ficture/dev_a455e5c/ficture/ficture/scripts/plot_base.py:131: FutureWarning: The provided callable <function mean at 0x7f8c0fa62b80> is currently using SeriesGroupBy.mean. In a future version of pandas, the provided callable will be used directly. To keep current behavior pass the string "mean" instead.
+  chunk = chunk.groupby(by = ['x_indx', 'y_indx']).agg({ x:np.mean for x in factor_header }).reset_index()
+/jhpce/shared/libd/core/ficture/dev_a455e5c/ficture/ficture/scripts/plot_base.py:134: FutureWarning: The provided callable <function mean at 0x7f8c0fa62b80> is currently using SeriesGroupBy.mean. In a future version of pandas, the provided callable will be used directly. To keep current behavior pass the string "mean" instead.
+  df = df.groupby(by = ['x_indx', 'y_indx']).agg({ x:np.mean for x in factor_header }).reset_index()
+INFO:root:Read region 1099027 pixels in region 34843.0 x 6849.0
+INFO:root:Filling pixels 0 - 500 / 6848
+INFO:root:Filling pixels 500 - 1000 / 6848
+INFO:root:Filling pixels 1000 - 1500 / 6848
+INFO:root:Filling pixels 1500 - 2000 / 6848
+INFO:root:Filling pixels 2000 - 2500 / 6848
+INFO:root:Filling pixels 2500 - 3000 / 6848
+INFO:root:Filling pixels 3000 - 3500 / 6848
+INFO:root:Filling pixels 3500 - 4000 / 6848
+INFO:root:Filling pixels 4000 - 4500 / 6848
+INFO:root:Filling pixels 4500 - 5000 / 6848
+INFO:root:Filling pixels 5000 - 5500 / 6848
+INFO:root:Filling pixels 5500 - 6000 / 6848
+INFO:root:Filling pixels 6000 - 6500 / 6848
+INFO:root:Filling pixels 6500 - 6848 / 6848
+INFO:root:Start constructing RGB image
+INFO:root:Made fractional image
+/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/figure/nF18.d_12.coarse.png
+INFO:root:Made hard threshold image
+/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/figure/nF18.d_12.coarse.top.png
+6849 500
+touch /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.done
+--------------------------------------------------------------
+Creating projection for 12um and 18 factors, at 12um
+--------------------------------------------------------------
+--------------------------------------------------------------
+Performing pixel-level decoding..
+--------------------------------------------------------------
+--------------------------------------------------------------
+Sorting and reformatting the pixel-level output..
+--------------------------------------------------------------
+--------------------------------------------------------------
+Performing pseudo-bulk differential expression analysis..
+--------------------------------------------------------------
+--------------------------------------------------------------
+Drawing pixel-level output image...
+--------------------------------------------------------------
+ficture transform --input /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/inputs/all_samples/transcripts.merged.sorted.tsv.gz  --output_pref /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.prj_12.r_4 --model /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.model.p --key Count --major_axis X --hex_width 12 --n_move 3 --min_ct_per_unit 20 --mu_scale 1.0 --thread 1 --precision 2
+INFO:root:Model loaded with 16718 features and 18 factors
+INFO:root:Transformed 1 batches with total 58608 units, 0.437073min
+INFO:root:Transformed 2 batches with total 112968 units, 0.993193min
+INFO:root:Transformed 3 batches with total 169147 units, 1.547775min
+INFO:root:Transformed 4 batches with total 222610 units, 2.075095min
+INFO:root:Transformed 5 batches with total 273386 units, 2.603663min
+INFO:root:Transformed 6 batches with total 319433 units, 3.125657min
+INFO:root:Transformed 7 batches with total 361425 units, 3.632626min
+INFO:root:Transformed 8 batches with total 407129 units, 4.144222min
+INFO:root:Transformed 9 batches with total 450390 units, 4.647443min
+INFO:root:Transformed 10 batches with total 492671 units, 5.152104min
+INFO:root:Transformed 11 batches with total 533652 units, 5.660153min
+INFO:root:Transformed 12 batches with total 590540 units, 6.374082min
+INFO:root:Transformed 13 batches with total 643615 units, 7.113166min
+INFO:root:Transformed 14 batches with total 694507 units, 7.834514min
+INFO:root:Transformed 15 batches with total 746128 units, 8.550823min
+INFO:root:Transformed 16 batches with total 806550 units, 9.285143min
+INFO:root:Transformed 17 batches with total 869980 units, 10.021436min
+INFO:root:Transformed 18 batches with total 914383 units, 10.557261min
+INFO:root:Transformed 19 batches with total 958084 units, 11.049401min
+INFO:root:Transformed 20 batches with total 1015512 units, 11.746725min
+INFO:root:Transformed 21 batches with total 1074603 units, 12.471802min
+INFO:root:Transformed 22 batches with total 1142144 units, 13.219789min
+INFO:root:Transformed 23 batches with total 1187930 units, 13.743721min
+INFO:root:Transformed 24 batches with total 1249786 units, 14.452141min
+INFO:root:Transformed 25 batches with total 1311275 units, 15.180822min
+INFO:root:Transformed 26 batches with total 1370648 units, 15.923453min
+INFO:root:Transformed 27 batches with total 1424848 units, 16.654481min
+INFO:root:Transformed 28 batches with total 1470495 units, 17.367156min
+INFO:root:Transformed 29 batches with total 1521356 units, 18.082974min
+INFO:root:Transformed 30 batches with total 1570017 units, 18.801143min
+INFO:root:Transformed 31 batches with total 1628442 units, 19.722587min
+INFO:root:Transformed 32 batches with total 1679702 units, 20.454297min
+INFO:root:Transformed 33 batches with total 1739702 units, 21.180035min
+INFO:root:Transformed 34 batches with total 1786320 units, 21.714951min
+INFO:root:Transformed 35 batches with total 1840974 units, 22.214014min
+INFO:root:Transformed 36 batches with total 1902676 units, 22.725240min
+INFO:root:Transformed 37 batches with total 1941725 units, 23.046471min
+INFO:root:Transformed 38 batches with total 1983031 units, 23.324206min
+INFO:root:Transformed 39 batches with total 2044536 units, 23.816996min
+INFO:root:Transformed 40 batches with total 2117751 units, 24.355167min
+INFO:root:Transformed 41 batches with total 2185893 units, 24.901146min
+INFO:root:Transformed 42 batches with total 2231070 units, 25.241156min
+INFO:root:Transformed 43 batches with total 2276142 units, 25.545330min
+INFO:root:Transformed 44 batches with total 2331756 units, 25.867915min
+INFO:root:Transformed 45 batches with total 2385780 units, 26.192959min
+INFO:root:Transformed 46 batches with total 2460574 units, 26.740830min
+INFO:root:Transformed 47 batches with total 2514302 units, 27.292604min
+INFO:root:Transformed 48 batches with total 2575893 units, 27.837786min
+INFO:root:Transformed 49 batches with total 2626268 units, 28.375610min
+INFO:root:Transformed 50 batches with total 2685462 units, 28.912597min
+INFO:root:Transformed 51 batches with total 2740530 units, 29.470677min
+INFO:root:Transformed 52 batches with total 2797435 units, 30.017491min
+INFO:root:Transformed 53 batches with total 2856657 units, 30.565425min
+INFO:root:Transformed 54 batches with total 2919249 units, 31.118665min
+INFO:root:Transformed 55 batches with total 2986065 units, 31.685604min
+INFO:root:Transformed 56 batches with total 3046542 units, 32.257074min
+INFO:root:Transformed 57 batches with total 3100794 units, 32.812686min
+INFO:root:Transformed 58 batches with total 3160208 units, 33.365973min
+INFO:root:Transformed 59 batches with total 3215010 units, 33.915800min
+INFO:root:Transformed 60 batches with total 3269024 units, 34.460035min
+INFO:root:Transformed 61 batches with total 3320915 units, 35.011714min
+INFO:root:Transformed 62 batches with total 3388406 units, 35.784536min
+INFO:root:Transformed 63 batches with total 3430580 units, 36.339803min
+INFO:root:Transformed 64 batches with total 3497030 units, 37.104095min
+INFO:root:Transformed 65 batches with total 3554077 units, 37.670418min
+INFO:root:Transformed 66 batches with total 3613572 units, 38.219982min
+INFO:root:Transformed 67 batches with total 3677304 units, 38.780651min
+INFO:root:Transformed 68 batches with total 3745693 units, 39.352739min
+INFO:root:Transformed 69 batches with total 3810658 units, 39.935852min
+INFO:root:Transformed 70 batches with total 3893493 units, 40.524465min
+INFO:root:Transformed 71 batches with total 3943606 units, 40.890045min
+INFO:root:Transformed 72 batches with total 4003049 units, 41.211974min
+INFO:root:Transformed 73 batches with total 4059375 units, 41.539439min
+INFO:root:Transformed 74 batches with total 4111095 units, 41.855258min
+INFO:root:Transformed 75 batches with total 4179507 units, 42.171544min
+INFO:root:Transformed 76 batches with total 4260160 units, 42.519178min
+INFO:root:Transformed 77 batches with total 4349786 units, 42.886171min
+INFO:root:Transformed 78 batches with total 4417063 units, 43.237361min
+INFO:root:Transformed 79 batches with total 4494983 units, 43.819609min
+INFO:root:Transformed 80 batches with total 4571671 units, 44.413827min
+INFO:root:Transformed 81 batches with total 4638834 units, 45.006741min
+INFO:root:Transformed 82 batches with total 4712177 units, 45.589455min
+INFO:root:Transformed 83 batches with total 4787897 units, 46.175356min
+INFO:root:Transformed 84 batches with total 4870221 units, 46.769076min
+INFO:root:Transformed 85 batches with total 4941276 units, 47.365808min
+INFO:root:Transformed 86 batches with total 5017456 units, 47.950334min
+INFO:root:Transformed 87 batches with total 5105976 units, 48.552674min
+INFO:root:Transformed 88 batches with total 5160285 units, 48.924721min
+INFO:root:Transformed 89 batches with total 5262094 units, 49.503322min
+INFO:root:Transformed 90 batches with total 5316157 units, 49.902135min
+INFO:root:Transformed 91 batches with total 5415822 units, 50.483419min
+INFO:root:Transformed 92 batches with total 5510060 units, 51.121135min
+INFO:root:Transformed 93 batches with total 5559475 units, 51.509072min
+INFO:root:Transformed 94 batches with total 5605893 units, 51.823762min
+INFO:root:Transformed 95 batches with total 5681910 units, 52.379964min
+INFO:root:Transformed 96 batches with total 5760968 units, 52.978476min
+INFO:root:Transformed 97 batches with total 5853443 units, 53.591715min
+INFO:root:Transformed 98 batches with total 5902203 units, 53.971193min
+INFO:root:Transformed 99 batches with total 5996774 units, 54.539742min
+INFO:root:Transformed 100 batches with total 6049516 units, 54.924605min
+INFO:root:Transformed 101 batches with total 6108487 units, 55.246088min
+INFO:root:Transformed 102 batches with total 6201957 units, 55.816358min
+INFO:root:Transformed 103 batches with total 6288708 units, 56.435065min
+INFO:root:Transformed 104 batches with total 6362695 units, 57.034608min
+INFO:root:Transformed 105 batches with total 6436319 units, 57.616027min
+INFO:root:Transformed 106 batches with total 6513617 units, 58.203642min
+INFO:root:Transformed 107 batches with total 6588059 units, 58.793274min
+INFO:root:Transformed 108 batches with total 6657837 units, 59.376036min
+INFO:root:Transformed 109 batches with total 6730108 units, 59.956560min
+INFO:root:Transformed 110 batches with total 6811254 units, 60.552089min
+INFO:root:Transformed 111 batches with total 6864943 units, 60.913736min
+INFO:root:Transformed 112 batches with total 6964614 units, 61.495348min
+INFO:root:Transformed 113 batches with total 7034071 units, 61.899939min
+INFO:root:Transformed 114 batches with total 7127446 units, 62.489803min
+INFO:root:Transformed 115 batches with total 7170334 units, 62.865363min
+INFO:root:Transformed 116 batches with total 7228385 units, 63.147540min
+INFO:root:Transformed 117 batches with total 7310718 units, 63.462328min
+INFO:root:Transformed 118 batches with total 7405312 units, 63.824136min
+INFO:root:Transformed 119 batches with total 7507396 units, 64.207661min
+INFO:root:Transformed 120 batches with total 7610366 units, 64.602426min
+INFO:root:Transformed 121 batches with total 7717249 units, 65.003611min
+INFO:root:Transformed 122 batches with total 7824057 units, 65.408722min
+INFO:root:Transformed 123 batches with total 7929014 units, 65.814417min
+INFO:root:Transformed 124 batches with total 8030031 units, 66.213834min
+INFO:root:Transformed 125 batches with total 8124760 units, 66.610453min
+INFO:root:Transformed 126 batches with total 8209340 units, 66.991034min
+INFO:root:Transformed 127 batches with total 8282264 units, 67.352550min
+INFO:root:Transformed 128 batches with total 8361149 units, 67.703295min
+INFO:root:Transformed 129 batches with total 8448349 units, 68.067176min
+INFO:root:Transformed 130 batches with total 8530014 units, 68.436827min
+INFO:root:Transformed 131 batches with total 8611736 units, 68.800110min
+INFO:root:Transformed 132 batches with total 8701785 units, 69.169419min
+INFO:root:Transformed 133 batches with total 8783241 units, 69.543463min
+INFO:root:Transformed 134 batches with total 8879003 units, 69.908946min
+INFO:root:Transformed 135 batches with total 8978247 units, 70.291026min
+INFO:root:Transformed 136 batches with total 9084473 units, 70.681221min
+INFO:root:Transformed 137 batches with total 9189066 units, 71.080813min
+INFO:root:Transformed 138 batches with total 9284860 units, 71.475485min
+INFO:root:Transformed 139 batches with total 9373010 units, 71.847069min
+INFO:root:Transformed 140 batches with total 9472024 units, 72.221810min
+INFO:root:Transformed 141 batches with total 9597421 units, 72.626506min
+INFO:root:Transformed 142 batches with total 9692791 units, 73.052028min
+INFO:root:Transformed 143 batches with total 9788884 units, 73.444559min
+INFO:root:Transformed 144 batches with total 9893255 units, 73.849947min
+INFO:root:Transformed 145 batches with total 9996377 units, 74.264925min
+INFO:root:Transformed 146 batches with total 10102501 units, 74.678182min
+INFO:root:Transformed 147 batches with total 10212199 units, 75.103300min
+INFO:root:Transformed 148 batches with total 10322743 units, 75.533403min
+INFO:root:Transformed 149 batches with total 10416485 units, 75.954360min
+INFO:root:Transformed 150 batches with total 10501063 units, 76.347505min
+INFO:root:Transformed 151 batches with total 10586862 units, 76.728240min
+INFO:root:Transformed 152 batches with total 10667618 units, 77.110318min
+INFO:root:Transformed 153 batches with total 10754706 units, 77.488290min
+INFO:root:Transformed 154 batches with total 10830159 units, 77.866860min
+INFO:root:Transformed 155 batches with total 10910312 units, 78.234450min
+INFO:root:Transformed 156 batches with total 10985974 units, 78.603880min
+INFO:root:Transformed 157 batches with total 11059214 units, 78.965434min
+INFO:root:Transformed 158 batches with total 11143137 units, 79.329977min
+INFO:root:Transformed 159 batches with total 11227817 units, 79.704816min
+INFO:root:Transformed 160 batches with total 11322827 units, 80.087444min
+INFO:root:Transformed 161 batches with total 11423298 units, 80.484580min
+INFO:root:Transformed 162 batches with total 11507577 units, 80.881178min
+INFO:root:Transformed 163 batches with total 11595664 units, 81.258373min
+INFO:root:Transformed 164 batches with total 11685645 units, 81.642151min
+INFO:root:Transformed 165 batches with total 11775893 units, 82.024610min
+INFO:root:Transformed 166 batches with total 11860181 units, 82.405317min
+INFO:root:Transformed 167 batches with total 11937033 units, 82.777128min
+INFO:root:Transformed 168 batches with total 12012006 units, 83.124904min
+INFO:root:Transformed 169 batches with total 12110754 units, 83.485807min
+INFO:root:Transformed 170 batches with total 12206033 units, 83.878869min
+INFO:root:Transformed 171 batches with total 12280172 units, 84.203055min
+INFO:root:Transformed 172 batches with total 12280223 units, 84.313671min
+ficture slda_decode --input /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/batched.matrix.tsv.gz  --output /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.decode.prj_12.r_4_5 --model /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.model.p --anchor /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.prj_12.r_4.fit_result.tsv.gz --anchor_in_um --neighbor_radius 5 --mu_scale 1.0 --key Count --precision 0.1 --lite_topk_output_pixel 3 --lite_topk_output_anchor 3 --thread 1
+INFO:root:16718 genes and 18 factors are read from input model
+INFO:root:Read 12163253 grid points
+INFO:root:Read 96225 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((96225, 16718))
+INFO:root:Output 95471 pixels and 34066 anchors
+INFO:root:Read 57231 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((57231, 16718))
+INFO:root:Output 57089 pixels and 20099 anchors
+INFO:root:Read 51089 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((51089, 16718))
+INFO:root:Output 51050 pixels and 14845 anchors
+INFO:root:Read 59074 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((59074, 16718))
+INFO:root:Output 58883 pixels and 18221 anchors
+INFO:root:Read 60795 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((60795, 16718))
+INFO:root:Output 60632 pixels and 19662 anchors
+INFO:root:Read 61381 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((61381, 16718))
+INFO:root:Output 61293 pixels and 17892 anchors
+INFO:root:Read 63199 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63199, 16718))
+INFO:root:Output 62478 pixels and 19390 anchors
+INFO:root:Read 73217 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((73217, 16718))
+INFO:root:Output 73119 pixels and 28252 anchors
+INFO:root:Read 99048 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((99048, 16718))
+INFO:root:Output 98590 pixels and 30303 anchors
+INFO:root:Read 159132 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((159132, 16718))
+INFO:root:Output 158832 pixels and 60743 anchors
+INFO:root:Read 133061 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((133061, 16718))
+INFO:root:Output 132647 pixels and 44911 anchors
+INFO:root:Read 104474 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((104474, 16718))
+INFO:root:Output 104023 pixels and 33181 anchors
+INFO:root:Read 73480 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((73480, 16718))
+INFO:root:Output 73071 pixels and 23696 anchors
+INFO:root:Read 71323 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((71323, 16718))
+INFO:root:Output 71102 pixels and 20806 anchors
+INFO:root:Read 101427 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((101427, 16718))
+INFO:root:Output 101343 pixels and 39365 anchors
+INFO:root:Read 69402 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((69402, 16718))
+INFO:root:Output 69126 pixels and 22084 anchors
+INFO:root:Read 100500 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((100500, 16718))
+INFO:root:Output 100394 pixels and 33381 anchors
+INFO:root:Read 162387 pixels, forming 5 batches.
+INFO:root:Read 5 batches ((162387, 16718))
+INFO:root:Output 161459 pixels and 54611 anchors
+INFO:root:Read 25354 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((25354, 16718))
+INFO:root:Output 25298 pixels and 8258 anchors
+INFO:root:Read 61823 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((61823, 16718))
+INFO:root:Output 61307 pixels and 19305 anchors
+INFO:root:Read 129043 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((129043, 16718))
+INFO:root:Output 128568 pixels and 41268 anchors
+INFO:root:Read 115205 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((115205, 16718))
+INFO:root:Output 114812 pixels and 37288 anchors
+INFO:root:Read 72158 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((72158, 16718))
+INFO:root:Output 71920 pixels and 20878 anchors
+INFO:root:Read 192274 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((192274, 16718))
+INFO:root:Output 191388 pixels and 63885 anchors
+INFO:root:Read 113972 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((113972, 16718))
+INFO:root:Output 113571 pixels and 34915 anchors
+INFO:root:Read 128605 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((128605, 16718))
+INFO:root:Output 128192 pixels and 39821 anchors
+INFO:root:Read 66711 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66711, 16718))
+INFO:root:Output 66711 pixels and 22136 anchors
+INFO:root:Read 145537 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((145537, 16718))
+INFO:root:Output 145053 pixels and 44573 anchors
+INFO:root:Read 66678 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((66678, 16718))
+INFO:root:Output 66150 pixels and 21130 anchors
+INFO:root:Read 120635 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((120635, 16718))
+INFO:root:Output 120480 pixels and 40048 anchors
+INFO:root:Read 72678 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((72678, 16718))
+INFO:root:Output 72222 pixels and 25919 anchors
+INFO:root:Read 26999 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((26999, 16718))
+INFO:root:Output 26989 pixels and 8034 anchors
+INFO:root:Read 70437 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((70437, 16718))
+INFO:root:Output 70071 pixels and 22218 anchors
+INFO:root:Read 83574 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((83574, 16718))
+INFO:root:Output 83385 pixels and 31136 anchors
+INFO:root:Read 65269 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65269, 16718))
+INFO:root:Output 65054 pixels and 20806 anchors
+INFO:root:Read 68826 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68826, 16718))
+INFO:root:Output 68543 pixels and 20234 anchors
+INFO:root:Read 67912 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((67912, 16718))
+INFO:root:Output 67784 pixels and 19697 anchors
+INFO:root:Read 65095 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((65095, 16718))
+INFO:root:Output 64699 pixels and 22273 anchors
+INFO:root:Read 117979 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((117979, 16718))
+INFO:root:Output 117456 pixels and 42580 anchors
+INFO:root:Read 108993 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((108993, 16718))
+INFO:root:Output 108615 pixels and 35910 anchors
+INFO:root:Read 60741 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((60741, 16718))
+INFO:root:Output 60521 pixels and 22286 anchors
+INFO:root:Read 114971 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((114971, 16718))
+INFO:root:Output 114468 pixels and 35669 anchors
+INFO:root:Read 123478 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((123478, 16718))
+INFO:root:Output 123080 pixels and 44639 anchors
+INFO:root:Read 58453 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((58453, 16718))
+INFO:root:Output 58157 pixels and 20084 anchors
+INFO:root:Read 60090 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((60090, 16718))
+INFO:root:Output 60090 pixels and 19409 anchors
+INFO:root:Read 166363 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((166363, 16718))
+INFO:root:Output 165777 pixels and 56637 anchors
+INFO:root:Read 75418 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((75418, 16718))
+INFO:root:Output 75096 pixels and 22757 anchors
+INFO:root:Read 69472 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((69472, 16718))
+INFO:root:Output 69472 pixels and 21335 anchors
+INFO:root:Read 71552 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((71552, 16718))
+INFO:root:Output 71027 pixels and 23261 anchors
+INFO:root:Read 187658 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((187658, 16718))
+INFO:root:Output 187250 pixels and 63471 anchors
+INFO:root:Read 67395 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((67395, 16718))
+INFO:root:Output 67141 pixels and 20807 anchors
+INFO:root:Read 121067 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((121067, 16718))
+INFO:root:Output 120968 pixels and 39151 anchors
+INFO:root:Read 96219 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((96219, 16718))
+INFO:root:Output 95561 pixels and 31441 anchors
+INFO:root:Read 67100 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((67100, 16718))
+INFO:root:Output 66743 pixels and 22019 anchors
+INFO:root:Read 86860 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((86860, 16718))
+INFO:root:Output 86758 pixels and 27185 anchors
+INFO:root:Read 120966 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((120966, 16718))
+INFO:root:Output 120633 pixels and 37791 anchors
+INFO:root:Read 65849 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((65849, 16718))
+INFO:root:Output 65849 pixels and 24606 anchors
+INFO:root:Read 111880 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((111880, 16718))
+INFO:root:Output 111855 pixels and 34693 anchors
+INFO:root:Read 60819 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((60819, 16718))
+INFO:root:Output 60819 pixels and 18144 anchors
+INFO:root:Read 82388 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((82388, 16718))
+INFO:root:Output 82320 pixels and 25794 anchors
+INFO:root:Read 92674 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((92674, 16718))
+INFO:root:Output 92170 pixels and 32533 anchors
+INFO:root:Read 150012 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((150012, 16718))
+INFO:root:Output 149629 pixels and 54563 anchors
+INFO:root:Read 69213 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((69213, 16718))
+INFO:root:Output 69060 pixels and 25200 anchors
+INFO:root:Read 64668 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((64668, 16718))
+INFO:root:Output 64479 pixels and 18947 anchors
+INFO:root:Read 132965 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((132965, 16718))
+INFO:root:Output 132607 pixels and 43273 anchors
+INFO:root:Read 45094 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((45094, 16718))
+INFO:root:Output 44900 pixels and 16880 anchors
+INFO:root:Read 68821 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68821, 16718))
+INFO:root:Output 68447 pixels and 21164 anchors
+INFO:root:Read 68761 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68761, 16718))
+INFO:root:Output 68761 pixels and 20376 anchors
+INFO:root:Read 71550 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((71550, 16718))
+INFO:root:Output 70592 pixels and 20449 anchors
+INFO:root:Read 129208 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((129208, 16718))
+INFO:root:Output 128797 pixels and 46109 anchors
+INFO:root:Read 66064 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66064, 16718))
+INFO:root:Output 66042 pixels and 22690 anchors
+INFO:root:Read 62743 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62743, 16718))
+INFO:root:Output 62534 pixels and 19377 anchors
+INFO:root:Read 74346 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((74346, 16718))
+INFO:root:Output 74059 pixels and 22022 anchors
+INFO:root:Read 51393 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((51393, 16718))
+INFO:root:Output 51347 pixels and 20532 anchors
+INFO:root:Read 144754 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((144754, 16718))
+INFO:root:Output 143976 pixels and 46126 anchors
+INFO:root:Read 68726 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68726, 16718))
+INFO:root:Output 68726 pixels and 21201 anchors
+INFO:root:Read 68409 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68409, 16718))
+INFO:root:Output 68125 pixels and 20378 anchors
+INFO:root:Read 122462 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((122462, 16718))
+INFO:root:Output 122077 pixels and 38096 anchors
+INFO:root:Read 104360 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((104360, 16718))
+INFO:root:Output 103998 pixels and 31467 anchors
+INFO:root:Read 123461 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((123461, 16718))
+INFO:root:Output 123033 pixels and 39480 anchors
+INFO:root:Read 124891 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((124891, 16718))
+INFO:root:Output 124551 pixels and 39528 anchors
+INFO:root:Read 51146 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((51146, 16718))
+INFO:root:Output 50952 pixels and 20136 anchors
+INFO:root:Read 129464 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((129464, 16718))
+INFO:root:Output 129205 pixels and 42799 anchors
+INFO:root:Read 69051 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((69051, 16718))
+INFO:root:Output 68875 pixels and 25557 anchors
+INFO:root:Read 100031 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((100031, 16718))
+INFO:root:Output 99703 pixels and 34676 anchors
+INFO:root:Read 65876 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65876, 16718))
+INFO:root:Output 65861 pixels and 19685 anchors
+INFO:root:Read 63953 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63953, 16718))
+INFO:root:Output 63874 pixels and 18693 anchors
+INFO:root:Read 115371 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((115371, 16718))
+INFO:root:Output 114982 pixels and 36874 anchors
+INFO:root:Read 124807 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((124807, 16718))
+INFO:root:Output 124450 pixels and 41653 anchors
+INFO:root:Read 147029 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((147029, 16718))
+INFO:root:Output 146601 pixels and 52489 anchors
+INFO:root:Read 100846 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((100846, 16718))
+INFO:root:Output 100605 pixels and 32031 anchors
+INFO:root:Read 45168 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((45168, 16718))
+INFO:root:Output 44997 pixels and 18506 anchors
+INFO:root:Read 62767 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62767, 16718))
+INFO:root:Output 62571 pixels and 18233 anchors
+INFO:root:Read 115084 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((115084, 16718))
+INFO:root:Output 114706 pixels and 36993 anchors
+INFO:root:Read 60123 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((60123, 16718))
+INFO:root:Output 59901 pixels and 22624 anchors
+INFO:root:Read 18100 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((18100, 16718))
+INFO:root:Output 18052 pixels and 5417 anchors
+INFO:root:Read 153220 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((153220, 16718))
+INFO:root:Output 152275 pixels and 50634 anchors
+INFO:root:Read 72955 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((72955, 16718))
+INFO:root:Output 72728 pixels and 21664 anchors
+INFO:root:Read 67163 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((67163, 16718))
+INFO:root:Output 66813 pixels and 20091 anchors
+INFO:root:Read 63266 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63266, 16718))
+INFO:root:Output 63004 pixels and 19019 anchors
+INFO:root:Read 129385 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((129385, 16718))
+INFO:root:Output 128971 pixels and 46502 anchors
+INFO:root:Read 114343 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((114343, 16718))
+INFO:root:Output 114090 pixels and 43128 anchors
+INFO:root:Read 122360 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((122360, 16718))
+INFO:root:Output 122089 pixels and 41026 anchors
+INFO:root:Read 113914 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((113914, 16718))
+INFO:root:Output 113822 pixels and 35188 anchors
+INFO:root:Read 60198 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((60198, 16718))
+INFO:root:Output 60094 pixels and 18161 anchors
+INFO:root:Read 68638 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68638, 16718))
+INFO:root:Output 68441 pixels and 22574 anchors
+INFO:root:Read 157115 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((157115, 16718))
+INFO:root:Output 156803 pixels and 55220 anchors
+INFO:root:Read 105294 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((105294, 16718))
+INFO:root:Output 104780 pixels and 37374 anchors
+INFO:root:Read 123174 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((123174, 16718))
+INFO:root:Output 122805 pixels and 39252 anchors
+INFO:root:Read 70544 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((70544, 16718))
+INFO:root:Output 70544 pixels and 21024 anchors
+INFO:root:Read 27124 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((27124, 16718))
+INFO:root:Output 26973 pixels and 9389 anchors
+INFO:root:Read 67063 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((67063, 16718))
+INFO:root:Output 66881 pixels and 20781 anchors
+INFO:root:Read 69759 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((69759, 16718))
+INFO:root:Output 69483 pixels and 20234 anchors
+INFO:root:Read 122497 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((122497, 16718))
+INFO:root:Output 122248 pixels and 45224 anchors
+INFO:root:Read 63277 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63277, 16718))
+INFO:root:Output 63144 pixels and 19496 anchors
+INFO:root:Read 67392 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((67392, 16718))
+INFO:root:Output 67226 pixels and 19663 anchors
+INFO:root:Read 92145 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((92145, 16718))
+INFO:root:Output 91898 pixels and 28013 anchors
+INFO:root:Read 138954 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((138954, 16718))
+INFO:root:Output 138601 pixels and 49699 anchors
+INFO:root:Read 52945 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((52945, 16718))
+INFO:root:Output 52762 pixels and 20076 anchors
+INFO:root:Read 115822 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((115822, 16718))
+INFO:root:Output 115580 pixels and 36089 anchors
+INFO:root:Read 63442 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63442, 16718))
+INFO:root:Output 63442 pixels and 20016 anchors
+INFO:root:Read 166290 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((166290, 16718))
+INFO:root:Output 165918 pixels and 57583 anchors
+INFO:root:Read 53504 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((53504, 16718))
+INFO:root:Output 53379 pixels and 17260 anchors
+INFO:root:Read 64992 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((64992, 16718))
+INFO:root:Output 64838 pixels and 18913 anchors
+INFO:root:Read 61594 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((61594, 16718))
+INFO:root:Output 61452 pixels and 18018 anchors
+INFO:root:Read 137511 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((137511, 16718))
+INFO:root:Output 137294 pixels and 42448 anchors
+INFO:root:Read 142361 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((142361, 16718))
+INFO:root:Output 141871 pixels and 47577 anchors
+INFO:root:Read 80321 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((80321, 16718))
+INFO:root:Output 80080 pixels and 24395 anchors
+INFO:root:Read 61376 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((61376, 16718))
+INFO:root:Output 61132 pixels and 21897 anchors
+INFO:root:Read 127763 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((127763, 16718))
+INFO:root:Output 127611 pixels and 46183 anchors
+INFO:root:Read 181475 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((181475, 16718))
+INFO:root:Output 180944 pixels and 60303 anchors
+INFO:root:Read 36656 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((36656, 16718))
+INFO:root:Output 36507 pixels and 12081 anchors
+INFO:root:Read 124101 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((124101, 16718))
+INFO:root:Output 123420 pixels and 38739 anchors
+INFO:root:Read 119784 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((119784, 16718))
+INFO:root:Output 119581 pixels and 38687 anchors
+INFO:root:Read 124186 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((124186, 16718))
+INFO:root:Output 123483 pixels and 38757 anchors
+INFO:root:Read 61336 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((61336, 16718))
+INFO:root:Output 61122 pixels and 19165 anchors
+INFO:root:Read 61653 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((61653, 16718))
+INFO:root:Output 61653 pixels and 19633 anchors
+INFO:root:Read 63616 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63616, 16718))
+INFO:root:Output 63268 pixels and 20240 anchors
+INFO:root:Read 65382 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65382, 16718))
+INFO:root:Output 65345 pixels and 19284 anchors
+INFO:root:Read 98422 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((98422, 16718))
+INFO:root:Output 97641 pixels and 28936 anchors
+INFO:root:Read 182242 pixels, forming 6 batches.
+INFO:root:Read 6 batches ((182242, 16718))
+INFO:root:Output 181563 pixels and 65228 anchors
+INFO:root:Read 124041 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((124041, 16718))
+INFO:root:Output 123874 pixels and 40305 anchors
+INFO:root:Read 100762 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((100762, 16718))
+INFO:root:Output 100464 pixels and 31852 anchors
+INFO:root:Read 62371 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62371, 16718))
+INFO:root:Output 62254 pixels and 19091 anchors
+INFO:root:Read 87255 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((87255, 16718))
+INFO:root:Output 87008 pixels and 25923 anchors
+INFO:root:Read 116159 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((116159, 16718))
+INFO:root:Output 115936 pixels and 39756 anchors
+INFO:root:Read 77175 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((77175, 16718))
+INFO:root:Output 76761 pixels and 23586 anchors
+INFO:root:Read 165168 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((165168, 16718))
+INFO:root:Output 164623 pixels and 57259 anchors
+INFO:root:Read 87255 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((87255, 16718))
+INFO:root:Output 87196 pixels and 26916 anchors
+INFO:root:Read 94971 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((94971, 16718))
+INFO:root:Output 94159 pixels and 35163 anchors
+INFO:root:Read 70652 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((70652, 16718))
+INFO:root:Output 70594 pixels and 21024 anchors
+INFO:root:Read 148474 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((148474, 16718))
+INFO:root:Output 152849 pixels and 54690 anchors
+INFO:root:Read 61279 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((61279, 16718))
+INFO:root:Output 61225 pixels and 19928 anchors
+INFO:root:Read 69404 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((69404, 16718))
+INFO:root:Output 69041 pixels and 20449 anchors
+INFO:root:Read 107575 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((107575, 16718))
+INFO:root:Output 107272 pixels and 37871 anchors
+INFO:root:Read 67983 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((67983, 16718))
+INFO:root:Output 67745 pixels and 19663 anchors
+INFO:root:Read 118015 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((118015, 16718))
+INFO:root:Output 117832 pixels and 39393 anchors
+INFO:root:Read 34966 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((34966, 16718))
+INFO:root:Output 34947 pixels and 10453 anchors
+INFO:root:Read 128171 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((128171, 16718))
+INFO:root:Output 127804 pixels and 39849 anchors
+INFO:root:Read 127753 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((127753, 16718))
+INFO:root:Output 127531 pixels and 38670 anchors
+INFO:root:Read 103150 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((103150, 16718))
+INFO:root:Output 103006 pixels and 38365 anchors
+INFO:root:Read 62680 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62680, 16718))
+INFO:root:Output 62611 pixels and 18072 anchors
+INFO:root:Read 57174 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((57174, 16718))
+INFO:root:Output 57026 pixels and 18659 anchors
+INFO:root:Read 80525 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((80525, 16718))
+INFO:root:Output 80330 pixels and 24584 anchors
+INFO:root:Read 67156 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((67156, 16718))
+INFO:root:Output 66881 pixels and 20449 anchors
+INFO:root:Read 68000 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68000, 16718))
+INFO:root:Output 67451 pixels and 19652 anchors
+INFO:root:Read 63158 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63158, 16718))
+INFO:root:Output 62688 pixels and 19798 anchors
+INFO:root:Read 89127 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((89127, 16718))
+INFO:root:Output 88779 pixels and 27781 anchors
+INFO:root:Read 42281 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((42281, 16718))
+INFO:root:Output 41907 pixels and 12694 anchors
+INFO:root:Read 64281 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((64281, 16718))
+INFO:root:Output 64232 pixels and 19368 anchors
+INFO:root:Read 57278 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((57278, 16718))
+INFO:root:Output 56596 pixels and 21954 anchors
+INFO:root:Read 137303 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((137303, 16718))
+INFO:root:Output 136709 pixels and 42108 anchors
+INFO:root:Read 84875 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((84875, 16718))
+INFO:root:Output 84540 pixels and 25129 anchors
+INFO:root:Read 69744 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((69744, 16718))
+INFO:root:Output 69672 pixels and 20235 anchors
+INFO:root:Read 103526 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((103526, 16718))
+INFO:root:Output 102958 pixels and 35425 anchors
+INFO:root:Read 64621 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((64621, 16718))
+INFO:root:Output 64405 pixels and 19019 anchors
+INFO:root:Read 60350 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((60350, 16718))
+INFO:root:Output 60082 pixels and 17946 anchors
+INFO:root:Read 66120 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66120, 16718))
+INFO:root:Output 66120 pixels and 19091 anchors
+INFO:root:Read 75695 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((75695, 16718))
+INFO:root:Output 75226 pixels and 25220 anchors
+INFO:root:Read 56301 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((56301, 16718))
+INFO:root:Output 55463 pixels and 17963 anchors
+INFO:root:Read 158241 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((158241, 16718))
+INFO:root:Output 157773 pixels and 55910 anchors
+INFO:root:Read 59631 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((59631, 16718))
+INFO:root:Output 59523 pixels and 18979 anchors
+INFO:root:Read 78518 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((78518, 16718))
+INFO:root:Output 78518 pixels and 25092 anchors
+INFO:root:Read 137177 pixels, forming 5 batches.
+INFO:root:Read 5 batches ((137177, 16718))
+INFO:root:Output 136614 pixels and 42096 anchors
+INFO:root:Read 65189 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65189, 16718))
+INFO:root:Output 64931 pixels and 19019 anchors
+INFO:root:Read 172445 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((172445, 16718))
+INFO:root:Output 171964 pixels and 61326 anchors
+INFO:root:Read 109648 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((109648, 16718))
+INFO:root:Output 109415 pixels and 38071 anchors
+INFO:root:Read 37456 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((37456, 16718))
+INFO:root:Output 37445 pixels and 11510 anchors
+INFO:root:Read 118247 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((118247, 16718))
+INFO:root:Output 118188 pixels and 36163 anchors
+INFO:root:Read 64914 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((64914, 16718))
+INFO:root:Output 64631 pixels and 20258 anchors
+INFO:root:Read 97527 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((97527, 16718))
+INFO:root:Output 97062 pixels and 32331 anchors
+INFO:root:Read 61825 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((61825, 16718))
+INFO:root:Output 61825 pixels and 18497 anchors
+INFO:root:Read 66385 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66385, 16718))
+INFO:root:Output 66385 pixels and 20541 anchors
+INFO:root:Read 67596 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((67596, 16718))
+INFO:root:Output 67421 pixels and 19662 anchors
+INFO:root:Read 152931 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((152931, 16718))
+INFO:root:Output 152233 pixels and 52933 anchors
+INFO:root:Read 23292 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((23292, 16718))
+INFO:root:Output 23099 pixels and 7065 anchors
+INFO:root:Read 130713 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((130713, 16718))
+INFO:root:Output 130373 pixels and 40061 anchors
+INFO:root:Read 80178 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((80178, 16718))
+INFO:root:Output 79744 pixels and 28279 anchors
+INFO:root:Read 62730 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62730, 16718))
+INFO:root:Output 62165 pixels and 19804 anchors
+INFO:root:Read 72711 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((72711, 16718))
+INFO:root:Output 72331 pixels and 25051 anchors
+INFO:root:Read 71739 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((71739, 16718))
+INFO:root:Output 71071 pixels and 21087 anchors
+INFO:root:Read 66783 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66783, 16718))
+INFO:root:Output 66504 pixels and 19591 anchors
+INFO:root:Read 129564 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((129564, 16718))
+INFO:root:Output 129252 pixels and 45730 anchors
+INFO:root:Read 55530 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((55530, 16718))
+INFO:root:Output 55487 pixels and 18350 anchors
+INFO:root:Read 154065 pixels, forming 5 batches.
+INFO:root:Read 5 batches ((154065, 16718))
+INFO:root:Output 153607 pixels and 47413 anchors
+INFO:root:Read 29623 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((29623, 16718))
+INFO:root:Output 29591 pixels and 9360 anchors
+INFO:root:Read 120163 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((120163, 16718))
+INFO:root:Output 119601 pixels and 39117 anchors
+INFO:root:Read 115884 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((115884, 16718))
+INFO:root:Output 115500 pixels and 38477 anchors
+INFO:root:Read 68943 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((68943, 16718))
+INFO:root:Output 68718 pixels and 23786 anchors
+INFO:root:Read 146102 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((146102, 16718))
+INFO:root:Output 145687 pixels and 49068 anchors
+INFO:root:Read 119393 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((119393, 16718))
+INFO:root:Output 119121 pixels and 41750 anchors
+INFO:root:Read 107983 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((107983, 16718))
+INFO:root:Output 107815 pixels and 35262 anchors
+INFO:root:Read 123773 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((123773, 16718))
+INFO:root:Output 123457 pixels and 42336 anchors
+INFO:root:Read 50877 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((50877, 16718))
+INFO:root:Output 50828 pixels and 16994 anchors
+INFO:root:Read 66192 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66192, 16718))
+INFO:root:Output 65922 pixels and 20160 anchors
+INFO:root:Read 112152 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((112152, 16718))
+INFO:root:Output 111930 pixels and 39959 anchors
+INFO:root:Read 70215 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((70215, 16718))
+INFO:root:Output 69712 pixels and 23325 anchors
+INFO:root:Read 60098 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((60098, 16718))
+INFO:root:Output 59973 pixels and 18366 anchors
+INFO:root:Read 70530 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((70530, 16718))
+INFO:root:Output 70328 pixels and 20878 anchors
+INFO:root:Read 68559 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68559, 16718))
+INFO:root:Output 68389 pixels and 21749 anchors
+INFO:root:Read 50872 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((50872, 16718))
+INFO:root:Output 50631 pixels and 16225 anchors
+INFO:root:Read 63623 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63623, 16718))
+INFO:root:Output 63354 pixels and 19376 anchors
+INFO:root:Read 66420 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66420, 16718))
+INFO:root:Output 65887 pixels and 18957 anchors
+INFO:root:Read 65327 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((65327, 16718))
+INFO:root:Output 65321 pixels and 19800 anchors
+INFO:root:Read 64648 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((64648, 16718))
+INFO:root:Output 64634 pixels and 20145 anchors
+INFO:root:Read 66149 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66149, 16718))
+INFO:root:Output 66149 pixels and 19224 anchors
+INFO:root:Read 107195 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((107195, 16718))
+INFO:root:Output 107094 pixels and 35910 anchors
+INFO:root:Read 144569 pixels, forming 6 batches.
+INFO:root:Read 6 batches ((144569, 16718))
+INFO:root:Output 144134 pixels and 53312 anchors
+INFO:root:Read 152833 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((152833, 16718))
+INFO:root:Output 151883 pixels and 50796 anchors
+INFO:root:Read 21924 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((21924, 16718))
+INFO:root:Output 21894 pixels and 7026 anchors
+INFO:root:Read 61502 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((61502, 16718))
+INFO:root:Output 61502 pixels and 18144 anchors
+INFO:root:Read 63396 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((63396, 16718))
+INFO:root:Output 63354 pixels and 18645 anchors
+INFO:root:Read 60792 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((60792, 16718))
+INFO:root:Output 60740 pixels and 18360 anchors
+INFO:root:Read 72211 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((72211, 16718))
+INFO:root:Output 71957 pixels and 20878 anchors
+INFO:root:Read 98255 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((98255, 16718))
+INFO:root:Output 98090 pixels and 31936 anchors
+INFO:root:Read 154135 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((154135, 16718))
+INFO:root:Output 153885 pixels and 53922 anchors
+INFO:root:Read 131738 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((131738, 16718))
+INFO:root:Output 131341 pixels and 39932 anchors
+INFO:root:Read 61253 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((61253, 16718))
+INFO:root:Output 60468 pixels and 18798 anchors
+INFO:root:Read 64112 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((64112, 16718))
+INFO:root:Output 63857 pixels and 18518 anchors
+INFO:root:Read 123154 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((123154, 16718))
+INFO:root:Output 122537 pixels and 38791 anchors
+INFO:root:Read 90744 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((90744, 16718))
+INFO:root:Output 90348 pixels and 28887 anchors
+INFO:root:Read 110974 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((110974, 16718))
+INFO:root:Output 110901 pixels and 33930 anchors
+INFO:root:Read 55478 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((55478, 16718))
+INFO:root:Output 55478 pixels and 18590 anchors
+INFO:root:Read 63116 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63116, 16718))
+INFO:root:Output 62894 pixels and 19112 anchors
+INFO:root:Read 31232 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((31232, 16718))
+INFO:root:Output 30940 pixels and 9472 anchors
+INFO:root:Read 59743 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((59743, 16718))
+INFO:root:Output 59700 pixels and 18148 anchors
+INFO:root:Read 172853 pixels, forming 5 batches.
+INFO:root:Read 5 batches ((172853, 16718))
+INFO:root:Output 171864 pixels and 58627 anchors
+INFO:root:Read 59836 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((59836, 16718))
+INFO:root:Output 59644 pixels and 18091 anchors
+INFO:root:Read 63737 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63737, 16718))
+INFO:root:Output 63564 pixels and 18563 anchors
+INFO:root:Read 209445 pixels, forming 5 batches.
+INFO:root:Read 5 batches ((209445, 16718))
+INFO:root:Output 208768 pixels and 71942 anchors
+INFO:root:Read 63624 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63624, 16718))
+INFO:root:Output 63408 pixels and 18233 anchors
+INFO:root:Read 176779 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((176779, 16718))
+INFO:root:Output 176357 pixels and 60882 anchors
+INFO:root:Read 72642 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((72642, 16718))
+INFO:root:Output 72402 pixels and 22507 anchors
+INFO:root:Read 62610 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62610, 16718))
+INFO:root:Output 62459 pixels and 18517 anchors
+INFO:root:Read 121544 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((121544, 16718))
+INFO:root:Output 121128 pixels and 38119 anchors
+INFO:root:Read 66000 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66000, 16718))
+INFO:root:Output 65824 pixels and 19661 anchors
+INFO:root:Read 61999 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((61999, 16718))
+INFO:root:Output 61812 pixels and 20192 anchors
+INFO:root:Read 66633 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66633, 16718))
+INFO:root:Output 66633 pixels and 20801 anchors
+INFO:root:Read 68608 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68608, 16718))
+INFO:root:Output 68428 pixels and 20449 anchors
+INFO:root:Read 78661 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((78661, 16718))
+INFO:root:Output 78419 pixels and 25345 anchors
+INFO:root:Read 139742 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((139742, 16718))
+INFO:root:Output 139568 pixels and 42730 anchors
+INFO:root:Read 131952 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((131952, 16718))
+INFO:root:Output 131787 pixels and 41818 anchors
+INFO:root:Read 66687 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66687, 16718))
+INFO:root:Output 66485 pixels and 19805 anchors
+INFO:root:Read 117299 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((117299, 16718))
+INFO:root:Output 117146 pixels and 39072 anchors
+INFO:root:Read 54145 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((54145, 16718))
+INFO:root:Output 54005 pixels and 21152 anchors
+INFO:root:Read 62169 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62169, 16718))
+INFO:root:Output 61965 pixels and 19017 anchors
+INFO:root:Read 131133 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((131133, 16718))
+INFO:root:Output 130669 pixels and 41693 anchors
+INFO:root:Read 63696 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63696, 16718))
+INFO:root:Output 63677 pixels and 19080 anchors
+INFO:root:Read 51887 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((51887, 16718))
+INFO:root:Output 51689 pixels and 18589 anchors
+INFO:root:Read 64563 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((64563, 16718))
+INFO:root:Output 64271 pixels and 20146 anchors
+INFO:root:Read 126442 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((126442, 16718))
+INFO:root:Output 125775 pixels and 40534 anchors
+INFO:root:Read 63169 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63169, 16718))
+INFO:root:Output 63130 pixels and 18876 anchors
+INFO:root:Read 116173 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((116173, 16718))
+INFO:root:Output 115881 pixels and 39375 anchors
+INFO:root:Read 62895 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62895, 16718))
+INFO:root:Output 62643 pixels and 18233 anchors
+INFO:root:Read 122527 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((122527, 16718))
+INFO:root:Output 122341 pixels and 39562 anchors
+INFO:root:Read 128269 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((128269, 16718))
+INFO:root:Output 127759 pixels and 39929 anchors
+INFO:root:Read 90375 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((90375, 16718))
+INFO:root:Output 90054 pixels and 31704 anchors
+INFO:root:Read 66147 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66147, 16718))
+INFO:root:Output 65632 pixels and 19806 anchors
+INFO:root:Read 25960 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((25960, 16718))
+INFO:root:Output 25860 pixels and 10791 anchors
+INFO:root:Read 130202 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((130202, 16718))
+INFO:root:Output 129895 pixels and 45594 anchors
+INFO:root:Read 201230 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((201230, 16718))
+INFO:root:Output 200591 pixels and 67335 anchors
+INFO:root:Read 70319 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((70319, 16718))
+INFO:root:Output 70149 pixels and 20235 anchors
+INFO:root:Read 114938 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((114938, 16718))
+INFO:root:Output 114577 pixels and 42113 anchors
+INFO:root:Read 132052 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((132052, 16718))
+INFO:root:Output 131890 pixels and 44188 anchors
+INFO:root:Read 80696 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((80696, 16718))
+INFO:root:Output 80429 pixels and 26998 anchors
+INFO:root:Read 127008 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((127008, 16718))
+INFO:root:Output 132305 pixels and 40594 anchors
+INFO:root:Read 58404 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((58404, 16718))
+INFO:root:Output 58154 pixels and 19219 anchors
+INFO:root:Read 20354 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((20354, 16718))
+INFO:root:Output 20151 pixels and 6083 anchors
+INFO:root:Read 158447 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((158447, 16718))
+INFO:root:Output 158011 pixels and 55697 anchors
+INFO:root:Read 105917 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((105917, 16718))
+INFO:root:Output 105917 pixels and 37722 anchors
+INFO:root:Read 103016 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((103016, 16718))
+INFO:root:Output 102243 pixels and 31674 anchors
+INFO:root:Read 62825 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62825, 16718))
+INFO:root:Output 62095 pixels and 19651 anchors
+INFO:root:Read 68666 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68666, 16718))
+INFO:root:Output 68494 pixels and 19805 anchors
+INFO:root:Read 30611 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((30611, 16718))
+INFO:root:Output 30477 pixels and 9580 anchors
+INFO:root:Read 68746 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68746, 16718))
+INFO:root:Output 68485 pixels and 21239 anchors
+INFO:root:Read 66393 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66393, 16718))
+INFO:root:Output 66069 pixels and 20235 anchors
+INFO:root:Read 81326 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((81326, 16718))
+INFO:root:Output 81238 pixels and 25011 anchors
+INFO:root:Read 121004 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((121004, 16718))
+INFO:root:Output 120566 pixels and 36992 anchors
+INFO:root:Read 57016 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((57016, 16718))
+INFO:root:Output 56638 pixels and 18769 anchors
+INFO:root:Read 60925 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((60925, 16718))
+INFO:root:Output 60713 pixels and 17946 anchors
+INFO:root:Read 68609 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68609, 16718))
+INFO:root:Output 68369 pixels and 19805 anchors
+INFO:root:Read 64103 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((64103, 16718))
+INFO:root:Output 63912 pixels and 18518 anchors
+INFO:root:Read 88963 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((88963, 16718))
+INFO:root:Output 88676 pixels and 26195 anchors
+INFO:root:Read 61530 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((61530, 16718))
+INFO:root:Output 61242 pixels and 18365 anchors
+INFO:root:Read 59397 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((59397, 16718))
+INFO:root:Output 59197 pixels and 18378 anchors
+INFO:root:Read 69470 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((69470, 16718))
+INFO:root:Output 69470 pixels and 27374 anchors
+INFO:root:Read 147326 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((147326, 16718))
+INFO:root:Output 146973 pixels and 48199 anchors
+INFO:root:Read 76446 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((76446, 16718))
+INFO:root:Output 76171 pixels and 23461 anchors
+INFO:root:Read 128431 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((128431, 16718))
+INFO:root:Output 127684 pixels and 43611 anchors
+INFO:root:Read 93617 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((93617, 16718))
+INFO:root:Output 93023 pixels and 30505 anchors
+INFO:root:Read 60459 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((60459, 16718))
+INFO:root:Output 60233 pixels and 18232 anchors
+INFO:root:Read 94922 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((94922, 16718))
+INFO:root:Output 94618 pixels and 29626 anchors
+INFO:root:Read 50042 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((50042, 16718))
+INFO:root:Output 49873 pixels and 14800 anchors
+INFO:root:Read 183952 pixels, forming 5 batches.
+INFO:root:Read 5 batches ((183952, 16718))
+INFO:root:Output 183244 pixels and 64073 anchors
+INFO:root:Read 53388 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((53388, 16718))
+INFO:root:Output 53106 pixels and 16293 anchors
+INFO:root:Read 23145 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((23145, 16718))
+INFO:root:Output 23110 pixels and 6920 anchors
+INFO:root:Read 70901 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((70901, 16718))
+INFO:root:Output 70017 pixels and 20449 anchors
+INFO:root:Read 62054 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((62054, 16718))
+INFO:root:Output 61855 pixels and 21516 anchors
+INFO:root:Read 65688 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65688, 16718))
+INFO:root:Output 65521 pixels and 19486 anchors
+INFO:root:Read 63337 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63337, 16718))
+INFO:root:Output 62794 pixels and 19662 anchors
+INFO:root:Read 44528 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((44528, 16718))
+INFO:root:Output 44518 pixels and 13194 anchors
+INFO:root:Read 104257 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((104257, 16718))
+INFO:root:Output 103980 pixels and 38138 anchors
+INFO:root:Read 103908 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((103908, 16718))
+INFO:root:Output 103583 pixels and 30757 anchors
+INFO:root:Read 63888 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((63888, 16718))
+INFO:root:Output 63685 pixels and 19779 anchors
+INFO:root:Read 62113 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62113, 16718))
+INFO:root:Output 62113 pixels and 18327 anchors
+INFO:root:Read 73546 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((73546, 16718))
+INFO:root:Output 73149 pixels and 22646 anchors
+INFO:root:Read 68204 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((68204, 16718))
+INFO:root:Output 68045 pixels and 20352 anchors
+INFO:root:Read 120076 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((120076, 16718))
+INFO:root:Output 119721 pixels and 41293 anchors
+INFO:root:Read 62940 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62940, 16718))
+INFO:root:Output 62883 pixels and 18360 anchors
+INFO:root:Read 155364 pixels, forming 5 batches.
+INFO:root:Read 5 batches ((155364, 16718))
+INFO:root:Output 154986 pixels and 52322 anchors
+INFO:root:Read 78111 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((78111, 16718))
+INFO:root:Output 78111 pixels and 23375 anchors
+INFO:root:Read 99361 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((99361, 16718))
+INFO:root:Output 99180 pixels and 33613 anchors
+INFO:root:Read 69880 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((69880, 16718))
+INFO:root:Output 69702 pixels and 20878 anchors
+INFO:root:Read 41975 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((41975, 16718))
+INFO:root:Output 41851 pixels and 16817 anchors
+INFO:root:Read 182037 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((182037, 16718))
+INFO:root:Output 181325 pixels and 63097 anchors
+INFO:root:Read 70258 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((70258, 16718))
+INFO:root:Output 70142 pixels and 21346 anchors
+INFO:root:Read 106057 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((106057, 16718))
+INFO:root:Output 105694 pixels and 37296 anchors
+INFO:root:Read 126429 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((126429, 16718))
+INFO:root:Output 126047 pixels and 39930 anchors
+INFO:root:Read 133494 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((133494, 16718))
+INFO:root:Output 133025 pixels and 48146 anchors
+INFO:root:Read 65652 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65652, 16718))
+INFO:root:Output 65438 pixels and 19520 anchors
+INFO:root:Read 67135 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((67135, 16718))
+INFO:root:Output 66963 pixels and 19591 anchors
+INFO:root:Read 32459 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((32459, 16718))
+INFO:root:Output 32301 pixels and 9580 anchors
+INFO:root:Read 99636 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((99636, 16718))
+INFO:root:Output 99274 pixels and 33670 anchors
+INFO:root:Read 73267 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((73267, 16718))
+INFO:root:Output 73080 pixels and 21853 anchors
+INFO:root:Read 138233 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((138233, 16718))
+INFO:root:Output 137619 pixels and 43862 anchors
+INFO:root:Read 124646 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((124646, 16718))
+INFO:root:Output 124334 pixels and 40208 anchors
+INFO:root:Read 130338 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((130338, 16718))
+INFO:root:Output 129869 pixels and 41121 anchors
+INFO:root:Read 89736 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((89736, 16718))
+INFO:root:Output 89595 pixels and 29990 anchors
+INFO:root:Read 65476 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65476, 16718))
+INFO:root:Output 65271 pixels and 19019 anchors
+INFO:root:Read 75293 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((75293, 16718))
+INFO:root:Output 75015 pixels and 22308 anchors
+INFO:root:Read 62053 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((62053, 16718))
+INFO:root:Output 61831 pixels and 18266 anchors
+INFO:root:Read 62752 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62752, 16718))
+INFO:root:Output 62578 pixels and 18612 anchors
+INFO:root:Read 131077 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((131077, 16718))
+INFO:root:Output 130593 pixels and 39611 anchors
+INFO:root:Read 68657 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68657, 16718))
+INFO:root:Output 68415 pixels and 19662 anchors
+INFO:root:Read 171919 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((171919, 16718))
+INFO:root:Output 171433 pixels and 62152 anchors
+INFO:root:Read 120081 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((120081, 16718))
+INFO:root:Output 119705 pixels and 38677 anchors
+INFO:root:Read 131293 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((131293, 16718))
+INFO:root:Output 130899 pixels and 40755 anchors
+INFO:root:Read 63122 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63122, 16718))
+INFO:root:Output 62861 pixels and 19853 anchors
+INFO:root:Read 20225 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((20225, 16718))
+INFO:root:Output 20063 pixels and 6139 anchors
+INFO:root:Read 44502 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((44502, 16718))
+INFO:root:Output 44478 pixels and 15076 anchors
+INFO:root:Read 64286 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((64286, 16718))
+INFO:root:Output 64239 pixels and 19149 anchors
+INFO:root:Read 38646 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((38646, 16718))
+INFO:root:Output 38327 pixels and 14343 anchors
+INFO:root:Read 63790 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((63790, 16718))
+INFO:root:Output 63272 pixels and 18744 anchors
+INFO:root:Read 68406 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((68406, 16718))
+INFO:root:Output 68134 pixels and 20394 anchors
+INFO:root:Read 65251 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((65251, 16718))
+INFO:root:Output 65126 pixels and 21756 anchors
+INFO:root:Read 65516 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65516, 16718))
+INFO:root:Output 65471 pixels and 18936 anchors
+INFO:root:Read 65191 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65191, 16718))
+INFO:root:Output 65002 pixels and 20392 anchors
+INFO:root:Read 62938 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62938, 16718))
+INFO:root:Output 62675 pixels and 19019 anchors
+INFO:root:Read 60623 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((60623, 16718))
+INFO:root:Output 60354 pixels and 18239 anchors
+INFO:root:Read 68138 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((68138, 16718))
+INFO:root:Output 67739 pixels and 25614 anchors
+INFO:root:Read 43723 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((43723, 16718))
+INFO:root:Output 43457 pixels and 12985 anchors
+INFO:root:Read 115074 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((115074, 16718))
+INFO:root:Output 114712 pixels and 39705 anchors
+INFO:root:Read 104965 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((104965, 16718))
+INFO:root:Output 104582 pixels and 33512 anchors
+INFO:root:Read 125594 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((125594, 16718))
+INFO:root:Output 125256 pixels and 43701 anchors
+INFO:root:Read 80899 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((80899, 16718))
+INFO:root:Output 80786 pixels and 28347 anchors
+INFO:root:Read 172545 pixels, forming 5 batches.
+INFO:root:Read 5 batches ((172545, 16718))
+INFO:root:Output 171998 pixels and 61799 anchors
+INFO:root:Read 60232 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((60232, 16718))
+INFO:root:Output 60084 pixels and 20458 anchors
+INFO:root:Read 65441 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((65441, 16718))
+INFO:root:Output 65027 pixels and 20984 anchors
+INFO:root:Read 134019 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((134019, 16718))
+INFO:root:Output 133515 pixels and 47110 anchors
+INFO:root:Read 61123 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((61123, 16718))
+INFO:root:Output 60896 pixels and 19220 anchors
+INFO:root:Read 63074 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((63074, 16718))
+INFO:root:Output 62919 pixels and 20439 anchors
+INFO:root:Read 110745 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((110745, 16718))
+INFO:root:Output 110658 pixels and 37073 anchors
+INFO:root:Read 65079 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65079, 16718))
+INFO:root:Output 64557 pixels and 18957 anchors
+INFO:root:Read 117415 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((117415, 16718))
+INFO:root:Output 117159 pixels and 39059 anchors
+INFO:root:Read 71046 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((71046, 16718))
+INFO:root:Output 70750 pixels and 22652 anchors
+INFO:root:Read 67523 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((67523, 16718))
+INFO:root:Output 67516 pixels and 19872 anchors
+INFO:root:Read 58964 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((58964, 16718))
+INFO:root:Output 58594 pixels and 17789 anchors
+INFO:root:Read 70100 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((70100, 16718))
+INFO:root:Output 69845 pixels and 22273 anchors
+INFO:root:Read 58510 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((58510, 16718))
+INFO:root:Output 58360 pixels and 17481 anchors
+INFO:root:Read 62817 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62817, 16718))
+INFO:root:Output 62817 pixels and 19376 anchors
+INFO:root:Read 184793 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((184793, 16718))
+INFO:root:Output 184658 pixels and 66418 anchors
+INFO:root:Read 68779 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68779, 16718))
+INFO:root:Output 68540 pixels and 21794 anchors
+INFO:root:Read 60560 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((60560, 16718))
+INFO:root:Output 60414 pixels and 18998 anchors
+INFO:root:Read 173094 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((173094, 16718))
+INFO:root:Output 172111 pixels and 59323 anchors
+INFO:root:Read 103418 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((103418, 16718))
+INFO:root:Output 103072 pixels and 32528 anchors
+INFO:root:Read 43322 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((43322, 16718))
+INFO:root:Output 43140 pixels and 14766 anchors
+INFO:root:Read 137099 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((137099, 16718))
+INFO:root:Output 136680 pixels and 42298 anchors
+INFO:root:Read 95461 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((95461, 16718))
+INFO:root:Output 95190 pixels and 30026 anchors
+INFO:root:Read 64513 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((64513, 16718))
+INFO:root:Output 64085 pixels and 19317 anchors
+INFO:root:Read 54895 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((54895, 16718))
+INFO:root:Output 54719 pixels and 20179 anchors
+INFO:root:Read 69730 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((69730, 16718))
+INFO:root:Output 69557 pixels and 21235 anchors
+INFO:root:Read 181873 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((181873, 16718))
+INFO:root:Output 181076 pixels and 60105 anchors
+INFO:root:Read 145049 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((145049, 16718))
+INFO:root:Output 144516 pixels and 46542 anchors
+INFO:root:Read 117941 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((117941, 16718))
+INFO:root:Output 117420 pixels and 37020 anchors
+INFO:root:Read 108044 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((108044, 16718))
+INFO:root:Output 107609 pixels and 33456 anchors
+INFO:root:Read 112129 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((112129, 16718))
+INFO:root:Output 111452 pixels and 41428 anchors
+INFO:root:Read 87817 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((87817, 16718))
+INFO:root:Output 87552 pixels and 26764 anchors
+INFO:root:Read 68116 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((68116, 16718))
+INFO:root:Output 67946 pixels and 19591 anchors
+INFO:root:Read 65348 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65348, 16718))
+INFO:root:Output 65001 pixels and 21461 anchors
+INFO:root:Read 129048 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((129048, 16718))
+INFO:root:Output 128164 pixels and 40002 anchors
+INFO:root:Read 60928 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((60928, 16718))
+INFO:root:Output 60621 pixels and 19026 anchors
+INFO:root:Read 73016 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((73016, 16718))
+INFO:root:Output 72670 pixels and 21667 anchors
+INFO:root:Read 146328 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((146328, 16718))
+INFO:root:Output 145977 pixels and 47343 anchors
+INFO:root:Read 62557 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62557, 16718))
+INFO:root:Output 62308 pixels and 21648 anchors
+INFO:root:Read 77983 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((77983, 16718))
+INFO:root:Output 77564 pixels and 22883 anchors
+INFO:root:Read 128775 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((128775, 16718))
+INFO:root:Output 128452 pixels and 40395 anchors
+INFO:root:Read 69329 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((69329, 16718))
+INFO:root:Output 69194 pixels and 20953 anchors
+INFO:root:Read 59493 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((59493, 16718))
+INFO:root:Output 59259 pixels and 20501 anchors
+INFO:root:Read 62140 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((62140, 16718))
+INFO:root:Output 61994 pixels and 18012 anchors
+INFO:root:Read 62907 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((62907, 16718))
+INFO:root:Output 62715 pixels and 18760 anchors
+INFO:root:Read 153281 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((153281, 16718))
+INFO:root:Output 152832 pixels and 53480 anchors
+INFO:root:Read 93503 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((93503, 16718))
+INFO:root:Output 93071 pixels and 32276 anchors
+INFO:root:Read 132537 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((132537, 16718))
+INFO:root:Output 132055 pixels and 46091 anchors
+INFO:root:Read 53551 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((53551, 16718))
+INFO:root:Output 53429 pixels and 18758 anchors
+INFO:root:Read 65912 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65912, 16718))
+INFO:root:Output 65717 pixels and 19079 anchors
+INFO:root:Read 117943 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((117943, 16718))
+INFO:root:Output 117277 pixels and 40064 anchors
+INFO:root:Read 146492 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((146492, 16718))
+INFO:root:Output 146026 pixels and 48742 anchors
+INFO:root:Read 65760 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65760, 16718))
+INFO:root:Output 65595 pixels and 20870 anchors
+INFO:root:Read 69644 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((69644, 16718))
+INFO:root:Output 69531 pixels and 20748 anchors
+INFO:root:Read 82887 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((82887, 16718))
+INFO:root:Output 82623 pixels and 25562 anchors
+INFO:root:Read 50898 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((50898, 16718))
+INFO:root:Output 50604 pixels and 18998 anchors
+INFO:root:Read 109443 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((109443, 16718))
+INFO:root:Output 109223 pixels and 32998 anchors
+INFO:root:Read 53917 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((53917, 16718))
+INFO:root:Output 53805 pixels and 15922 anchors
+INFO:root:Read 61094 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((61094, 16718))
+INFO:root:Output 61008 pixels and 18814 anchors
+INFO:root:Read 67047 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((67047, 16718))
+INFO:root:Output 66941 pixels and 20378 anchors
+INFO:root:Read 178260 pixels, forming 5 batches.
+INFO:root:Read 5 batches ((178260, 16718))
+INFO:root:Output 177706 pixels and 63833 anchors
+INFO:root:Read 73914 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((73914, 16718))
+INFO:root:Output 73537 pixels and 25697 anchors
+INFO:root:Read 60823 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((60823, 16718))
+INFO:root:Output 60564 pixels and 18161 anchors
+INFO:root:Read 121829 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((121829, 16718))
+INFO:root:Output 121380 pixels and 43776 anchors
+INFO:root:Read 135795 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((135795, 16718))
+INFO:root:Output 135319 pixels and 48880 anchors
+INFO:root:Read 91848 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((91848, 16718))
+INFO:root:Output 91625 pixels and 28672 anchors
+INFO:root:Read 58965 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((58965, 16718))
+INFO:root:Output 58722 pixels and 17634 anchors
+INFO:root:Read 120912 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((120912, 16718))
+INFO:root:Output 120655 pixels and 40592 anchors
+INFO:root:Read 84756 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((84756, 16718))
+INFO:root:Output 84432 pixels and 30234 anchors
+INFO:root:Read 123700 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((123700, 16718))
+INFO:root:Output 128427 pixels and 41915 anchors
+INFO:root:Read 131373 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((131373, 16718))
+INFO:root:Output 131212 pixels and 46204 anchors
+INFO:root:Read 117543 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((117543, 16718))
+INFO:root:Output 117204 pixels and 37535 anchors
+INFO:root:Read 152033 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((152033, 16718))
+INFO:root:Output 151550 pixels and 46698 anchors
+INFO:root:Read 10766 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((10766, 16718))
+INFO:root:Output 10764 pixels and 3978 anchors
+INFO:root:Read 69425 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((69425, 16718))
+INFO:root:Output 68888 pixels and 20592 anchors
+INFO:root:Read 65136 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((65136, 16718))
+INFO:root:Output 65063 pixels and 19008 anchors
+INFO:root:Read 41867 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((41867, 16718))
+INFO:root:Output 41803 pixels and 12410 anchors
+INFO:root:Read 23887 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((23887, 16718))
+INFO:root:Output 23716 pixels and 7311 anchors
+INFO:root:Read 143412 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((143412, 16718))
+INFO:root:Output 142905 pixels and 45053 anchors
+INFO:root:Read 61323 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((61323, 16718))
+INFO:root:Output 61020 pixels and 18232 anchors
+INFO:root:Read 60323 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((60323, 16718))
+INFO:root:Output 60149 pixels and 19018 anchors
+INFO:root:Read 117926 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((117926, 16718))
+INFO:root:Output 117205 pixels and 37760 anchors
+INFO:root:Read 86998 pixels, forming 4 batches.
+INFO:root:Read 4 batches ((86998, 16718))
+INFO:root:Output 86583 pixels and 28303 anchors
+INFO:root:Read 23182 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((23182, 16718))
+INFO:root:Output 23118 pixels and 6868 anchors
+INFO:root:Read 45428 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((45428, 16718))
+INFO:root:Output 45412 pixels and 13696 anchors
+INFO:root:Read 7010 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((7010, 16718))
+INFO:root:Output 6847 pixels and 2400 anchors
+INFO:root:Read 85716 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((85716, 16718))
+INFO:root:Output 85303 pixels and 26428 anchors
+INFO:root:Read 66744 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((66744, 16718))
+INFO:root:Output 66739 pixels and 19794 anchors
+INFO:root:Read 90568 pixels, forming 2 batches.
+INFO:root:Read 2 batches ((90568, 16718))
+INFO:root:Output 90372 pixels and 28249 anchors
+INFO:root:Read 179045 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((179045, 16718))
+INFO:root:Output 178519 pixels and 59782 anchors
+INFO:root:Read 66523 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((66523, 16718))
+INFO:root:Output 65828 pixels and 20093 anchors
+INFO:root:Read 108966 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((108966, 16718))
+INFO:root:Output 108560 pixels and 39031 anchors
+INFO:root:Read 121633 pixels, forming 3 batches.
+INFO:root:Read 3 batches ((121633, 16718))
+INFO:root:Output 121289 pixels and 40263 anchors
+INFO:root:Read 38405 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((38405, 16718))
+INFO:root:Output 38098 pixels and 11339 anchors
+INFO:root:Read 59820 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((59820, 16718))
+INFO:root:Output 59626 pixels and 19659 anchors
+INFO:root:Read 29013 pixels, forming 1 batches.
+INFO:root:Read 1 batches ((29013, 16718))
+INFO:root:Output 29013 pixels and 11659 anchors
+bash /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/sort_decode.sh /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.decode.prj_12.r_4_5.pixel.tsv.gz /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.decode.prj_12.r_4_5.pixel.sorted.tsv.gz /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/inputs/all_samples/merged_minmax.tsv nF18.d_12 100 100 3 X bgzip tabix sort 5G
+x: 0, 34855.2
+y: 0, 6853.67
+block_axis: Y
+offblock: 0
+blockidx in perl: 2
+sortidx: 2
+ficture de_bulk --input /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.decode.prj_12.r_4_5.posterior.count.tsv.gz --output /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.decode.prj_12.r_4_5.bulk_chisq.tsv --min_ct_per_feature 20 --max_pval_output 0.001 --min_fold_output 1.5
+Read posterior count over 16718 genes and 18 factors
+Testing 16717 genes over 18 factors
+ficture factor_report --path /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12 --pref nF18.d_12.decode.prj_12.r_4_5 --color_table /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/figure/nF18.d_12.rgb.tsv
+['0' '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15'
+ '16' '17']
+/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.decode.prj_12.r_4_5.factor.info.html
+ficture plot_pixel_full --input /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.decode.prj_12.r_4_5.pixel.sorted.tsv.gz --color_table /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/figure/nF18.d_12.rgb.tsv --output /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/figure/nF18.d_12.decode.prj_12.r_4_5.pixel.png --plot_um_per_pixel 0.5 --full
+03:27:49 AM Background color 000000
+03:27:50 AM Read color table (18)
+03:27:50 AM Read header {'K': 'nF18.d_12', 'TOPK': 3, 'BLOCK_SIZE': 100, 'BLOCK_AXIS': 'Y', 'INDEX_AXIS': 'X', 'OFFSET_X': 0, 'OFFSET_Y': 0, 'SIZE_X': 34856, 'SIZE_Y': 6855, 'SCALE': 100}
+03:27:50 AM Image size 13712 x 69714
+03:27:52 AM Reading pixels... 67288, 302, 945407
+03:27:53 AM Reading pixels... 67288, 474, 897875
+03:27:54 AM Reading pixels... 67256, 807, 862659
+03:27:56 AM Reading pixels... 67244, 1312, 939154
+03:27:57 AM Reading pixels... 67093, 1671, 835276
+03:27:59 AM Reading pixels... 67125, 2158, 910660
+03:28:00 AM Reading pixels... 67143, 2426, 942724
+03:28:01 AM Reading pixels... 67092, 2651, 802152
+03:28:03 AM Reading pixels... 67191, 3069, 922406
+03:28:04 AM Reading pixels... 67098, 3203, 946602
+03:28:05 AM Reading pixels... 67048, 3644, 865960
+03:28:06 AM Reading pixels... 67047, 3912, 841582
+03:28:08 AM Reading pixels... 67025, 4001, 934895
+03:28:09 AM Reading pixels... 66984, 4306, 919901
+03:28:10 AM Reading pixels... 66950, 4715, 828552
+03:28:12 AM Reading pixels... 66751, 4936, 918091
+03:28:13 AM Reading pixels... 69523, 5597, 888902
+03:28:14 AM Reading pixels... 69536, 6137, 911879
+03:28:16 AM Reading pixels... 69534, 6209, 851163
+03:28:17 AM Reading pixels... 69230, 7180, 930716
+03:28:18 AM Reading pixels... 69215, 7397, 862806
+03:28:19 AM Reading pixels... 69496, 7798, 884628
+03:28:21 AM Reading pixels... 69503, 7914, 934930
+03:28:22 AM Reading pixels... 69155, 8234, 826114
+03:28:23 AM Reading pixels... 69496, 8782, 896544
+03:28:25 AM Reading pixels... 69501, 8998, 944265
+03:28:26 AM Reading pixels... 69615, 9399, 918366
+03:28:27 AM Reading pixels... 69620, 9599, 789112
+03:28:29 AM Reading pixels... 69624, 9799, 930094
+03:28:30 AM Reading pixels... 69628, 9963, 944969
+03:28:31 AM Reading pixels... 69627, 10055, 835645
+03:28:33 AM Reading pixels... 69644, 10599, 860826
+03:28:34 AM Reading pixels... 69649, 10799, 939815
+03:28:35 AM Reading pixels... 69653, 10995, 945440
+03:28:37 AM Reading pixels... 69663, 11398, 782750
+03:28:38 AM Reading pixels... 69668, 11598, 910031
+03:28:39 AM Reading pixels... 69672, 11794, 945305
+03:28:41 AM Reading pixels... 69682, 12194, 923067
+03:28:42 AM Reading pixels... 69687, 12398, 800828
+03:28:43 AM Reading pixels... 69688, 12594, 932701
+03:28:45 AM Reading pixels... 69688, 13126, 945746
+03:28:45 AM Reading pixels... 69688, 13294, 562833
+03:28:54 AM Finished
+/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/figure/nF18.d_12.decode.prj_12.r_4_5.pixel.png
+Index(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12',
+       '13', '14', '15', '16', '17'],
+      dtype='object', name='Name')
+['BLOCK', 'X', 'Y', 'K1', 'K2', 'K3', 'P1', 'P2', 'P3']
+touch /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_18/analysis/nF18.d_12/nF18.d_12.decode.prj_12.r_4_5.done
+**** Job ends ****
+Fri Mar 21 03:28:54 AM EDT 2025

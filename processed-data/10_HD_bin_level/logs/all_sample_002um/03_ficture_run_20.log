@@ -1,0 +1,99 @@
+**** Job starts ****
+Thu Mar 20 10:43:56 PM EDT 2025
+**** JHPCE info ****
+User: neagles
+Job id: 15274299
+Job name: 03_ficture_run
+Node name: compute-169
+Task id: 20
+Loading LIBD SLURM module for ficture/dev_a455e5c
+Loading LIBD SLURM module for htslib/1.18
+--------------------------------------------------------------
+Creating LDA for 12um and 20 factors...
+--------------------------------------------------------------
+mkdir -p /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_20/analysis/nF20.d_12/figure
+ficture fit_model --input /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_20/hexagon.d_12.tsv.gz --output /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_20/analysis/nF20.d_12/nF20.d_12  --nFactor 20 --epoch 3 --epoch_id_length 2 --unit_attr X Y --key Count --min_ct_per_feature 20 --test_split 0.5 --R 10 --thread 1
+INFO:root:Read data with 1099027 units, 16718 features
+INFO:root:0: -2023.97, -2025.82
+INFO:root:Counter({np.int64(0): 110935, np.int64(6): 84047, np.int64(9): 49466, np.int64(14): 49270, np.int64(1): 47475, np.int64(4): 32183, np.int64(5): 28321, np.int64(11): 26460, np.int64(7): 24735, np.int64(19): 23163, np.int64(16): 22840, np.int64(8): 11037, np.int64(15): 8228, np.int64(18): 7792, np.int64(17): 7760, np.int64(2): 5990, np.int64(12): 3387, np.int64(13): 2369, np.int64(10): 2159, np.int64(3): 1897})
+INFO:root:Computing naive DE for 15137 genes
+INFO:root:R=0, 10.20, 7.07, 723.56s
+INFO:root:1: -2023.24, -2025.09
+INFO:root:Counter({np.int64(0): 91958, np.int64(19): 75983, np.int64(2): 53393, np.int64(7): 47197, np.int64(6): 45750, np.int64(14): 32098, np.int64(17): 27494, np.int64(12): 26501, np.int64(8): 26383, np.int64(1): 22990, np.int64(16): 22986, np.int64(9): 21358, np.int64(5): 19433, np.int64(13): 8207, np.int64(15): 7333, np.int64(18): 6639, np.int64(4): 5913, np.int64(3): 3522, np.int64(11): 2649, np.int64(10): 1727})
+INFO:root:Computing naive DE for 15136 genes
+INFO:root:R=1, 10.64, 7.75, 701.94s
+INFO:root:2: -2023.77, -2025.62
+INFO:root:Counter({np.int64(0): 97608, np.int64(6): 86840, np.int64(2): 53364, np.int64(14): 52700, np.int64(7): 35451, np.int64(4): 31858, np.int64(12): 28477, np.int64(16): 28358, np.int64(5): 28222, np.int64(17): 27562, np.int64(3): 22724, np.int64(15): 16885, np.int64(19): 13074, np.int64(1): 5832, np.int64(9): 5032, np.int64(11): 4718, np.int64(18): 4535, np.int64(13): 2928, np.int64(10): 1732, np.int64(8): 1614})
+INFO:root:Computing naive DE for 15136 genes
+INFO:root:R=2, 10.65, 7.86, 622.68s
+INFO:root:3: -2023.90, -2025.75
+INFO:root:Counter({np.int64(0): 104262, np.int64(6): 84272, np.int64(8): 50694, np.int64(7): 38156, np.int64(14): 37007, np.int64(4): 34281, np.int64(10): 30067, np.int64(17): 28534, np.int64(12): 26513, np.int64(16): 24462, np.int64(3): 24233, np.int64(5): 19314, np.int64(9): 12534, np.int64(1): 10450, np.int64(2): 8351, np.int64(15): 4941, np.int64(18): 4286, np.int64(19): 3078, np.int64(13): 2732, np.int64(11): 1347})
+INFO:root:Computing naive DE for 15138 genes
+INFO:root:R=3, 10.11, 8.48, 644.03s
+INFO:root:4: -2024.72, -2026.57
+INFO:root:Counter({np.int64(0): 126689, np.int64(6): 107694, np.int64(2): 52809, np.int64(14): 37864, np.int64(7): 35349, np.int64(1): 33712, np.int64(12): 24956, np.int64(3): 23664, np.int64(16): 21427, np.int64(18): 19501, np.int64(5): 15591, np.int64(8): 11737, np.int64(10): 10727, np.int64(19): 8172, np.int64(17): 7237, np.int64(4): 5689, np.int64(9): 3080, np.int64(11): 1505, np.int64(13): 1116, np.int64(15): 995})
+INFO:root:Computing naive DE for 15137 genes
+INFO:root:R=4, 8.51, 6.34, 631.23s
+INFO:root:5: -2024.47, -2026.32
+INFO:root:Counter({np.int64(0): 111748, np.int64(6): 109992, np.int64(14): 44754, np.int64(2): 39846, np.int64(7): 36421, np.int64(12): 31020, np.int64(17): 24653, np.int64(5): 23475, np.int64(13): 21665, np.int64(3): 21163, np.int64(9): 17441, np.int64(16): 13840, np.int64(8): 12416, np.int64(4): 9995, np.int64(1): 8525, np.int64(11): 6720, np.int64(18): 4978, np.int64(10): 3711, np.int64(15): 3597, np.int64(19): 3554})
+INFO:root:Computing naive DE for 15138 genes
+INFO:root:R=5, 9.73, 8.94, 617.80s
+INFO:root:6: -2023.51, -2025.36
+INFO:root:Counter({np.int64(0): 99616, np.int64(19): 83893, np.int64(7): 47571, np.int64(6): 38705, np.int64(17): 34527, np.int64(14): 30403, np.int64(2): 30313, np.int64(12): 28130, np.int64(3): 22583, np.int64(5): 21349, np.int64(16): 19579, np.int64(15): 19207, np.int64(9): 19153, np.int64(8): 14789, np.int64(1): 11126, np.int64(4): 10836, np.int64(18): 6126, np.int64(11): 5138, np.int64(10): 3622, np.int64(13): 2848})
+INFO:root:Computing naive DE for 15135 genes
+INFO:root:R=6, 10.05, 6.52, 520.68s
+INFO:root:7: -2023.01, -2024.87
+INFO:root:Counter({np.int64(0): 95749, np.int64(6): 81295, np.int64(2): 54095, np.int64(14): 49185, np.int64(4): 36562, np.int64(7): 32461, np.int64(15): 27911, np.int64(9): 27592, np.int64(12): 26698, np.int64(3): 23875, np.int64(5): 23017, np.int64(16): 15788, np.int64(10): 13472, np.int64(1): 12996, np.int64(17): 7821, np.int64(8): 7006, np.int64(19): 4767, np.int64(18): 4698, np.int64(11): 2841, np.int64(13): 1685})
+INFO:root:Computing naive DE for 15136 genes
+INFO:root:R=7, 11.09, 8.55, 503.87s
+INFO:root:8: -2023.73, -2025.57
+INFO:root:Counter({np.int64(0): 104439, np.int64(4): 85806, np.int64(2): 55185, np.int64(14): 44052, np.int64(7): 39526, np.int64(5): 35675, np.int64(10): 30735, np.int64(15): 26330, np.int64(3): 21241, np.int64(16): 20380, np.int64(11): 18710, np.int64(1): 13115, np.int64(19): 13095, np.int64(17): 7812, np.int64(12): 7504, np.int64(8): 6420, np.int64(13): 6412, np.int64(9): 5294, np.int64(18): 4719, np.int64(6): 3064})
+INFO:root:Computing naive DE for 15137 genes
+INFO:root:R=8, 10.26, 8.73, 501.94s
+INFO:root:9: -2023.99, -2025.84
+INFO:root:Counter({np.int64(16): 95651, np.int64(6): 87165, np.int64(14): 62653, np.int64(2): 53656, np.int64(0): 42042, np.int64(7): 36450, np.int64(12): 25441, np.int64(3): 22247, np.int64(8): 22221, np.int64(15): 21429, np.int64(13): 18903, np.int64(19): 17946, np.int64(5): 17548, np.int64(17): 7191, np.int64(10): 6304, np.int64(4): 5430, np.int64(18): 2113, np.int64(9): 2086, np.int64(1): 1814, np.int64(11): 1224})
+INFO:root:Computing naive DE for 15136 genes
+INFO:root:R=9, 10.07, 8.02, 496.86s
+INFO:root:Result file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_20/analysis/nF20.d_12/nF20.d_12.fit_result.tsv.gz
+R
+7    11.085372
+2    10.647293
+1    10.641773
+8    10.263435
+0    10.199974
+3    10.109337
+9    10.069146
+6    10.045490
+5     9.734821
+4     8.514490
+Name: Score, dtype: float64
+ficture choose_color --input /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_20/analysis/nF20.d_12/nF20.d_12.fit_result.tsv.gz --output /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_20/analysis/nF20.d_12/figure/nF20.d_12 --cmap_name turbo
+ficture plot_base --input /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_20/analysis/nF20.d_12/nF20.d_12.fit_result.tsv.gz --output /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_20/analysis/nF20.d_12/figure/nF20.d_12.coarse --fill_range 7.0 --color_table /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_20/analysis/nF20.d_12/figure/nF20.d_12.rgb.tsv --plot_um_per_pixel 1 --plot_discretized
+/jhpce/shared/libd/core/ficture/dev_a455e5c/ficture/ficture/scripts/plot_base.py:131: FutureWarning: The provided callable <function mean at 0x7f6e1b444b80> is currently using SeriesGroupBy.mean. In a future version of pandas, the provided callable will be used directly. To keep current behavior pass the string "mean" instead.
+  chunk = chunk.groupby(by = ['x_indx', 'y_indx']).agg({ x:np.mean for x in factor_header }).reset_index()
+/jhpce/shared/libd/core/ficture/dev_a455e5c/ficture/ficture/scripts/plot_base.py:131: FutureWarning: The provided callable <function mean at 0x7f6e1b444b80> is currently using SeriesGroupBy.mean. In a future version of pandas, the provided callable will be used directly. To keep current behavior pass the string "mean" instead.
+  chunk = chunk.groupby(by = ['x_indx', 'y_indx']).agg({ x:np.mean for x in factor_header }).reset_index()
+/jhpce/shared/libd/core/ficture/dev_a455e5c/ficture/ficture/scripts/plot_base.py:134: FutureWarning: The provided callable <function mean at 0x7f6e1b444b80> is currently using SeriesGroupBy.mean. In a future version of pandas, the provided callable will be used directly. To keep current behavior pass the string "mean" instead.
+  df = df.groupby(by = ['x_indx', 'y_indx']).agg({ x:np.mean for x in factor_header }).reset_index()
+INFO:root:Read region 1099027 pixels in region 34843.0 x 6849.0
+INFO:root:Filling pixels 0 - 500 / 6848
+INFO:root:Filling pixels 500 - 1000 / 6848
+INFO:root:Filling pixels 1000 - 1500 / 6848
+INFO:root:Filling pixels 1500 - 2000 / 6848
+INFO:root:Filling pixels 2000 - 2500 / 6848
+INFO:root:Filling pixels 2500 - 3000 / 6848
+INFO:root:Filling pixels 3000 - 3500 / 6848
+INFO:root:Filling pixels 3500 - 4000 / 6848
+INFO:root:Filling pixels 4000 - 4500 / 6848
+INFO:root:Filling pixels 4500 - 5000 / 6848
+INFO:root:Filling pixels 5000 - 5500 / 6848
+INFO:root:Filling pixels 5500 - 6000 / 6848
+INFO:root:Filling pixels 6000 - 6500 / 6848
+INFO:root:Filling pixels 6500 - 6848 / 6848
+INFO:root:Start constructing RGB image
+INFO:root:Made fractional image
+/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_20/analysis/nF20.d_12/figure/nF20.d_12.coarse.png
+make: *** [/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_20/Makefile:28: /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_20/analysis/nF20.d_12/nF20.d_12.done] Killed
+**** Job ends ****
+Fri Mar 21 01:36:45 AM EDT 2025
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=15274299.batch. Some of your processes may have been killed by the cgroup out-of-memory handler.

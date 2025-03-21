@@ -1,0 +1,19 @@
+**** Job starts ****
+Thu Mar 20 05:25:22 PM EDT 2025
+**** JHPCE info ****
+User: neagles
+Job id: 15269603
+Job name: 03_ficture_run
+Node name: compute-168
+Task id: 3
+Loading LIBD SLURM module for ficture/dev_a455e5c
+Loading LIBD SLURM module for htslib/1.18
+--------------------------------------------------------------
+Creating LDA for 12um and 3 factors...
+--------------------------------------------------------------
+mkdir -p /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_3/analysis/nF3.d_12/figure
+ficture fit_model --input /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_3/hexagon.d_12.tsv.gz --output /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_3/analysis/nF3.d_12/nF3.d_12  --nFactor 3 --epoch 3 --epoch_id_length 2 --unit_attr X Y --key Count --min_ct_per_feature 20 --test_split 0.5 --R 10 --thread 1
+make: *** [/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_3/Makefile:26: /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture/outputs/all_samples/k_3/analysis/nF3.d_12/nF3.d_12.done] Killed
+**** Job ends ****
+Thu Mar 20 05:51:11 PM EDT 2025
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=15269603.batch. Some of your processes may have been killed by the cgroup out-of-memory handler.
