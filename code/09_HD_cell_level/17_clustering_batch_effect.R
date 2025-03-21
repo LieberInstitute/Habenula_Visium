@@ -50,9 +50,15 @@ p = ggplot(
         banksy_df, aes(x = k, y = mean_max_prop, color = method, group = method)
     ) +
     geom_line() +
-    theme_bw(base_size = 20)
+    geom_point() +
+    coord_cartesian(ylim = c(0, 1)) +
+    theme_bw(base_size = 20) + 
+    labs(
+        x = 'Number of Clusters', y = 'Sample Polarization',
+        color = 'Clustering\nMethod'
+    )
 
-pdf(file.path(plot_dir, 'mean_max_prop.pdf'))
+pdf(file.path(plot_dir, 'mean_max_prop.pdf'), width = 10)
 print(p)
 dev.off()
 
