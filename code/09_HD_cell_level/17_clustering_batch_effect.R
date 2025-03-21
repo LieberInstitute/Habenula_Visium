@@ -16,6 +16,7 @@ dir.create(plot_dir, showWarnings = FALSE)
 
 sample_ids = readLines(sample_id_path)
 
+#   Read in all Banksy clustering results for each Leiden resolution
 banksy_df_list = list()
 for (this_res in banksy_res) {
     banksy_df_list[[length(banksy_df_list) + 1]] = sprintf(
@@ -32,11 +33,16 @@ for (this_res in banksy_res) {
 }
 
 banksy_df = do.call(rbind, banksy_df_list) |>
+    #   For each unique cluster value, compute the proportion of cells belonging
+    #   to each sample
     group_by(sample_id, method, k, cluster) |>
     summarize(n = n()) |>
     group_by(method, k, cluster) |>
     mutate(prop = n / sum(n)) |>
+    #   Take the maximum such proportion across samples
     summarize(max_prop = max(prop)) |>
+    #   Now average to get a global metric of how sample-specific clusters tend
+    #   to be for each method and k
     group_by(method, k) |>
     summarize(mean_max_prop = mean(max_prop))
 
