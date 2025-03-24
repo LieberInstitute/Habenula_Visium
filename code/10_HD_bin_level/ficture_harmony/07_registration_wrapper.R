@@ -27,11 +27,14 @@ dir.create(dirname(model_path), showWarnings = FALSE)
 spe = loadHDF5SummarizedExperiment(spe_dir)
 assays(spe)$counts = as(assays(spe)$counts, "dgCMatrix")
 
-#   Add in cluster assignments to 'spe'
+#   Add in cluster assignments to 'spe', removing NA cells
 cluster_df = read_csv(cluster_path, show_col_types = FALSE)
 stopifnot(all(spe$key %in% cluster_df$key))
 spe$FICTURE_cluster = cluster_df$FICTURE_cluster[match(spe$key, cluster_df$key)]
-spe$FICTURE_cluster = factor(spe$banksy, levels = sort(unique(spe$banksy)))
+spe$FICTURE_cluster = factor(
+    spe$FICTURE_cluster, levels = sort(unique(spe$FICTURE_cluster))
+)
+spe = spe[, !is.na(spe$FICTURE_cluster)]
 
 #   Pseudobulk
 model_results = registration_wrapper(
