@@ -4,8 +4,11 @@
 
 library(here)
 library(tidyverse)
+library(spatialLIBD)
+library(HDF5Array)
 library(sessioninfo)
 
+spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
 model_path = here(
     'processed-data', '09_HD_cell_level', 'registration_banksy',
     'modeling_results', '1.rds'
@@ -18,6 +21,8 @@ very_bad_path = here(
     'processed-data', '10_HD_bin_level', 'bad_probe_genes', 'ExcludedGenes.txt'
 )
 plot_dir = here('plots', '09_HD_cell_level', 'registration_banksy')
+
+spe = loadHDF5SummarizedExperiment(spe_dir)
 
 #   Read in enrichment modeling results and subset to genes that significantly
 #   differentiate a cluster from the others (markers)
@@ -54,7 +59,14 @@ model_df = model_results |>
 p = ggplot(model_df, aes(x = 1, y = prop_bad)) +
     geom_boxplot(outlier.shape = NA) +
     geom_jitter() +
-    theme_bw(base_size = 20)
+    geom_hline(yintercept = length(bad_genes) /  nrow(spe), linetype = 'dashed') +
+    theme_bw(base_size = 20) +
+    theme(
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()
+    ) +
+    labs(x = '', y = 'Prop. Markers w/ Bad Probes')
 pdf(file.path(plot_dir, 'bad_probes.pdf'))
 print(p)
 dev.off()
