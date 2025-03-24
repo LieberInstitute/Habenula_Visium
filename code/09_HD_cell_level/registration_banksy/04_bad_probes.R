@@ -54,19 +54,31 @@ model_df = model_results |>
     summarize(
         prop_bad = length(which(ensembl %in% bad_genes)) / n(),
         prop_very_bad = length(which(ensembl %in% very_bad_genes)) / n()
+    ) |>
+    pivot_longer(
+        cols = c(prop_bad, prop_very_bad), names_prefix = 'prop_',
+        names_to = 'badness', values_to = 'prop'
     )
 
-p = ggplot(model_df, aes(x = 1, y = prop_bad)) +
+#   Calculate y-intercepts representing the proportions expected at random when
+#   sampling all genes
+int_df = tibble(
+    badness = c('bad', 'very_bad'),
+    prop = c(length(bad_genes) / nrow(spe), length(very_bad_genes) / nrow(spe))
+)
+
+p = ggplot(model_df, aes(x = 1, y = prop)) +
     geom_boxplot(outlier.shape = NA) +
     geom_jitter() +
-    geom_hline(yintercept = length(bad_genes) /  nrow(spe), linetype = 'dashed') +
+    facet_wrap(~badness) +
+    geom_hline(data = int_df, aes(yintercept = prop), linetype = 'dashed') +
+    coord_cartesian(ylim = c(0, max(model_df$prop))) +
     theme_bw(base_size = 20) +
     theme(
-        axis.title.x = element_blank(),
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank()
     ) +
-    labs(x = '', y = 'Prop. Markers w/ Bad Probes')
+    labs(x = 'Gene Set', y = 'Prop. Markers w/ Bad Probes')
 pdf(file.path(plot_dir, 'bad_probes.pdf'))
 print(p)
 dev.off()
