@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=40G
+#SBATCH --mem=100G
 #SBATCH --job-name=03_ficture_run
 #SBATCH -c 1
 #SBATCH -t 3-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/logs/all_sample_002um/03_ficture_run_%a.log
 #SBATCH -e ../../../processed-data/10_HD_bin_level/logs/all_sample_002um/03_ficture_run_%a.log
-#SBATCH --array=2-25%10
+#SBATCH --array=3,7-9,20-25%5
 
 set -e
 
