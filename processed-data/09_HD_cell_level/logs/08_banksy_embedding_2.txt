@@ -1,16 +1,16 @@
 **** Job starts ****
-Fri Feb 21 02:31:13 PM EST 2025
+Fri Mar 21 10:24:28 AM EDT 2025
 **** JHPCE info ****
 User: neagles
-Job id: 14139198
+Job id: 15278799
 Job name: 08_banksy_embedding
-Node name: compute-169
+Node name: compute-095
 Task id: 2
 Loading conda_R/4.4.x
 
 Currently Loaded Modules:
-  1) JHPCE_ROCKY9_DEFAULT_ENV   3) conda/3-24.3.0
-  2) JHPCE_tools/3.0            4) conda_R/4.4.x
+  1) JHPCE_ROCKY9_DEFAULT_ENV   3) htslib/1.18     5) conda/3-24.3.0
+  2) JHPCE_tools/3.0            4) visium_hd/1.0   6) conda_R/4.4.x
 
  
 
@@ -129,7 +129,8 @@ The following object is masked from ‘package:rhdf5’:
 
     h5ls
 
-2025-02-21 14:31:47.290992 | Running computeBanksy on each sample
+Loading required package: Rcpp
+2025-03-21 10:25:27.970869 | Running computeBanksy on each sample
 Computing neighbors...
 Spatial mode is kNN_median
 Parameters: k_geom=15
@@ -205,7 +206,7 @@ Computing harmonic m = 1
 Using 15 neighbors
 Centering
 Done
-2025-02-21 14:44:50.503567 | Running PCA on embedding
+2025-03-21 12:45:55.978056 | Running PCA on embedding
 Scaling logcounts
 Group: H1-W369TJK_D1_9090
 Group: H1-MVPY9BW_A1_8433
@@ -225,12 +226,36 @@ Group: H1-MVPY9BW_D1_8667
 Group: H1-XQQD7C7_A1_8518
 Group: H1-XQQD7C7_D1_9037
 Using seed=0
-2025-02-21 15:06:38.950371 | Running UMAP on embedding
+2025-03-21 15:47:51.83173 | Running UMAP on embedding
 Using seed=0
-2025-02-21 15:25:58.220512 | Saving Banksy embedding (in full SPE object)
+2025-03-21 17:10:41.268617 | Running Harmony...
+Transposing data matrix
+Initializing state using k-means centroids initialization
+Harmony 1/10
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Harmony 2/10
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Harmony converged after 2 iterations
+Warning messages:
+1: Quick-TRANSfer stage steps exceeded maximum (= 61029400) 
+2: Quick-TRANSfer stage steps exceeded maximum (= 61029400) 
+3: Quick-TRANSfer stage steps exceeded maximum (= 61029400) 
+4: Quick-TRANSfer stage steps exceeded maximum (= 61029400) 
+5: Quick-TRANSfer stage steps exceeded maximum (= 61029400) 
+2025-03-21 19:08:17.181327 | Saving full SPE object
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
- version  R version 4.4.3 RC (2025-02-20 r87778)
+ version  R version 4.4.3 Patched (2025-02-28 r88016)
  os       Rocky Linux 9.4 (Blue Onyx)
  system   x86_64, linux-gnu
  ui       X11
@@ -238,7 +263,7 @@ Using seed=0
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2025-02-21
+ date     2025-03-21
  pandoc   3.2 @ /jhpce/shared/community/core/conda_R/4.4.x/bin/pandoc
  quarto   NA
 
@@ -252,6 +277,7 @@ Using seed=0
  cli                    3.6.3    2024-06-21 [1] CRAN (R 4.4.2)
  codetools              0.2-20   2024-03-31 [3] CRAN (R 4.4.3)
  colorspace             2.1-1    2024-07-26 [1] CRAN (R 4.4.2)
+ cowplot                1.1.3    2024-01-22 [1] CRAN (R 4.4.2)
  crayon                 1.5.3    2024-06-20 [1] CRAN (R 4.4.2)
  data.table             1.16.4   2024-12-06 [1] CRAN (R 4.4.2)
  dbscan                 1.2-0    2024-06-28 [1] CRAN (R 4.4.2)
@@ -265,6 +291,7 @@ Using seed=0
  ggplot2                3.5.1    2024-04-23 [1] CRAN (R 4.4.2)
  glue                   1.8.0    2024-09-30 [1] CRAN (R 4.4.2)
  gtable                 0.3.6    2024-10-25 [1] CRAN (R 4.4.2)
+ harmony              * 1.2.3    2024-11-27 [2] CRAN (R 4.4.2)
  HDF5Array            * 1.34.0   2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
  here                 * 1.0.1    2020-12-13 [1] CRAN (R 4.4.2)
  httr                   1.4.7    2023-08-15 [1] CRAN (R 4.4.2)
@@ -285,12 +312,13 @@ Using seed=0
  pillar                 1.10.1   2025-01-07 [1] CRAN (R 4.4.2)
  pkgconfig              2.0.3    2019-09-22 [1] CRAN (R 4.4.2)
  R6                     2.5.1    2021-08-19 [1] CRAN (R 4.4.2)
- Rcpp                   1.0.13-1 2024-11-02 [1] CRAN (R 4.4.2)
+ Rcpp                 * 1.0.13-1 2024-11-02 [1] CRAN (R 4.4.2)
  RcppAnnoy              0.0.22   2024-01-23 [1] CRAN (R 4.4.2)
  RcppHungarian          0.3      2023-09-05 [1] CRAN (R 4.4.2)
  rhdf5                * 2.50.2   2025-01-09 [2] Bioconductor 3.20 (R 4.4.2)
- rhdf5filters           1.18.0   2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+ rhdf5filters           1.18.1   2025-03-06 [2] Bioconductor 3.20 (R 4.4.3)
  Rhdf5lib               1.28.0   2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+ RhpcBLASctl            0.23-42  2023-02-11 [2] CRAN (R 4.4.0)
  rjson                  0.2.23   2024-09-16 [2] CRAN (R 4.4.1)
  rlang                  1.1.4    2024-06-04 [1] CRAN (R 4.4.2)
  rprojroot              2.0.4    2023-11-05 [1] CRAN (R 4.4.2)
@@ -318,4 +346,4 @@ Using seed=0
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Fri Feb 21 04:15:41 PM EST 2025
+Fri Mar 21 10:15:03 PM EDT 2025
