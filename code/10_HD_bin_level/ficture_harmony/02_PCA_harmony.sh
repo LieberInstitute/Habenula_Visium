@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=150G
+#SBATCH --mem=400G
 #SBATCH --job-name=02_PCA_harmony
 #SBATCH -c 5
 #SBATCH -t 3-0:00:00
