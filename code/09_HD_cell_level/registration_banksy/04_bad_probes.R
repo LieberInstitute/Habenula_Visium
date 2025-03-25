@@ -141,14 +141,18 @@ print(p)
 dev.off()
 
 #   UpSet plots
+gene_sets = lapply(model_results_list, function(x) x$ensembl)
+gene_sets[['Bad Genes']] = bad_genes
+gene_sets[['Very Bad Genes']] = very_bad_genes
 p = upset(
-    fromList(lapply(model_results_list, function(x) x$ensembl)),
-    sets = names(model_results_list),
+    fromList(gene_sets),
+    sets = names(gene_sets),
     order.by = "freq",
     sets.bar.color = "steelblue",
-    text.scale = 1.2
+    text.scale = 1,
+    number.angles = 15
 )
-pdf(file.path(plot_dir, 'bad_probes_upset.pdf'))
+pdf(file.path(plot_dir, 'bad_probes_upset.pdf'), width = 10)
 print(p)
 dev.off()
 
