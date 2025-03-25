@@ -17,6 +17,10 @@ ficture_model_path = here(
     'processed-data', '10_HD_bin_level', 'ficture_harmony',
     'modeling_results', 'library_normalized.rds'
 )
+bs_model_path = here(
+    "processed-data", "05_layer_differential_expression",
+    "modeling_results_BS", "modeling_results_BayesSpace_k09.Rdata"
+)
 bad_path = here(
     'processed-data', '10_HD_bin_level', 'bad_probe_genes',
     'OtherGenesWithExcludedProbes.txt'
@@ -51,6 +55,16 @@ ficture_model_results = readRDS(ficture_model_path)$enrichment |>
     filter(fdr < 0.05) |>
     mutate(method = "FICTURE")
 
+bs_model_results = get(load(bs_model_path))$enrichment |>
+    as_tibble() |>
+    select(ensembl, matches('^fdr_')) |>
+    pivot_longer(
+        cols = matches('^fdr_'), names_prefix = "fdr_", names_to = 'cluster',
+        values_to = 'fdr'
+    ) |>
+    filter(fdr < 0.05) |>
+    mutate(method = "BayesSpace")
+
 #   Read in vector of genes with at least one bad probe and all bad probes,
 #   respectively
 bad_genes = read_delim(
@@ -63,7 +77,9 @@ very_bad_genes = read_delim(
     pull(ensembl)
 
 #   Calculate representation of cluster markers in sets of bad genes
-model_df = rbind(banksy_model_results, ficture_model_results) |>
+model_df = rbind(
+        banksy_model_results, ficture_model_results, bs_model_results
+    ) |>
     group_by(cluster, method) |>
     slice_head(n = 100) |>
     summarize(
@@ -88,15 +104,10 @@ p = ggplot(model_df, aes(x = method, y = prop, color = method)) +
     facet_wrap(~badness) +
     geom_hline(data = int_df, aes(yintercept = prop), linetype = 'dashed') +
     coord_cartesian(ylim = c(0, max(model_df$prop))) +
+    guides(color = "none") +
     theme_bw(base_size = 20) +
-    theme(
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank()
-    ) +
-    labs(
-        x = 'Gene Set', y = 'Prop. Markers w/ Bad Probes',
-        color = "Clustering\nMethod"
-    )
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+    labs(x = 'Clustering Method', y = 'Prop. Markers w/ Bad Probes')
 pdf(file.path(plot_dir, 'bad_probes.pdf'))
 print(p)
 dev.off()
