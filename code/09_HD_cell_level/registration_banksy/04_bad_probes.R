@@ -37,6 +37,10 @@ bad_path = here(
 very_bad_path = here(
     'processed-data', '10_HD_bin_level', 'bad_probe_genes', 'ExcludedGenes.txt'
 )
+banksy_cluster_path = here(
+    'processed-data', '09_HD_cell_level', 'banksy', 'lambda0_8',
+    'leiden_res1_no_harmony.csv'
+)
 plot_dir = here('plots', '09_HD_cell_level', 'registration_banksy')
 
 ################################################################################
@@ -145,6 +149,32 @@ p = upset(
     text.scale = 1.2
 )
 pdf(file.path(plot_dir, 'bad_probes_upset.pdf'))
+print(p)
+dev.off()
+
+#   Plot worst outliers spatially for one sample
+cluster_df = read_csv(banksy_cluster_path, show_col_types = FALSE)
+stopifnot(identical(spe$key, cluster_df$key))
+spe$banksy = case_when(
+    cluster_df$banksy_lambda0_8 %in% c(4, 6, 11) ~ 'Habenula',
+    cluster_df$banksy_lambda0_8 == 10 ~ 'Top Outlier: Bad',
+    cluster_df$banksy_lambda0_8 == 15 ~ 'Top Outlier: Very Bad',
+    TRUE ~ 'Other'
+)
+
+custom_colors = c(
+    'Habenula' = '#96bbbb',
+    'Top Outlier: Bad' = '#0125C4',
+    'Top Outlier: Very Bad' = '#90121C',
+    'Other' = '#F1C606'
+)
+p = vis_clus(
+        spe, sampleid = "H1-MVPY9BW_A1_8433", clustervar = "banksy",
+        is_stitched = TRUE, point_size = 20, spatial = FALSE,
+        colors = custom_colors
+    ) +
+    guides(fill = guide_legend(override.aes = list(size = 8)))
+png(file.path(plot_dir, 'bad_probes_spatial.png'), width = 1500, height = 1500)
 print(p)
 dev.off()
 
