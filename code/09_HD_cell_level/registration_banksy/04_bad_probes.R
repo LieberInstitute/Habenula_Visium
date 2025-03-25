@@ -121,6 +121,7 @@ int_df = tibble(
     prop = c(length(bad_genes) / nrow(spe), length(very_bad_genes) / nrow(spe))
 )
 
+#   Box plots
 p = ggplot(model_df, aes(x = method, y = prop, color = method)) +
     geom_boxplot(outlier.shape = NA) +
     geom_jitter() +
@@ -135,10 +136,16 @@ pdf(file.path(plot_dir, 'bad_probes.pdf'), width = 10)
 print(p)
 dev.off()
 
-upset(upset_data,
-      sets = names(gene_sets),
-      order.by = "freq",
-      sets.bar.color = "steelblue",
-      text.scale = 1.2)
+#   UpSet plots
+p = upset(
+    fromList(lapply(model_results_list, function(x) x$ensembl)),
+    sets = names(model_results_list),
+    order.by = "freq",
+    sets.bar.color = "steelblue",
+    text.scale = 1.2
+)
+pdf(file.path(plot_dir, 'bad_probes_upset.pdf'))
+print(p)
+dev.off()
 
 session_info()
