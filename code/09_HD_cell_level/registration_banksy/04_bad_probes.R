@@ -141,7 +141,15 @@ print(p)
 dev.off()
 
 #   UpSet plots
-gene_sets = lapply(model_results_list, function(x) x$ensembl)
+gene_sets = lapply(
+    model_results_list,
+    function(x) {
+        x |>
+            group_by(cluster) |>
+            slice_head(n = 100) |>
+            pull(ensembl)
+    }
+)
 gene_sets[['Bad Genes']] = bad_genes
 gene_sets[['Very Bad Genes']] = very_bad_genes
 p = upset(
