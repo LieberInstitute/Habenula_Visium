@@ -8,6 +8,7 @@ library(SpatialExperiment)
 library(scran)
 library(scater)
 library(BiocSingular)
+library(tidyverse)
 
 spe_path = here(
     'processed-data', '09_HD_cell_level', 'registration_banksy',
