@@ -6,6 +6,7 @@ library(here)
 library(tidyverse)
 library(spatialLIBD)
 library(HDF5Array)
+library(UpSetR)
 library(sessioninfo)
 
 spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
@@ -133,5 +134,11 @@ p = ggplot(model_df, aes(x = method, y = prop, color = method)) +
 pdf(file.path(plot_dir, 'bad_probes.pdf'), width = 10)
 print(p)
 dev.off()
+
+upset(upset_data,
+      sets = names(gene_sets),
+      order.by = "freq",
+      sets.bar.color = "steelblue",
+      text.scale = 1.2)
 
 session_info()
