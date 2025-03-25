@@ -28,18 +28,14 @@ spe = readRDS(spe_path)
 message(Sys.time(), " | Running PCA...")
 spe = runPCA(spe, ncomponents = num_pcs, BSPARAM = IrlbaParam())
 
-pc_df = tibble(
-    PC1 = unname(reducedDims(spe)$PCA[, 'PC1']),
-    PC2 = unname(reducedDims(spe)$PCA[, 'PC2']),
-    lot = ifelse(
-        spe$sample_id == 'H1-W369TJK_D1_9090',
-        'Group 1', 'Group 2'
-    )
-)
 
-p = ggplot(pc_df, aes(x = PC1, y = PC2, color = lot)) +
-    geom_point() +
-    theme_bw(base_size = 20)
+#   Plot PCs by lot
+spe$lot = ifelse(
+    spe$sample_id == 'H1-W369TJK_D1_9090', 'Group 1', 'Group 2'
+)
+p = plotPCA(spe, colour_by = 'lot') +
+    theme_bw(base_size = 20) +
+    labs(color = "Lot")
 pdf(plot_path)
 print(p)
 dev.off()
