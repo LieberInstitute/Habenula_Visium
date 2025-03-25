@@ -62,18 +62,20 @@ rd_name = reducedDimNames(spe)[
 
 #   Plot clusters and colored UMAP for each sample
 for (sample_id in unique(spe$sample_id)) {
-    #   First plot the clusters spatially
-    p = vis_clus(
-            spe, sampleid = sample_id, clustervar = cluster_name,
-            is_stitched = TRUE, point_size = 20, spatial = FALSE
-        ) +
-        guides(fill = guide_legend(override.aes = list(size = 8)))
-    png(
-        file.path(plot_dir, sprintf('clusters_%s.png', sample_id)),
-        width = 1500, height = 1500
-    )
-    print(p)
-    dev.off()
+    if (length(unique(spe[[cluster_name]])) <= 36) {
+        #   First plot the clusters spatially
+        p = vis_clus(
+                spe, sampleid = sample_id, clustervar = cluster_name,
+                is_stitched = TRUE, point_size = 20, spatial = FALSE
+            ) +
+            guides(fill = guide_legend(override.aes = list(size = 8)))
+        png(
+            file.path(plot_dir, sprintf('clusters_%s.png', sample_id)),
+            width = 1500, height = 1500
+        )
+        print(p)
+        dev.off()
+    }
 
     #   Then UMAP colored by cluster
     p = plotReducedDim(
