@@ -54,7 +54,7 @@ spe = clusterBanksy(
 
 #   Get the names of the cluster and UMAP columns from a more general regex
 cluster_name = colnames(colData(spe))[
-    grep(sprintf('^clust.*lam%s', opt$lambda), colnames(colData(spe)))
+    grep('^clust_HARMONY', colnames(colData(spe)))
 ]
 rd_name = reducedDimNames(spe)[
     grep(sprintf('^UMAP.*lam%s', opt$lambda), reducedDimNames(spe))
