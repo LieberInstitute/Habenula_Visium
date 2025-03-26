@@ -8,6 +8,7 @@ library(spatialLIBD)
 library(HDF5Array)
 library(UpSetR)
 library(sessioninfo)
+library(VennDiagram)
 
 spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
 banksy_model_path = here(
@@ -189,5 +190,30 @@ p = vis_clus(
 png(file.path(plot_dir, 'bad_probes_spatial.png'), width = 1500, height = 1500)
 print(p)
 dev.off()
+
+#   Venn diagrams of biological markers with bad sets
+biological_sets = gene_sets[
+        c(
+            'Banksy', 'FICTURE', 'BayesSpace', 'snRNA-seq Fine',
+            'snRNA-seq Broad'
+        )
+    ] |>
+    unlist() |>
+    unname()
+
+venn.diagram(
+    x = list(
+        'Biological Markers' = biological_sets,
+        'Bad Genes' = gene_sets[['Bad Genes']]
+    ),
+    filename = file.path(plot_dir, 'bad_genes_venn.tiff')
+)
+venn.diagram(
+    x = list(
+        'Biological Markers' = biological_sets,
+        'Bad Genes' = gene_sets[['Very Bad Genes']]
+    ),
+    filename = file.path(plot_dir, 'very_bad_venn.tiff')
+)
 
 session_info()
