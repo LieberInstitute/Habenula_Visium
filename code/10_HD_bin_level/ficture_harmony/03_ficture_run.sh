@@ -4,8 +4,9 @@
 #SBATCH --job-name=03_ficture_run
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/03_ficture_run.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/03_ficture_run.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/03_ficture_run_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/03_ficture_run_%a.txt
+#SBATCH --array=2-25%5
 
 set -e
 
@@ -20,12 +21,11 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ml ficture/dev_a455e5c
-ml spatula/f0e9936
 
 #   Path definitions
 repo_dir=$(git rev-parse --show-toplevel)
 in_dir=$repo_dir/processed-data/10_HD_bin_level/ficture_harmony/ficture_inputs
-out_dir=$repo_dir/processed-data/10_HD_bin_level/ficture_harmony/ficture_outputs/normalized
+out_dir=$repo_dir/processed-data/10_HD_bin_level/ficture_harmony/ficture_outputs/normalized/k_${SLURM_ARRAY_TASK_ID}
 
 mkdir -p $out_dir
 
@@ -36,7 +36,8 @@ ficture run_together \
     --out-dir $out_dir \
     --mu-scale 1 \
     --major-axis X \
-    --all
+    --all \
+    --n-factor ${SLURM_ARRAY_TASK_ID}
 
 echo "**** Job ends ****"
 date
