@@ -199,7 +199,8 @@ biological_sets = gene_sets[
         )
     ] |>
     unlist() |>
-    unname()
+    unname() |>
+    unique()
 
 venn.diagram(
     x = list(
