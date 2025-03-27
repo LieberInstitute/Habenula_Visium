@@ -1,10 +1,10 @@
 **** Job starts ****
-Tue Mar 25 04:30:36 PM EDT 2025
+Thu Mar 27 12:28:10 PM EDT 2025
 **** JHPCE info ****
 User: neagles
-Job id: 15535981
+Job id: 15576105
 Job name: 04_bad_probes
-Node name: compute-168
+Node name: compute-166
 Task id: 
 Loading conda_R/4.4.x
 
@@ -190,6 +190,8 @@ The following object is masked from ‘package:rhdf5’:
 
     h5ls
 
+Loading required package: grid
+Loading required package: futile.logger
 Rows: 5267 Columns: 2
 ── Column specification ────────────────────────────────────────────────────────
 Delimiter: "|"
@@ -212,9 +214,55 @@ pdf
   2 
 pdf 
   2 
+INFO [2025-03-27 12:28:39] $x
+INFO [2025-03-27 12:28:39] list(`Biological Markers\n` = biological_sets, `Bad Genes\n` = gene_sets[["Bad Genes"]])
+INFO [2025-03-27 12:28:39] 
+INFO [2025-03-27 12:28:39] $filename
+INFO [2025-03-27 12:28:39] file.path(plot_dir, "bad_genes_venn.tiff")
+INFO [2025-03-27 12:28:39] 
+INFO [2025-03-27 12:28:39] $disable.logging
+INFO [2025-03-27 12:28:39] [1] TRUE
+INFO [2025-03-27 12:28:39] 
+INFO [2025-03-27 12:28:39] $cat.fontface
+INFO [2025-03-27 12:28:39] [1] "bold"
+INFO [2025-03-27 12:28:39] 
+INFO [2025-03-27 12:28:39] $cat.default.pos
+INFO [2025-03-27 12:28:39] [1] "text"
+INFO [2025-03-27 12:28:39] 
+INFO [2025-03-27 12:28:39] $fill
+INFO [2025-03-27 12:28:39] c("green", "red")
+INFO [2025-03-27 12:28:39] 
+INFO [2025-03-27 12:28:39] $ext.text
+INFO [2025-03-27 12:28:39] [1] FALSE
+INFO [2025-03-27 12:28:39] 
+[1] 1
+INFO [2025-03-27 12:28:39] $x
+INFO [2025-03-27 12:28:39] list(`Biological Markers\n` = biological_sets, `Bad Genes\n` = gene_sets[["Very Bad Genes"]])
+INFO [2025-03-27 12:28:39] 
+INFO [2025-03-27 12:28:39] $filename
+INFO [2025-03-27 12:28:39] file.path(plot_dir, "very_bad_venn.tiff")
+INFO [2025-03-27 12:28:39] 
+INFO [2025-03-27 12:28:39] $disable.logging
+INFO [2025-03-27 12:28:39] [1] TRUE
+INFO [2025-03-27 12:28:39] 
+INFO [2025-03-27 12:28:39] $cat.fontface
+INFO [2025-03-27 12:28:39] [1] "bold"
+INFO [2025-03-27 12:28:39] 
+INFO [2025-03-27 12:28:39] $cat.default.pos
+INFO [2025-03-27 12:28:39] [1] "text"
+INFO [2025-03-27 12:28:39] 
+INFO [2025-03-27 12:28:39] $fill
+INFO [2025-03-27 12:28:39] c("green", "orange")
+INFO [2025-03-27 12:28:39] 
+INFO [2025-03-27 12:28:39] $ext.text
+INFO [2025-03-27 12:28:39] [1] FALSE
+INFO [2025-03-27 12:28:39] 
+[1] 1
+pdf 
+  2 
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
- version  R version 4.4.3 Patched (2025-02-28 r88049)
+ version  R version 4.4.3 Patched (2025-02-28 r88064)
  os       Rocky Linux 9.4 (Blue Onyx)
  system   x86_64, linux-gnu
  ui       X11
@@ -222,7 +270,7 @@ pdf
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2025-03-25
+ date     2025-03-27
  pandoc   3.2 @ /jhpce/shared/community/core/conda_R/4.4.x/bin/pandoc
  quarto   NA
 
@@ -278,6 +326,9 @@ pdf
  filelock               1.0.3     2023-12-11 [2] CRAN (R 4.4.0)
  forcats              * 1.0.0     2023-01-29 [2] CRAN (R 4.4.0)
  foreach                1.5.2     2022-02-02 [2] CRAN (R 4.4.0)
+ formatR                1.14      2023-01-17 [1] CRAN (R 4.4.2)
+ futile.logger        * 1.4.3     2016-07-10 [1] CRAN (R 4.4.2)
+ futile.options         1.0.1     2018-04-20 [1] CRAN (R 4.4.2)
  generics               0.1.3     2022-07-05 [1] CRAN (R 4.4.2)
  GenomeInfoDb         * 1.42.3    2025-01-27 [2] Bioconductor 3.20 (R 4.4.2)
  GenomeInfoDbData       1.2.13    2024-10-01 [2] Bioconductor
@@ -306,6 +357,7 @@ pdf
  jsonlite               1.8.9     2024-09-20 [1] CRAN (R 4.4.2)
  KEGGREST               1.46.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
  labeling               0.4.3     2023-08-29 [1] CRAN (R 4.4.2)
+ lambda.r               1.2.4     2019-09-18 [1] CRAN (R 4.4.2)
  later                  1.4.1     2024-11-27 [1] CRAN (R 4.4.2)
  lattice                0.22-6    2024-03-20 [3] CRAN (R 4.4.3)
  lazyeval               0.2.2     2019-03-15 [1] CRAN (R 4.4.2)
@@ -375,6 +427,7 @@ pdf
  UCSC.utils             1.2.0     2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
  UpSetR               * 1.4.0     2019-05-22 [2] CRAN (R 4.4.0)
  vctrs                  0.6.5     2023-12-01 [1] CRAN (R 4.4.2)
+ VennDiagram          * 1.7.3     2022-04-12 [2] CRAN (R 4.4.0)
  vipor                  0.4.7     2023-12-18 [2] CRAN (R 4.4.0)
  viridis                0.6.5     2024-01-29 [1] CRAN (R 4.4.2)
  viridisLite            0.4.2     2023-05-02 [1] CRAN (R 4.4.2)
@@ -393,4 +446,4 @@ pdf
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Tue Mar 25 04:31:12 PM EDT 2025
+Thu Mar 27 12:28:40 PM EDT 2025
