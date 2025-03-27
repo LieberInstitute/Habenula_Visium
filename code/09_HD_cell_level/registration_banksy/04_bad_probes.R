@@ -211,7 +211,8 @@ venn.diagram(
     cat.fontface = "bold",
     cat.default.pos = 'text',
     fill = c("green", "red"),
-    ext.text = FALSE
+    ext.text = FALSE,
+    inverted = TRUE
 )
 venn.diagram(
     x = list(
