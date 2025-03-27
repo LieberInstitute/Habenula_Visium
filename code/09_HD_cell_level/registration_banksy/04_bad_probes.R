@@ -217,11 +217,11 @@ venn.diagram(
 )
 
 sample_colors = c(
-    "H1-W369TJK_D1_9090" = "#3454D1",
-    "H1-MVPY9BW_A1_8433" = "#FFE2B7",
-    "H1-MVPY9BW_D1_8667" = "#F9C474",
-    "H1-XQQD7C7_A1_8518" = "#FDB03C",
-    "H1-XQQD7C7_D1_9037" = "#FF9900"
+    "Lot 1: Br9090" = "#3454D1",
+    "Lot 2: Br8433" = "#FFE2B7",
+    "Lot 2: Br8667" = "#F9C474",
+    "Lot 2: Br8518" = "#FDB03C",
+    "Lot 2: Br9037" = "#FF9900"
 )
 p = tibble(
         cluster = cluster_df$banksy_lambda0_8,
@@ -233,17 +233,20 @@ p = tibble(
             ifelse(cluster == 10, "Outlier: Bad", "Outlier: Very Bad"),
             levels = c("Outlier: Bad", "Outlier: Very Bad")
         ),
-        sample_id = factor(
-            sample_id, 
-            levels = c(
-                "H1-W369TJK_D1_9090", "H1-MVPY9BW_A1_8433", "H1-MVPY9BW_D1_8667",
-                "H1-XQQD7C7_A1_8518", "H1-XQQD7C7_D1_9037"
+        sample_id = sample_id |>
+            str_replace('.*_([0-9]{4})$', 'Lot 2: Br\\1') |>
+            str_replace('^Lot 2: Br9090', 'Lot 1: Br9090') |>
+            factor(
+                levels = c(
+                    "Lot 1: Br9090", "Lot 2: Br8433", "Lot 2: Br8667",
+                    "Lot 2: Br8518", "Lot 2: Br9037"
+                )
             )
-        )
     ) |>
     ggplot(aes(x = cluster, fill = sample_id)) +
         geom_bar(position = "fill") +
         scale_fill_manual(values = sample_colors) +
+        labs(x = 'Cluster', y = 'Proportion of Cells', fill = 'Sample') +
         theme_bw(base_size = 20)
 pdf(file.path(plot_dir, 'bad_probes_sample_composition.pdf'))
 print(p)
