@@ -239,10 +239,15 @@ p = tibble(
         sample_id = spe$sample_id
     ) |>
     filter(cluster %in% c(10, 15)) |>
+    rbind(tibble(cluster = "All Cells", sample_id = spe$sample_id)) |>
     mutate(
         cluster = factor(
-            ifelse(cluster == 10, "Outlier: Bad", "Outlier: Very Bad"),
-            levels = c("Outlier: Bad", "Outlier: Very Bad")
+            case_when(
+                cluster == 10 ~ "Outlier: Bad",
+                cluster == 15 ~ "Outlier: Very Bad",
+                TRUE ~ "All Cells"
+            ),
+            levels = c("Outlier: Bad", "Outlier: Very Bad", "All Cells")
         ),
         sample_id = sample_id |>
             str_replace('.*_([0-9]{4})$', 'Lot 2: Br\\1') |>
@@ -258,7 +263,8 @@ p = tibble(
         geom_bar(position = "fill") +
         scale_fill_manual(values = sample_colors) +
         labs(x = 'Cluster', y = 'Proportion of Cells', fill = 'Sample') +
-        theme_bw(base_size = 20)
+        theme_bw(base_size = 20) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
 pdf(file.path(plot_dir, 'bad_probes_sample_composition.pdf'))
 print(p)
 dev.off()
