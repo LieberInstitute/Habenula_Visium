@@ -203,8 +203,8 @@ biological_sets = gene_sets[
 
 venn.diagram(
     x = list(
-        'Biological Markers\n' = biological_sets,
-        'Bad Genes\n' = gene_sets[['Bad Genes']]
+        'Domain Genes\n' = biological_sets,
+        'Other Genes\n' = gene_sets[['Bad Genes']]
     ),
     filename = file.path(plot_dir, 'bad_genes_venn.tiff'),
     disable.logging = TRUE,
@@ -216,8 +216,8 @@ venn.diagram(
 )
 venn.diagram(
     x = list(
-        'Biological Markers\n' = biological_sets,
-        'Bad Genes\n' = gene_sets[['Very Bad Genes']]
+        'Domain Genes\n' = biological_sets,
+        'Excluded\n' = gene_sets[['Very Bad Genes']]
     ),
     filename = file.path(plot_dir, 'very_bad_venn.tiff'),
     disable.logging = TRUE,
