@@ -211,7 +211,7 @@ venn.diagram(
     disable.logging = TRUE,
     cat.fontface = "bold",
     cat.default.pos = 'text',
-    fill = c("green", "red"),
+    fill = c("green", "orange"),
     ext.text = FALSE,
     inverted = TRUE
 )
@@ -224,7 +224,7 @@ venn.diagram(
     disable.logging = TRUE,
     cat.fontface = "bold",
     cat.default.pos = 'text',
-    fill = c("green", "orange"),
+    fill = c("green", "red"),
     ext.text = FALSE
 )
 
