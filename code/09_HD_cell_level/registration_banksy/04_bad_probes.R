@@ -203,17 +203,27 @@ biological_sets = gene_sets[
 
 venn.diagram(
     x = list(
-        'Biological Markers' = biological_sets,
-        'Bad Genes' = gene_sets[['Bad Genes']]
+        'Biological Markers\n' = biological_sets,
+        'Bad Genes\n' = gene_sets[['Bad Genes']]
     ),
-    filename = file.path(plot_dir, 'bad_genes_venn.tiff')
+    filename = file.path(plot_dir, 'bad_genes_venn.tiff'),
+    disable.logging = TRUE,
+    cat.fontface = "bold",
+    cat.default.pos = 'text',
+    fill = c("green", "red"),
+    ext.text = FALSE
 )
 venn.diagram(
     x = list(
-        'Biological Markers' = biological_sets,
-        'Bad Genes' = gene_sets[['Very Bad Genes']]
+        'Biological Markers\n' = biological_sets,
+        'Bad Genes\n' = gene_sets[['Very Bad Genes']]
     ),
-    filename = file.path(plot_dir, 'very_bad_venn.tiff')
+    filename = file.path(plot_dir, 'very_bad_venn.tiff'),
+    disable.logging = TRUE,
+    cat.fontface = "bold",
+    cat.default.pos = 'text',
+    fill = c("green", "orange"),
+    ext.text = FALSE
 )
 
 sample_colors = c(
