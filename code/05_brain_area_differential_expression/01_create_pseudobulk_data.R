@@ -55,14 +55,28 @@ levels(spe$brain_id)
 table(spe$sample_id)
 levels(spe$sample_id)
 
-spe_pseudo <-
-  registration_pseudobulk(spe,
-                          var_registration = "BayesSpace",
-                          var_sample_id = "sample_id",
-                          covars = "brain_id",
-                          min_ncells = 10
+# spe_pseudo <-
+#   registration_pseudobulk(spe,
+#                           var_registration = "BayesSpace",
+#                           var_sample_id = "sample_id",
+#                           covars = "brain_id",
+#                           min_ncells = 10
+#   )
+
+k_nice <- sprintf("%02d", k)  # Format k
+message("Processing BayesSpace k=", k_nice)
+
+# Perform pseudobulk aggregation
+summed_k <- aggregateAcrossCells(
+  spe,
+  DataFrame(
+    BayesSpace = spe[[paste0("BayesSpace_PCA_Harmony_k", k_nice)]],
+    reg_sample_id = spe$sample_id
   )
-dim(spe_pseudo)
+)
+
+message("Aggregation completed for k=", k_nice)
+message("Dimensions of summed data: ", paste(dim(summed_k), collapse = " x "))
 #colnames(colData(spe_pseudo))
 ## list domains created 
 rownames(colData(spe_pseudo))
