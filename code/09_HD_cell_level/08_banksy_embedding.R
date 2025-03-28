@@ -68,7 +68,12 @@ message(Sys.time(), " | Running Harmony...")
 rd_name = reducedDimNames(spe)[
     grep(sprintf('^PCA.*lam%s', lambda), reducedDimNames(spe))
 ]
-spe = RunHarmony(spe, group.by.vars = "sample_id", reduction.use = rd_name)
+pdf(file.path(plot_dir, "harmony_convergence.pdf"))
+spe = RunHarmony(
+    spe, group.by.vars = "sample_id", reduction.use = rd_name,
+    plot_convergence = TRUE
+)
+dev.off()
 
 message(Sys.time(), ' | Running UMAP on Harmony-corrected embedding')
 spe = runBanksyUMAP(
