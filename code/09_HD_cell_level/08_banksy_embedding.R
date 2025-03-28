@@ -4,6 +4,8 @@ library(HDF5Array)
 library(sessioninfo)
 library(Banksy)
 library(harmony)
+library(cowplot)
+library(scater)
 library(getopt)
 
 #   Corresponding to "cell typing" and "domain segmentation"
@@ -17,9 +19,14 @@ out_dir = here(
 svg_path = here(
     'processed-data', '10_HD_bin_level', 'nnSVG_out', 'merged_SVGs.txt'
 )
+plot_dir = here(
+    'plots', '09_HD_cell_level', 'banksy',
+    paste0('lambda', sub('\\.', '_', as.character(lambda)))
+)
 
 random_seed = 0
 
+dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 set.seed(random_seed)
 
 #   Load and subset to SVGs to avoid exceeding maximum number
@@ -54,8 +61,7 @@ spe = runBanksyPCA(
 
 message(Sys.time(), ' | Running UMAP on embedding')
 spe = runBanksyUMAP(
-    spe, use_agf = TRUE, lambda = lambda, group = 'sample_id',
-    seed = random_seed
+    spe, use_agf = TRUE, lambda = lambda, seed = random_seed
 )
 
 message(Sys.time(), " | Running Harmony...")
@@ -63,6 +69,30 @@ rd_name = reducedDimNames(spe)[
     grep(sprintf('^PCA.*lam%s', lambda), reducedDimNames(spe))
 ]
 spe = RunHarmony(spe, group.by.vars = "sample_id", reduction.use = rd_name)
+
+message(Sys.time(), ' | Running UMAP on Harmony-corrected embedding')
+spe = runBanksyUMAP(
+    spe,  dimred = "HARMONY", use_agf = TRUE, lambda = lambda,
+    seed = random_seed
+)
+
+p = plot_grid(
+    plotReducedDim(
+            spe, sprintf("UMAP_M1_lam%s", lambda), point_size = 0.6,
+            point_alpha = 0.5, color_by = "sample_id"
+        ) +
+        theme(legend.position = "none"),
+    plotReducedDim(
+            spe, "UMAP_HARMONY", point_size = 0.6, point_alpha = 0.5,
+            color_by = "sample_id"
+        ) +
+       guides(color = guide_legend(override.aes = list(size = 4, alpha = 1))),
+    nrow = 1,
+    rel_widths = c(1, 1.2)
+)
+png(file.path(plot_dir, 'harmony_umap.png'), width = 1500, height = 750)
+print(p)
+dev.off()
 
 message(Sys.time(), ' | Saving full SPE object')
 saveHDF5SummarizedExperiment(
