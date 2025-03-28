@@ -117,12 +117,13 @@ model_df = do.call(rbind, model_results_list) |>
     pivot_longer(
         cols = c(prop_bad, prop_very_bad), names_prefix = 'prop_',
         names_to = 'badness', values_to = 'prop'
-    )
+    ) |>
+    mutate(badness = ifelse(badness == 'bad', 'Other Genes', 'Excluded Genes'))
 
 #   Calculate y-intercepts representing the proportions expected at random when
 #   sampling all genes
 int_df = tibble(
-    badness = c('bad', 'very_bad'),
+    badness = c('Other Genes', 'Excluded Genes'),
     prop = c(length(bad_genes) / nrow(spe), length(very_bad_genes) / nrow(spe))
 )
 
@@ -169,16 +170,22 @@ dev.off()
 cluster_df = read_csv(banksy_cluster_path, show_col_types = FALSE)
 stopifnot(identical(spe$key, cluster_df$key))
 spe$banksy = case_when(
-    cluster_df$banksy_lambda0_8 %in% c(4, 6, 11) ~ 'Habenula',
-    cluster_df$banksy_lambda0_8 == 10 ~ 'Top Outlier: Bad',
-    cluster_df$banksy_lambda0_8 == 15 ~ 'Top Outlier: Very Bad',
-    TRUE ~ 'Other'
-)
+        cluster_df$banksy_lambda0_8 %in% c(4, 6, 11) ~ 'Habenula',
+        cluster_df$banksy_lambda0_8 == 10 ~ 'Top Outlier: Other Genes',
+        cluster_df$banksy_lambda0_8 == 15 ~ 'Top Outlier: Excluded Genes',
+        TRUE ~ 'Other'
+    ) |>
+    factor(
+        levels = c(
+            'Habenula', 'Top Outlier: Other Genes',
+            'Top Outlier: Excluded Genes', 'Other'
+        )
+    )
 
 custom_colors = c(
     'Habenula' = '#96bbbb',
-    'Top Outlier: Bad' = '#0125C4',
-    'Top Outlier: Very Bad' = '#90121C',
+    'Top Outlier: Other Genes' = '#0125C4',
+    'Top Outlier: Excluded Genes' = '#90121C',
     'Other' = '#F1C606'
 )
 p = vis_clus(
@@ -244,11 +251,13 @@ p = tibble(
     mutate(
         cluster = factor(
             case_when(
-                cluster == 10 ~ "Outlier: Bad",
-                cluster == 15 ~ "Outlier: Very Bad",
+                cluster == 10 ~ "Outlier: Other Genes",
+                cluster == 15 ~ "Outlier: Excluded Genes",
                 TRUE ~ "All Cells"
             ),
-            levels = c("Outlier: Bad", "Outlier: Very Bad", "All Cells")
+            levels = c(
+                "Outlier: Other Genes", "Outlier: Excluded Genes", "All Cells"
+            )
         ),
         sample_id = sample_id |>
             str_replace('.*_([0-9]{4})$', 'Lot 2: Br\\1') |>
