@@ -4,7 +4,6 @@
 # slurmjobs::job_single('01_create_pseudobulk_data', create_shell = TRUE, memory = '20G', command = "01_create_pseudobulk_data.R")
 # To submit the job use: sbatch 01_create_pseudobulk_data.sh
 
-
 k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 ## For testing
@@ -27,12 +26,17 @@ spe <- readRDS(spe_in)
 
 ## Import BayesSpace clusters
 colnames(colData(spe))
-clusters_BayesSpace_dir <- here("processed-data", "04_harmony_BayesSpace", "clusters_BayesSpace")
+clusters_BayesSpace_dir <- here(
+  "processed-data",
+  "04_harmony_BayesSpace",
+  "clusters_BayesSpace"
+)
 #head(spe$key[1:5])
-spe <- cluster_import(spe,
-                      cluster_dir = clusters_BayesSpace_dir,              
-                      prefix = "",
-                      overwrite = TRUE
+spe <- cluster_import(
+  spe,
+  cluster_dir = clusters_BayesSpace_dir,
+  prefix = "",
+  overwrite = TRUE
 )
 
 ## Convert from character to a factor
@@ -42,7 +46,15 @@ colData(spe)[grep("BayesSpace_harmony", colnames(colData(spe)))]
 #length(grep("BayesSpace_harmony", colnames(colData(spe))))
 
 spe$BayesSpace <- factor(
-    paste0("Sp", sprintf("%02d", k), "D", sprintf("%02d", colData(spe)[[paste0("BayesSpace_harmony_k", sprintf("%02d", k))]]))
+  paste0(
+    "Sp",
+    sprintf("%02d", k),
+    "D",
+    sprintf(
+      "%02d",
+      colData(spe)[[paste0("BayesSpace_harmony_k", sprintf("%02d", k))]]
+    )
+  )
 )
 # head(unique(spe$BayesSpace))
 
@@ -50,21 +62,23 @@ spe$BayesSpace <- factor(
 colnames(colData(spe))
 table(spe$brain_id)
 levels(spe$brain_id)
-# Br8518 Br9037 Br9090 
+# Br8518 Br9037 Br9090
 # 13241  13133   7035
 table(spe$sample_id)
 levels(spe$sample_id)
 
+## Pseudo-bulk the gene expression, filter lowly-expressed genes, and normalize. This is the first step for spatial registration and for statistical modeling.
 spe_pseudo <-
-  registration_pseudobulk(spe,
-                          var_registration = "BayesSpace",
-                          var_sample_id = "sample_id",
-                          covars = "brain_id",
-                          min_ncells = 10
+  registration_pseudobulk(
+    spe,
+    var_registration = "BayesSpace",
+    var_sample_id = "sample_id",
+    covars = "brain_id",
+    min_ncells = 10
   )
 dim(spe_pseudo)
 #colnames(colData(spe_pseudo))
-## list domains created 
+## list domains created
 rownames(colData(spe_pseudo))
 table(spe_pseudo$sample_id)
 table(spe_pseudo$brain_id)
@@ -108,30 +122,47 @@ pca <- prcomp(t(assays(spe_pseudo)$logcounts))
 dim(pca$x)
 names(pca)
 ## Explore pca
-# length(pca$sdev) 
-# summary(pca) 
+# length(pca$sdev)
+# summary(pca)
 # print(pca$x)
 # plot(pca, paste0("PCA of pseudobulk data with BS k=", as.character(k)))
 # plot(pca$x[,1],pca$x[,2])
 
 # Set number of components equal to pseudo bulk groups. Avoid an error triggered when n_components <20 pseudo bulk groups. Default=20.
 n_components <- length(pca$sdev)
-if (n_components > 21) { n_components <- 20 }
+if (n_components > 21) {
+  n_components <- 20
+}
 
-message(Sys.time(), " % of variance explained for the top ", n_components ," PCs:")
-metadata(spe_pseudo) <- list("PCA_var_explained" = jaffelab::getPcaVars(pca)[seq_len(n_components)]) #[seq_len(20)])
+message(
+  Sys.time(),
+  " % of variance explained for the top ",
+  n_components,
+  " PCs:"
+)
+metadata(spe_pseudo) <- list(
+  "PCA_var_explained" = jaffelab::getPcaVars(pca)[seq_len(n_components)]
+) #[seq_len(20)])
 # metadata(spe_pseudo)
 colnames(pca$x) <- paste0("PC", sprintf("%02d", seq_len(ncol(pca$x))))
 # head(pca$x)
 reducedDims(spe_pseudo) <- list(PCA = pca$x)
-#plotPCA(spe_pseudo, colour_by = "sample_id", n_components, point_size = 1) 
+#plotPCA(spe_pseudo, colour_by = "sample_id", n_components, point_size = 1)
 
 ## Compute some reduced dims
 message('/nProcessing MDS and scarter runPCA')
 
 set.seed(20240626)
-spe_pseudo <- scater::runMDS(spe_pseudo, name = "runMDS", ncomponents = (n_components-1)) #20
-spe_pseudo <- scater::runPCA(spe_pseudo, name = "runPCA", ncomponents = n_components) 
+spe_pseudo <- scater::runMDS(
+  spe_pseudo,
+  name = "runMDS",
+  ncomponents = (n_components - 1)
+) #20
+spe_pseudo <- scater::runPCA(
+  spe_pseudo,
+  name = "runPCA",
+  ncomponents = n_components
+)
 
 ## Double check the BayesSpace meta are factors
 stopifnot(is.factor(spe_pseudo$BayesSpace))
@@ -169,8 +200,8 @@ session_info()
 # > Sys.time()
 # [1] "2024-06-27 15:27:49 EDT"
 # > proc.time()
-# user    system   elapsed 
-# 479.382    21.189 15963.034 
+# user    system   elapsed
+# 479.382    21.189 15963.034
 # > options(width = 120)
 # > session_info()
 # 05-03 [2] CRAN (R 4.3.2)
