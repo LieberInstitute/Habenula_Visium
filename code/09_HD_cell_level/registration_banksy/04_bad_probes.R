@@ -152,8 +152,8 @@ gene_sets = lapply(
             pull(ensembl)
     }
 )
-gene_sets[['Bad Genes']] = bad_genes
-gene_sets[['Very Bad Genes']] = very_bad_genes
+gene_sets[['Other Genes']] = bad_genes
+gene_sets[['Excluded Genes']] = very_bad_genes
 p = upset(
     fromList(gene_sets),
     sets = names(gene_sets),
@@ -212,7 +212,7 @@ biological_sets = gene_sets[
 venn.diagram(
     x = list(
         'Domain Genes\n' = biological_sets,
-        'Other Genes\n' = gene_sets[['Bad Genes']]
+        'Other Genes\n' = gene_sets[['Other Genes']]
     ),
     filename = file.path(plot_dir, 'bad_genes_venn.tiff'),
     disable.logging = TRUE,
@@ -225,7 +225,7 @@ venn.diagram(
 venn.diagram(
     x = list(
         'Domain Genes\n' = biological_sets,
-        'Excluded\n' = gene_sets[['Very Bad Genes']]
+        'Excluded Genes\n' = gene_sets[['Excluded Genes']]
     ),
     filename = file.path(plot_dir, 'very_bad_venn.tiff'),
     disable.logging = TRUE,
