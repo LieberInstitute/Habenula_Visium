@@ -182,7 +182,7 @@ custom_colors = c(
     'Other' = '#F1C606'
 )
 p = vis_clus(
-        spe, sampleid = "H1-MVPY9BW_A1_8433", clustervar = "banksy",
+        spe, sampleid = "H1-XQQD7C7_D1_9037", clustervar = "banksy",
         is_stitched = TRUE, point_size = 20, spatial = FALSE,
         colors = custom_colors
     ) +
