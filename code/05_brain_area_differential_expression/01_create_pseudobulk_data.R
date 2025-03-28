@@ -94,7 +94,50 @@ table(spe_pseudo$BayesSpace)
 
 message('Levels unused on pseudobulk `BayesSpace` dropped ')
 
-message('Pseudobulk completed ')
+## Adapted from https://github.com/LieberInstitute/spatialLIBD/blob/devel/R/registration_pseudobulk.R#L137-L154.
+## Drop pseudo-bulked samples that had low initial contribution of raw-samples.
+## That is, pseudo-bulked samples that are not benefiting from the pseudo-bulking process to obtain higher counts.
+if (!is.null(min_nspots)) {
+  message(
+    Sys.time(),
+    " dropping ",
+    sum(summed_k$nspots < min_nspots),
+    " pseudo-bulked samples that are below 'min_nspots'."
+  )
+  summed_k <- summed_k[, summed_k$nspots >= min_nspots]
+}
+
+if (is.factor(summed_k$BayesSpace)) {
+  ## Drop unused var_registration levels if we had to drop some due to min_nspots:
+  ## registration_variable equivalent here: BayesSpace
+  summed_k$BayesSpace <- droplevels(summed_k$BayesSpace)
+}
+
+# Compute mitochondrial expression ratio
+is_mito <- which(seqnames(summed_k) == "chrM")
+summed_k$expr_chrM <- colSums(counts(summed_k)[is_mito, , drop = FALSE])
+summed_k$sum_umi <- colSums(counts(summed_k))
+summed_k$expr_chrM_ratio <- summed_k$expr_chrM / summed_k$sum_umi
+
+# Convert relevant variables
+summed_k$brain_id <- factor(summed_k$brain_id, levels = c("Anterior", "Posterior"))
+summed_k$age <- as.numeric(summed_k$age)
+
+# # Add PMI values
+# summed_k$pmi <- as.numeric(spe$pmi[match(summed_k$reg_sample_id, spe$sample_id)])
+
+# Convert BayesSpace to factor
+summed_k$BayesSpace <- as.factor(summed_k$BayesSpace)
+
+# convert round to factor for batch effect test
+summed_k$round <- as.factor(summed_k$round)
+
+# Save the object
+# saveRDS(summed_k, file = here(data_dir, paste0("round_test_summed_k", k_nice, ".rds")))
+
+message("Created pseudobulk data for k=", k_nice)
+message("------------------------------------------------------------")
+
 
 ## Simplify the colData()  for the pseudo-bulked data
 
