@@ -17,7 +17,7 @@ library("spatialLIBD")
 library("sessioninfo")
 library("scater")
 
-dir_rdata <- here("processed-data", "05_layer_differential_expression")
+dir_rdata <- here("processed-data", "05_brain_area_differential_expression")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_rdata)) ## Check that it was created successfully
 
