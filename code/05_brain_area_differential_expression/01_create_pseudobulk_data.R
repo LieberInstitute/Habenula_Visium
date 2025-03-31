@@ -140,7 +140,7 @@ spe_pseudo <- scater::runMDS(spe_pseudo, name = "runMDS", ncomponents = (n_compo
 spe_pseudo <- scater::runPCA(spe_pseudo, name = "runPCA", ncomponents = n_components) 
 
 ## Double check the BayesSpace meta are factors
-stopifnot(is.factor(spe_pseudo$BayesSpace))
+stopifnot(is.factor(spe_pseudo$brain_area_DEG))
 
 ## For the spatialLIBD shiny app
 rowData(spe_pseudo)$gene_search <-
@@ -157,9 +157,10 @@ saveRDS(
   spe_pseudo,
   file = file.path(
     dir_rdata,
-    paste0("sce_pseudo_BayesSpace_k", sprintf("%02d", k), ".rds")
+    paste0("sce_pseudo_brain_area_", sprintf("%02d", k), ".rds")
   )
 )
+
 
 message(' Process completed!')
 
