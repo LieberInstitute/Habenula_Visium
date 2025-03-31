@@ -95,13 +95,11 @@ spe = runBanksyUMAP(
 )
 
 message(Sys.time(), " | Running Harmony...")
-rd_name = reducedDimNames(spe)[
-    grep(sprintf('^PCA.*lam%s', lambda), reducedDimNames(spe))
-]
+reducedDims(spe)$PCA = reducedDims(spe)[[sprintf('PCA_M1_lam%s', lambda)]]
+reducedDims(spe)[[sprintf('PCA_M1_lam%s', lambda)]] = NULL
 pdf(file.path(plot_dir, "harmony_convergence_rewrite.pdf"))
 spe = RunHarmony(
-    spe, group.by.vars = "sample_id", reduction.use = rd_name,
-    plot_convergence = TRUE
+    spe, group.by.vars = "sample_id", plot_convergence = TRUE
 )
 dev.off()
 

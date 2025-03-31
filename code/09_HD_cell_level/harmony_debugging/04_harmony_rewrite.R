@@ -33,7 +33,7 @@ sample_ids = unique(spe$sample_id)
 
 #   Trim object to make lightweight
 assays(spe) = list()
-reducedDims(spe)$PCA = NULL
+reducedDims(spe)$PCA = reducedDims(spe)$PCA_M1_lam0.2
 reducedDims(spe)$PCA_M1_lam0.2 = NULL
 reducedDims(spe)$HARMONY = NULL
 reducedDims(spe)$UMAP_HARMONY = NULL
@@ -45,8 +45,8 @@ reducedDims(spe)$UMAP_HARMONY = NULL
 message(Sys.time(), " | Running Harmony...")
 pdf(file.path(plot_dir, "harmony_convergence_rewrite2.pdf"))
 spe = RunHarmony(
-    spe, group.by.vars = "sample_id", reduction.use = 'PCA_M1_lam0.2',
-    plot_convergence = TRUE, kmeans_init_nstart = 20, kmeans_init_iter_max = 100
+    spe, group.by.vars = "sample_id", plot_convergence = TRUE,
+    kmeans_init_nstart = 20, kmeans_init_iter_max = 100
 )
 dev.off()
 
