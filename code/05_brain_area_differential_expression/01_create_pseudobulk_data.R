@@ -26,14 +26,14 @@ spe_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony.rds")
 spe <- readRDS(spe_in)
 
 ## Import BayesSpace clusters
-colnames(colData(spe))
 clusters_BayesSpace_dir <- here("processed-data", "04_harmony_BayesSpace", "clusters_BayesSpace")
-#head(spe$key[1:5])
+# head(spe$key[1:5])
 spe <- cluster_import(spe,
                       cluster_dir = clusters_BayesSpace_dir,              
                       prefix = "",
                       overwrite = TRUE
 )
+# Overwriting 'spe$key'. Set 'overwrite = FALSE' if you do not want to overwrite it.
 
 ## Convert from character to a factor
 
@@ -45,108 +45,63 @@ spe$BayesSpace <- factor(
     paste0("Sp", sprintf("%02d", k), "D", sprintf("%02d", colData(spe)[[paste0("BayesSpace_harmony_k", sprintf("%02d", k))]]))
 )
 # head(unique(spe$BayesSpace))
+# [1] Sp02D02 Sp02D01
+# Levels: Sp02D01 Sp02D02
 
-## pseudobulk across a given BayesSpace k
-colnames(colData(spe))
-table(spe$brain_id)
-levels(spe$brain_id)
-# Br8518 Br9037 Br9090 
-# 13241  13133   7035
-table(spe$sample_id)
-levels(spe$sample_id)
+# Add a new column based on brain_id condition - This will be used as variable for registration
 
-# spe_pseudo <-
-#   registration_pseudobulk(spe,
-#                           var_registration = "BayesSpace",
-#                           var_sample_id = "sample_id",
-#                           covars = "brain_id",
-#                           min_ncells = 10
-#   )
-
-k_nice <- sprintf("%02d", k)  # Format k
-message("Processing BayesSpace k=", k_nice)
-
-# Perform pseudobulk aggregation
-summed_k <- aggregateAcrossCells(
-  spe,
-  DataFrame(
-    BayesSpace = spe[[paste0("BayesSpace_PCA_Harmony_k", k_nice)]],
-    reg_sample_id = spe$sample_id
-  )
-)
-
-message("Aggregation completed for k=", k_nice)
-message("Dimensions of summed data: ", paste(dim(summed_k), collapse = " x "))
-#colnames(colData(spe_pseudo))
-## list domains created 
-rownames(colData(spe_pseudo))
-table(spe_pseudo$sample_id)
-table(spe_pseudo$brain_id)
-
-# droplevels((spe_pseudo)$BayesSpace)
-## drop levels not used
-table(spe_pseudo$BayesSpace)
-unique(spe_pseudo$BayesSpace)
-levels(spe_pseudo$BayesSpace)
-spe_pseudo$BayesSpace <- droplevels(spe_pseudo$BayesSpace)
-levels(spe_pseudo$BayesSpace)
-table(spe_pseudo$BayesSpace)
-
-message('Levels unused on pseudobulk `BayesSpace` dropped ')
-
-## Adapted from https://github.com/LieberInstitute/spatialLIBD/blob/devel/R/registration_pseudobulk.R#L137-L154.
-## Drop pseudo-bulked samples that had low initial contribution of raw-samples.
-## That is, pseudo-bulked samples that are not benefiting from the pseudo-bulking process to obtain higher counts.
-if (!is.null(min_nspots)) {
-  message(
-    Sys.time(),
-    " dropping ",
-    sum(summed_k$nspots < min_nspots),
-    " pseudo-bulked samples that are below 'min_nspots'."
-  )
-  summed_k <- summed_k[, summed_k$nspots >= min_nspots]
-}
-
-if (is.factor(summed_k$BayesSpace)) {
-  ## Drop unused var_registration levels if we had to drop some due to min_nspots:
-  ## registration_variable equivalent here: BayesSpace
-  summed_k$BayesSpace <- droplevels(summed_k$BayesSpace)
-}
-
-# Compute mitochondrial expression ratio
-is_mito <- which(seqnames(summed_k) == "chrM")
-summed_k$expr_chrM <- colSums(counts(summed_k)[is_mito, , drop = FALSE])
-summed_k$sum_umi <- colSums(counts(summed_k))
-summed_k$expr_chrM_ratio <- summed_k$expr_chrM / summed_k$sum_umi
-
+#colnames(colData(spe))
+table(colData(spe)$brain_area)
+colData(spe)$brain_area_DEG <- ifelse(colData(spe)$brain_area == "AR6" | colData(spe)$brain_area == "AL5", "Anterior", "Posterior")
+table(colData(spe)$brain_area_DEG)
+# Anterior Posterior 
+# 22571     10838
 # Convert relevant variables
-summed_k$brain_id <- factor(summed_k$brain_id, levels = c("Anterior", "Posterior"))
-summed_k$age <- as.numeric(summed_k$age)
+table(spe_pseudo$brain_area_DEG)
+# Anterior Posterior
+#   7         5
+spe_pseudo$brain_area_DEG <- factor(spe_pseudo$brain_area_DEG, levels = c("Anterior", "Posterior"))
+levels(spe_pseudo$brain_area_DEG)
+table(colData(spe)$brain_id)
 
-# # Add PMI values
-# summed_k$pmi <- as.numeric(spe$pmi[match(summed_k$reg_sample_id, spe$sample_id)])
+spe_pseudo <-
+  registration_pseudobulk(
+    spe,
+    var_registration = "brain_area_DEG",
+    var_sample_id = "sample_id",
+    covars = "brain_id",
+    min_ncells = 10
+  )
 
-# Convert BayesSpace to factor
-summed_k$BayesSpace <- as.factor(summed_k$BayesSpace)
+## Drop unused var_registration levels if we had to drop some due to min_nspots:
 
-# convert round to factor for batch effect test
-summed_k$round <- as.factor(summed_k$round)
+## drop levels not used
+spe_pseudo$brain_area_DEG <- droplevels(spe_pseudo$brain_area_DEG)
+spe_pseudo$brain_area_DEG <- factor(spe_pseudo$brain_area_DEG, levels = c("Anterior", "Posterior"))
+levels(spe_pseudo$brain_area_DEG)
+table(spe_pseudo$brain_area_DEG)
+## set numeric to avoid error reading age variable
+spe_pseudo$age <- as.numeric(spe_pseudo$age)
 
-# Save the object
-# saveRDS(summed_k, file = here(data_dir, paste0("round_test_summed_k", k_nice, ".rds")))
+message('Levels unused on pseudobulk `brain_area_DEG` dropped ')
 
-message("Created pseudobulk data for k=", k_nice)
-message("------------------------------------------------------------")
+message('Pseudobulk completed ')
+
+# # Compute mitochondrial expression ratio
+# is_mito <- which(seqnames(spe_pseudo) == "chrM")
+# spe_pseudo$expr_chrM <- colSums(counts(spe_pseudo)[is_mito, , drop = FALSE])
+# spe_pseudo$sum_umi <- colSums(counts(spe_pseudo))
+# spe_pseudo$expr_chrM_ratio <- spe_pseudo$expr_chrM / spe_pseudo$sum_umi
 
 
 ## Simplify the colData()  for the pseudo-bulked data
-
+colnames(colData(spe_pseudo))
 colData(spe_pseudo) <- colData(spe_pseudo)[, sort(c(
   "age",
   "sample_id",
-  "BayesSpace",
+  # "BayesSpace",
+  "brain_area_DEG",
   "brain_id", # equivalent to subject / donor / ethnicity
-  # "subject",
   "sex",
   "diagnosis",
   "ncells"
@@ -164,12 +119,6 @@ message('Processing PCA')
 pca <- prcomp(t(assays(spe_pseudo)$logcounts))
 dim(pca$x)
 names(pca)
-## Explore pca
-# length(pca$sdev) 
-# summary(pca) 
-# print(pca$x)
-# plot(pca, paste0("PCA of pseudobulk data with BS k=", as.character(k)))
-# plot(pca$x[,1],pca$x[,2])
 
 # Set number of components equal to pseudo bulk groups. Avoid an error triggered when n_components <20 pseudo bulk groups. Default=20.
 n_components <- length(pca$sdev)
