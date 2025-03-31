@@ -14,6 +14,8 @@ if (is.na(k)) {
 
 library("here")
 library("spatialLIBD")
+library("ggplot2")
+library("gridExtra")
 library("sessioninfo")
 library("scater")
 
@@ -116,9 +118,17 @@ as.data.frame(colData(spe_pseudo))
 
 message('Processing PCA')
 
-pca <- prcomp(t(assays(spe_pseudo)$logcounts))
+# First, performed PCA manually using prcomp()
+
+max_components <- min(dim(spe_pseudo)) - 1
+print(max_components)
+n_components <- min(n_components, max_components)
+pca <- prcomp(t(assays(spe_pseudo)$logcounts), center = TRUE, scale. = TRUE)
 dim(pca$x)
 names(pca)
+# Store PCA coordinates
+reducedDims(spe_pseudo)$PCA <- pca_result$x
+reducedDims(spe_pseudo)
 
 # Set number of components equal to pseudo bulk groups. Avoid an error triggered when n_components <20 pseudo bulk groups. Default=20.
 n_components <- length(pca$sdev)
@@ -129,17 +139,24 @@ metadata(spe_pseudo) <- list("PCA_var_explained" = jaffelab::getPcaVars(pca)[seq
 # metadata(spe_pseudo)
 colnames(pca$x) <- paste0("PC", sprintf("%02d", seq_len(ncol(pca$x))))
 # head(pca$x)
+# View PCA values
+head(reducedDim(spe_pseudo, "PCA"))
 reducedDims(spe_pseudo) <- list(PCA = pca$x)
-#plotPCA(spe_pseudo, colour_by = "sample_id", n_components, point_size = 1) 
+colnames(colData(spe_pseudo))
+
+# Quick inspection 
+plt1 = plotPCA(spe_pseudo, colour_by = "sample_id", n_components, point_size = 3) 
+plt2 =  plotPCA(spe_pseudo, colour_by = "brain_area_DEG", n_components, point_size = 3) 
+plt = grid.arrange(plt1, plt2, ncol=2)
 
 ## Compute some reduced dims
 message('/nProcessing MDS and scarter runPCA')
 
 set.seed(20240626)
-spe_pseudo <- scater::runMDS(spe_pseudo, name = "runMDS", ncomponents = (n_components-1)) #20
-spe_pseudo <- scater::runPCA(spe_pseudo, name = "runPCA", ncomponents = n_components) 
+spe_pseudo <- scater::runMDS(spe_pseudo, name = "runMDS", ncomponents = (n_components-1))
+# spe_pseudo <- scater::runPCA(spe_pseudo, name = "runPCA", ncomponents = n_components) 
 
-## Double check the BayesSpace meta are factors
+## Double check the brain_area_DEG meta are factors
 stopifnot(is.factor(spe_pseudo$brain_area_DEG))
 
 ## For the spatialLIBD shiny app
