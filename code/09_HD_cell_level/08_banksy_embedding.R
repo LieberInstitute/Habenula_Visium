@@ -37,27 +37,55 @@ spe = loadHDF5SummarizedExperiment(spe_dir)
 spe = spe[readLines(svg_path),]
 spe$exclude_overlapping = FALSE
 
-#   Split big SPE into a list (one object per sample). Then run 'computeBanksy'
-#   and merge again
-message(Sys.time(), ' | Running computeBanksy on each sample')
-spe = do.call(
-    cbind,
-    lapply(
-        unique(spe$sample_id),
-        function(x) {
-            computeBanksy(
-                spe[, spe$sample_id == x], assay_name = "logcounts",
-                compute_agf = TRUE, seed = random_seed
-            )
-        }
-    )
+sample_ids = unique(spe$sample_id)
+
+################################################################################
+#   Stagger spatial coordinates to fit each sample in a unique range
+################################################################################
+
+message(Sys.time(), ' | Staggering spatial coordinates')
+coords = spatialCoords(spe) |>
+    as_tibble() |>
+    mutate(sample_id = factor(spe$sample_id)) |>
+    rename(sdimx = pxl_col_in_fullres, sdimy = pxl_row_in_fullres)
+
+#   Find a range of X values slightly larger than any particular sample
+x_size = coords |>
+    group_by(sample_id) |>
+    summarize(x_diff = max(sdimx) - min(sdimx)) |>
+    pull(x_diff) |>
+    max()
+x_size = (1 + buffer_prop) * x_size
+
+#   Separate samples by placing each sample into the same Y range and adjacent
+#   X ranges
+spatialCoords(spe) = coords |>
+    group_by(sample_id) |>
+    mutate(
+        sdimx = sdimx - min(sdimx) + x_size * (match(cur_group()$sample_id, sample_ids) - 1),
+        sdimy = sdimy - min(sdimy)
+    ) |>
+    ungroup() |>
+    select(sdimx, sdimy) |>
+    as.matrix()
+
+################################################################################
+#   Compute Banksy embedding
+################################################################################
+
+message(Sys.time(), ' | Running computeBanksy on full dataset')
+spe = computeBanksy(
+    spe, assay_name = "logcounts", compute_agf = TRUE, seed = random_seed
 )
 
 message(Sys.time(), ' | Running PCA on embedding')
 spe = runBanksyPCA(
-    spe, use_agf = TRUE, lambda = lambda, group = 'sample_id',
-    seed = random_seed
+    spe, use_agf = TRUE, lambda = lambda, seed = random_seed
 )
+
+################################################################################
+#   Run Harmony on embedding, with UMAP before and after
+################################################################################
 
 message(Sys.time(), ' | Running UMAP on embedding')
 spe = runBanksyUMAP(

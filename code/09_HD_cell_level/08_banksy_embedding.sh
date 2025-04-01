@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=160G
+#SBATCH --mem=240G
 #SBATCH --job-name=08_banksy_embedding
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../processed-data/09_HD_cell_level/logs/08_banksy_embedding_%a.txt
 #SBATCH -e ../../processed-data/09_HD_cell_level/logs/08_banksy_embedding_%a.txt
-#SBATCH --array=1
+#SBATCH --array=1-2%2
 
 set -e
 
