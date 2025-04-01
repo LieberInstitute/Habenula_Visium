@@ -261,6 +261,7 @@ as.data.frame(colData(spe_pseudo_k))
 ## Adapted from https://github.com/LieberInstitute/spatialDLPFC/blob/f47daafa19b02e6208c7e0a9bc068367f806206c/code/analysis/09_region_differential_expression/preliminary_analysis.R#L60-L68
 
 message('Processing PCA')
+set.seed(01042025)
 
 # First, performed PCA manually using prcomp()
 spe_pseudo <- spe_pseudo_k
@@ -345,7 +346,7 @@ saveRDS(
   spe_pseudo,
   file = file.path(
     dir_rdata,
-    paste0("sce_pseudo_brain_area_k", sprintf("%02d", k), ".rds")
+    paste0("sce_pseudo_PCA_brain_area_k", sprintf("%02d", k), ".rds")
   )
 )
 
