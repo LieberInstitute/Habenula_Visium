@@ -6,6 +6,7 @@ library(Banksy)
 library(harmony)
 library(cowplot)
 library(scater)
+library(tidyverse)
 library(getopt)
 
 #   Corresponding to "cell typing" and "domain segmentation"
@@ -25,6 +26,7 @@ plot_dir = here(
 )
 
 random_seed = 0
+buffer_prop = 0.5
 
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 set.seed(random_seed)
