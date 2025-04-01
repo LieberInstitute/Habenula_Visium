@@ -10,8 +10,6 @@
 library("Seurat")
 library("Signac")
 library("ggplot2")
-library("pheatmap")
-library("bluster")
 library("viridisLite")
 library("patchwork")
 library("ggplotify")
@@ -30,35 +28,21 @@ here()
 ## clusters renamed for Spatial-Registration on Visium project
 inputRDS_Dir <- here(
   "processed-data",
-  "05_Clustering_ARCr",
-  "08_wnn_gene_expression_plts_renamed_idents"
+  "11_explore_WNN_Clusters_Visium"
 )
 plotDir <- here(
   "plots",
-  "05_Clustering_ARCr",
-  "08_wnn_gene_expression_plts_renamed_idents"
+  "11_explore_WNN_Clusters_Visium"
 )
 inputCVS_Dir <- here(
   "processed-data",
-  "05_Clustering_ARCr",
-  "02_Hb_celltypes_from_seurat_reanalyze_v3",
-  "cvs_files_markers"
+  "11_explore_WNN_Clusters_Visium"
 )
 
 ## Check directories
 if (!dir.exists(plotDir)) {
   dir.create(plotDir)
 }
-
-## Load input with RDS wnn to compare
-
-# WNN clustering results of interest. To plot annotated or not annotatted clusters
-# For inputRDS_Dir_not_annotated
-# inputRDS_Dir_not_annotated <- here("processed-data", "05_Clustering_ARCr", "01_clustering_std_method")
-# Seurat_base_name <- "seurat.norm_counts_Harmony_ARCr_QCed_WNN_k30_C.louvain_lsi_r1"
-# For inputRDS_Dir_annotated
-# inputRDS_Dir_annotated <- here("processed-data", "05_Clustering_ARCr", "05_rename_idents")
-# Seurat_base_name <- "seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2.rds"
 
 # For inputRDS_Dir, clusters renamed for Spatial-Registration on Visium project
 Seurat_base_name <- "seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2_renamed_visium.rds"
@@ -91,36 +75,29 @@ message(
 # features <- c("POU4F1", "GPR151", "TAC3")
 features <- c("POU4F1", "GPR151")
 
-plt1 <- VlnPlot(
-  object = SeuratOBJ,
-  layer = "data",
-  features = features,
-  pt.size = 0
-) +
-  labs(x = paste0("WNN: ", Seurat_base_name)) &
-  theme(
-    text = element_text(size = 8),
-    axis.text.x = element_text(size = 7),
-    axis.text.y = element_text(size = 7),
-    plot.title = element_text(hjust = 0.5)
-  )
+## Add here vis_gene() function with multi_gene_method = "z_score", "pca" and "sparsity"
+# vis_gene(
+#   spe,
+#   geneid = c("broad_tangram_astro", white_matter_genes[1]),
+#   multi_gene_method = "pca",
+#   point_size = 1.5
+# )
 
-plt1 <- plt1 +
-  plot_annotation(
-    paste0("WNN: ", Seurat_base_name),
-    caption = 'Cell Ranger ARC reanalize',
-    theme = theme(plot.title = element_text(hjust = 0.5))
-  )
-tmp_name <- paste0(Seurat_base_name, "_POU4F1_GPR151_VPlot.pdf")
-ggsave(plt1, filename = here(plotDir, tmp_name), height = 4, width = 17)
-
-message('\nViolin plots saved `', plotDir, '`')
+# plt1 <- plt1 +
+#   plot_annotation(
+#     paste0("WNN: ", Seurat_base_name),
+#     caption = 'Cell Ranger ARC reanalize',
+#     theme = theme(plot.title = element_text(hjust = 0.5))
+#   )
+# tmp_name <- paste0(Seurat_base_name, "_POU4F1_GPR151_VPlot.pdf")
+# ggsave(plt1, filename = here(plotDir, tmp_name), height = 4, width = 17)
+# 
+# message('\nViolin plots saved `', plotDir, '`')
 
 
 ## Read DEG to plot the top 5 genes highly expressed
 
 # All DEG
-
 DEG_file_name <- "WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2_cellTypes_integrated_top50.csv"
 DEG_file_name <- here(inputCVS_Dir, DEG_file_name)
 df_cluster_names <- read.csv(DEG_file_name)
