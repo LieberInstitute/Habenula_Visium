@@ -8,12 +8,13 @@
 ########################################################################
 
 library("Seurat")
-library("Signac")
+library("spatialLIBD")
+
 library("ggplot2")
 library("viridisLite")
-library("patchwork")
-library("ggplotify")
-library("gridExtra")
+# library("patchwork")
+# library("ggplotify")
+# library("gridExtra")
 # library("purrr")
 library("tidyverse")
 library("stringr")
@@ -25,7 +26,8 @@ here()
 
 # Check/create directories
 
-## clusters renamed for Spatial-Registration on Visium project
+## set path to read Seurat rds and deg from WNN Leiden res=2 knn=30
+
 inputRDS_Dir <- here(
   "processed-data",
   "11_explore_WNN_Clusters_Visium"
@@ -39,7 +41,22 @@ inputCVS_Dir <- here(
   "11_explore_WNN_Clusters_Visium"
 )
 
+## set path to read sce visium object to plot the top deg 
+
+inputSCE_Dir <- here("processed-data", "04_harmony_BayesSpace", "spe_qcED_spatialLIBD_log.rds") 
+spe <- readRDS(inputSCE_Dir)
+unique(spe$sample_id)
+## Quick exploration
+cat(" Number of spots:", dim(spe)[2], "\n")
+
+## Set some initials for manage plots
+
+var_height <- 24 # 24/3=8
+var_width <- 36 # 36/4=9
+var_point_size <- 3.5
+
 ## Check directories
+
 if (!dir.exists(plotDir)) {
   dir.create(plotDir)
 }
