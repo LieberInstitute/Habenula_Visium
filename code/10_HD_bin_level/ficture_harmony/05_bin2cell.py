@@ -13,7 +13,7 @@ with open(sample_id_path, 'r') as f:
     all_samples = f.read().splitlines()
 sample_id = all_samples[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
 
-num_factors = 12
+num_factors = int(os.getenv('OUTER_TASK'))
 adata_in_path = here(
     'processed-data', '09_HD_cell_level', f'{sample_id}_pre_bin2cell.h5ad'
 )
@@ -33,6 +33,7 @@ factor_cols = [
 ]
 
 os.makedirs(os.path.dirname(out_path), exist_ok=True)
+print(f'Running bin2cell for {sample_id} with {num_factors} factors')
 
 #   Read in FICTURE clusters and subset to this sample
 ficture_input = pd.read_csv(

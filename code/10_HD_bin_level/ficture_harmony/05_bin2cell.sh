@@ -4,8 +4,6 @@
 #SBATCH --job-name=05_bin2cell
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/05_bin2cell_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/05_bin2cell_%a.txt
 #SBATCH --array=1-5%5
 
 set -e
