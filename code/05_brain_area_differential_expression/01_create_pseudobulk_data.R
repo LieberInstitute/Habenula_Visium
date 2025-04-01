@@ -153,9 +153,15 @@ spe_pseudo_k$brain_area_DEG <- factor(
 levels(spe_pseudo_k$brain_area_DEG)
 table(spe_pseudo_k$brain_area_DEG)
 
-
 spe_pseudo_k$age <- as.numeric(spe_pseudo_k$age)
 
+## Compute the logcounts
+message(Sys.time(), " normalize expression")
+logcounts(spe_pseudo_k) <-
+  edgeR::cpm(edgeR::calcNormFactors(spe_pseudo_k),
+             log = TRUE,
+             prior.count = 1
+  )
 
 # # calculate the number of cells per (sample_id + BayesSpace cluster)
 # Adapted from: https://github.com/LieberInstitute/dlpfc_asd/blob/2b83eeb9572bd7d37505e8db6e20bb3ded09c2c1/code/06_differential_expression/01_create_pseudobulk_data.R#L129
@@ -235,7 +241,7 @@ message('Pseudobulk completed ')
 
 ## Simplify the colData()  for the pseudo-bulked data
 
-# colnames(colData(spe_pseudo))
+# colnames(colData(spe_pseudo_k))
 colData(spe_pseudo_k) <- colData(spe_pseudo_k)[, sort(c(
   "age",
   "sample_id",
@@ -244,12 +250,12 @@ colData(spe_pseudo_k) <- colData(spe_pseudo_k)[, sort(c(
   "brain_id", # equivalent to subject / donor / ethnicity
   "sex",
   "diagnosis",
-  "ncells"
+  "nspots"
 ))]
 
 ## Explore the resulting data
 options(width = 400)
-as.data.frame(colData(spe_pseudo))
+as.data.frame(colData(spe_pseudo_k))
 
 ## Compute PCs
 ## Adapted from https://github.com/LieberInstitute/spatialDLPFC/blob/f47daafa19b02e6208c7e0a9bc068367f806206c/code/analysis/09_region_differential_expression/preliminary_analysis.R#L60-L68
@@ -257,10 +263,10 @@ as.data.frame(colData(spe_pseudo))
 message('Processing PCA')
 
 # First, performed PCA manually using prcomp()
-
-max_components <- min(dim(spe_pseudo)) - 1
+spe_pseudo <- spe_pseudo_k
+max_components <- min(dim(spe)) - 1
 print(max_components)
-pca <- prcomp(t(assays(spe_pseudo)$logcounts), center = TRUE, scale. = TRUE)
+pca <- prcomp(t(assays(spe)$logcounts), center = TRUE, scale. = TRUE)
 dim(pca$x)
 names(pca)
 # Store PCA coordinates
