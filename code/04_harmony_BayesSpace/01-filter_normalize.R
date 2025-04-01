@@ -14,7 +14,11 @@ library("HDF5Array")
 ## set path directories
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
 # filtered_in_path <- here("processed-data", "02_build_spe", "spe_qc_low_lib_edge.rds")
-spe_in_path <- here("processed-data", "02_build_spe", "spe_scran_spotsweeper.rds")
+spe_in_path <- here(
+  "processed-data",
+  "02_build_spe",
+  "spe_scran_spotsweeper.rds"
+)
 filtered_hdf5_dir <- file.path(dir_rdata, "spe_filtered_hdf5")
 dir_plots <- here("plots", "04_harmony_BayesSpace")
 
@@ -29,35 +33,47 @@ dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 ## load a filtered spe object
 spe <- readRDS(spe_in_path)
 spe
-cat("Number of spots after removed any remaining empty spots and/or genes with zero counts:", dim(spe)[2], "\n")
+cat(
+  "Number of spots after removed any remaining empty spots and/or genes with zero counts:",
+  dim(spe)[2],
+  "\n"
+)
 
 
 ## Check initial outliers detected by both scran and SpotSweeper
 
 colnames(colData(spe))
-# From scran: discard = (low_lib_size | low_n_features) | high_subsets_Mito_percent)         
+# From scran: discard = (low_lib_size | low_n_features) | high_subsets_Mito_percent)
 message("scran_low_lib_size\t\t", table(spe$scran_low_lib_size)[[1]])
 message("scran_low_n_features\t\t", table(spe$scran_low_n_features)[[1]])
-message("scran_high_subsets_Mito_percent\t\t", table(spe$scran_high_subsets_Mito_percent)[[1]])
+message(
+  "scran_high_subsets_Mito_percent\t\t",
+  table(spe$scran_high_subsets_Mito_percent)[[1]]
+)
 message("scran_discard\t\t", table(spe$scran_discard)[[1]])
 # From SS: SpotSweeper local_outliers = sum_umi_outliers | sum_gene_outliers | expr_chrM_ratio_outliers
 message("SpotSweeper_sum_umi_outliers\t\t", table(spe$sum_umi_outliers)[[2]])
 message("SpotSweeper_sum_gene_outliers\t\t", table(spe$sum_gene_outliers)[[2]])
-message("SpotSweeper_expr_chrM_ratio_outliers\t\t", table(spe$expr_chrM_ratio_outliers)[[2]])
+message(
+  "SpotSweeper_expr_chrM_ratio_outliers\t\t",
+  table(spe$expr_chrM_ratio_outliers)[[2]]
+)
 message("SpotSweeper_\t\t", table(spe$local_outliers)[[2]])
 
 
 ###############################################################################
-#   Automatic selection of spots detected by scran and SpotSweeper 
+#   Automatic selection of spots detected by scran and SpotSweeper
 ################################################################################
 
-
 message("Merging scran and spot sweeper outliers to remove")
-v_scran_discard_keys <- unlist(spe$key[spe$scran_discard==T])
+v_scran_discard_keys <- unlist(spe$key[spe$scran_discard == T])
 length(v_scran_discard_keys)
-v_spotS_outlier_keys <- unlist(spe$key[spe$local_outliers==T])
+v_spotS_outlier_keys <- unlist(spe$key[spe$local_outliers == T])
 length(v_spotS_outlier_keys)
-v_keys_bad_spots <- append(as.vector(v_scran_discard_keys), as.vector(v_spotS_outlier_keys))
+v_keys_bad_spots <- append(
+  as.vector(v_scran_discard_keys),
+  as.vector(v_spotS_outlier_keys)
+)
 message("Total ouliers merged: ", length(v_keys_bad_spots))
 v_keys_bad_spots <- unique(v_keys_bad_spots)
 df_bad_spots <- as.data.frame(v_keys_bad_spots)
@@ -65,13 +81,9 @@ df_bad_spots <- as.data.frame(v_keys_bad_spots)
 message("Total unique outliers: ", nrow(df_bad_spots))
 
 
-
-
 ################################################################################
 #   Compute log-normalized counts
 ################################################################################
-
-
 
 #   Filter SPE: take only spots in tissue, drop spots with 0 counts for all
 #   genes, and drop genes with 0 counts in every spot
@@ -81,14 +93,14 @@ message(Sys.time(), " - Running quickCluster()")
 
 Sys.time()
 spe$scran_quick_cluster <- quickCluster(
-    spe,
-    BPPARAM = MulticoreParam(num_cores),
-    block = spe$sample_id,
-    block.BPPARAM = MulticoreParam(num_cores),
-    method="igraph", # SNN graph is used, the function define clusters based on highly connected communities
-    #min.size=10     # ONLY use if you have enough data to control/avoid aggregation of small clusters
-    #use.ranks=TRUE
-    #min.mean = 0.1
+  spe,
+  BPPARAM = MulticoreParam(num_cores),
+  block = spe$sample_id,
+  block.BPPARAM = MulticoreParam(num_cores),
+  method = "igraph", # SNN graph is used, the function define clusters based on highly connected communities
+  #min.size=10     # ONLY use if you have enough data to control/avoid aggregation of small clusters
+  #use.ranks=TRUE
+  #min.mean = 0.1
 )
 Sys.time()
 
@@ -97,7 +109,6 @@ Sys.time()
 # (1) I applied `use.ranks=TRUE`, which removes low-abundance genes with many tied ranks, especially due to zeros, which may reduce the precision of the clustering
 # (2) I applied `min.mean = 0.1` for UMI data - the function will automatically try to determine this from the data if min.mean=NULL.
 
-
 print("Quick cluster table:")
 table(spe$scran_quick_cluster)
 
@@ -105,9 +116,10 @@ table(spe$scran_quick_cluster)
 
 message(Sys.time(), " - Running computeSumFactors()")
 Sys.time()
-spe <- computeSumFactors(spe,
-    clusters = spe$scran_quick_cluster,
-    BPPARAM = MulticoreParam(num_cores)
+spe <- computeSumFactors(
+  spe,
+  clusters = spe$scran_quick_cluster,
+  BPPARAM = MulticoreParam(num_cores)
 )
 Sys.time()
 
@@ -118,22 +130,27 @@ Sys.time()
 
 message(Sys.time(), " - Running checking sizeFactors()")
 summary(sizeFactors(spe))
-# Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
-# 0.000069  0.153549  0.478955  1.000000  1.267384 26.885066 
+# Min.   1st Qu.    Median      Mean   3rd Qu.      Max.
+# 0.000069  0.153549  0.478955  1.000000  1.267384 26.885066
 
 ## plot deconvolution size factor for each cell compared to the equivalent size factor derived from the library size
 
 lib.sf <- librarySizeFactors(spe)
 
 pdf(here(dir_plots, "Histogram_log10_size_factor.pdf"))
-hist(log10(lib.sf), xlab="Log10[Size factor]", col='grey80')
+hist(log10(lib.sf), xlab = "Log10[Size factor]", col = 'grey80')
 dev.off()
 
 pdf(here(dir_plots, "Deconvolution_size_factor.pdf"))
-plot(lib.sf, sizeFactors(spe), xlab="Library size factor",
-     ylab="Deconvolution size factor", pch=16, # log='xy',
-     col=as.integer(factor(spe$sizeFactor)))
-abline(a=0, b=1, col="red")
+plot(
+  lib.sf,
+  sizeFactors(spe),
+  xlab = "Library size factor",
+  ylab = "Deconvolution size factor",
+  pch = 16, # log='xy',
+  col = as.integer(factor(spe$sizeFactor))
+)
+abline(a = 0, b = 1, col = "red")
 dev.off()
 
 ## run log normalization
@@ -144,7 +161,7 @@ spe <- logNormCounts(spe)
 assayNames(spe)
 # [1] "counts"    "logcounts"
 
-# Save spe QCed with log-counts 
+# Save spe QCed with log-counts
 
 # saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_log_QCed.rds"))
 
@@ -153,7 +170,6 @@ assayNames(spe)
 #     dir = paste0(filtered_hdf5_dir, "_temp"), replace = TRUE
 # )
 # gc()
-
 
 ################################################################################
 #   Remove all the outliers detected automatically
@@ -165,9 +181,9 @@ head(df_bad_spots, 3)
 # m <- match(df_bad_spots$v_keys_bad_spots, spe$key)
 # m
 # length(m) # for example: 284 manual annotations
-# spe <- spe[, !spe$key %in% spe$key[c(m)]] 
+# spe <- spe[, !spe$key %in% spe$key[c(m)]]
 
-spe <- spe[, !spe$key %in% v_keys_bad_spots] 
+spe <- spe[, !spe$key %in% v_keys_bad_spots]
 
 message("Outliers removed!")
 message(" - Current spots: ", length(spe$key))
@@ -180,15 +196,16 @@ spe <- spe[
   (colSums(assays(spe)$counts) > 0)
 ]
 
-message("Number of spots after removed any remaining empty spots and/or genes with zero counts:", dim(spe)[2], "\n")
+message(
+  "Number of spots after removed any remaining empty spots and/or genes with zero counts:",
+  dim(spe)[2],
+  "\n"
+)
 
-saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_log_QCed.rds"))
+saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD_log.rds"))
 
-## Save new spe object with spots manually annotated drop
-# saveRDS(spe, file.path(dir_rdata, "spe_qcED_spatialLIBD.rds"))
 
 # ################################################################################
-
 
 ## Reproducibility information
 print("Reproducibility information:")
@@ -197,13 +214,12 @@ proc.time()
 options(width = 120)
 session_info()
 
-
 # [1] "Reproducibility information:"
 # > Sys.time()
 # [1] "2024-06-13 12:09:37 EDT"
 # > proc.time()
-# user   system  elapsed 
-# 713.525   11.483 2943.889 
+# user   system  elapsed
+# 713.525   11.483 2943.889
 # > options(width = 120)
 # > session_info()
 # .8       2022-06-12 [2] CRAN (R 4.3.2)
