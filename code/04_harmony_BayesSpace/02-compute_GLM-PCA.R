@@ -14,10 +14,15 @@ library("sessioninfo")
 # library("HDF5Array")
 
 dir_rdata <- here("processed-data", "04_harmony_BayesSpace")
-# filtered_in_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log.rds")
-filtered_in_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log_QCed.rds")
-filtered_ordinary_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log_GLM-PCA.rds") # new SPE with GLM-PCAs
-filtered_hdf5_dir <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log_GLM-PCA_hdf5")
+filtered_in_path <- file.path(dir_rdata, "spe_qcED_spatialLIBD_log.rds") # previously: spe_qcED_spatialLIBD_log_QCed.rds
+filtered_ordinary_path <- file.path(
+  dir_rdata,
+  "spe_qcED_spatialLIBD_log_GLM-PCA.rds"
+) # new SPE with GLM-PCAs
+filtered_hdf5_dir <- file.path(
+  dir_rdata,
+  "spe_qcED_spatialLIBD_log_GLM-PCA_hdf5"
+)
 dir_plots <- here("plots", "04_harmony_BayesSpace")
 
 num_red_dims <- 50
@@ -29,10 +34,12 @@ spe <- readRDS(filtered_in_path)
 #rowData(spe)
 
 ## Verified number of TRUE spots in tissue
-in_tissue_spots <- sum(as.numeric(map(unique(spe$sample_id), ~ sum(spe$in_tissue[spe$sample_id == .x]))))
+in_tissue_spots <- sum(as.numeric(map(
+  unique(spe$sample_id),
+  ~ sum(spe$in_tissue[spe$sample_id == .x])
+)))
 print(paste0(" Spots in tissue: ", in_tissue_spots))
 # [1] " Spots in tissue: 33409"
-
 
 ################################################################################
 #   Compute PCA
@@ -41,16 +48,17 @@ print(paste0(" Spots in tissue: ", in_tissue_spots))
 message(Sys.time(), " - Running modelGeneVar()")
 ## From
 ## http://bioconductor.org/packages/release/bioc/vignettes/scran/inst/doc/scran.html#4_variance_modelling
-dec <- modelGeneVar(spe,
-    block = spe$sample_id,
-    BPPARAM = MulticoreParam(num_cores)
+dec <- modelGeneVar(
+  spe,
+  block = spe$sample_id,
+  BPPARAM = MulticoreParam(num_cores)
 )
 colnames(dec$per.block)
 
-## Plot gene variance in one plot for overview 
+## Plot gene variance in one plot for overview
 
-# set some initial values 
-color_v <- c("red","blue","black","green","brown")
+# set some initial values
+color_v <- c("red", "blue", "black", "green", "brown")
 y_axis <- c(0)
 x_axis <- c(0)
 
@@ -64,53 +72,71 @@ y_axis <- ceiling(max(y_axis))
 x_axis <- ceiling(max(x_axis))
 
 pdf(file.path(dir_plots, "scran_modelGeneVar.pdf"), useDingbats = FALSE)
-plot(dec$per.block[[1]]$mean, dec$per.block[[1]]$total, 
-     ylim =c(0, y_axis), xlim =c(0, x_axis),
-     xlab = "Mean log-expression",
-     ylab = "Variance")
+plot(
+  dec$per.block[[1]]$mean,
+  dec$per.block[[1]]$total,
+  ylim = c(0, y_axis),
+  xlim = c(0, x_axis),
+  xlab = "Mean log-expression",
+  ylab = "Variance"
+)
 
 for (i in 1:length(colnames(dec$per.block))) {
   current <- dec$per.block[[i]]
-  curve(metadata(current)$trend(x), add=TRUE, col=color_v[i]) 
-  }
-legend("topright", legend = colnames(dec$per.block),
-       col=c(color_v), lty=1:2, cex=0.8)
+  curve(metadata(current)$trend(x), add = TRUE, col = color_v[i])
+}
+legend(
+  "topright",
+  legend = colnames(dec$per.block),
+  col = c(color_v),
+  lty = 1:2,
+  cex = 0.8
+)
 dev.off()
 
 ## Plot gene variance by sample
 
-pdf(file.path(dir_plots, "scran_modelGeneVar_individual_plots.pdf"), useDingbats = FALSE)
-mapply(function(block, blockname) {
+pdf(
+  file.path(dir_plots, "scran_modelGeneVar_individual_plots.pdf"),
+  useDingbats = FALSE
+)
+mapply(
+  function(block, blockname) {
     plot(
-        block$mean,
-        block$total,
-        xlab = "Mean log-expression",
-        ylab = "Variance",
-        main = blockname
+      block$mean,
+      block$total,
+      xlab = "Mean log-expression",
+      ylab = "Variance",
+      main = blockname
     )
     # points(metadata(block)$mean, metadata(block)$var, col="red")
-    curve(metadata(block)$trend(x),
-        col = "blue",
-        add = TRUE
-    )
-}, dec$per.block, names(dec$per.block))
+    curve(metadata(block)$trend(x), col = "blue", add = TRUE)
+  },
+  dec$per.block,
+  names(dec$per.block)
+)
 dev.off()
 
 # Ordering by most interesting genes for inspection.
-hvg <- mapply(function(block) {
-  head(block[order(block$bio, decreasing=TRUE),], n=20) 
-  }, dec$per.block)
+hvg <- mapply(
+  function(block) {
+    head(block[order(block$bio, decreasing = TRUE), ], n = 20)
+  },
+  dec$per.block
+)
 
 capture.output(hvg, file = file.path(dir_rdata, "scran_Top20_hvgALL.csv"))
 
-## Add symbol gene-ids 
+## Add symbol gene-ids
 hvg <- map(hvg, function(hvg_block) {
-  hvg_block$gene_name <- rowData(spe)$gene_name[match(rownames(hvg_block), rownames(spe))]
+  hvg_block$gene_name <- rowData(spe)$gene_name[match(
+    rownames(hvg_block),
+    rownames(spe)
+  )]
   return(hvg_block)
-} )
+})
 
 # map(hvg, head)
-
 
 # get the top variable genes at different thresholds
 
@@ -124,13 +150,13 @@ print(paste("10% HVGs genes:", length(top.hvgs.p1)))
 # print(paste("Num HVGs for top 20 proportion:", length(top.hvgs.p2)))
 # top.hvgs.p5 <- getTopHVGs(dec, prop = 0.5)
 # print(paste("Num HVGs for top 50 proportion:", length(top.hvgs.p5)))
-# 
+#
 # top.hvgs.fdr5 <- getTopHVGs(dec, fdr.threshold = 0.05)
 # print(paste("Num HVGs at FDR = 0.05:", length(top.hvgs.fdr5)))
 # top.hvgs.fdr1 <- getTopHVGs(dec, fdr.threshold = 0.01)
 # print(paste("Num HVGs at FDR = 0.01:", length(top.hvgs.fdr1)))
 
-save(top.hvgs.p1,file = file.path(dir_rdata, "top.hvgs.Rdata"))
+save(top.hvgs.p1, file = file.path(dir_rdata, "top.hvgs.Rdata"))
 # save(
 #     top.hvgs.p1,
 #     top.hvgs.p2,
@@ -143,13 +169,14 @@ save(top.hvgs.p1,file = file.path(dir_rdata, "top.hvgs.Rdata"))
 message(Sys.time(), " - Running runPCA()")
 Sys.time()
 
-# HVG by proportion of genes to report 
+# HVG by proportion of genes to report
 # 10p is our default named PCA for further analysis
 spe <-
-  runPCA(spe,
-         subset_row = top.hvgs.p1,
-         ncomponents = num_red_dims,
-         name = "PCA"
+  runPCA(
+    spe,
+    subset_row = top.hvgs.p1,
+    ncomponents = num_red_dims,
+    name = "PCA"
   )
 # spe <- # 20p
 #   runPCA(spe,
@@ -181,31 +208,77 @@ spe <-
 Sys.time()
 
 reducedDimNames(spe)
-plt1 <- plotReducedDim(spe, dimred = "PCA", colour_by = "sample_id")  + theme_bw()
+plt1 <- plotReducedDim(spe, dimred = "PCA", colour_by = "sample_id") +
+  theme_bw()
 ggsave(plt1, filename = here(dir_plots, "DimRed_PCA.png"))
 
 ## plot other PCA features
 point_size = 0.5
 font_size = 7
-plt1 <- plotReducedDim(spe, dimred = "PCA", colour_by = "brain_area", point_size = point_size) + 
-  theme_bw() + theme(axis.text=element_text(size=font_size) ,axis.title=element_text(size=font_size))
-plt2 <- plotReducedDim(spe, dimred = "PCA", colour_by = "brain_id", point_size = point_size) + 
-  theme_bw() + theme(axis.text=element_text(size=font_size) ,axis.title=element_text(size=font_size))
-plt3 <- plotReducedDim(spe, dimred = "PCA", colour_by = "ethnicity", point_size = point_size) + 
-  theme_bw() + theme(axis.text=element_text(size=font_size) ,axis.title=element_text(size=font_size))
-plt4 <- plotReducedDim(spe, dimred = "PCA", colour_by = "age", point_size = point_size) + 
-  theme_bw() + theme(axis.text=element_text(size=font_size) ,axis.title=element_text(size=font_size))
-plt_all <- ggarrange(plt1, plt2, plt3, plt4 + rremove("x.text"), 
-          labels = c("A", "B", "C", "D"),
-          ncol = 2, nrow = 2)
-annotate_figure(plt_all, top = text_grob("Variance explained", face = "bold", size = 10))
+plt1 <- plotReducedDim(
+  spe,
+  dimred = "PCA",
+  colour_by = "brain_area",
+  point_size = point_size
+) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = font_size),
+    axis.title = element_text(size = font_size)
+  )
+plt2 <- plotReducedDim(
+  spe,
+  dimred = "PCA",
+  colour_by = "brain_id",
+  point_size = point_size
+) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = font_size),
+    axis.title = element_text(size = font_size)
+  )
+plt3 <- plotReducedDim(
+  spe,
+  dimred = "PCA",
+  colour_by = "ethnicity",
+  point_size = point_size
+) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = font_size),
+    axis.title = element_text(size = font_size)
+  )
+plt4 <- plotReducedDim(
+  spe,
+  dimred = "PCA",
+  colour_by = "age",
+  point_size = point_size
+) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = font_size),
+    axis.title = element_text(size = font_size)
+  )
+plt_all <- ggarrange(
+  plt1,
+  plt2,
+  plt3,
+  plt4 + rremove("x.text"),
+  labels = c("A", "B", "C", "D"),
+  ncol = 2,
+  nrow = 2
+)
+annotate_figure(
+  plt_all,
+  top = text_grob("Variance explained", face = "bold", size = 10)
+)
 pdf(here(dir_plots, "DimRed_PCA_other_features.pdf"))
 print(plt_all)
 dev.off()
 
 message("DimRed plot saved!")
 
-# plotReducedDim(spe, dimred = "PCA_p2", colour_by = "sample_id") 
+# plotReducedDim(spe, dimred = "PCA_p2", colour_by = "sample_id")
 
 # head(reducedDims(spe)$PCA_fdr1)
 
@@ -217,24 +290,29 @@ lst_PCA_elbow <- list(PCA = length(top.hvgs.p1))
 #   PCA_fdr5 = length(top.hvgs.fdr5), PCA_fdr1 = length(top.hvgs.fdr1))
 
 ## Get max axis range
-max_percentVar <- map(names(lst_PCA_elbow), ~ max(attr(reducedDim(spe, .x), "percentVar")))
+max_percentVar <- map(
+  names(lst_PCA_elbow),
+  ~ max(attr(reducedDim(spe, .x), "percentVar"))
+)
 y_axis <- ceiling(max(unlist(max_percentVar)) + 0.5)
 x_axis <- num_red_dims
 
 pdf(file.path(dir_plots, 'pca_elbow.pdf'), useDingbats = FALSE)
 
 plot(
-  attr(reducedDim(spe, names(lst_PCA_elbow[1])), "percentVar"), 
-  #xlab = gsub("^PCA_", "PC_", .x), 
-  xlab = "Dimension", 
+  attr(reducedDim(spe, names(lst_PCA_elbow[1])), "percentVar"),
+  #xlab = gsub("^PCA_", "PC_", .x),
+  xlab = "Dimension",
   ylab = "Variance explained (%)",
-  ylim =c(0, y_axis), xlim =c(0, x_axis),
+  ylim = c(0, y_axis),
+  xlim = c(0, x_axis),
   col = color_v[1],
-  main = "Elbow plots")
+  main = "Elbow plots"
+)
 
 ## Build legend list for first element
-percent.var <- attr(reducedDim(spe, names(lst_PCA_elbow[1])), "percentVar") 
-points(percent.var, col=color_v[1]) 
+percent.var <- attr(reducedDim(spe, names(lst_PCA_elbow[1])), "percentVar")
+points(percent.var, col = color_v[1])
 #chosen.elbow <- findElbowPoint(percent.var)
 hvg.threshold <- names(lst_PCA_elbow[1])
 hvg.used <- paste0("(HVG = ", as.character(lst_PCA_elbow[1]), ")")
@@ -242,8 +320,8 @@ leg <- paste(hvg.threshold, hvg.used) #, ' elbow = ', chosen.elbow)
 legend_label <- c(leg)
 
 # for (i in 2:length(names(lst_PCA_elbow))) {
-#   percent.var <- attr(reducedDim(spe, names(lst_PCA_elbow[i])), "percentVar") 
-#   points(percent.var, col=color_v[i]) 
+#   percent.var <- attr(reducedDim(spe, names(lst_PCA_elbow[i])), "percentVar")
+#   points(percent.var, col=color_v[i])
 #   #chosen.elbow <- findElbowPoint(percent.var)
 #   hvg.threshold <- names(lst_PCA_elbow[i])
 #   hvg.used <- paste0("(HVG = ", as.character(lst_PCA_elbow[i]), ")")
@@ -263,8 +341,20 @@ message("Elbow plot saved!")
 ################################################################################
 
 message(Sys.time(), " - Running devianceFeatureSelection()")
-spe <- devianceFeatureSelection(spe, assay = "counts", fam = "binomial", sorted = FALSE, batch = as.factor(spe$sample_id))
-spe <- devianceFeatureSelection(spe, assay = "counts", fam = "poisson", sorted = FALSE, batch = as.factor(spe$sample_id)) 
+spe <- devianceFeatureSelection(
+  spe,
+  assay = "counts",
+  fam = "binomial",
+  sorted = FALSE,
+  batch = as.factor(spe$sample_id)
+)
+spe <- devianceFeatureSelection(
+  spe,
+  assay = "counts",
+  fam = "poisson",
+  sorted = FALSE,
+  batch = as.factor(spe$sample_id)
+)
 # colnames(rowData(spe))
 # head(rowData(spe)$binomial_deviance)
 # binomial_dev <- rowData(spe)$binomial_deviance
@@ -272,26 +362,32 @@ spe <- devianceFeatureSelection(spe, assay = "counts", fam = "poisson", sorted =
 # summary(binomial_dev)
 # head(rowData(spe)$poisson_deviance)
 
-## plot binomial and poison deviance in first 100 selected genes 
+## plot binomial and poison deviance in first 100 selected genes
 
 pdf(file.path(dir_plots, "binomial_deviance10000.pdf"))
-par(mfrow = c(2,1))
+par(mfrow = c(2, 1))
 p1 <- plot(
-    sort(rowData(spe)$binomial_deviance, decreasing = TRUE)[1:10000],
-    type = "l",
-    xlab = "ranked genes",
-    ylab = "binomial deviance",
-    main = "Feature Selection with Binomial Deviance"
-# ) + abline(v = 10, lty = 2, col = "red") + abline(v = 20, lty = 2, col = "blue") 
-) + abline(v = 1000, lty = 2, col = "red") + abline(v = 2000, lty = 2, col = "blue") + abline(v = 5000, lty = 2, col = "green") 
+  sort(rowData(spe)$binomial_deviance, decreasing = TRUE)[1:10000],
+  type = "l",
+  xlab = "ranked genes",
+  ylab = "binomial deviance",
+  main = "Feature Selection with Binomial Deviance"
+  # ) + abline(v = 10, lty = 2, col = "red") + abline(v = 20, lty = 2, col = "blue")
+) +
+  abline(v = 1000, lty = 2, col = "red") +
+  abline(v = 2000, lty = 2, col = "blue") +
+  abline(v = 5000, lty = 2, col = "green")
 p2 <- plot(
-    sort(rowData(spe)$poisson_deviance, decreasing = TRUE)[1:10000],
-    type = "l",
-    xlab = "ranked genes",
-    ylab = "poisson deviance",
-    main = "Feature Selection with Poisson Deviance"
-# ) + abline(v = 10, lty = 2, col = "red") + abline(v = 20, lty = 2, col = "blue")
-) + abline(v = 1000, lty = 2, col = "red") + abline(v = 2000, lty = 2, col = "blue") + abline(v = 5000, lty = 2, col = "green") 
+  sort(rowData(spe)$poisson_deviance, decreasing = TRUE)[1:10000],
+  type = "l",
+  xlab = "ranked genes",
+  ylab = "poisson deviance",
+  main = "Feature Selection with Poisson Deviance"
+  # ) + abline(v = 10, lty = 2, col = "red") + abline(v = 20, lty = 2, col = "blue")
+) +
+  abline(v = 1000, lty = 2, col = "red") +
+  abline(v = 2000, lty = 2, col = "blue") +
+  abline(v = 5000, lty = 2, col = "green")
 
 plts <- p1 / p2
 plts
@@ -300,20 +396,24 @@ dev.off()
 ## calculate residuals from binomial model
 
 message(Sys.time(), " - Running nullResiduals()")
-spe <- nullResiduals( # default params
-    spe,
-    assay = "counts",
-    fam = "binomial",
-    type = "deviance"
-    # batch = as.factor(spe$sample_id)
+spe <- nullResiduals(
+  # default params
+  spe,
+  assay = "counts",
+  fam = "binomial",
+  type = "deviance"
+  # batch = as.factor(spe$sample_id)
 )
-# produce residual vs. fitted plot. CSC 
+# produce residual vs. fitted plot. CSC
 # assayNames(spe)
 # binom_dev_residuals <- assay(spe,"binomial_deviance_residuals")
-# plot(binom_dev_residuals) 
+# plot(binom_dev_residuals)
 
 ## Get HVDG
-hdgs.hb.1000 <- rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:1000]
+hdgs.hb.1000 <- rownames(spe)[order(
+  rowData(spe)$binomial_deviance,
+  decreasing = TRUE
+)][1:1000]
 # hdgs.hb.2000 <- rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:2000]
 # hdgs.hb.5000 <- rownames(spe)[order(rowData(spe)$binomial_deviance, decreasing = TRUE)][1:5000]
 
@@ -326,12 +426,12 @@ save(hdgs.hb.1000, file = file.path(dir_rdata, "hdgs.hb.Rdata"))
 
 message(Sys.time(), " - Running GLM-PCA")
 spe <- runPCA(
-    spe,
-    exprs_values = "binomial_deviance_residuals",
-    subset_row = hdgs.hb.1000,
-    ncomponents = num_red_dims,
-    name = "GLMPCA_approx",
-    BSPARAM = BiocSingular::IrlbaParam()
+  spe,
+  exprs_values = "binomial_deviance_residuals",
+  subset_row = hdgs.hb.1000,
+  ncomponents = num_red_dims,
+  name = "GLMPCA_approx",
+  BSPARAM = BiocSingular::IrlbaParam()
 )
 
 # spe <- runPCA(
@@ -343,19 +443,40 @@ spe <- runPCA(
 #     BSPARAM = BiocSingular::IrlbaParam()
 # )
 
-plt1 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sample_id") + theme_bw()
+plt1 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "sample_id") +
+  theme_bw()
 ggsave(plt1, filename = here(dir_plots, "DimRed_GLM-PCA.png"))
 
 pdf(here(dir_plots, "DimRed_GLM-PCA_other_features.pdf"))
-plt1 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_area") + font("x.text", size = 8) + theme_bw()
-plt2 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_id") + font("x.text", size = 8) + theme_bw()
-plt3 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "ethnicity") + font("x.text", size = 8) + theme_bw()
-plt4 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "age") + font("x.text", size = 8) + theme_bw()
-plt_all <- ggarrange(plt1, plt2, plt3, plt4 + rremove("x.text"), 
-                     labels = c("A", "B", "C", "D"),
-                     ncol = 2, nrow = 2)
-annotate_figure(plt_all,
-                top = text_grob("Variance explained GLM-PCA", face = "bold", size = 10))
+plt1 <- plotReducedDim(
+  spe,
+  dimred = "GLMPCA_approx",
+  colour_by = "brain_area"
+) +
+  font("x.text", size = 8) +
+  theme_bw()
+plt2 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "brain_id") +
+  font("x.text", size = 8) +
+  theme_bw()
+plt3 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "ethnicity") +
+  font("x.text", size = 8) +
+  theme_bw()
+plt4 <- plotReducedDim(spe, dimred = "GLMPCA_approx", colour_by = "age") +
+  font("x.text", size = 8) +
+  theme_bw()
+plt_all <- ggarrange(
+  plt1,
+  plt2,
+  plt3,
+  plt4 + rremove("x.text"),
+  labels = c("A", "B", "C", "D"),
+  ncol = 2,
+  nrow = 2
+)
+annotate_figure(
+  plt_all,
+  top = text_grob("Variance explained GLM-PCA", face = "bold", size = 10)
+)
 print(plt_all)
 dev.off()
 
@@ -367,19 +488,21 @@ lst_GLMPCA_elbow <- list(GLMPCA_approx = length(hdgs.hb.1000))
 pdf(file.path(dir_plots, 'GLM-pca_elbow.pdf'), useDingbats = FALSE)
 
 plot(
-  attr(reducedDim(spe, names(lst_GLMPCA_elbow[1])), "percentVar"), 
-  xlab = "Dimension", 
+  attr(reducedDim(spe, names(lst_GLMPCA_elbow[1])), "percentVar"),
+  xlab = "Dimension",
   ylab = "Variance explained (%)",
-  ylim =c(0, y_axis), xlim =c(0, x_axis),
+  ylim = c(0, y_axis),
+  xlim = c(0, x_axis),
   col = color_v[1],
-  main = "GLM-PCA Elbow plots")
+  main = "GLM-PCA Elbow plots"
+)
 
 dev.off()
 
 message("GLM-PCA Elbow plot saved!")
 
 
-# plotReducedDim(spe, dimred = "GLMPCA_approx_2000", colour_by = "sample_id") 
+# plotReducedDim(spe, dimred = "GLMPCA_approx_2000", colour_by = "sample_id")
 
 ## Save the processed SPE object
 
@@ -403,7 +526,6 @@ Sys.time()
 proc.time()
 options(width = 120)
 session_info()
-
 
 ################################################################################
 
