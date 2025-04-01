@@ -48,7 +48,7 @@ spe <- cluster_import(
 ## Convert from character to a factor
 
 # Quick inspection
-colData(spe)[grep("BayesSpace_harmony", colnames(colData(spe)))]
+#colData(spe)[grep("BayesSpace_harmony", colnames(colData(spe)))]
 #length(grep("BayesSpace_harmony", colnames(colData(spe))))
 
 k_nice <- sprintf("%02d", k)
@@ -56,7 +56,6 @@ k_nice <- sprintf("%02d", k)
 spe$BayesSpace <- factor(
   paste0(
     "Sp", k_nice, 
-    #sprintf("%02d", k),
     "D",
     sprintf(
       "%02d",
@@ -64,7 +63,7 @@ spe$BayesSpace <- factor(
     )
   )
 )
-# head(unique(spe$BayesSpace))
+head(unique(spe$BayesSpace))
 # [1] Sp02D02 Sp02D01
 # Levels: Sp02D01 Sp02D02
 
@@ -91,7 +90,6 @@ message("Processing BayesSpace k=", k_nice)
 spe_pseudo_k <- aggregateAcrossCells(
   spe,
   DataFrame(
-    #BayesSpace = spe[[paste0("BayesSpace_PCA_Harmony_k", k_nice)]],
     BayesSpace = spe[[paste0("BayesSpace_harmony_k", k_nice)]],
     reg_sample_id = spe$sample_id
   )
@@ -129,6 +127,7 @@ if (is.factor(spe_pseudo_k$BayesSpace)) {
   ## Drop unused var_registration levels if we had to drop some due to min_nspots:
   ## registration_variable equivalent here: BayesSpace
   spe_pseudo_k$BayesSpace <- droplevels(spe_pseudo_k$BayesSpace)
+  levels(spe_pseudo_k$BayesSpace)
 }
 
 # Compute mitochondrial expression ratio
@@ -139,17 +138,15 @@ spe_pseudo_k$expr_chrM_ratio <- spe_pseudo_k$expr_chrM / spe_pseudo_k$sum_umi
 
 # Convert relevant variables to factors
 
-levels(spe_pseudo_k$BayesSpace)
-
 table(spe_pseudo_k$brain_area_DEG)
 # Anterior Posterior
 #   7         5
 ## drop levels not used
-spe_pseudo_k$brain_area_DEG <- droplevels(spe_pseudo_k$brain_area_DEG)
 spe_pseudo_k$brain_area_DEG <- factor(
   spe_pseudo_k$brain_area_DEG,
   levels = c("Anterior", "Posterior")
 )
+spe_pseudo_k$brain_area_DEG <- droplevels(spe_pseudo_k$brain_area_DEG)
 levels(spe_pseudo_k$brain_area_DEG)
 table(spe_pseudo_k$brain_area_DEG)
 
@@ -162,37 +159,39 @@ logcounts(spe_pseudo_k) <-
              log = TRUE,
              prior.count = 1
   )
+#head(reducedDim(spe_pseudo_k))
 
 # # calculate the number of cells per (sample_id + BayesSpace cluster)
 # Adapted from: https://github.com/LieberInstitute/dlpfc_asd/blob/2b83eeb9572bd7d37505e8db6e20bb3ded09c2c1/code/06_differential_expression/01_create_pseudobulk_data.R#L129
 
-# message("-------------------------------------------------------------")
-# # Get BayesSpace cluster assignments for the current k
-# cluster_ids <- spe[[paste0("BayesSpace_harmony_k", k_nice)]]
-# # Create a data frame with sample_id and cluster_ids
-# df <- data.frame(sample_id = spe$sample_id, 
-#                  cluster_ids = cluster_ids)
-# # Create a table between sample_id and cluster_ids
-# k_table <- table(df$sample_id, df$cluster_ids)
-# # Add a 'Total' column to the table by summing across rows (sum of cells for each sample_id)
-# k_table <- cbind(k_table, Total = rowSums(k_table))
-# # Add a ncells from spe_pseudo_k
-# k_table <- cbind(k_table, nspots = spe_pseudo_k$nspots)
-# k_table_subset <- k_table[colnames(spe_pseudo_k), grepl("^Sp", colnames(k_table))]
-# 
-# ## Compute ILR
-# k_table_ilr <- ilr(k_table_subset)
-# ## Note that this is basically the same as
-# ## ilr(k_table_subset / rowSums(k_table_subset))
-# ##rowSums(k_table_subset / rowSums(k_table_subset))  equal to 1
-# colnames(k_table_ilr) <- paste0("ILR_SpD", k_nice, "_", seq_len(ncol(k_table_ilr)))
-# 
-# colData(spe_pseudo_k) <- cbind(colData(spe_pseudo_k), k_table_subset, as.data.frame(k_table_ilr))
-# 
-# # Print the table of cell counts per sample_id and cluster
-# message("Cell counts per sample_id and cluster for k=", k_nice)
-# print(k_table)
-# message("-------------------------------------------------------------")
+message("-------------------------------------------------------------")
+# Get BayesSpace cluster assignments for the current k
+cluster_ids <- spe[[paste0("BayesSpace_harmony_k", k_nice)]]
+# Create a data frame with sample_id and cluster_ids
+df <- data.frame(sample_id = spe$sample_id,
+                 cluster_ids = cluster_ids)
+# Create a table between sample_id and cluster_ids
+k_table <- table(df$sample_id, df$cluster_ids)
+# Add a 'Total' column to the table by summing across rows (sum of cells for each sample_id)
+k_table <- cbind(k_table, Total = rowSums(k_table))
+# Add a ncells from spe_pseudo_k
+k_table <- cbind(k_table, nspots = spe_pseudo_k$nspots)
+#k_table_subset <- k_table[colnames(spe_pseudo_k), grepl("^Sp", colnames(k_table))]
+k_table_subset <- k_table[colnames(spe_pseudo_k), grepl("^[[:digit:]]+$", colnames(k_table))]
+
+## Compute ILR
+k_table_ilr <- ilr(k_table_subset)
+## Note that this is basically the same as
+## ilr(k_table_subset / rowSums(k_table_subset))
+##rowSums(k_table_subset / rowSums(k_table_subset))  equal to 1
+colnames(k_table_ilr) <- paste0("ILR_SpD", k_nice, "_", seq_len(ncol(k_table_ilr)))
+
+colData(spe_pseudo_k) <- cbind(colData(spe_pseudo_k), k_table_subset, as.data.frame(k_table_ilr))
+
+# Print the table of cell counts per sample_id and cluster
+message("Cell counts per sample_id and cluster for k=", k_nice)
+print(k_table)
+message("-------------------------------------------------------------")
 
 
 
