@@ -2,8 +2,8 @@
 #SBATCH -p katun
 #SBATCH --mem=600G
 #SBATCH --job-name=02_PCA_harmony
-#SBATCH -c 5
-#SBATCH -t 4-0:00:00
+#SBATCH -c 10
+#SBATCH -t 7-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/02_PCA_harmony.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/02_PCA_harmony.txt
 

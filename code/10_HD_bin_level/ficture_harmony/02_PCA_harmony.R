@@ -17,7 +17,11 @@ svg_path = here(
 spe_out_path = here(
     'processed-data', '10_HD_bin_level', 'ficture_harmony', 'spe_harmony.rds'
 )
+plot_path = here(
+    'plots', '10_HD_bin_level', 'ficture_harmony', 'harmony_convergence.pdf'
+)
 num_pcs = 50
+num_svgs = 500
 
 num_cores = as.numeric(Sys.getenv("SLURM_CPUS_ON_NODE"))
 set.seed(0)
@@ -25,9 +29,12 @@ set.seed(0)
 spe <- readRDS(spe_in_path)
 
 #   Filter raw SPE: drop bins with 0 counts for all genes, and drop genes with
-#   0 counts in every bin
+#   0 counts in every bin. Take only in-tissue bins
 message(Sys.time(), ' | Filtering bins and genes...')
-spe <- spe[rowSums(assays(spe)$counts) > 0, colSums(assays(spe)$counts) > 0]
+spe <- spe[
+    rowSums(assays(spe)$counts) > 0,
+    spe$in_tissue & (colSums(assays(spe)$counts) > 0)
+]
 
 #   Use library-size normalization (normalization by deconvolution is not
 #   computationally feasible with data this large)
@@ -39,13 +46,16 @@ spe = logNormCounts(spe)
 #   inspired by https://pachterlab.github.io/voyager/articles/vig6_merfish.html#pca-for-larger-datasets
 message(Sys.time(), " | Running PCA...")
 spe = runPCA(
-    spe, subset_row = readLines(svg_path), ncomponents = num_pcs,
+    spe, subset_row = readLines(svg_path)[1:num_svgs], ncomponents = num_pcs,
     BPPARAM = MulticoreParam(num_cores), BSPARAM = IrlbaParam()
 )
 message(Sys.time(), " | Running Harmony...")
+pdf(plot_path)
 spe = RunHarmony(
-    spe, group.by.vars = "sample_id", reduction.use = "PCA", ncores = num_cores
+    spe, group.by.vars = "sample_id", ncores = num_cores,
+    plot_convergence = TRUE
 )
+dev.off()
 
 message(Sys.time(), " | Saving result...")
 saveRDS(spe, spe_out_path)
