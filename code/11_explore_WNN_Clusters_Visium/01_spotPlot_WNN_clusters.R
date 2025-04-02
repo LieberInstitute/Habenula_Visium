@@ -12,23 +12,15 @@ library("ggplot2")
 library("viridisLite")
 library("purrr")
 library("tidyverse")
-library("stringr")
 library("here")
 
 ## input directories
 
 here()
 
-# Check/create directories
-
-## set path to read Seurat rds and deg from WNN Leiden res=2 knn=30
-## set hard path to Habenula multiome project WNN Ledien knn=30 resolution=2 
-# RDS should contain gene-ensembl ids: processed-data/05_snRNA-seq_model_stats/enrichment_snRNA-multiome_v2b.rds
-
 inputRDS_Dir <- here(
   "processed-data",
   "11_explore_WNN_Clusters_Visium"
-  #"05_snRNA-seq_model_stats"
 )
 plotDir <- here(
   "plots",
@@ -43,7 +35,7 @@ inputCVS_Dir <- here(
 ## set path to read sce visium object to plot the top deg 
 
 inputSCE_Dir <- here("processed-data", "04_harmony_BayesSpace", "spe_qcED_spatialLIBD_log.rds")
-# inputSCE_Dir <- here(inputRDS_Dir, "seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2_renamed_visium_v2b.rds") 
+
 spe <- readRDS(inputSCE_Dir)
 class(spe)
 unique(spe$sample_id)
@@ -60,8 +52,10 @@ if (!dir.exists(plotDir)) {
 Seurat_base_name <- "seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2_renamed_visium.rds"
 seurat_name <- here(inputRDS_Dir, Seurat_base_name)
 
-# Load Seurat
+# Load Seurat to extract `Hb` clustering IDs
+
 SeuratOBJ <- readRDS(here(inputRDS_Dir, Seurat_base_name))
+DefaultAssay(SeuratOBJ) <- "RNA"
 levels(SeuratOBJ)
 ## Levels should be
 # [1] "C.05 DD_LHb" "C.07 DD_MHb" "C.10 DD_MHb" "C.11 DD_MHb" "C.14 DD_MHb"
@@ -74,18 +68,8 @@ levels(SeuratOBJ)
 # [36] "C.34"        "C.35"        "C.37"        "C.38"        "C.39"
 # [41] "C.41"        "C.42"
 
-DefaultAssay(SeuratOBJ) <- "RNA"
-Seurat_base_name <- str_extract(seurat_name, regex("C\\.\\w+"))
-# C.leiden_lsi_r2_renamed_visium
 
-## Prepare Violin Plot on canonical Hb gene-markers
-
-message("Reading multiome RNA WNN to evalute top 5 DEG on Visium data")
-# features <- c("POU4F1", "GPR151", "TAC3")
-# features <- c("POU4F1", "GPR151")
-
-
-## Read DEG to plot the top 5 genes highly expressed
+## Read DEG from WNN to prepare data to make spotPlots of the top 5 genes highly expressed
 
 # All DEG
 DEG_file_name <- "WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2_cellTypes_integrated_top50.csv"
@@ -98,7 +82,7 @@ head(df_cluster_names)
 # 2     0   3.849508 0.900 0.083         0       1      KIT        DD_Inhib.Thal
 # 3     0   3.682782 0.927 0.122         0       1    MEIS2      LB_Thalamus/MDm
 
-## Identified and subset clusters annotated as putative `habenula`. Use length of cluster ID as criteria
+## Subset clusters annotated as putative `habenula`. Use length of cluster ID as criteria
 ## extract clusters IDs
 
 message("Filtering habenula cluster-IDs")
@@ -107,7 +91,9 @@ SeuOBJ_clusters <- Idents(SeuratOBJ)
 remove("SeuratOBJ")
 
 hb_clusters <- unlist(levels(SeuOBJ_clusters))
+
 ## Get top 5. Filter habenula clusters only
+
 no_hb_clust = list()
 for (idx in seq_along(hb_clusters)) {
   if (nchar(hb_clusters[idx]) <= 4) {
@@ -145,14 +131,13 @@ head(top5)
 
 # unique(top5$cluster)
 
-## Set some initials for manage plots
+## Initials for manage plots layout
 
 var_height <- 24 # 24/3=8
 var_width <- 36 # 36/4=9
 var_point_size <- 3.5
 
-# gene_names <- rownames(spe)  
-# print(gene_names)
+print("Plotting spotPlots with multi-gene function for all the `hb` clusters using he top 5 DEG")
 
 for (clus in as.vector(hb_clusters)) {
   # testing: clus = 5
@@ -174,12 +159,11 @@ for (clus in as.vector(hb_clusters)) {
 
   ## define multi-gene method to plot and file names for each cluster
   lst_multi_g <- c(
-    z_score = paste0(paste0("C.", str_pad(clus, width = 2, pad = "0")), "_multi_genes_Zs.pdf"),
-    pca = paste0(paste0("C.", str_pad(clus, width = 2, pad = "0")), "_multi_genes_PCA.pdf"),
-    sparsity = paste0(paste0("C.", str_pad(clus, width = 2, pad = "0")), "_multi_genes_Sp_", clus, ".pdf")
+    z_score = paste0("ZScores_", paste0("C", str_pad(clus, width = 2, pad = "0")), "_multi_genes.pdf"),
+    pca = paste0("PCA_", paste0("C", str_pad(clus, width = 2, pad = "0")), "_multi_genes.pdf"),
+    sparsity = paste0("sparcity_", paste0("C", str_pad(clus, width = 2, pad = "0")), "_multi_genes.pdf")
   )
   
-  print("Ploting multi-genes for WM gene markers")
   map2(
     as.vector(names(lst_multi_g)),
     as.vector(lst_multi_g),
