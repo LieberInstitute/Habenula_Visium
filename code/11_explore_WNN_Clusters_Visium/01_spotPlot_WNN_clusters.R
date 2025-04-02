@@ -7,9 +7,9 @@
 ## Note. Seurat objects were created with module load conda_R/4.3.x
 ########################################################################
 
-library("Seurat")
+# library("Seurat")
 library("spatialLIBD")
-
+library("Seurat")
 library("ggplot2")
 library("viridisLite")
 # library("patchwork")
@@ -27,14 +27,18 @@ here()
 # Check/create directories
 
 ## set path to read Seurat rds and deg from WNN Leiden res=2 knn=30
+## set hard path to Habenula multiome project WNN Ledien knn=30 resolution=2 
+# RDS should contain gene-ensembl ids: processed-data/05_snRNA-seq_model_stats/enrichment_snRNA-multiome_v2b.rds
 
 inputRDS_Dir <- here(
   "processed-data",
   "11_explore_WNN_Clusters_Visium"
+  #"05_snRNA-seq_model_stats"
 )
 plotDir <- here(
   "plots",
-  "11_explore_WNN_Clusters_Visium"
+  "11_explore_WNN_Clusters_Visium",
+  "WNN_marker_genes_exploratory_top5"
 )
 inputCVS_Dir <- here(
   "processed-data",
@@ -43,17 +47,13 @@ inputCVS_Dir <- here(
 
 ## set path to read sce visium object to plot the top deg 
 
-inputSCE_Dir <- here("processed-data", "04_harmony_BayesSpace", "spe_qcED_spatialLIBD_log.rds") 
+inputSCE_Dir <- here("processed-data", "04_harmony_BayesSpace", "spe_qcED_spatialLIBD_log.rds")
+# inputSCE_Dir <- here(inputRDS_Dir, "seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2_renamed_visium_v2b.rds") 
 spe <- readRDS(inputSCE_Dir)
+class(spe)
 unique(spe$sample_id)
 ## Quick exploration
 cat(" Number of spots:", dim(spe)[2], "\n")
-
-## Set some initials for manage plots
-
-var_height <- 24 # 24/3=8
-var_width <- 36 # 36/4=9
-var_point_size <- 3.5
 
 ## Check directories
 
@@ -85,31 +85,9 @@ Seurat_base_name <- str_extract(seurat_name, regex("C\\.\\w+"))
 
 ## Prepare Violin Plot on canonical Hb gene-markers
 
-message(
-  "Reading WNN to evalute gene expression of `POU4F1` and `GPR151` on: ",
-  str_extract(Seurat_base_name, regex("C\\.\\w+"))
-)
+message("Reading multiome RNA WNN to evalute top 5 DEG on Visium data")
 # features <- c("POU4F1", "GPR151", "TAC3")
-features <- c("POU4F1", "GPR151")
-
-## Add here vis_gene() function with multi_gene_method = "z_score", "pca" and "sparsity"
-# vis_gene(
-#   spe,
-#   geneid = c("broad_tangram_astro", white_matter_genes[1]),
-#   multi_gene_method = "pca",
-#   point_size = 1.5
-# )
-
-# plt1 <- plt1 +
-#   plot_annotation(
-#     paste0("WNN: ", Seurat_base_name),
-#     caption = 'Cell Ranger ARC reanalize',
-#     theme = theme(plot.title = element_text(hjust = 0.5))
-#   )
-# tmp_name <- paste0(Seurat_base_name, "_POU4F1_GPR151_VPlot.pdf")
-# ggsave(plt1, filename = here(plotDir, tmp_name), height = 4, width = 17)
-# 
-# message('\nViolin plots saved `', plotDir, '`')
+# features <- c("POU4F1", "GPR151")
 
 
 ## Read DEG to plot the top 5 genes highly expressed
@@ -128,9 +106,11 @@ head(df_cluster_names)
 ## Identified and subset clusters annotated as putative `habenula`. Use length of cluster ID as criteria
 ## extract clusters IDs
 
-message("Cluster-IDs from `WNN`")
+message("Filtering habenula cluster-IDs")
 
 SeuOBJ_clusters <- Idents(SeuratOBJ)
+remove("SeuratOBJ")
+
 hb_clusters <- unlist(levels(SeuOBJ_clusters))
 ## Get top 5. Filter habenula clusters only
 no_hb_clust = list()
@@ -146,265 +126,77 @@ as.vector(hb_clusters)
 # [6] "C.16 DD_MHb" "C.18 DD_LHb" "C.23 DD_LHb" "C.24 DD_LHb" "C.30 DD_LHb"
 # [11] "C.33 DD_LHb" "C.36 DD_MHb" "C.40 DD_LHb"
 # length(hb_clusters)
-hb_clusters <- as.integer(substr(hb_clusters, 3, 4))
+hb_clusters <- as.integer(trimws(substr(hb_clusters, 3, 4)))
 # [1]  5  7 10 11 14 16 18 23 24 30 33 36 40
 # get top 5
 unique(df_cluster_names$cluster)
 top5 <- df_cluster_names |>
   filter(cluster %in% hb_clusters) |>
   group_by(cluster) |>
-  top_n(n = 5, wt = avg_log2FC)
+  top_n(n = 5, wt = avg_log2FC) |>
+  select(cluster, gene)
 
-# dim(top5)
-# head(top5)
+dim(top5)
+head(top5)
+# cluster gene   
+#   <int> <chr>  
+# 1       5 RFTN1  
+# 2       5 CBLN2  
+# 3       5 GALR1  
+# 4       5 HTR4   
+# 5       5 COL25A1
+# 6       7 GPR149 
+
+
 # unique(top5$cluster)
 
-for (clus in unique(top5$cluster)) {
+## Set some initials for manage plots
+
+var_height <- 24 # 24/3=8
+var_width <- 36 # 36/4=9
+var_point_size <- 3.5
+
+# gene_names <- rownames(spe)  
+# print(gene_names)
+
+for (clus in as.vector(hb_clusters)) {
   # testing: clus = 5
-  tmp_name <- paste0(
-    Seurat_base_name,
-    "_VPlot_hb_top5_fdr5_cluster_",
-    clus,
-    ".pdf"
-  )
-  
-  message("Processing habenula cluster: ", clus, "; Saved as: ", tmp_name)
-  
-  top5_cluster <- top5 |>
+  message("Processing hb cluster: ", clus)
+
+  # create a vector with gene-ids  
+  genes_lst <- top5 |>
     filter(cluster == clus)
+  genes_lst <- genes_lst$gene
+  # Extract Ensembl ID
+  lst_genes <- rowData(spe)$gene_search[
+    rowData(spe)$gene_name %in% genes_lst
+  ]
+  ## Our list of genes
+  #lst_genes
+  # [1] "RFTN1; ENSG00000131378"   "COL25A1; ENSG00000188517"
+  # [3] "HTR4; ENSG00000164270"    "CBLN2; ENSG00000141668"  
+  # [5] "GALR1; ENSG00000166573"
+
+  # map2(
+  #   as.vector(names(lst_multi_g)),
+  #   as.vector(lst_multi_g),
+  #  ~ vis_grid_gene(
+  vis_grid_gene(
+      spe = spe,
+      geneid = lst_genes,
+      #multi_gene_method = .x,
+      multi_gene_method = "pca",
+      height = var_height,
+      width = var_width,
+      point_size = var_point_size,
+      cont_colors = viridisLite::viridis(21, direction = 1),
+      pdf = here(plotDir, "WNN_marker_genes_exploratory_top5", .y),
+      assayname = "logcounts"
+  )
+  # )
   
-  pdf(file = here(plotDir, tmp_name))
-  par(mfrow = c(2, 1))
-  
-  for (gen in top5_cluster$gene) {
-    message(paste0("Processing gene ", gen))
-    
-    plt1 <- VlnPlot(
-      object = SeuratOBJ,
-      layer = "data",
-      # features = top5_cluster$gene[.x],
-      features = gen,
-      pt.size = 0
-    ) +
-      labs(x = paste0("**Habenula cluster: ", clus)) &
-      theme(
-        text = element_text(size = 8),
-        axis.text.x = element_text(size = 7),
-        axis.text.y = element_text(size = 7),
-        plot.title = element_text(hjust = 0.5)
-      ) &
-      NoLegend()
-    print(plt1)
-  }
-  
-  dev.off()
 }
 
-
-## Heatmap of overlaps between WNN vs RNA and WNN vs ATAC
-
-colnames(SeuratOBJ@meta.data)
-# # SeuratOBJ$seurat_clusters
-# cmat <- table(SeuratOBJ[[c("C.leiden", "C.leiden_atac")]])
-# dim(cmat)
-# pheatmap(cmat, cluster_rows = TRUE, cluster_cols = TRUE, display_numbers = FALSE)
-#
-# # SeuratOBJ[[c("C.leiden", "C.leiden_wnn")]]
-# cmat <- table(SeuratOBJ[[c("seurat_clusters", "C.leiden")]])
-# dim(cmat)
-# plt_rna <- pheatmap(cmat, cluster_rows = TRUE, cluster_cols = TRUE, display_numbers = FALSE,
-#          main = "RNA vs WNN", xlab = "RNA clusters", ylab = "WNN clusters")
-#
-# cmat <- table(SeuratOBJ[[c("seurat_clusters", "C.leiden_atac")]])
-# dim(cmat)
-# plt_atac <- pheatmap(cmat, cluster_rows = TRUE, cluster_cols = TRUE, display_numbers = FALSE,
-#          main = "ATAC vs WNN")
-
-##  compute Jaccard for RNA
-
-clust.wnn1 <- as.vector(SeuratOBJ$seurat_clusters)
-clust.wnn2 <- as.vector(SeuratOBJ$C.leiden)
-jacc.mat <- linkClustersMatrix(clust.wnn1, clust.wnn2)
-# rownames(jacc.mat)
-colnames(jacc.mat) <- paste0("RNA.C.", colnames(jacc.mat))
-
-## Plot Jacquard
-
-plt_wnn_rna <- pheatmap(
-  jacc.mat,
-  color = viridisLite::plasma(101),
-  cluster_cols = FALSE,
-  cluster_rows = TRUE, # show hierarchical clust
-  angle_col = 90,
-  na_col = "black",
-  main = "Overlap between RNA and WNN cluster identities",
-  fontsize = 10,
-  display_numbers = T,
-  number_format = "%.1f",
-  fontsize_number = 7,
-  legend = TRUE
-)
-
-##  compute Jaccard for ATAC
-
-clust.wnn2 <- as.vector(SeuratOBJ$C.leiden_atac)
-jacc.mat <- linkClustersMatrix(clust.wnn1, clust.wnn2)
-colnames(jacc.mat) <- paste0("ATAC.C.", colnames(jacc.mat))
-
-## Plot Jacquard
-
-plt_wnn_atac <- pheatmap(
-  jacc.mat,
-  color = viridisLite::plasma(101),
-  cluster_cols = FALSE,
-  cluster_rows = TRUE,
-  angle_col = 90,
-  na_col = "black",
-  main = "Overlap between ATAC and WNN cluster identities",
-  fontsize = 10,
-  display_numbers = T,
-  number_format = "%.1f",
-  fontsize_number = 7,
-  legend = TRUE
-)
-
-# arrange and save plots
-
-plot_list <- list()
-plot_list[['rna']] <- as.ggplot(plt_wnn_rna)
-plot_list[['atac']] <- as.ggplot(plt_wnn_atac)
-g <- grid.arrange(grobs = plot_list, ncol = 2)
-
-tmp_png <- paste0(Seurat_base_name, "_Jaccard_WNN_RNA_ATAC.png")
-ggsave(g, filename = here(plotDir, tmp_png), height = 6, width = 17)
-
-
-## DimPlot ATAC, RNA and WNN annotated
-
-seu_c <- as.vector(head(SeuratOBJ$seurat_clusters))
-wnn_c <- as.vector(head(SeuratOBJ$`C.leiden_wnn`))
-rna_c <- as.vector(head(SeuratOBJ$`C.leiden`))
-atac_c <- as.vector(head(SeuratOBJ$`C.leiden_atac`))
-tbl <- data.frame(rna_c, atac_c, wnn_c, seu_c)
-#     rna_c atac_c wnn_c seu_c
-# 1    24     11    25  C.25
-# 2     4     11     4  C.04
-# 3    15      4     9  C.09
-# 4     1      9     4  C.04
-# 5     2     11     1  C.01
-# 6     2      8     1  C.01
-
-clust_name = "seurat_clusters"
-plt1 <- DimPlot(
-  SeuratOBJ,
-  reduction = "umap.integrated",
-  group.by = clust_name,
-  label = TRUE,
-  label.size = 2.5,
-  repel = TRUE
-) +
-  ggtitle(
-    "RNA",
-    subtitle = paste(
-      " Leiden at res=2 knn=30; SNN Clusters=",
-      length(table(SeuratOBJ[["C.leiden"]])),
-      "\nAnnotated by WNN clusters"
-    )
-  ) &
-  NoLegend()
-
-plt2 <- DimPlot(
-  SeuratOBJ,
-  reduction = "umap.lsi.integrated",
-  #group.by = clust_name_atac,
-  group.by = clust_name,
-  label = TRUE,
-  label.size = 2.5,
-  repel = TRUE
-) +
-  ggtitle(
-    "ATAC",
-    subtitle = paste(
-      " Leiden at res=2 knn=30; SNN Clusters=",
-      length(table(SeuratOBJ[["C.leiden_atac"]])),
-      "\nAnnotated by WNN clusters"
-    )
-  ) &
-  NoLegend()
-
-plt3 <- DimPlot(
-  SeuratOBJ,
-  reduction = "wnn.umap",
-  group.by = clust_name,
-  label = TRUE,
-  label.size = 2.5
-) +
-  ggtitle(
-    "WNN",
-    subtitle = paste(
-      "Leiden at res=2 knn=30; WNN Clusters=",
-      length(table(SeuratOBJ[[clust_name]]))
-    )
-  )
-
-pltALL <- plt1 + plt2 + plt3 & theme(plot.title = element_text(hjust = 0.5))
-tmp_png <- paste0(Seurat_base_name, "_RNA_ATAC_WNN_DimPlots.png")
-ggsave(
-  pltALL,
-  filename = here(
-    plotDir,
-    tmp_png
-  ),
-  height = 7,
-  width = 20
-)
-
-## UMAP: Label clusters on a ggplot2-based scatter plot
-
-# Feature plot - visualize feature expression in low-dimensional space
-# Calculate feature-specific contrast levels based on quantiles of non-zero expression.
-# Particularly useful when plotting multiple markers
-#Reductions(sob)
-# FeaturePlot(sob, features = features,
-#             reduction = "wnn.umap",
-#             min.cutoff = "q10", max.cutoff = "q90") # + labs(title = Seurat_base_name)
-
-## Visualize co-expression of two features simultaneously for Medial and Lateral Hb
-
-features <- c("POU4F1", "GPR151")
-title <- str_extract(seurat_name, regex("C\\.\\w*\\_r2"))
-
-plt1 <- FeaturePlot(
-  SeuratOBJ,
-  features = features,
-  reduction = "wnn.umap",
-  blend = TRUE
-) +
-  labs(title = paste0("Clusters from WNN: ", title)) &
-  theme(
-    text = element_text(size = 8),
-    axis.text.x = element_text(size = 7),
-    axis.text.y = element_text(size = 7),
-    plot.title = element_text(hjust = 0.5)
-  )
-tmp_name <- paste0(Seurat_base_name, "_POU4F1_GPR151_FeaturePlot.pdf")
-ggsave(plt1, filename = here(plotDir, tmp_name), height = 3, width = 10)
-
-
-## Dot plots - the size of the dot corresponds to the percentage of cells expressing the
-# feature in each cluster. The color represents the average expression level
-plt1 <- DotPlot(SeuratOBJ, features = c(features, "TAC3")) +
-  RotatedAxis() +
-  labs(title = paste0("Clusters from WNN: ", title)) &
-  theme(
-    text = element_text(size = 8),
-    axis.text.x = element_text(size = 7),
-    axis.text.y = element_text(size = 7),
-    plot.title = element_text(hjust = 0.5)
-  )
-
-tmp_name <- paste0(Seurat_base_name, "_POU4F1_GPR151_DotPlot.pdf")
-ggsave(plt1, filename = here(plotDir, tmp_name), height = 6, width = 6)
 
 
 ## Reproducibility information
