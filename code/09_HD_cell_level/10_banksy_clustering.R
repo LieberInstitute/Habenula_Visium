@@ -31,6 +31,7 @@ res_neat = paste0('res', sub('\\.', '_', as.character(opt$res)))
 spe_dir = here(
     'processed-data', '09_HD_cell_level', sprintf('spe_banksy_%s', lambda_neat)
 )
+spe_orig_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
 out_path = here(
     'processed-data', '09_HD_cell_level', 'banksy', lambda_neat,
     sprintf('leiden_%s.csv', res_neat)
@@ -59,6 +60,12 @@ cluster_name = colnames(colData(spe))[
 rd_name = reducedDimNames(spe)[
     grep(sprintf('^UMAP.*lam%s', opt$lambda), reducedDimNames(spe))
 ]
+
+#   Fix spatial coordinates (unstagger) for plotting
+spe_orig = loadHDF5SummarizedExperiment(spe_orig_dir)
+spatialCoords(spe) = spatialCoords(spe_orig)
+rm(spe_orig)
+gc()
 
 #   Plot clusters and colored UMAP for each sample
 for (sample_id in unique(spe$sample_id)) {

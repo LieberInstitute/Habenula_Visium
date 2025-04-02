@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=30G
+#SBATCH --mem=35G
 #SBATCH --job-name=10_banksy_clustering
 #SBATCH -c 1
 #SBATCH -t 2-0:00:00
