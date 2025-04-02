@@ -1,21 +1,16 @@
 ########################################################################
-## Plot GEX on selected WNN clustering results
+## Plot spotPlots using multi_gene function on the top5 multiome RNA WNN clusters
 ##
 ## Authors. CSC
-## Date. Jan 24, 2024
-## Recommended resources on interactive mode: srun --pty --mem=60GB --x11 bash
-## Note. Seurat objects were created with module load conda_R/4.3.x
+## Date. April 02, 2025
+## Recommended resources on interactive mode: srun --pty --mem=80GB --x11 bash
 ########################################################################
 
-# library("Seurat")
 library("spatialLIBD")
 library("Seurat")
 library("ggplot2")
 library("viridisLite")
-# library("patchwork")
-# library("ggplotify")
-# library("gridExtra")
-# library("purrr")
+library("purrr")
 library("tidyverse")
 library("stringr")
 library("here")
@@ -177,23 +172,28 @@ for (clus in as.vector(hb_clusters)) {
   # [3] "HTR4; ENSG00000164270"    "CBLN2; ENSG00000141668"  
   # [5] "GALR1; ENSG00000166573"
 
-  # map2(
-  #   as.vector(names(lst_multi_g)),
-  #   as.vector(lst_multi_g),
-  #  ~ vis_grid_gene(
-  vis_grid_gene(
+  ## define multi-gene method to plot and file names for each cluster
+  lst_multi_g <- c(
+    z_score = paste0(paste0("C.", str_pad(clus, width = 2, pad = "0")), "_multi_genes_Zs.pdf"),
+    pca = paste0(paste0("C.", str_pad(clus, width = 2, pad = "0")), "_multi_genes_PCA.pdf"),
+    sparsity = paste0(paste0("C.", str_pad(clus, width = 2, pad = "0")), "_multi_genes_Sp_", clus, ".pdf")
+  )
+  
+  print("Ploting multi-genes for WM gene markers")
+  map2(
+    as.vector(names(lst_multi_g)),
+    as.vector(lst_multi_g),
+   ~ vis_grid_gene(
       spe = spe,
       geneid = lst_genes,
-      #multi_gene_method = .x,
-      multi_gene_method = "pca",
+      multi_gene_method = .x, # z-score, pca, sparcity
       height = var_height,
       width = var_width,
       point_size = var_point_size,
       cont_colors = viridisLite::viridis(21, direction = 1),
-      pdf = here(plotDir, "WNN_marker_genes_exploratory_top5", .y),
-      assayname = "logcounts"
+      pdf = here(plotDir, .y),
+      assayname = "logcounts")
   )
-  # )
   
 }
 
