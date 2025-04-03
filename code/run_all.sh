@@ -205,12 +205,11 @@ echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
 ## First remove old plots
 rm -f logs/01_create_pseudobulk_data_*.txt
-rm -f ${PLOTDIR}/${SUBDIR}/sce_pseudo_gene_explanatory_vars_k*.pdf
+# rm -f ${PLOTDIR}/${SUBDIR}/sce_pseudo_gene_explanatory_vars_k*.pdf
 rm -f ${PROCESSEDIR}/${SUBDIR}/sce_pseudo_BayesSpace_k*.rds
 
 sbatch 01_create_pseudobulk_data.sh
 squeue -u csoto
-
 
 echo "Running exploring variance ###################################### "
 echo "02_explore_expr_variability.sh"
@@ -232,6 +231,27 @@ rm -f logs/03_model_BayesSpace*.err
 rm -f logs/03_model_BayesSpace*.out
 
 sbatch 03_model_BayesSpace.sh
+
+echo "############################################################################ "
+echo "#########   Explore BRAIN-AREA differential expression  #################### "
+echo "#########                                               #################### "
+echo "############################################################################ "
+
+## change directory
+SUBDIR="05_brain_area_differential_expression"
+
+cd ${CODEDIR}/${SUBDIR}
+
+echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
+
+## First remove old plots
+rm -f logs/01_create_pseudobulk_data_*.txt
+rm -f ${PROCESSEDIR}/${SUBDIR}/sce_pseudo_brain_area_k*.rds
+rm -f ${PROCESSEDIR}/${SUBDIR}/stats_summary_csv/*.csv
+
+sbatch 01_create_pseudobulk_data.sh
+
+echo "Process completed!"
 
 
 
