@@ -59,8 +59,8 @@ spaceranger count \
 
 ## Move output
 echo "Moving results to new location"
-mkdir -p /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/11_spaceranger_probe_fix
-mv ${SAMPLE} /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/11_spaceranger_probe_fix/
+mkdir -p /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/01_spaceranger/probe_fix
+mv ${SAMPLE} /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/01_spaceranger/probe_fix/
 
 echo "**** Job ends ****"
 date
