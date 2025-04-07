@@ -11,7 +11,8 @@ spe_norm_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
 plot_dir = here('plots', '09_HD_cell_level', 'QC')
 min_umi_cutoff = 10
 H1_MVPY9BW_A1_8433_artifact = 34223
-H1_XQQD7C7_A1_8518_artifact = 28588
+H1_XQQD7C7_A1_8518_horizontal_artifact = 28588
+H1_XQQD7C7_A1_8518_vertical_artifact = 32766
 
 dir.create(
     file.path(plot_dir, 'before'), recursive = TRUE, showWarnings = FALSE
@@ -132,12 +133,13 @@ spe = spe[
     (spatialCoords(spe)[, 'pxl_col_in_fullres'] <= H1_MVPY9BW_A1_8433_artifact)
 ]
 
-#   Filter out the artifact in H1-XQQD7C7_A1_8518 using info gained in bin-level
-#   QC
+#   Filter out the artifacts in H1-XQQD7C7_A1_8518 using info gained in
+#   bin-level QC
 spe = spe[
     ,
     (spe$sample_id != 'H1-XQQD7C7_A1_8518') |
-    (spatialCoords(spe)[, 'pxl_row_in_fullres'] <= H1_XQQD7C7_A1_8518_artifact)
+    (spatialCoords(spe)[, 'pxl_row_in_fullres'] <= H1_XQQD7C7_A1_8518_horizontal_artifact) |
+    (spatialCoords(spe)[, 'pxl_col_in_fullres'] <= H1_XQQD7C7_A1_8518_vertical_artifact)
 ]
 
 spatial_qc_plots(spe, file.path(plot_dir, 'after'))
