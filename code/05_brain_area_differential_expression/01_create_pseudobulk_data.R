@@ -76,18 +76,21 @@ head(unique(spe$BayesSpace))
 #colnames(colData(spe))
 table(colData(spe)$sample_id)
 table(colData(spe)$brain_area)
+table(colData(spe)$BayesSpace)
 
 ## Assign new 'brain-area' based in posterior-anterior locations defined by KDM
 colData(spe)$brain_area_DEG <- case_when(
   colData(spe)$sample_id == "V13B23-285_A1" ~ "0",
-  colData(spe)$sample_id == "V13B23-285_B1" | colData(spe)$brain_id == "V14F07-340_A1" | colData(spe)$brain_id == "V13B23-280_A1" ~ "1",
-  colData(spe)$sample_id == "V13B23-285_C1" | colData(spe)$brain_id == "V14F07-340_B1" | colData(spe)$brain_id == "V13B23-280_B1" ~ "2",
-  colData(spe)$sample_id == "V13B23-285_D1" | colData(spe)$brain_id == "V14F07-340_C1" | colData(spe)$brain_id == "V13B23-280_C1" ~ "1",
-  colData(spe)$sample_id == "V14F07-340_D1" | colData(spe)$brain_id == "V13B23-280_D1" ~ "4"
+  colData(spe)$sample_id == "V13B23-285_B1" | colData(spe)$sample_id == "V14F07-340_A1" | colData(spe)$sample_id == "V13B23-280_A1" ~ "1",
+  colData(spe)$sample_id == "V13B23-285_C1" | colData(spe)$sample_id == "V14F07-340_B1" | colData(spe)$sample_id == "V13B23-280_B1" ~ "2",
+  colData(spe)$sample_id == "V13B23-285_D1" | colData(spe)$sample_id == "V14F07-340_C1" | colData(spe)$sample_id == "V13B23-280_C1" ~ "3",
+  colData(spe)$sample_id == "V14F07-340_D1" | colData(spe)$sample_id == "V13B23-280_D1" ~ "4"
 )
-table(colData(spe)$brain_area_DEG)
-# 0    1    2    4 
-# 3803 6237 3201 1883 
+table(colData(spe)$brain_id, colData(spe)$brain_area_DEG)
+#           0    1    2    3    4
+# Br8518 3803 3119 3201 3118    0
+# Br9037    0 3117 2921 3580 3515
+# Br9090    0 1669 1689 1794 1883
 
 # Previous definition 
 # colData(spe)$brain_area_DEG <- ifelse(
@@ -112,10 +115,12 @@ message("Processing BayesSpace k=", k_nice)
 spe_pseudo_k <- aggregateAcrossCells(
   spe,
   DataFrame(
-    BayesSpace = spe[[paste0("BayesSpace_harmony_k", k_nice)]],
+    BayesSpace_pseudo = spe[[paste0("BayesSpace_harmony_k", k_nice)]],
     reg_sample_id = spe$sample_id
   )
 )
+spe_pseudo_k$BayesSpace_pseudo <- factor(spe_pseudo_k$BayesSpace_pseudo)
+levels(spe_pseudo_k$BayesSpace_pseudo)
 
 message("Aggregation completed for k=", k_nice)
 message("Dimensions of summed data: ", paste(dim(spe_pseudo_k), collapse = " x "))
@@ -148,13 +153,6 @@ if (!is.null(min_nspots)) {
   spe_pseudo_k <- spe_pseudo_k[, spe_pseudo_k$nspots >= min_nspots]
 }
 
-if (is.factor(spe_pseudo_k$BayesSpace)) {
-  ## Drop unused var_registration levels if we had to drop some due to min_nspots:
-  ## registration_variable equivalent here: BayesSpace
-  spe_pseudo_k$BayesSpace <- droplevels(spe_pseudo_k$BayesSpace)
-  levels(spe_pseudo_k$BayesSpace)
-}
-
 # Compute mitochondrial expression ratio
 
 is_mito <- which(seqnames(spe_pseudo_k) == "chrM")
@@ -162,20 +160,23 @@ spe_pseudo_k$expr_chrM <- colSums(counts(spe_pseudo_k)[is_mito, , drop = FALSE])
 spe_pseudo_k$sum_umi <- colSums(counts(spe_pseudo_k))
 spe_pseudo_k$expr_chrM_ratio <- spe_pseudo_k$expr_chrM / spe_pseudo_k$sum_umi
 
+spe_pseudo_k$age <- as.numeric(spe_pseudo_k$age)
+
 # Convert relevant variables to factors
 
-table(spe_pseudo_k$brain_area_DEG)
-# Anterior Posterior
-#   7         5
-## drop levels not used
-spe_pseudo_k$brain_area_DEG <- factor(
-  spe_pseudo_k$brain_area_DEG,
-  levels = c("Anterior", "Posterior")
-)
-spe_pseudo_k$brain_area_DEG <- droplevels(spe_pseudo_k$brain_area_DEG)
-levels(spe_pseudo_k$brain_area_DEG)
-table(spe_pseudo_k$brain_area_DEG)
-#spe_pseudo_k$age <- as.numeric(spe_pseudo_k$age)
+if (is.factor(spe_pseudo_k$BayesSpace_pseudo)) {
+  ## Drop unused var_registration levels if we had to drop some due to min_nspots:
+  ## registration_variable equivalent here: BayesSpace_pseudo
+  spe_pseudo_k$BayesSpace_pseudo <- droplevels(spe_pseudo_k$BayesSpace_pseudo)
+  levels(spe_pseudo_k$BayesSpace_pseudo)
+}
+
+spe_pseudo_k$brain_area_DEG <- factor(spe_pseudo_k$brain_area_DEG)
+if (is.factor(spe_pseudo_k$BayesSpace_pseudo)) {
+  spe_pseudo_k$brain_area_DEG <- droplevels(spe_pseudo_k$brain_area_DEG)
+  levels(spe_pseudo_k$brain_area_DEG)
+}
+
 
 ## Compute the logcounts
 
