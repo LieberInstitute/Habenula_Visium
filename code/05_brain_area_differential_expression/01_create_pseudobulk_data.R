@@ -15,6 +15,7 @@ if (is.na(k)) {
 
 library("here")
 library("spatialLIBD")
+library("tidyverse")
 library("ggplot2")
 library("gridExtra")
 library("sessioninfo")
@@ -73,17 +74,34 @@ head(unique(spe$BayesSpace))
 # Add a new column based on brain_id condition - This will be used as variable for exploring variation
 
 #colnames(colData(spe))
+table(colData(spe)$sample_id)
 table(colData(spe)$brain_area)
-colData(spe)$brain_area_DEG <- ifelse(
-  colData(spe)$brain_area == "AR6" | colData(spe)$brain_area == "AL5",
-  "Anterior",
-  "Posterior"
+
+## Assign new 'brain-area' based in posterior-anterior locations defined by KDM
+colData(spe)$brain_area_DEG <- case_when(
+  colData(spe)$sample_id == "V13B23-285_A1" ~ "0",
+  colData(spe)$sample_id == "V13B23-285_B1" | colData(spe)$brain_id == "V14F07-340_A1" | colData(spe)$brain_id == "V13B23-280_A1" ~ "1",
+  colData(spe)$sample_id == "V13B23-285_C1" | colData(spe)$brain_id == "V14F07-340_B1" | colData(spe)$brain_id == "V13B23-280_B1" ~ "2",
+  colData(spe)$sample_id == "V13B23-285_D1" | colData(spe)$brain_id == "V14F07-340_C1" | colData(spe)$brain_id == "V13B23-280_C1" ~ "1",
+  colData(spe)$sample_id == "V14F07-340_D1" | colData(spe)$brain_id == "V13B23-280_D1" ~ "4"
 )
 table(colData(spe)$brain_area_DEG)
+# 0    1    2    4 
+# 3803 6237 3201 1883 
+
+# Previous definition 
+# colData(spe)$brain_area_DEG <- ifelse(
+#   colData(spe)$brain_area == "AR6" | colData(spe)$brain_area == "AL5",
+#   "Anterior",
+#   "Posterior"
+# )
+# table(colData(spe)$brain_area_DEG)
 # Anterior Posterior
 # 22571     10838
 
 table(colData(spe)$brain_id)
+# Br8518 Br9037 Br9090 
+# 13241  13133   7035 
 
 ############################
 
