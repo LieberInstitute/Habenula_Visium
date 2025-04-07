@@ -1,10 +1,10 @@
 **** Job starts ****
-Tue Mar 25 09:35:52 AM EDT 2025
+Tue Apr  1 10:54:01 AM EDT 2025
 **** JHPCE info ****
 User: neagles
-Job id: 15490598
+Job id: 15671191
 Job name: 02_PCA_harmony
-Node name: compute-166
+Node name: compute-167
 Task id: 
 Loading conda_R/4.4.x
 
@@ -116,7 +116,17 @@ Loading required package: Rcpp
 ✖ lubridate::second<-() masks S4Vectors::second<-()
 ✖ dplyr::slice()        masks IRanges::slice()
 ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
-2025-03-25 09:37:37.566712 | Filtering bins and genes...
-2025-03-25 09:37:55.034872 | Performing log normalization...
-2025-03-25 09:38:16.566345 | Running PCA...
-slurmstepd: error: *** JOB 15490598 ON compute-166 CANCELLED AT 2025-03-29T09:36:02 DUE TO TIME LIMIT ***
+2025-04-01 10:55:37.687185 | Filtering bins and genes...
+2025-04-01 10:55:54.896564 | Performing log normalization...
+2025-04-01 10:56:15.274968 | Running PCA...
+Warning in parallel::mccollect(wait = FALSE, timeout = 1) :
+  1 parallel job did not deliver a result
+Error in reducer$value.cache[[as.character(idx)]] <- values : 
+  wrong args for environment subassignment
+Calls: runPCA ... .bploop_impl -> .collect_result -> .reducer_add -> .reducer_add
+Execution halted
+
+ *** caught bus error ***
+address 0x7f232a8b509b, cause 'non-existent physical address'
+An irrecoverable exception occurred. R is aborting now ...
+/var/spool/slurm/d/job15671191/slurm_script: line 28: 3738613 Bus error               (core dumped) Rscript 02_PCA_harmony.R
