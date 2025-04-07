@@ -8,13 +8,18 @@ library(cowplot)
 library(viridis)
 library(scran)
 
-spe_dir = here('processed-data', '10_HD_bin_level', 'spe_norm_filtered')
-plot_dir = here('plots', '10_HD_bin_level', 'variable_genes')
-svg_paths = here('processed-data', '10_HD_bin_level', 'nnSVG_out', '%s.csv')
-svg_path_out = here(
-    'processed-data', '10_HD_bin_level', 'nnSVG_out', 'merged_SVGs.txt'
+spe_dir = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'spe_norm_filtered'
 )
-hvg_path = here('processed-data', '09_HD_cell_level', 'HVGs.txt')
+plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'variable_genes')
+svg_paths = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'nnSVG_out', '%s.csv'
+)
+svg_path_out = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'nnSVG_out',
+    'merged_SVGs.txt'
+)
+hvg_path = here('processed-data', '09_HD_cell_level', 'probe_fix', 'HVGs.txt')
 
 num_svg = 1000
 top_n = 12

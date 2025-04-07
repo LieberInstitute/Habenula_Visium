@@ -7,9 +7,11 @@ library(sessioninfo)
 library(cowplot)
 library(scran)
 
-plot_dir = here('plots', '10_HD_bin_level', 'QC')
-spe_in_dir = here('processed-data', '10_HD_bin_level', 'spe_norm')
-spe_out_dir = here('processed-data', '10_HD_bin_level', 'spe_norm_filtered')
+plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'QC')
+spe_in_dir = here('processed-data', '10_HD_bin_level', 'probe_fix', 'spe_norm')
+spe_out_dir = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'spe_norm_filtered'
+)
 
 spe = loadHDF5SummarizedExperiment(spe_in_dir)
 spe$exclude_overlapping = FALSE

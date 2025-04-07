@@ -11,15 +11,15 @@ sample_id = readLines(sample_id_path)[
     as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 ]
 spe_dir = here(
-    'processed-data', '10_HD_bin_level', 'rasterized',
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'rasterized',
     sprintf('spe_%s_lowres', sample_id)
 )
 out_path <- here(
-    "processed-data", '10_HD_bin_level', "nnSVG_out",
+    "processed-data", '10_HD_bin_level', 'probe_fix', "nnSVG_out",
     paste0(sample_id, ".csv")
 )
 
-num_cores = as.numeric(Sys.getenv("SLURM_CPUS_ON_NODE"))
+num_cores = as.integer(Sys.getenv("SLURM_CPUS_ON_NODE"))
 set.seed(0)
 dir.create(dirname(out_path), showWarnings = FALSE)
 

@@ -4,8 +4,8 @@
 #SBATCH --job-name=06_plot_markers
 #SBATCH -c 1
 #SBATCH -t 1:00:00
-#SBATCH -o ../../processed-data/10_HD_bin_level/logs/06_plot_markers.txt
-#SBATCH -e ../../processed-data/10_HD_bin_level/logs/06_plot_markers.txt
+#SBATCH -o ../../processed-data/10_HD_bin_level/probe_fix/logs/06_plot_markers.txt
+#SBATCH -e ../../processed-data/10_HD_bin_level/probe_fix/logs/06_plot_markers.txt
 
 set -e
 

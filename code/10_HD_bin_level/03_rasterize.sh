@@ -4,8 +4,8 @@
 #SBATCH --job-name=03_rasterize
 #SBATCH -c 2
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/10_HD_bin_level/logs/03_rasterize_%a.txt
-#SBATCH -e ../../processed-data/10_HD_bin_level/logs/03_rasterize_%a.txt
+#SBATCH -o ../../processed-data/10_HD_bin_level/probe_fix/logs/03_rasterize_%a.txt
+#SBATCH -e ../../processed-data/10_HD_bin_level/probe_fix/logs/03_rasterize_%a.txt
 #SBATCH --array=1-5%5
 
 set -e

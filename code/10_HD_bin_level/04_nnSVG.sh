@@ -4,8 +4,8 @@
 #SBATCH --job-name=04_nnSVG
 #SBATCH -c 4
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/10_HD_bin_level/logs/04_nnSVG_%a.txt
-#SBATCH -e ../../processed-data/10_HD_bin_level/logs/04_nnSVG_%a.txt
+#SBATCH -o ../../processed-data/10_HD_bin_level/probe_fix/logs/04_nnSVG_%a.txt
+#SBATCH -e ../../processed-data/10_HD_bin_level/probe_fix/logs/04_nnSVG_%a.txt
 #SBATCH --array=1
 
 set -e

@@ -1,16 +1,13 @@
 library(here)
 library(tidyverse)
-library(SpatialExperiment)
+library(spatialLIBD)
 library(HDF5Array)
 library(sessioninfo)
 
-#   Manually load a fork of spatialLIBD that has a 'cap_percentile' parameter
-#   accepted by 'vis_gene', which is critical for dynamic range of color
-spatialLIBD_dir = '/users/neagles/spatialLIBD_fork/spatialLIBD'
-devtools::load_all(path = spatialLIBD_dir)
-
-spe_dir = here('processed-data', '10_HD_bin_level', 'spe_norm_filtered')
-plot_dir = here('plots', '10_HD_bin_level', 'marker_genes')
+spe_dir = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'spe_norm_filtered'
+)
+plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'marker_genes')
 marker_genes = list(
     white_matter = c("MBP", "GFAP", "PLP1", "AQP4"),
     habenula = c("POU4F1", "GPR151", "CHRNB4", "HTR2C"),
