@@ -9,7 +9,7 @@ k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 ## For testing
 ## k = 8
-## k = 9 (failed from 9 to up)
+## k = 9
 if (is.na(k)) {
   k <- 2
 }
@@ -28,11 +28,11 @@ names(colors_bayesSpace) <-
   paste0("Sp", sprintf("%02d", k), "D", sprintf("%02d", as.integer(names(colors_bayesSpace))))
 
 ## output directory
-dir_rdata <- here("processed-data", "05_layer_differential_expression")
+dir_rdata <- here("processed-data", "05_brain_area_differential_expression")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_rdata)) ## Check that it was created successfully
 
-dir_plots <- here("plots", "05_layer_differential_expression")
+dir_plots <- here("plots", "05_brain_area_differential_expression")
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_plots))
 
@@ -41,46 +41,74 @@ spe_pseudo <-
   readRDS(
     file.path(
       dir_rdata,
-      paste0("sce_pseudo_BayesSpace_k", sprintf("%02d", k), ".rds")
+      paste0("sce_pseudo_PCA_brain_area_k", sprintf("%02d", k), ".rds")
     )
   )
-## list domains created 
+
+## verify data
 dim(spe_pseudo)
+dim(reducedDim(spe_pseudo, "PCA"))
 rownames(colData(spe_pseudo))
 table(spe_pseudo$BayesSpace)
+table(spe_pseudo$brain_area_DEG)
 
-# Calculates the percent of variance explained for first 12 principal components / LieberInstitute/jaffelab
-pca <- prcomp(t(assays(spe_pseudo)$logcounts))
-# # Frequency plot by percentage of variance explained for the first 10 components
-# library(tidyverse)
-# data.frame(sd = pca$sdev) %>%
-#   mutate(pct = 100 * (sd^2/sum(sd^2))) %>%
-#   ggplot(aes(1:10, pct)) +
-#   geom_col() +
-#   ggtitle(paste0("PCA of pseudobulk data with BS k=", as.character(k)))
+# Plot some PCAs after log-transformation; retrieve the PCA results
 
+pca_results <- reducedDim(spe_pseudo, "PCA")
+head(pca_results)
+
+## Set donor for visualization purposes
+spe_pseudo$donor <- spe_pseudo$brain_id
+
+pdf(file = file.path(dir_plots, paste0("sce_pseudo_PC1_k", sprintf("%02d", k), "_main.pdf")), width = 5, height = 5)
+plotPCA(spe_pseudo, colour_by = "sample_id", size_by = "sum_umi", shape_by = "donor")
+dev.off()
+
+pdf(file = file.path(dir_plots, paste0("sce_pseudo_PC1_k", sprintf("%02d", k), "_sample.pdf")), width = 5, height = 5)
+plotPCA(spe_pseudo, colour_by = "sample_id")
+dev.off()
+
+pdf(file = file.path(dir_plots, paste0("sce_pseudo_PC1_k", sprintf("%02d", k), "_sample_donor.pdf")), width = 5, height = 5)
+plotPCA(spe_pseudo, colour_by = "sample_id", shape_by = "donor")
+dev.off()
+
+## Already precomputed
+# set.seed(20250304)
+# spe_pseudo <- scater::runMDS(spe_pseudo, ncomponents = 20)
+# spe_pseudo <- scater::runPCA(spe_pseudo, name = "runPCA")
+
+
+# Calculates the percent of variance explained for first 12 principal components
 
 ## Define variables to use
-colnames(colData(spe_pseudo))
 vars <- c(
   "sample_id",
+  "age",
   "BayesSpace",
-  "brain_id" # subject
-#  "sex" 
+  "brain_area",
+  "brain_area_DEG", 
+  "expr_chrM",
+  "expr_chrM_ratio",
+  "nspots",
+  "pmi",
+  "rin",
+  "sex",
+  "sum_umi",
+  "donor" 
 )
 
 ## Plot PCs with different colors
 ## Each point here is a sample
 # reducedDim(spe_pseudo)
 
-pdf(file = file.path(dir_plots, paste0("sce_pseudo_PCs_k", sprintf("%02d", k), ".pdf")), width = 8, height = 8)
+pdf(file = file.path(dir_plots, paste0("sce_pseudo_PCs_k", sprintf("%02d", k), ".pdf")), width = 5, height = 5)
 for (var in vars) {
   # var = "brain_id"
   p <- plotPCA(
     spe_pseudo,
     colour_by = var,
     ncomponents = min(12, length(metadata(spe_pseudo)$PCA_var_explained)),
-    point_size = 0.8,
+    point_size = 0.6,
     label_format = c("%s %02i", " (%i%%)"),
     percentVar = metadata(spe_pseudo)$PCA_var_explained
   )  + ggtitle(paste0("PCA of pseudobulk data with BS k=", as.character(k))) + 
@@ -94,15 +122,11 @@ dev.off()
 
 message("Plot PCs with different variables done!")
 
-table(spe_pseudo$sample_id)
-table(spe_pseudo$brain_id)
-table(spe_pseudo$BayesSpace)
-
 message("Getting variance explained ...")
 
 ## Obtain percent of variance explained at the gene level
-## using scater::getVarianceExplained()
-variance_expl <- getVarianceExplained(spe_pseudo,
+
+variance_expl <- scater::getVarianceExplained(spe_pseudo,
                              variables = vars
 ) 
 ## Quick inspection
@@ -111,6 +135,7 @@ variance_expl <- getVarianceExplained(spe_pseudo,
 
 
 ## Now visualize the percent of variance explained across all genes
+
 pdf(file = file.path(dir_plots, paste0("sce_pseudo_gene_explanatory_vars_k", sprintf("%02d", k), ".pdf")))
 plotExplanatoryVariables(variance_expl) + ggtitle(paste0("PCA of pseudobulk data with BS k=", as.character(k))) 
 dev.off()
