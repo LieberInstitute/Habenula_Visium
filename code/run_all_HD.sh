@@ -54,9 +54,9 @@ job_id_2_5=$(sbatch --dependency=afterok:${job_id_2_4} --parsable 03_build_spe_Q
 
 #   Finding SVGs
 cd $repo_dir/code/10_HD_bin_level
-job_id_3_1=$(sbatch --dependency=afterok:${job_id_2_5} --parsable 06_rasterize.sh)
-job_id_3_2=$(sbatch --dependency=afterok:${job_id_3_1} --parsable 07_nnSVG.sh)
-job_id_3_3=$(sbatch --dependency=afterok:${job_id_3_2} --parsable 08_gather_variable_genes.sh)
+job_id_3_1=$(sbatch --dependency=afterok:${job_id_2_5} --parsable 03_rasterize.sh)
+job_id_3_2=$(sbatch --dependency=afterok:${job_id_3_1} --parsable 04_nnSVG.sh)
+job_id_3_3=$(sbatch --dependency=afterok:${job_id_3_2} --parsable 05_gather_variable_genes.sh)
 
 #   Running Banksy
 cd $repo_dir/code/09_HD_cell_level

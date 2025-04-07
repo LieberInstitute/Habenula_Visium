@@ -6,38 +6,24 @@ The 8um * 8um bin size is used in most cases, as recommended by 10x Genomics.
 
 - `01_build_spe.*`: Read in data as a `SpatialExperiment`, filter out genes and
 bins without expression, and perform log normalization
-- `02_quality_comparison.*`: Generate QC plots, also comparing QC metrics to
-other Visium HD samples (DLPFC, HPC) and Visium standard experiments from the
-same brain regions
-
-## Clustering and spatial domain finding
-
-- `03_ficture_transcripts.sh`: Prepare inputs for `FICTURE`
-- `04_ficture_run.sh`: Run the full `FICTURE` pipeline for finding subcellular
-spatial domains
-- `04_ficture_plot.sh`: Plot a visually improved version of default FICTURE clustering plots
-- `05_hergast.*`: Find spatial domains with `HERGAST`
+- `02_QC.*`: Identify which bins to drop based on quality metrics
 
 ## Spatially variable genes
 
-- `06_rasterize.*`: Use `SEraster` to lower the resolution of the Visium sample
+- `03_rasterize.*`: Use `SEraster` to lower the resolution of the Visium sample
 to approximately Visium-standard resolution. The idea is that SVGs can be
 computed with similar accuracy in a computationally reasonable time with lower-
 resolution data
-- `07_nnSVG.*`: Run `nnSVG` to find spatially variable genes on the lower-
+- `04_nnSVG.*`: Run `nnSVG` to find spatially variable genes on the lower-
 resolution data
-- `08_gather_variable_genes.*`: Gather nnSVG results from each sample to compute
+- `05_gather_variable_genes.*`: Gather nnSVG results from each sample to compute
 dataset-wide SVGs. Export, then plot top SVGs and HVGs
 
-## Cell-cell communication (attempted)
+## Clustering
 
-- `09_nest_preprocess.sh`: Run the `NEST` preprocessing step, one of several
-steps in a cell-cell communication pipeline. Required prohibitively large
-amounts of memory (> 1TB) for this HD data
-- `10_nest_run.sh`: Another `NEST` step that was discontinued after the first
-`09_nest_preprocess.sh` script failed to run
+See `ficture_harmony` for clustering with FICTURE.
 
 ## Other
 
-- `11_plot_markers.*`: Plot habenula, thalamus, and white-matter markers for
+- `06_plot_markers.*`: Plot habenula, thalamus, and white-matter markers for
 each sample
