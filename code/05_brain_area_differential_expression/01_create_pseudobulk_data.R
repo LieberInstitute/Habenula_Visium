@@ -1,20 +1,3 @@
-## copied from https://github.com/LieberInstitute/Visium_SPG_AD/blob/6ef1a1225d3dcd115f6272711ab684d050711378/code/11_grey_matter_only/01_create_pseudobulk_data.R
-
-# library(slurmjobs)
-# slurmjobs::job_single('01_create_pseudobulk_data',
-#                       create_shell = TRUE, memory = '60G',
-#                       command = "01_create_pseudobulk_data.R",
-#                       partion = "katun")
-
-# k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-args = commandArgs(trailingOnly = TRUE)
-k <- args[2]
-
-## For testing
-if (is.na(k)) {
-  k <- 2
-}
-
 library("here")
 library("spatialLIBD")
 library("tidyverse")
@@ -25,6 +8,19 @@ library("scater")
 library("BiocSingular") # Force svd method on pca
 library("compositions")
 #install.packages("compositions")
+
+## copied from https://github.com/LieberInstitute/Visium_SPG_AD/blob/6ef1a1225d3dcd115f6272711ab684d050711378/code/11_grey_matter_only/01_create_pseudobulk_data.R
+
+# k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+args = commandArgs(trailingOnly = TRUE)
+k <- as.integer(args[2])
+
+## For testing
+if (is.na(k)) {
+  k <- 2
+}
+
+message("Processing pseudobullk for k = ", k)
 
 dir_rdata <- here("processed-data", "05_brain_area_differential_expression")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
@@ -383,6 +379,13 @@ saveRDS(
 
 
 message(' Process completed!')
+
+
+# library(slurmjobs)
+# slurmjobs::job_single('01_create_pseudobulk_data',
+#                       create_shell = TRUE, memory = '60G',
+#                       command = "01_create_pseudobulk_data.R",
+#                       partion = "katun")
 
 ## Reproducibility information
 print("Reproducibility information:")
