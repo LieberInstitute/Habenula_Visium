@@ -175,7 +175,7 @@ spe = spe[, (spe$sample_id != 'H1-MVPY9BW_A1_8433') | (spe$array_col <= 793)]
 small_spe = spe[, spe$sample_id == 'H1-XQQD7C7_A1_8518']
 
 #-------------------------------------------------------------------------------
-#   Remove the array-row-related artifact
+#   Remove the array-row-related artifact (horizontal)
 #-------------------------------------------------------------------------------
 
 p = colData(small_spe) |>
@@ -189,7 +189,11 @@ p = colData(small_spe) |>
         geom_vline(xintercept = 764) +
         labs(x = "Window Start", y = "Mean UMI in Window")
 
-pdf(file.path(plot_dir, 'artifacts', 'H1-XQQD7C7_A1_8518_array_QC.pdf'))
+pdf(
+    file.path(
+        plot_dir, 'artifacts', 'H1-XQQD7C7_A1_8518_array_QC_horizontal.pdf'
+    )
+)
 print(p)
 dev.off()
 
@@ -247,6 +251,54 @@ dev.off()
 #   Filter out the artifacts
 spe = spe[, (spe$sample_id != 'H1-XQQD7C7_A1_8518') | !spe$low_umi]
 spe$low_umi = NULL
+
+#-------------------------------------------------------------------------------
+#   Remove the array-row-related artifact (vertical)
+#-------------------------------------------------------------------------------
+
+#   This artifact is trickier, because it actually can be defined by higher
+#   average UMI, particularly at the top of the tissue (though the artifact
+#   is present for the full range)
+
+small_spe = spe[, spe$sample_id == 'H1-XQQD7C7_A1_8518']
+
+p = colData(small_spe) |>
+    as_tibble() |>
+    #   Grab the very top of the tissue, where the artifact is most prominent
+    filter(array_row < 200) |>
+    select(array_col, sum_umi_capped) |>
+    dplyr::rename(array_coord = array_col) |>
+    scan_window(125:165, window = 5) |>
+    ggplot(aes(x = lower_threshold, y = mean_umi)) +
+        geom_line() +
+        theme_bw(base_size = 25) +
+        geom_vline(xintercept = 137) +
+        labs(x = "Window Start", y = "Mean UMI in Window")
+
+pdf(
+    file.path(plot_dir, 'artifacts', 'H1-XQQD7C7_A1_8518_array_QC_vertical.pdf')
+)
+print(p)
+dev.off()
+
+#   Array col and pixel col move in the opposite direction
+stopifnot(
+    abs(-1 - cor(small_spe$array_col, spatialCoords(small_spe)[, 'pxl_col_in_fullres']))
+    < 1e-3
+)
+
+#   Find the pixel col of the boundary (since there's a direct correspondence
+#   with array col) and print in the log for use in the cell-level script
+spe_boundary = small_spe[, small_spe$array_col == 142]
+message(
+    sprintf(
+        "The artifact in 'H1-XQQD7C7_A1_8518' occurs at values of 'pxl_col_in_fullres' above %s",
+        round(median(spatialCoords(spe_boundary)[, 'pxl_col_in_fullres']))
+    )
+)
+
+#   Filter out the artifact
+spe = spe[, (spe$sample_id != 'H1-XQQD7C7_A1_8518') | (spe$array_col > 142)]
 
 ################################################################################
 #   Save object with problematic bins removed
