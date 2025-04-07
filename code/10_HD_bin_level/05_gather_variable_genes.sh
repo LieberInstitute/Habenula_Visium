@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=10G
-#SBATCH --job-name=11_plot_markers
+#SBATCH --job-name=05_gather_variable_genes
 #SBATCH -c 1
 #SBATCH -t 1:00:00
-#SBATCH -o ../../processed-data/10_HD_bin_level/logs/11_plot_markers.txt
-#SBATCH -e ../../processed-data/10_HD_bin_level/logs/11_plot_markers.txt
+#SBATCH -o ../../processed-data/10_HD_bin_level/logs/05_gather_variable_genes.txt
+#SBATCH -e ../../processed-data/10_HD_bin_level/logs/05_gather_variable_genes.txt
 
 set -e
 
@@ -20,12 +20,12 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.4.x
+module load conda_R/4.4
 
 ## List current modules for reproducibility
 module list
 
-Rscript 11_plot_markers.R
+Rscript 05_gather_variable_genes.R
 
 echo "**** Job ends ****"
 date
