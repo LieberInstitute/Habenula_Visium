@@ -7,12 +7,13 @@ library(HDF5Array)
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
 spe_out_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'spe_raw.rds'
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'spe_raw.rds'
 )
 
 sample_ids = readLines(sample_id_path)
 sr_out_dirs = here(
-    'processed-data', '01_spaceranger', sample_ids, 'outs',
+    'processed-data', '01_spaceranger', 'probe_fix', sample_ids, 'outs',
     'binned_outputs', 'square_002um'
 )
 
@@ -38,6 +39,16 @@ spe <- read10xVisium(
     images = "lowres",
     load = FALSE
 )
+
+#   Drop problematic tissue regions found in the 8um bin-level QC, other than
+#   one UMI-based filter (the used cutoff of 5 at 8um is so low that there is no
+#   good equivalent at 2um; FICTURE should drop this region anyway). In an
+#   interactive test, I showed that the same tissue regions are dropped at 2um
+#   when array coordinates are multiplied by 4 relative to 8um
+message(Sys.time(), ' | Filtering bins according to 8um bin-level QC...')
+spe = spe[, (spe$sample_id != 'H1-MVPY9BW_A1_8433') | (spe$array_col <= 793 * 4)]
+spe = spe[, (spe$sample_id != 'H1-XQQD7C7_A1_8518') | (spe$array_row <= 764 * 4)]
+spe = spe[, (spe$sample_id != 'H1-XQQD7C7_A1_8518') | (spe$array_col > 142 * 4)]
 
 message(Sys.time(), " | Saving raw SPE")
 saveRDS(spe, spe_out_path)
