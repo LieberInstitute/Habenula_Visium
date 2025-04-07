@@ -4,8 +4,8 @@
 #SBATCH --job-name=02_normalized_input
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/02_normalized_input.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/02_normalized_input.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/02_normalized_input.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/02_normalized_input.txt
 
 set -e
 

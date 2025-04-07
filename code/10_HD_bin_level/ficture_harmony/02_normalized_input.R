@@ -8,19 +8,20 @@ library(rjson)
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
 spe_in_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'spe_raw.rds'
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'spe_raw.rds'
 )
 scalefactors_path = here(
-    'processed-data', '01_spaceranger', '%s', 'outs', 'binned_outputs',
-    'square_002um', 'spatial', 'scalefactors_json.json'
+    'processed-data', '01_spaceranger', 'probe_fix', '%s', 'outs',
+    'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
 )
 counts_out_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'ficture_inputs',
-    'normalized_input.tsv.gz'
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'ficture_inputs', 'normalized_input.tsv.gz'
 )
 minmax_out_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'ficture_inputs',
-    'normalized_minmax.tsv'
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'ficture_inputs', 'normalized_minmax.tsv'
 )
 buffer_prop = 0.05
 
@@ -52,7 +53,7 @@ counts_df = tibble(
     X = spatialCoords(spe)[counts_mat@j + 1, 1],
     Y = spatialCoords(spe)[counts_mat@j + 1, 2],
     gene = rownames(spe)[counts_mat@i + 1],
-    Count = as.integer(round(counts_mat@x)),
+    Count = counts_mat@x,
     sample_id = spe$sample_id[counts_mat@j + 1],
     barcode = colnames(spe)[counts_mat@j + 1]
 )
