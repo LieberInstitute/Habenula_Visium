@@ -1,12 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=240G
-#SBATCH --job-name=08_banksy_embedding
-#SBATCH -c 1
+#SBATCH --mem=20G
+#SBATCH --job-name=04_HVG_PCA
+#SBATCH -c 4
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/logs/08_banksy_embedding_%a.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/logs/08_banksy_embedding_%a.txt
-#SBATCH --array=1-2%2
+#SBATCH -o ../../processed-data/09_HD_cell_level/logs/04_HVG_PCA.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/logs/04_HVG_PCA.txt
 
 set -e
 
@@ -21,12 +20,12 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.4.x
+module load conda_R/4.4
 
 ## List current modules for reproducibility
 module list
 
-Rscript 08_banksy_embedding.R
+Rscript 04_HVG_PCA.R
 
 echo "**** Job ends ****"
 date

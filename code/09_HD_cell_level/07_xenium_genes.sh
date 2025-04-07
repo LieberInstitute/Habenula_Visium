@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=10G
-#SBATCH --job-name=15_xenium_genes
+#SBATCH --job-name=07_xenium_genes
 #SBATCH -c 1
 #SBATCH -t 2:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/logs/15_xenium_genes.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/logs/15_xenium_genes.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/logs/07_xenium_genes.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/logs/07_xenium_genes.txt
 
 set -e
 
@@ -25,7 +25,7 @@ module load conda_R/4.4.x
 ## List current modules for reproducibility
 module list
 
-Rscript 15_xenium_genes.R
+Rscript 07_xenium_genes.R
 
 echo "**** Job ends ****"
 date

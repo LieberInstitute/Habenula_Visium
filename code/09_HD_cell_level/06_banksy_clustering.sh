@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=35G
-#SBATCH --job-name=10_banksy_clustering
+#SBATCH --job-name=06_banksy_clustering
 #SBATCH -c 1
-#SBATCH -t 2-0:00:00
+#SBATCH -t 1-0:00:00
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
-#SBATCH --array=1-40%10
+#SBATCH --array=4-6,26%4
 
 ## Define loops and appropriately subset each variable for the array task ID
 all_res=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2)
@@ -16,7 +16,7 @@ all_lambda=(0.2 0.8)
 lambda=${all_lambda[$(( $SLURM_ARRAY_TASK_ID / 1 % 2 ))]}
 
 ## Explicitly pipe script output to a log
-log_path=../../processed-data/09_HD_cell_level/logs/10_banksy_clustering_${res}_${lambda}_${SLURM_ARRAY_TASK_ID}.txt
+log_path=../../processed-data/09_HD_cell_level/logs/06_banksy_clustering_${res}_${lambda}_${SLURM_ARRAY_TASK_ID}.txt
 
 {
 set -e
@@ -38,7 +38,7 @@ module load conda_R/4.4.x
 module list
 
 ## Edit with your job command
-Rscript 10_banksy_clustering.R --res ${res} --lambda ${lambda}
+Rscript 06_banksy_clustering.R --res ${res} --lambda ${lambda}
 
 echo "**** Job ends ****"
 date
