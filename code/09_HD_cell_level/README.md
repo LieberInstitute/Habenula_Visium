@@ -7,7 +7,7 @@ words, segmentation is performed and counts are aggregated from the original
 - `01_bin2cell.*`: Use `bin2cell` to segment Visium HD into cells, aggregate
 gene expression into cells, and end up with an `AnnData` in Python that contians
 cells by genes
-- `enact/01_run_enact.*`: Experiment with using the `ENACT` pipeline in place
+- `exploratory/enact/01_run_enact.*`: Experiment with using the `ENACT` pipeline in place
 of the `bin2cell` step
 - `02_build_spe_raw.*`: Convert `AnnData` to `SpatialExperiment`, which will be
 the format used for the remaining analyses. Don't filter out data or perform
