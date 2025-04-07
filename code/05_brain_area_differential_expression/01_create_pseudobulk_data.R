@@ -6,7 +6,9 @@
 #                       command = "01_create_pseudobulk_data.R",
 #                       partion = "katun")
 
-k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+# k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+args = commandArgs(trailingOnly = TRUE)
+k <- args[2]
 
 ## For testing
 if (is.na(k)) {
@@ -20,13 +22,18 @@ library("ggplot2")
 library("gridExtra")
 library("sessioninfo")
 library("scater")
+library("BiocSingular") # Force svd method on pca
 library("compositions")
 #install.packages("compositions")
 
 dir_rdata <- here("processed-data", "05_brain_area_differential_expression")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_rdata)) ## Check that it was created successfully
-dir_csv <- here("processed-data", "05_brain_area_differential_expression", "stats_summary_csv")
+dir_csv <- here(
+  "processed-data",
+  "05_brain_area_differential_expression",
+  "stats_summary_csv"
+)
 dir.create(dir_csv, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_csv))
 
@@ -49,7 +56,7 @@ spe <- cluster_import(
 )
 # Overwriting 'spe$key'. Set 'overwrite = FALSE' if you do not want to overwrite it.
 
-## Prepare data to pseudobulk 
+## Prepare data to pseudobulk
 
 # Quick inspection
 #colData(spe)[grep("BayesSpace_harmony", colnames(colData(spe)))]
@@ -59,7 +66,8 @@ k_nice <- sprintf("%02d", k)
 
 spe$BayesSpace <- factor(
   paste0(
-    "Sp", k_nice, 
+    "Sp",
+    k_nice,
     "D",
     sprintf(
       "%02d",
@@ -81,10 +89,21 @@ table(colData(spe)$BayesSpace)
 ## Assign new 'brain-area' based in posterior-anterior locations defined by KDM
 colData(spe)$brain_area_DEG <- case_when(
   colData(spe)$sample_id == "V13B23-285_A1" ~ "0",
-  colData(spe)$sample_id == "V13B23-285_B1" | colData(spe)$sample_id == "V14F07-340_A1" | colData(spe)$sample_id == "V13B23-280_A1" ~ "1",
-  colData(spe)$sample_id == "V13B23-285_C1" | colData(spe)$sample_id == "V14F07-340_B1" | colData(spe)$sample_id == "V13B23-280_B1" ~ "2",
-  colData(spe)$sample_id == "V13B23-285_D1" | colData(spe)$sample_id == "V14F07-340_C1" | colData(spe)$sample_id == "V13B23-280_C1" ~ "3",
-  colData(spe)$sample_id == "V14F07-340_D1" | colData(spe)$sample_id == "V13B23-280_D1" ~ "4"
+  colData(spe)$sample_id == "V13B23-285_B1" |
+    colData(spe)$sample_id == "V14F07-340_A1" |
+    colData(spe)$sample_id == "V13B23-280_A1" ~
+    "1",
+  colData(spe)$sample_id == "V13B23-285_C1" |
+    colData(spe)$sample_id == "V14F07-340_B1" |
+    colData(spe)$sample_id == "V13B23-280_B1" ~
+    "2",
+  colData(spe)$sample_id == "V13B23-285_D1" |
+    colData(spe)$sample_id == "V14F07-340_C1" |
+    colData(spe)$sample_id == "V13B23-280_C1" ~
+    "3",
+  colData(spe)$sample_id == "V14F07-340_D1" |
+    colData(spe)$sample_id == "V13B23-280_D1" ~
+    "4"
 )
 table(colData(spe)$brain_id, colData(spe)$brain_area_DEG)
 #           0    1    2    3    4
@@ -92,7 +111,7 @@ table(colData(spe)$brain_id, colData(spe)$brain_area_DEG)
 # Br9037    0 3117 2921 3580 3515
 # Br9090    0 1669 1689 1794 1883
 
-# Previous definition 
+# Previous definition
 # colData(spe)$brain_area_DEG <- ifelse(
 #   colData(spe)$brain_area == "AR6" | colData(spe)$brain_area == "AL5",
 #   "Anterior",
@@ -103,32 +122,34 @@ table(colData(spe)$brain_id, colData(spe)$brain_area_DEG)
 # 22571     10838
 
 table(colData(spe)$brain_id)
-# Br8518 Br9037 Br9090 
-# 13241  13133   7035 
+# Br8518 Br9037 Br9090
+# 13241  13133   7035
 
 ############################
 
 message("Processing BayesSpace k=", k_nice)
 
-# Perform pseudobulk across BayesSpace and sample_id 
+# Perform pseudobulk across BayesSpace and sample_id
 
 spe_pseudo_k <- aggregateAcrossCells(
   spe,
   DataFrame(
-    BayesSpace_pseudo = spe[[paste0("BayesSpace_harmony_k", k_nice)]],
+    BayesSpace = spe[[paste0("BayesSpace_harmony_k", k_nice)]],
     reg_sample_id = spe$sample_id
   )
 )
-spe_pseudo_k$BayesSpace_pseudo <- factor(spe_pseudo_k$BayesSpace_pseudo)
-levels(spe_pseudo_k$BayesSpace_pseudo)
+levels(spe_pseudo_k$BayesSpace)
 
 message("Aggregation completed for k=", k_nice)
-message("Dimensions of summed data: ", paste(dim(spe_pseudo_k), collapse = " x "))
+message(
+  "Dimensions of summed data: ",
+  paste(dim(spe_pseudo_k), collapse = " x ")
+)
 
 # Rename ncells to nspots
 
 colData(spe_pseudo_k)$nspots <- colData(spe_pseudo_k)$ncells
-colData(spe_pseudo_k)$ncells <- NULL  # Remove the old column
+colData(spe_pseudo_k)$ncells <- NULL # Remove the old column
 colnames(spe_pseudo_k) <- spe_pseudo_k$sample_id
 
 
@@ -136,7 +157,12 @@ colnames(spe_pseudo_k) <- spe_pseudo_k$sample_id
 
 min_nspots <- 10
 message("Total nspots: ", sum(spe_pseudo_k$nspots))
-message("Number of groups with nspots < ", min_nspots, ": ", sum(spe_pseudo_k$nspots < min_nspots))
+message(
+  "Number of groups with nspots < ",
+  min_nspots,
+  ": ",
+  sum(spe_pseudo_k$nspots < min_nspots)
+)
 message("Summary of nspots:")
 print(summary(spe_pseudo_k$nspots))
 
@@ -164,11 +190,11 @@ spe_pseudo_k$age <- as.numeric(spe_pseudo_k$age)
 
 # Convert relevant variables to factors
 
-if (is.factor(spe_pseudo_k$BayesSpace_pseudo)) {
+if (is.factor(spe_pseudo_k$BayesSpace)) {
   ## Drop unused var_registration levels if we had to drop some due to min_nspots:
   ## registration_variable equivalent here: BayesSpace_pseudo
-  spe_pseudo_k$BayesSpace_pseudo <- droplevels(spe_pseudo_k$BayesSpace_pseudo)
-  levels(spe_pseudo_k$BayesSpace_pseudo)
+  spe_pseudo_k$BayesSpace <- droplevels(spe_pseudo_k$BayesSpace)
+  levels(spe_pseudo_k$BayesSpace)
 }
 
 spe_pseudo_k$brain_area_DEG <- factor(spe_pseudo_k$brain_area_DEG)
@@ -182,12 +208,14 @@ if (is.factor(spe_pseudo_k$BayesSpace_pseudo)) {
 
 message(Sys.time(), " normalize expression")
 
+assays(spe_pseudo_k)
+
 logcounts(spe_pseudo_k) <-
-  edgeR::cpm(edgeR::calcNormFactors(spe_pseudo_k),
-             log = TRUE,
-             prior.count = 1
-  )
-#head(reducedDim(spe_pseudo_k))
+  edgeR::cpm(edgeR::calcNormFactors(spe_pseudo_k), log = TRUE, prior.count = 1)
+# rownames(assays(spe_pseudo_k)$logcounts)
+# colnames(assays(spe_pseudo_k)$logcounts)
+dim(reducedDim(spe_pseudo_k))
+# [1] 24 10
 
 # # calculate the number of cells per (sample_id + BayesSpace cluster)
 # Adapted from: https://github.com/LieberInstitute/dlpfc_asd/blob/2b83eeb9572bd7d37505e8db6e20bb3ded09c2c1/code/06_differential_expression/01_create_pseudobulk_data.R#L129
@@ -196,23 +224,34 @@ message("-------------------------------------------------------------")
 # Get BayesSpace cluster assignments for the current k
 cluster_ids <- spe[[paste0("BayesSpace_harmony_k", k_nice)]]
 # Create a data frame with sample_id and cluster_ids
-df <- data.frame(sample_id = spe$sample_id,
-                 cluster_ids = cluster_ids)
+df <- data.frame(sample_id = spe$sample_id, cluster_ids = cluster_ids)
 # Create a table between sample_id and cluster_ids
 k_table <- table(df$sample_id, df$cluster_ids)
 # Add a 'Total' column to the table by summing across rows (sum of cells for each sample_id)
 k_table <- cbind(k_table, Total = rowSums(k_table))
 # Add a ncells from spe_pseudo_k
 k_table <- cbind(k_table, nspots = spe_pseudo_k$nspots)
-k_table_subset <- k_table[colnames(spe_pseudo_k), grepl("^[[:digit:]]+$", colnames(k_table))]
+k_table_subset <- k_table[
+  colnames(spe_pseudo_k),
+  grepl("^[[:digit:]]+$", colnames(k_table))
+]
 
 ## Compute ILR
 k_table_ilr <- ilr(k_table_subset)
 ## Note that this is basically the same as
 ## ilr(k_table_subset / rowSums(k_table_subset))
 ##rowSums(k_table_subset / rowSums(k_table_subset))  equal to 1
-colnames(k_table_ilr) <- paste0("ILR_SpD", k_nice, "_", seq_len(ncol(k_table_ilr)))
-colData(spe_pseudo_k) <- cbind(colData(spe_pseudo_k), k_table_subset, as.data.frame(k_table_ilr))
+colnames(k_table_ilr) <- paste0(
+  "ILR_SpD",
+  k_nice,
+  "_",
+  seq_len(ncol(k_table_ilr))
+)
+colData(spe_pseudo_k) <- cbind(
+  colData(spe_pseudo_k),
+  k_table_subset,
+  as.data.frame(k_table_ilr)
+)
 
 # Print the table of cell counts per sample_id and cluster
 message("Cell counts per sample_id and cluster for k=", k_nice)
@@ -255,6 +294,7 @@ colData(spe_pseudo_k) <- colData(spe_pseudo_k)[, sort(c(
 ))]
 
 ## Explore the resulting data
+
 options(width = 400)
 sp_table = as.data.frame(colData(spe_pseudo_k))
 ## save table with general information about spatial-domains
@@ -275,55 +315,50 @@ set.seed(01042025)
 
 spe_pseudo <- spe_pseudo_k
 
-# ## Compute some reduced dims
-# message('/nProcessing MDS and scarter runPCA')
-# 
-# set.seed(20240626)
-# spe_pseudo <- scater::runMDS(
-#   spe_pseudo,
-#   name = "runMDS",
-#   ncomponents = (n_components - 1)
-# )
-# spe_pseudo <- scater::runPCA(spe_pseudo, name = "runPCA", ncomponents = n_components)
-#Warning in (function (A, nv = 5, nu = nv, maxit = 1000, work = nv + 7, reorth = TRUE,  :
-#You're computing too large a percentage of total singular values, use a standard svd instead.
+## Compute some reduced dims
+message('/nProcessing MDS and scarter runPCA')
 
-## Instead performed PCA manually using prcomp()
+# keep ncomponents below the number of cells
+ncomponents = min(50, ncol(spe_pseudo) - 1, nrow(spe_pseudo) - 1)
 
-max_components <- min(dim(spe_pseudo)) - 1
-print(max_components)
-pca <- prcomp(t(assays(spe_pseudo)$logcounts), center = TRUE, scale. = TRUE)
-
-# Store PCA coordinates
-
-reducedDims(spe_pseudo)$PCA <- pca$x
-reducedDims(spe_pseudo)
-
-# Set number of components equal to pseudo bulk groups. Avoid an error triggered when n_components <20 pseudo bulk groups. Default=20.
-
-n_components <- length(pca$sdev)
-if (n_components > 21) {
-  n_components <- 20
-}
-
-message(
-  Sys.time(),
-  " % of variance explained for the top ",
-  n_components,
-  " PCs:"
+spe_pseudo <- scater::runMDS(
+  spe_pseudo,
+  name = "runMDS",
+  ncomponents = ncomponents
 )
-##  computes the percent of variance explained by each of the principal components - created with prcomp
-metadata(spe_pseudo) <- list(
-  "PCA_var_explained" = jaffelab::getPcaVars(pca)[seq_len(n_components)]
-) 
-# metadata(spe_pseudo)
-colnames(pca$x) <- paste0("PC", sprintf("%02d", seq_len(ncol(pca$x))))
-# head(pca$x)
-# View PCA values
-head(reducedDim(spe_pseudo, "PCA"))
-reducedDims(spe_pseudo) <- list(PCA = pca$x)
+
+
+# Fix error when computing runPCA with irlba  - scater default -  too many components relative to the number of features
+# -- force exact SVD passing a BiocSingularParam object
+
+spe_pseudo <- scater::runPCA(
+  spe_pseudo,
+  ncomponents = ncomponents,
+  BSPARAM = ExactParam()
+)
+
+dim(reducedDim(spe_pseudo, "PCA"))
+# [1] 24 23
+
+# message(
+#   Sys.time(),
+#   " % of variance explained for the top ",
+#   n_components,
+#   " PCs:"
+# )
+# ##  computes the percent of variance explained by each of the principal components - created with prcomp
+# metadata(spe_pseudo) <- list(
+#   "PCA_var_explained" = jaffelab::getPcaVars(pca)[seq_len(n_components)]
+# )
+# # metadata(spe_pseudo)
+# colnames(pca$x) <- paste0("PC", sprintf("%02d", seq_len(ncol(pca$x))))
+# # head(pca$x)
+# # View PCA values
+# head(reducedDim(spe_pseudo, "PCA"))
+# reducedDims(spe_pseudo) <- list(PCA = pca$x)
 
 ## For the spatialLIBD shiny app
+
 rowData(spe_pseudo)$gene_search <-
   paste0(
     rowData(spe_pseudo)$gene_name,
