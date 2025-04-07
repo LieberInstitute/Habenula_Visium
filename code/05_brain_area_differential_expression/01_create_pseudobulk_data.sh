@@ -11,6 +11,7 @@
 
 ## Define BayesSpace k of interest
 BS_k=(3 9 17)
+BS_k=${BS_k[$(( $SLURM_ARRAY_TASK_ID / 1 % 3 ))]}
 
 ## Explicitly pipe script output to a log
 log_path=logs/01_create_pseudobulk_data_BS${BS_k}.txt
