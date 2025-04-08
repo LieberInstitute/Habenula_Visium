@@ -147,24 +147,27 @@ for (k in k_values) {
 
 ###### Additional analysis (since age and PMI remain constant) #############
 k_nice <- "9"
-data_file <- file.path(data_dir, paste0("summed_k", k_nice, ".rds"))
+# data_file <- file.path(data_dir, paste0("summed_k", k_nice, ".rds"))
+data_file <- file.path(data_dir, paste0("sce_pseudo_PCA_brain_area_k", k_nice, ".rds"))
 plot_data <- as.data.frame(colData(data)) |>
-  select(sample_id, age, diagnosis, BayesSpace, nspots, sum_umi, expr_chrM_ratio, pmi)
+  select(sample_id, brain_area, brain_area_DEG, BayesSpace, nspots, sum_umi, expr_chrM_ratio, pmi, age)
 
 plot_data_summary <- plot_data |>
-  select(sample_id, age, diagnosis, expr_chrM_ratio, pmi) |>
+  # select(sample_id, age, diagnosis, expr_chrM_ratio, pmi) |>
+  select(sample_id, age, brain_area_DEG, expr_chrM_ratio, pmi) |>
   distinct(sample_id, .keep_all = TRUE)
 
 # Function for creating and saving boxplots
 create_boxplot <- function(data, x, y, y_label, filename) {
   pdf(here(plot_dir, filename), width = 8, height = 6)
   y_max <- max(data[[y]]) + 5
-  #print(y_max)
   print(ggboxplot(
     data, x = x, y = y,
-    color = x, palette = c("blue", "red"),
+    # color = x, palette = c("blue", "red"),
+    color = "brain_area_DEG", palette = c("blue", "red", "green", "black", "purple"), 
     add = "jitter", shape = 19,
-    xlab = "Diagnosis", ylab = y_label
+    # xlab = "Diagnosis", ylab = y_label
+    xlab = "brain_area_DEG", ylab = y_label
   ) +
     geom_text_repel(
       aes(label = sample_id),
@@ -174,56 +177,55 @@ create_boxplot <- function(data, x, y, y_label, filename) {
       show.legend = FALSE
     ) +
     theme_bw() +
-    theme(legend.position = "bottom")+
-    stat_compare_means(aes(group = diagnosis,label = paste0("p = ", after_stat(p.format))),label.y = y_max, method = "t.test")
+    theme(legend.position = "bottom") # +
+    # stat_compare_means(aes(group = diagnosis,label = paste0("p = ", after_stat(p.format))),label.y = y_max, method = "t.test")
   )
   dev.off()
 }
 
 # Generate boxplots
-create_boxplot(plot_data_summary, "diagnosis", "pmi", "PMI", "full_pmi_distribution.pdf")
-create_boxplot(plot_data_summary, "diagnosis", "age", "Age", "full_age_distribution_by_diagnosis.pdf")
+create_boxplot(plot_data_summary, "brain_area_DEG", "pmi", "PMI", "full_pmi_distribution.pdf")
+create_boxplot(plot_data_summary, "brain_area_DEG", "age", "Age", "full_age_distribution_by_brain-area.pdf")
 
 # Function for Violin Plots
-create_violin_plot <- function(data, x, y,x_label, y_label, filename) {
-  pdf(here(plot_dir, filename), width = 8, height = 6)
-  y_max <- max(data[[y]]) + 20
-  print(
-    ggplot(data, aes(x = !!sym(x), y = !!sym(y), fill = diagnosis)) +
-      geom_violin(trim = FALSE, alpha = 0.6, drop = FALSE) +
-      geom_jitter(aes(color = diagnosis), width = 0.2, alpha = 0.7, size = 2) +
-      scale_fill_manual(values = c("blue", "red")) +
-      scale_color_manual(values = c("black", "darkgreen")) +
-      labs(x = x_label, y = y_label) +
-      theme_bw() +
-      theme(legend.position = "none")+
-      stat_compare_means(aes(group = diagnosis,label = paste0("p = ", after_stat(p.format))),label.y = y_max, method = "t.test")
-  )
-  dev.off()
-}
+# ! Insufficient values in manual scale. 5 needed but only 2 provided.
+# Run `rlang::last_trace()` to see where the error occurred.
+# Warning message:
+#   Cannot compute density for groups with fewer than two datapoints.
 
-# Generate Violin Plots
-create_violin_plot(plot_data_summary, "diagnosis", "pmi","Diagnosis", "PMI", "pmi_violin.pdf") #y_max = max(data[[y]]) + 20
-create_violin_plot(plot_data_summary, "diagnosis", "age","Diagnosis", "AGE", "age_violin.pdf") #y_max <- max(data[[y]]) + 5
-
-# plot_data_summary <- plot_data_summary %>%
-#   mutate(age_group = ifelse(age <="21-29", "30-38"))
-# # table(plot_data_summary$age_group)
-# # 21-29 30-38
-# #     9     5
-#
-# create_violin_plot(plot_data_summary, "age_group", "expr_chrM_ratio", "Age group", "Mitochondrial Expression Ratio", "age_vs_expr_chrM_violin.pdf")
-# create_violin_plot(plot_data_summary, "age_group", "pmi", "Age group", "PMI", "age_vs_pmi_violin.pdf")
-
+# create_violin_plot <- function(data, x, y,x_label, y_label, filename) {
+#   pdf(here(plot_dir, filename), width = 8, height = 6)
+#   y_max <- max(data[[y]]) + 20
+#   print(
+#     ggplot(data, aes(x = !!sym(x), y = !!sym(y), fill = brain_area_DEG)) +
+#       geom_violin(trim = FALSE, alpha = 0.6, drop = FALSE) +
+#       # geom_jitter(aes(color = diagnosis), width = 0.2, alpha = 0.7, size = 2) +
+#       geom_jitter(aes(color = brain_area_DEG), width = 0.2, alpha = 0.7, size = 2) +
+#       scale_fill_manual(values = c("blue", "red", "green", "black", "purple")) +
+#       scale_color_manual(values = c("black", "darkgreen")) +
+#       labs(x = x_label, y = y_label) +
+#       theme_bw() +
+#       theme(legend.position = "none") # +
+#       # stat_compare_means(aes(group = diagnosis,label = paste0("p = ", after_stat(p.format))),label.y = y_max, method = "t.test")
+#   )
+#   dev.off()
+# }
+# 
+# # Generate Violin Plots
+# create_violin_plot(plot_data_summary, "brain_area_DEG", "pmi","brain_area_DEG", "PMI", "pmi_violin.pdf") #y_max = max(data[[y]]) + 20
+# create_violin_plot(plot_data_summary, "brain_area_DEG", "age","brain_area_DEG", "AGE", "age_violin.pdf") #y_max <- max(data[[y]]) + 5
+# 
 # Age vs. expr_chrM_ratio scatter plot
-pdf(here(plot_dir, "age_vs_expr_chrM_by_diagnosis.pdf"), width = 8, height = 6)
-ggplot(plot_data_summary, aes(x = age, y = expr_chrM_ratio, color = diagnosis)) +
+pdf(here(plot_dir, "age_vs_expr_chrM_by_brain-area.pdf"), width = 8, height = 6)
+ggplot(plot_data_summary, aes(x = age, y = expr_chrM_ratio, color = brain_area_DEG)) +
   geom_point(size = 3, alpha = 0.8) +
-  geom_smooth(method = "lm", se = TRUE, aes(fill = diagnosis), alpha = 0.2) +
+  geom_smooth(method = "lm", se = TRUE, aes(fill = brain_area_DEG), alpha = 0.2) +
   geom_text_repel(aes(label = sample_id), size = 3, max.overlaps = 15) +
-  scale_color_manual(values = c("Control" = "blue", "Autism" = "red")) +
-  scale_fill_manual(values = c("Control" = "blue", "Autism" = "red")) +
-  labs(x = "Age", y = "expr_chrM_ratio", color = "Diagnosis") +
+  # scale_color_manual(values = c("Control" = "blue", "Autism" = "red")) +
+  # scale_fill_manual(values = c("Control" = "blue", "Autism" = "red")) +
+  scale_color_manual(values = c("0" = "blue", "1" = "red", "2" = "green", "4" = "black", "5" = "purple")) +
+  scale_fill_manual(values =  c("0" = "blue", "1" = "red", "2" = "green", "4" = "black", "5" = "purple")) +
+  labs(x = "Age", y = "expr_chrM_ratio", color = "brain_area_DEG") +
   theme_bw() +
   theme(legend.position = "bottom")
 dev.off()
