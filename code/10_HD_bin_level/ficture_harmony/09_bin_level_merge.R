@@ -40,14 +40,12 @@ for (k in 3:4) {
         #   Set data types and drop empty rows
         mutate(sample_id = factor(sample_id), factor_K1 = factor(factor_K1)) |>
         filter(!is.na(factor_K1)) |>
-        #   Take just one of each sample/barcode pair
-        group_by(sample_id, barcode) |>
-        slice_head(n = 1) |>
-        ungroup() |>
         #   Name cluster column with value of k
-        rename(!!quo_name(paste0('FICTURE_k', k)) := factor_K1)
+        dplyr::rename(!!quo_name(paste0('FICTURE_k', k)) := factor_K1)
     
-    col_data = left_join(col_data, ficture_df, by = c('sample_id', 'barcode'))
+    col_data = left_join(
+        col_data, ficture_df, by = c('sample_id', 'barcode'), multiple = 'any'
+    )
 }
 
 message(Sys.time(), ' | Writing to disk')
