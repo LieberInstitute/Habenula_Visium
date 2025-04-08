@@ -10,26 +10,21 @@ library("here")
 library("sessioninfo")
 
 #### Set up dirs ####
-data_dir <- here("processed-data", "06_differential_expression", "01_pseudobulk_data")
-#if (!dir.exists(data_dir)) dir.create(data_dir, recursive = TRUE)
+data_dir <- here("processed-data", "05_brain_area_differential_expression")
 
 #### Set up dirs ####
-plot_dir <- here("plots", "06_differential_expression", "02_covariate_analysis")
+plot_dir <- here("plots", "05_brain_area_differential_expression")
 if (!dir.exists(data_dir)) dir.create(data_dir, recursive = TRUE)
 
-#### Load the data ####
-# message(Sys.time(), " - Load HDF5 SPE")
-# spe <- HDF5Array::loadHDF5SummarizedExperiment(here("processed-data", "04_spe_correct_cluster", "spe_ASD"))
-
 # Define k values to iterate over
-k_values <- c(7, 9, 11, 12, 28)
+k_values <- c(3, 9, 17)
 
 for (k in k_values) {
-  
+  # k = 9
   k_nice <- sprintf("%02d", k)  # Formatting k as two digits
   
   # Load the data from the .rds file for current value of k
-  data_file <- file.path(data_dir, paste0("summed_k", k_nice, ".rds"))
+  data_file <- file.path(data_dir, paste0("sce_pseudo_PCA_brain_area_k", sprintf("%02d", k), ".rds"))
   
   if (file.exists(data_file)) {
     # Load the RDS file and extract relevant data
@@ -37,7 +32,8 @@ for (k in k_values) {
     
     # Extract the relevant columns from the loaded data
     plot_data <- as.data.frame(colData(data)) |>
-      select(sample_id, age, diagnosis, BayesSpace, nspots, sum_umi, expr_chrM_ratio, pmi)
+      select(sample_id, brain_area, brain_area_DEG, BayesSpace, nspots, sum_umi, expr_chrM_ratio, pmi, age)
+      #select(sample_id, age, diagnosis, BayesSpace, nspots, sum_umi, expr_chrM_ratio, pmi)
   } else {
     message("*****************************************************************")
     warning(paste("Data file not found for k =", k_nice, ". Skipping this k."))
@@ -52,10 +48,13 @@ for (k in k_values) {
     y_max_nspots <- max(plot_data$nspots) + 20
     domain_data <- plot_data |> filter(BayesSpace == domain)
     plot <- ggboxplot(
-      domain_data, x = "diagnosis", y = "nspots", 
-      color = "diagnosis", palette = c("blue", "red"), 
+      # domain_data, x = "diagnosis", y = "nspots", 
+      domain_data, x = "brain_area_DEG", y = "nspots", 
+      # color = "diagnosis", palette = c("blue", "red"), 
+      color = "brain_area_DEG", palette = c("blue", "red", "green", "black", "purple"), 
       add = "jitter", shape = 19, 
-      xlab = "Diagnosis", ylab = "Number of Spots"
+      # xlab = "Diagnosis", ylab = "Number of Spots"
+      xlab = "Brain Area", ylab = "Number of Spots"
     ) + 
       geom_text(
         aes(label = sample_id),
@@ -66,82 +65,88 @@ for (k in k_values) {
       ggtitle(paste("BayesSpace Domain:", domain)) +
       theme_bw() + 
       theme(legend.position = "none") +
-      stat_compare_means(aes(group = diagnosis, label = paste0("p = ", after_stat(p.format))),
+      # stat_compare_means(aes(group = diagnosis, label = paste0("p = ", after_stat(p.format))),
+      stat_compare_means(aes(group = brain_area_DEG, label = paste0("p = ", after_stat(p.format))),
                          label.y = y_max_nspots, method = "t.test")
     print(plot)
   }
   dev.off()
   
   ## nspots boxplots with all spatial domains in 1 plot
-  p_values_nspots <- compare_means(nspots ~ diagnosis, data = plot_data, group.by = "BayesSpace", method = "t.test")
+  
+  # for compare_means() the default is wilcox.test.  Get error: not enough 'y' observations. I changed to t-test" 
+  #p_values_nspots <- compare_means(nspots ~ diagnosis, data = plot_data, group.by = "BayesSpace", method = "t.test")
+  p_values_nspots <- compare_means(nspots ~ brain_area_DEG, data = plot_data, group.by = "BayesSpace", method = "wilcox.test")
   p_values_nspots$fdr <- p.adjust(p_values_nspots$p, method = "fdr")
-  y_max_nspots <- max(plot_data$nspots) + 50
+  y_max_nspots <- max(plot_data$nspots) + 30
   plot <- ggboxplot(
     plot_data, x = "BayesSpace", y = "nspots", 
-    color = "diagnosis", palette = c("blue", "red"), 
+    color = "brain_area_DEG", palette = c("blue", "red", "green", "black", "purple"), 
     add = "jitter", shape = 19, 
     xlab = "BayesSpace Domain", ylab = "Number of Spots"
   ) + 
-    geom_text(aes(label = sample_id, color = diagnosis), position = position_jitter(width = 0.1, height = 0.2), size = 1.75, hjust = 0.5, vjust = 1) + 
-    theme_bw() + 
-    theme(legend.position = "bottom") +
-    stat_compare_means(aes(group = diagnosis,label = paste0("p = ", after_stat(p.format))),label.y = y_max_nspots, method = "t.test")+
-    geom_text(data = p_values_nspots, aes(x = BayesSpace, y = y_max_nspots - 20, label = paste0("FDR = ", signif(fdr, 3))), size = 3, color = "black")
+    geom_text(aes(label = sample_id, color = brain_area_DEG), position = position_jitter(width = 0.1, height = 0.2), size = 1.75, hjust = 0.5, vjust = 1) +
+      theme_bw() +
+      theme(legend.position = "bottom") # +
+      # stat_compare_means(aes(group = brain_area_DEG,label = paste0("p = ", after_stat(p.format))), label.y = y_max_nspots, method = "wilcox.test") +
+      # geom_text(data = p_values_nspots, aes(x = BayesSpace, y = y_max_nspots - 20, label = paste0("FDR = ", signif(fdr, 2))), size = 3, color = "black")
   plot_name <- paste0("nspots_boxplot_k", k_nice, ".png")  
   ggsave(filename = here(plot_dir, plot_name), plot = plot, width = 12, height = 8)
   
   # Generate sum_umi boxplots across BayesSpace domains
-  p_values_sum_umi <- compare_means(sum_umi ~ diagnosis, data = plot_data, group.by = "BayesSpace", method = "t.test")
+  p_values_sum_umi <- compare_means(nspots ~ brain_area_DEG, data = plot_data, group.by = "BayesSpace", method = "wilcox.test")
   p_values_sum_umi$fdr <- p.adjust(p_values_sum_umi$p, method = "fdr")
   y_max_sum_umi <- max(plot_data$sum_umi) + 600000
   plot <- ggboxplot(
     plot_data, x = "BayesSpace", y = "sum_umi", 
-    color = "diagnosis", palette = c("blue", "red"), 
+    #color = "diagnosis", palette = c("blue", "red"), 
+    color = "brain_area_DEG", palette = c("blue", "red", "green", "black", "purple"), 
     add = "jitter", shape = 19, 
     xlab = "BayesSpace Domain", ylab = "sum_umi"
   ) + 
-    geom_text(aes(label = sample_id, color = diagnosis), 
+    # geom_text(aes(label = sample_id, color = diagnosis), 
+    geom_text(aes(label = sample_id, color = brain_area_DEG), 
               position = position_jitter(width = 0.1, height = 0.2), 
               size = 1.75, hjust = 0.5, vjust = 1) + 
     theme_bw() + 
-    theme(legend.position = "bottom") +
-    stat_compare_means(aes(group = diagnosis, label = paste0("p = ", after_stat(p.format))),
-                       label.y = y_max_sum_umi, method = "t.test") +
-    geom_text(data = p_values_sum_umi, aes(x = BayesSpace, y = y_max_sum_umi - 200000, 
-                                           label = paste0("FDR = ", signif(fdr, 3))), 
-              size = 3, color = "black")
+    theme(legend.position = "bottom") # +
+    # stat_compare_means(aes(group = diagnosis, label = paste0("p = ", after_stat(p.format))),
+    #                    label.y = y_max_sum_umi, method = "t.test") +
+    # geom_text(data = p_values_sum_umi, aes(x = BayesSpace, y = y_max_sum_umi - 200000, 
+    #                                        label = paste0("FDR = ", signif(fdr, 3))), size = 3, color = "black")
   
   plot_name <- paste0("sum_umi_boxplot_k", k_nice, ".png")
   ggsave(filename = here(plot_dir, plot_name), plot = plot, width = 12, height = 8)
   
   # Generate expr_chrM_ratio boxplots with all spatial domains in 1 plot
-  p_values_mito <- compare_means(expr_chrM_ratio ~ diagnosis, data = plot_data, group.by = "BayesSpace", method = "t.test")
-  p_values_mito$fdr <- p.adjust(p_values_mito$p, method = "fdr")
+  # p_values_mito <- compare_means(expr_chrM_ratio ~ diagnosis, data = plot_data, group.by = "BayesSpace", method = "t.test")
+  # p_values_mito$fdr <- p.adjust(p_values_mito$p, method = "fdr")
   y_max_mito <- max(plot_data$expr_chrM_ratio) + 0.02
   plot <- ggboxplot(
     plot_data, x = "BayesSpace", y = "expr_chrM_ratio", 
-    color = "diagnosis", palette = c("blue", "red"), 
+    # color = "diagnosis", palette = c("blue", "red"), 
+    color = "brain_area_DEG", palette = c("blue", "red", "green", "black", "purple"), 
     add = "jitter", shape = 19, 
     xlab = "BayesSpace Domain", ylab = "expr_chrM_ratio"
   ) + 
-    geom_text(aes(label = sample_id, color = diagnosis), 
+    geom_text(aes(label = sample_id, color = brain_area_DEG), 
               position = position_jitter(width = 0, height = 0), 
               size = 1.75, hjust = 0, vjust = 1) + 
     theme_bw() + 
-    theme(legend.position = "bottom") + 
-    stat_compare_means(aes(group = diagnosis, label = paste0("p = ", after_stat(p.format))),
-                       label.y = y_max_mito, method = "t.test") +
-    geom_text(data = p_values_mito, aes(x = BayesSpace, y = y_max_mito - 0.005, 
-                                        label = paste0("FDR = ", signif(fdr, 3))), 
-              size = 3, color = "black")
+    theme(legend.position = "bottom") # + 
+    # stat_compare_means(aes(group = diagnosis, label = paste0("p = ", after_stat(p.format))),
+    #                    label.y = y_max_mito, method = "t.test") +
+    # geom_text(data = p_values_mito, aes(x = BayesSpace, y = y_max_mito - 0.005, 
+    #                                     label = paste0("FDR = ", signif(fdr, 3))), size = 3, color = "black")
   
   plot_name <- paste0("expr_chrM_ratio_boxplot_k", k_nice, ".png")
   ggsave(filename = here(plot_dir, plot_name), plot = plot, width = 12, height = 8)
+  
 }
 
 
 ###### Additional analysis (since age and PMI remain constant) #############
-k_nice <- "12"
+k_nice <- "9"
 data_file <- file.path(data_dir, paste0("summed_k", k_nice, ".rds"))
 plot_data <- as.data.frame(colData(data)) |>
   select(sample_id, age, diagnosis, BayesSpace, nspots, sum_umi, expr_chrM_ratio, pmi)
