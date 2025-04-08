@@ -11,19 +11,25 @@ with open(sample_id_path, 'r') as f:
     all_samples = f.read().splitlines()
 sample_id = all_samples[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
 
-stardist_dir = here('processed-data', '09_HD_cell_level', 'stardist')
-final_out_path = here('processed-data', '09_HD_cell_level', f'{sample_id}.h5ad')
+stardist_dir = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'stardist'
+)
+final_out_path = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', f'{sample_id}.h5ad'
+)
 pre_out_path = here(
-    'processed-data', '09_HD_cell_level', f'{sample_id}_pre_bin2cell.h5ad'
+    'processed-data', '09_HD_cell_level', 'probe_fix',
+    f'{sample_id}_pre_bin2cell.h5ad'
 )
 sr_dir = here(
-    'processed-data', '01_spaceranger', sample_id, 'outs', 'binned_outputs',
-    'square_002um'
+    'processed-data', '01_spaceranger', 'probe_fix', sample_id, 'outs',
+    'binned_outputs', 'square_002um'
 )
 sr_spatial_dir = here(
-    'processed-data', '01_spaceranger', sample_id, 'outs', 'spatial'
+    'processed-data', '01_spaceranger', 'probe_fix', sample_id, 'outs',
+    'spatial'
 )
-plot_dir = here('plots', '09_HD_cell_level', 'bin2cell')
+plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'bin2cell')
 raw_image_path = here('raw-data', 'images', 'vis-hd', f'{sample_id}.tif')
 mpp = 0.3
 

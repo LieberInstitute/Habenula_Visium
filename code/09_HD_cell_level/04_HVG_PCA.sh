@@ -4,8 +4,8 @@
 #SBATCH --job-name=04_HVG_PCA
 #SBATCH -c 4
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/logs/04_HVG_PCA.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/logs/04_HVG_PCA.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/probe_fix/logs/04_HVG_PCA.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/probe_fix/logs/04_HVG_PCA.txt
 
 set -e
 

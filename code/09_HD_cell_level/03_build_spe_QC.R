@@ -6,9 +6,11 @@ library(scran)
 library(sessioninfo)
 library(spatialLIBD)
 
-spe_raw_dir = here('processed-data', '09_HD_cell_level', 'spe_raw')
-spe_norm_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
-plot_dir = here('plots', '09_HD_cell_level', 'QC')
+spe_raw_dir = here('processed-data', '09_HD_cell_level', 'probe_fix', 'spe_raw')
+spe_norm_dir = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+)
+plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'QC')
 min_umi_cutoff = 10
 H1_MVPY9BW_A1_8433_artifact = 34223
 H1_XQQD7C7_A1_8518_horizontal_artifact = 28588

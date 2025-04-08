@@ -12,16 +12,19 @@ library(getopt)
 #   Corresponding to "cell typing" and "domain segmentation"
 lambda = c(0.2, 0.8)[as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))]
 
-spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
+spe_dir = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+)
 out_dir = here(
-    'processed-data', '09_HD_cell_level',
+    'processed-data', '09_HD_cell_level', 'probe_fix',
     sprintf('spe_banksy_lambda%s', sub('\\.', '_', as.character(lambda)))
 )
 svg_path = here(
-    'processed-data', '10_HD_bin_level', 'nnSVG_out', 'merged_SVGs.txt'
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'nnSVG_out',
+    'merged_SVGs.txt'
 )
 plot_dir = here(
-    'plots', '09_HD_cell_level', 'banksy',
+    'plots', '09_HD_cell_level', 'probe_fix', 'banksy',
     paste0('lambda', sub('\\.', '_', as.character(lambda)))
 )
 

@@ -11,10 +11,11 @@ sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
 sample_ids = readLines(sample_id_path)
 
 ad_in_paths = here(
-    'processed-data', '09_HD_cell_level', sprintf('%s.h5ad', sample_ids)
+    'processed-data', '09_HD_cell_level', 'probe_fix',
+    sprintf('%s.h5ad', sample_ids)
 )
-spe_bin_dir = here('processed-data', '10_HD_bin_level', 'spe_raw')
-spe_raw_dir = here('processed-data', '09_HD_cell_level', 'spe_raw')
+spe_bin_dir = here('processed-data', '10_HD_bin_level', 'probe_fix', 'spe_raw')
+spe_raw_dir = here('processed-data', '09_HD_cell_level', 'probe_fix', 'spe_raw')
 
 ################################################################################
 #   Functions

@@ -29,15 +29,18 @@ lambda_neat = paste0('lambda', sub('\\.', '_', as.character(opt$lambda)))
 res_neat = paste0('res', sub('\\.', '_', as.character(opt$res)))
 
 spe_dir = here(
-    'processed-data', '09_HD_cell_level', sprintf('spe_banksy_%s', lambda_neat)
+    'processed-data', '09_HD_cell_level', 'probe_fix',
+    sprintf('spe_banksy_%s', lambda_neat)
 )
-spe_orig_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
+spe_orig_dir = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+)
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'banksy', lambda_neat,
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', lambda_neat,
     sprintf('leiden_%s.csv', res_neat)
 )
 plot_dir = here(
-    'plots', '09_HD_cell_level', 'banksy', lambda_neat,
+    'plots', '09_HD_cell_level', 'probe_fix', 'banksy', lambda_neat,
     sprintf('leiden_%s', res_neat)
 )
 random_seed = 0

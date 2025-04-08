@@ -7,8 +7,12 @@ library(scater)
 library(BiocSingular)
 library(BiocParallel)
 
-spe_in_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
-hvg_out_path = here('processed-data', '09_HD_cell_level', 'HVGs.txt')
+spe_in_dir = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+)
+hvg_out_path = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'HVGs.txt'
+)
 num_pcs = 50
 
 num_cores = as.numeric(Sys.getenv("SLURM_CPUS_ON_NODE"))
