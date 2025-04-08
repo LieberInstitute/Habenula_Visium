@@ -1,6 +1,6 @@
 
 library(SpatialExperiment)
-spe <- readRDS("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/spe_norm_filtered/se.rds")
+spe <- readRDS("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture_harmony/spe_raw.rds")
 head(rowData(spe), 10)
 head(colData(spe), 10)
 colData(spe)$barcode<-rownames(colData(spe))
@@ -22,7 +22,9 @@ barcodes_with_multiple_factors <- names(barcode_factor_counts[barcode_factor_cou
 # Display the first 10 barcodes that have multiple factor_K1 assignments
 print(head(barcodes_with_multiple_factors, 10)) #character(0) --> Each barcode corresponds to one factor!
 
-dim(table(transcripts$barcode)) # 652793
+dim(table(transcripts$barcode,transcripts$sample_id))
+
+#2555180 
 
 agg_factors <- transcripts[, .(
   factor_K1 = mean(factor_K1, na.rm = TRUE),
@@ -31,15 +33,14 @@ agg_factors <- transcripts[, .(
   factor_P1 = mean(factor_P1, na.rm = TRUE),
   factor_P2 = mean(factor_P2, na.rm = TRUE),
   factor_P3 = mean(factor_P3, na.rm = TRUE)
-), by = .(barcode)] 
-
-agg_factors$sample_id<-this_sample
+), by = .(barcode,sample_id)] 
 
 col_data_df <- as.data.frame(colData(spe))
 col_data_df <- inner_join(col_data_df, agg_factors, by = c("barcode","sample_id"))
-dim(col_data_df) #565637
+dim(col_data_df)
+
+col_data_df$key<-paste0(col_data_df$barcode,"_",col_data_df$sample_id)
 out<-col_data_df[,c("key","factor_K1","factor_K2","factor_K3","factor_P1","factor_P2","factor_P3")]
 out<-as.data.frame(out)
 print(table(out$factor_K1))
-fwrite(out,file=paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/spe_norm_filtered/ficture/spe_cluster_",this_sample,".csv"))
-
+fwrite(out,file="/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/spe_raw/ficture/spe_cluster_all_sample.csv")
