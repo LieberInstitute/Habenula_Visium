@@ -367,7 +367,8 @@ dev.off()
 # 
 # summary(mito_genes_spe_info)
 
-# slurmjobs::job_single('01_create_pseudobulk_data', create_shell = TRUE, memory = '25G', command = "Rscript 01_create_pseudobulk_data.R")
+# library("slurmjobs")
+# slurmjobs::job_single('03_covariate_analysis', create_shell = TRUE, memory = '30G', command = "Rscript 03_covariate_analysis.R")
 
 ## Reproducibility information
 print("Reproducibility information:")
