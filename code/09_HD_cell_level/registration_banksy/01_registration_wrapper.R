@@ -5,12 +5,12 @@ library(sessioninfo)
 library(tidyverse)
 
 #   Get Leiden resolution from array task ID
-res = (seq_len(10) / 10)[as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))]
+res = (seq_len(20) / 20)[as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))]
 res_neat = sub('\\.', '_', as.character(res))
 
 spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
 cluster_path = here(
-    'processed-data', '09_HD_cell_level', 'banksy', 'lambda0_8',
+    'processed-data', '09_HD_cell_level', 'banksy', 'lambda0_2',
     sprintf('leiden_res%s.csv', res_neat)
 )
 pseudo_path = here(
