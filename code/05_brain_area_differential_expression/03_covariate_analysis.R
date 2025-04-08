@@ -13,7 +13,7 @@ library("sessioninfo")
 data_dir <- here("processed-data", "05_brain_area_differential_expression")
 
 #### Set up dirs ####
-plot_dir <- here("plots", "05_brain_area_differential_expression")
+plot_dir <- here("plots", "05_brain_area_differential_expression", "03_covariate_analysis")
 if (!dir.exists(data_dir)) dir.create(data_dir, recursive = TRUE)
 
 # Define k values to iterate over
