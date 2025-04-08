@@ -274,7 +274,7 @@ message('Pseudobulk completed ')
 # colnames(colData(spe_pseudo_k))
 colData(spe_pseudo_k) <- colData(spe_pseudo_k)[, sort(c(
   "sample_id",
-  "brain_id", # equivalent to subject / donor / ethnicity
+  "brain_id",
   "age",
   "sex",
   "diagnosis",
@@ -312,7 +312,7 @@ set.seed(01042025)
 spe_pseudo <- spe_pseudo_k
 
 ## Compute some reduced dims
-message('/nProcessing MDS and scarter runPCA')
+message('Processing MDS and scarter runPCA')
 
 # keep ncomponents below the number of cells
 ncomponents = min(50, ncol(spe_pseudo) - 1, nrow(spe_pseudo) - 1)
