@@ -27,7 +27,8 @@ out_path = here(
 )
 ficture_input_path = here(
     'processed-data', '10_HD_bin_level', 'ficture_harmony', 'ficture_outputs',
-    'normalized', 'analysis', 'nF12.d_12', 'transcripts_joined.tsv.gz'
+    'normalized', 'analysis', f'nF{num_factors}.d_12',
+    'transcripts_joined.tsv.gz'
 )
 factor_cols = [
     'factor_K1', 'factor_K2', 'factor_K3', 'factor_P1', 'factor_P2', 'factor_P3'
