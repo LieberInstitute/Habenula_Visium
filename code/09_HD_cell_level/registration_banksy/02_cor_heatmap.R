@@ -8,7 +8,7 @@ plot_dir = here('plots', '09_HD_cell_level', 'registration_banksy')
 model_paths = here(
     'processed-data', '09_HD_cell_level', 'registration_banksy',
     'modeling_results',
-    sprintf('%s.rds', sub('\\.', '_', as.character(seq_len(10) / 10)))
+    sprintf('%s.rds', sub('\\.', '_', as.character(seq_len(20) / 10)))
 )
 
 #   List all paths and names for reference data
@@ -36,22 +36,6 @@ ref_paths = c(
 ref_names = c(
     'snRNAseq_fine', 'snRNAseq_broad', 'multiome',
     sprintf('Visium_BayesSpace_k%02d', 2:28)
-)
-
-visium_manual_row_order = sprintf('Sp09D0%s', c(4, 8, 6, 2, 9, 5, 3, 7, 1))
-visium_manual_col_order = paste0(
-    'C', c(6, 1, 14, 16, 11, 4, 5, 9, 13, 15, 3, 12, 17, 18, 10, 7, 2, 8), ' '
-)
-
-multiome_manual_row_order = paste0(
-    'C.',
-    c(
-        '05.DD_LHb', '18.DD_LHb', '23.DD_LHb', '33.DD_LHb', '08', '13', '09',
-        '06', '04','16.DD_MHb', '07.DD_MHb', '11.DD_MHb', '10.DD_MHb',
-        '14.DD_MHb', '36.DD_MHb', '24.DD_LHb', '30.DD_LHb', '40.DD_LHb','34',
-        '02', '22', '29', '26', '21', '20', '27', '41', '39', '31', '25',
-        '32', '17', '12', '15', '03', '35',  '37', '38', '19', '01', '28'
-    )
 )
 
 #   Get the reference data for this task
@@ -104,38 +88,12 @@ annotated_clusters = lapply(
 #   Make heatmaps
 pdf(file.path(plot_dir, sprintf("%s.pdf", ref_name)))
 for (i in seq_len(length(this_cor))) {
-    if ((ref_name == 'Visium_BayesSpace_k09') && (i == 10)) {
-        #   For a progress report figure, use a special ordering just for
-        #   Visium BayesSpace k = 9 and Banksy res = 1
-        this_cor[[i]] = this_cor[[i]][
-            visium_manual_row_order, visium_manual_col_order
-        ]
-        print(
-            layer_stat_cor_plot(
-                this_cor[[i]], annotation = annotated_clusters[[i]],
-                heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
-                cluster_rows = FALSE, cluster_columns = FALSE
-            )
+    print(
+        layer_stat_cor_plot(
+            this_cor[[i]], annotation = annotated_clusters[[i]],
+            heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
         )
-    } else if ((ref_name == 'multiome') && (i == 10)) {
-        #   For a progress report figure, use a special ordering just for
-        #   multiome and Banksy res = 1
-        this_cor[[i]] = this_cor[[i]][multiome_manual_row_order,]
-        print(
-            layer_stat_cor_plot(
-                this_cor[[i]], annotation = annotated_clusters[[i]],
-                heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
-                cluster_rows = FALSE
-            )
-        )
-    } else {
-        print(
-            layer_stat_cor_plot(
-                this_cor[[i]], annotation = annotated_clusters[[i]],
-                heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
-            )
-        )
-    }
+    )
 }
 dev.off()
 
