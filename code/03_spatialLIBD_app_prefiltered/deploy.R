@@ -19,7 +19,8 @@ rsconnect::deployApp(
     appDir = here("code", "03_spatialLIBD_app_prefiltered"),
     appFiles = c(
         "app.R",
-        "spe_raw.rds",
+        #"spe_raw.rds",
+        "spe_scran_spotsweeper.rds",
         withr::with_dir(here("code", "03_spatialLIBD_app_prefiltered"), dir("www", full.names = TRUE))
     ),
     appName = "Habenula_Visium_raw",

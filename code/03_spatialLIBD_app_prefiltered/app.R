@@ -16,9 +16,16 @@ options(repos = BiocManager::repositories())
 
 here("code", "03_spatialLIBD_app_prefiltered")
 
-## I added a symbolic link to point the spe.rds object to wrap.
-# spe <- readRDS(here('processed-data', '02_build_spe', "spe_raw.rds"))
-spe <- readRDS("spe_raw.rds")
+## I added a symbolic link to point the spe*.rds object to wrap.
+#spe <- readRDS(here('processed-data', '02_build_spe', "spe_raw.rds"))
+spe <- readRDS("spe_scran_spotsweeper.rds")
+
+## Sort samples to make them match with coding versions
+lst_order <- sort(unique(spe$sample_id))
+sample_order <- unlist(sapply(lst_order, function(i) {
+    sort(unique(spe$sample_id)[grepl(i, unique(spe$sample_id))])
+}))
+sample_order
 
 ## Quickly explore the data
 vars <- colnames(colData(spe))
@@ -31,17 +38,18 @@ spatialLIBD::run_app(
     spe_discrete_vars = c(
         "ManualAnnotation",
         "overlaps_tissue",
-        vars[grep("^10x_", vars)] # ,
-        # vars[grep("^scran_", vars)],
-        # "edge_spots"
-        # vars[grep("^SNN_k10", vars)],
+        vars[grep("^10x_", vars)],
+        vars[grep("^scran_", vars)],
+        "edge_spots",
+        vars[grep("^SNN_k10", vars)],
+        vars[grep("*_outliers", vars)],
         # vars[grep("^BayesSpace_harmony_", vars)]
     ),
     spe_continuous_vars = c(
         "sum_umi",
         "sum_gene",
         "expr_chrM",
-        "expr_chrM_ratio" # ,
+        "expr_chrM_ratio"
         # "edge_distance"
     ),
     default_cluster = "10x_graphclust",
