@@ -5,7 +5,7 @@ library(sessioninfo)
 library(tidyverse)
 
 #   Get Leiden resolution from array task ID
-res = (seq_len(20) / 20)[as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))]
+res = (seq_len(20) / 10)[as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))]
 res_neat = sub('\\.', '_', as.character(res))
 
 spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
@@ -34,7 +34,7 @@ assays(spe)$counts = as(assays(spe)$counts, "dgCMatrix")
 #   Add in cluster assignments to 'spe'
 cluster_df = read_csv(cluster_path, show_col_types = FALSE)
 stopifnot(all(spe$key %in% cluster_df$key))
-spe$banksy = cluster_df$banksy_lambda0_8[match(spe$key, cluster_df$key)]
+spe$banksy = cluster_df$banksy_lambda0_2[match(spe$key, cluster_df$key)]
 spe$banksy = factor(spe$banksy, levels = sort(unique(spe$banksy)))
 
 #   Pseudobulk
