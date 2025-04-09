@@ -52,7 +52,7 @@ counts_df = tibble(
     X = spatialCoords(spe)[counts_mat@j + 1, 1],
     Y = spatialCoords(spe)[counts_mat@j + 1, 2],
     gene = rownames(spe)[counts_mat@i + 1],
-    Count = counts_mat@x,
+    Count = as.integer(round(counts_mat@x)),
     sample_id = spe$sample_id[counts_mat@j + 1],
     barcode = colnames(spe)[counts_mat@j + 1]
 )
