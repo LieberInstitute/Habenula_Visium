@@ -1,3 +1,5 @@
+#   Run registration_wrapper() on bin-level FICTURE clusters
+
 library(here)
 library(spatialLIBD)
 library(HDF5Array)
