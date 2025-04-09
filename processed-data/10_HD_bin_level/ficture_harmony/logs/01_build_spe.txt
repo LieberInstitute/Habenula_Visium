@@ -1,219 +1,10 @@
 **** Job starts ****
-Tue Mar 11 12:31:38 PM EDT 2025
+Wed Apr  9 11:43:26 AM EDT 2025
 **** JHPCE info ****
 User: neagles
-Job id: 15041914
+Job id: 15912378
 Job name: 01_build_spe
-Node name: compute-095
-Task id: 
-Loading LIBD SLURM module for visium_hd/1.0
-Loading LIBD SLURM module for htslib/1.18
-Converting spatial coords to CSV for sample H1-W369TJK_D1_9090...
-Converting spatial coords to CSV for sample H1-MVPY9BW_A1_8433...
-Converting spatial coords to CSV for sample H1-MVPY9BW_D1_8667...
-Converting spatial coords to CSV for sample H1-XQQD7C7_A1_8518...
-Converting spatial coords to CSV for sample H1-XQQD7C7_D1_9037...
-Unloading LIBD SLURM module for visium_hd/1.0
-Unloading LIBD SLURM module for htslib/1.18
-Loading conda_R/4.4.x
-
-Currently Loaded Modules:
-  1) JHPCE_ROCKY9_DEFAULT_ENV   3) conda/3-24.3.0
-  2) JHPCE_tools/3.0            4) conda_R/4.4.x
-
- 
-
-here() starts at /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium
-── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-✔ dplyr     1.1.4     ✔ readr     2.1.5
-✔ forcats   1.0.0     ✔ stringr   1.5.1
-✔ ggplot2   3.5.1     ✔ tibble    3.2.1
-✔ lubridate 1.9.4     ✔ tidyr     1.3.1
-✔ purrr     1.0.2     
-── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-✖ dplyr::filter() masks stats::filter()
-✖ dplyr::lag()    masks stats::lag()
-ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
-Loading required package: SingleCellExperiment
-Loading required package: SummarizedExperiment
-Loading required package: MatrixGenerics
-Loading required package: matrixStats
-
-Attaching package: ‘matrixStats’
-
-The following object is masked from ‘package:dplyr’:
-
-    count
-
-
-Attaching package: ‘MatrixGenerics’
-
-The following objects are masked from ‘package:matrixStats’:
-
-    colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
-    colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
-    colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
-    colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
-    colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
-    colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
-    colWeightedMeans, colWeightedMedians, colWeightedSds,
-    colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
-    rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
-    rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
-    rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
-    rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
-    rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
-    rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
-    rowWeightedSds, rowWeightedVars
-
-Loading required package: GenomicRanges
-Loading required package: stats4
-Loading required package: BiocGenerics
-
-Attaching package: ‘BiocGenerics’
-
-The following objects are masked from ‘package:lubridate’:
-
-    intersect, setdiff, union
-
-The following objects are masked from ‘package:dplyr’:
-
-    combine, intersect, setdiff, union
-
-The following objects are masked from ‘package:stats’:
-
-    IQR, mad, sd, var, xtabs
-
-The following objects are masked from ‘package:base’:
-
-    anyDuplicated, aperm, append, as.data.frame, basename, cbind,
-    colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
-    get, grep, grepl, intersect, is.unsorted, lapply, Map, mapply,
-    match, mget, order, paste, pmax, pmax.int, pmin, pmin.int,
-    Position, rank, rbind, Reduce, rownames, sapply, saveRDS, setdiff,
-    table, tapply, union, unique, unsplit, which.max, which.min
-
-Loading required package: S4Vectors
-
-Attaching package: ‘S4Vectors’
-
-The following objects are masked from ‘package:lubridate’:
-
-    second, second<-
-
-The following objects are masked from ‘package:dplyr’:
-
-    first, rename
-
-The following object is masked from ‘package:tidyr’:
-
-    expand
-
-The following object is masked from ‘package:utils’:
-
-    findMatches
-
-The following objects are masked from ‘package:base’:
-
-    expand.grid, I, unname
-
-Loading required package: IRanges
-
-Attaching package: ‘IRanges’
-
-The following object is masked from ‘package:lubridate’:
-
-    %within%
-
-The following objects are masked from ‘package:dplyr’:
-
-    collapse, desc, slice
-
-The following object is masked from ‘package:purrr’:
-
-    reduce
-
-Loading required package: GenomeInfoDb
-Loading required package: Biobase
-Welcome to Bioconductor
-
-    Vignettes contain introductory material; view with
-    'browseVignettes()'. To cite Bioconductor, see
-    'citation("Biobase")', and for packages 'citation("pkgname")'.
-
-
-Attaching package: ‘Biobase’
-
-The following object is masked from ‘package:MatrixGenerics’:
-
-    rowMedians
-
-The following objects are masked from ‘package:matrixStats’:
-
-    anyMissing, rowMedians
-
-Loading required package: scuttle
-Loading required package: SpatialExperiment
-Loading required package: SparseArray
-Loading required package: Matrix
-
-Attaching package: ‘Matrix’
-
-The following object is masked from ‘package:S4Vectors’:
-
-    expand
-
-The following objects are masked from ‘package:tidyr’:
-
-    expand, pack, unpack
-
-Loading required package: S4Arrays
-Loading required package: abind
-
-Attaching package: ‘S4Arrays’
-
-The following object is masked from ‘package:abind’:
-
-    abind
-
-The following object is masked from ‘package:base’:
-
-    rowsum
-
-Loading required package: DelayedArray
-
-Attaching package: ‘DelayedArray’
-
-The following object is masked from ‘package:purrr’:
-
-    simplify
-
-The following objects are masked from ‘package:base’:
-
-    apply, scale, sweep
-
-Loading required package: rhdf5
-
-Attaching package: ‘HDF5Array’
-
-The following object is masked from ‘package:rhdf5’:
-
-    h5ls
-
-2025-03-11 12:43:00.056893 | Building SpatialExperiment...
-2025-03-11 12:43:00.103752 SpatialExperiment::read10xVisium: reading basic data from SpaceRanger
-2025-03-11 13:01:58.343549 read10xVisiumAnalysis: reading analysis output from SpaceRanger
-Error in read10xVisiumAnalysis(samples = samples, sample_id = sample_id) : 
-  length(dir) == length(samples) is not TRUE
-Calls: read10xVisiumWrapper -> read10xVisiumAnalysis -> stopifnot
-Execution halted
-**** Job starts ****
-Tue Mar 11 01:18:03 PM EDT 2025
-**** JHPCE info ****
-User: neagles
-Job id: 15045338
-Job name: 01_build_spe
-Node name: compute-169
+Node name: compute-096
 Task id: 
 Loading LIBD SLURM module for visium_hd/1.0
 Loading LIBD SLURM module for htslib/1.18
@@ -404,11 +195,12 @@ The following object is masked from ‘package:rhdf5’:
 
     h5ls
 
-2025-03-11 13:18:18.939708 | Building SpatialExperiment...
-2025-03-11 13:27:06.657459 | Saving raw SPE
+2025-04-09 11:44:04.391535 | Building SpatialExperiment...
+2025-04-09 12:09:40.583793 | Filtering bins according to 8um bin-level QC...
+2025-04-09 12:11:20.724472 | Saving raw SPE
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
- version  R version 4.4.3 Patched (2025-02-28 r87927)
+ version  R version 4.4.3 Patched (2025-02-28 r88126)
  os       Rocky Linux 9.4 (Blue Onyx)
  system   x86_64, linux-gnu
  ui       X11
@@ -416,7 +208,7 @@ The following object is masked from ‘package:rhdf5’:
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2025-03-11
+ date     2025-04-09
  pandoc   3.2 @ /jhpce/shared/community/core/conda_R/4.4.x/bin/pandoc
  quarto   NA
 
@@ -533,7 +325,7 @@ The following object is masked from ‘package:rhdf5’:
  rappdirs               0.3.3     2021-01-31 [1] CRAN (R 4.4.2)
  RColorBrewer           1.1-3     2022-04-03 [1] CRAN (R 4.4.2)
  Rcpp                   1.0.13-1  2024-11-02 [1] CRAN (R 4.4.2)
- RCurl                  1.98-1.16 2024-07-11 [2] CRAN (R 4.4.1)
+ RCurl                  1.98-1.17 2025-03-22 [2] CRAN (R 4.4.3)
  readr                * 2.1.5     2024-01-10 [2] CRAN (R 4.4.0)
  rematch2               2.1.2     2020-05-01 [2] CRAN (R 4.4.0)
  restfulr               0.0.15    2022-06-16 [2] CRAN (R 4.4.0)
@@ -573,7 +365,7 @@ The following object is masked from ‘package:rhdf5’:
  tidyselect             1.2.1     2024-03-11 [1] CRAN (R 4.4.2)
  tidyverse            * 2.0.0     2023-02-22 [2] CRAN (R 4.4.0)
  timechange             0.3.0     2024-01-18 [2] CRAN (R 4.4.0)
- tzdb                   0.4.0     2023-05-12 [2] CRAN (R 4.4.0)
+ tzdb                   0.5.0     2025-03-15 [2] CRAN (R 4.4.3)
  UCSC.utils             1.2.0     2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
  vctrs                  0.6.5     2023-12-01 [1] CRAN (R 4.4.2)
  vipor                  0.4.7     2023-12-18 [2] CRAN (R 4.4.0)
@@ -593,4 +385,4 @@ The following object is masked from ‘package:rhdf5’:
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Tue Mar 11 01:31:43 PM EDT 2025
+Wed Apr  9 12:21:24 PM EDT 2025
