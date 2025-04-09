@@ -8,19 +8,18 @@ library(rjson)
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
 spe_in_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'spe_raw.rds'
+    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'spe_raw.rds'
 )
 scalefactors_path = here(
-    'processed-data', '01_spaceranger', 'probe_fix', '%s', 'outs',
+    'processed-data', '01_spaceranger', '%s', 'outs',
     'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
 )
 counts_out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'ficture_harmony',
     'ficture_inputs', 'normalized_input.tsv.gz'
 )
 minmax_out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'ficture_harmony',
     'ficture_inputs', 'normalized_minmax.tsv'
 )
 buffer_prop = 0.05

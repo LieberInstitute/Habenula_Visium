@@ -4,8 +4,8 @@
 #SBATCH --job-name=01_build_spe
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/01_build_spe.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/01_build_spe.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/01_build_spe.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/01_build_spe.txt
 
 set -e
 
@@ -27,7 +27,7 @@ sample_id_path=$repo_dir/raw-data/sample_info/hd_sample_list.txt
 module load visium_hd/1.0
 for i in $(seq 1 5); do
     sample_id=$(awk "NR==${i}" $sample_id_path)
-    spatial_dir=$repo_dir/processed-data/01_spaceranger/probe_fix/$sample_id/outs/binned_outputs/square_002um/spatial
+    spatial_dir=$repo_dir/processed-data/01_spaceranger/$sample_id/outs/binned_outputs/square_002um/spatial
 
     if [[ ! -f $spatial_dir/tissue_positions.csv ]]; then
         echo "Converting spatial coords to CSV for sample ${sample_id}..."

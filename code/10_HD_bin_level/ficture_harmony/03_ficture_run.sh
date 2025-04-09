@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/03_ficture_run_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/03_ficture_run_%a.txt
-#SBATCH --array=17,19-25%5
+#SBATCH --array=2-40%2
 
 set -e
 
