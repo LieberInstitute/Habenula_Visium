@@ -40,7 +40,7 @@ very_bad_path = here(
 )
 banksy_cluster_path = here(
     'processed-data', '09_HD_cell_level', 'banksy', 'lambda0_8',
-    'leiden_res1_no_harmony.csv'
+    'leiden_res1.csv'
 )
 plot_dir = here('plots', '09_HD_cell_level', 'registration_banksy')
 
@@ -170,23 +170,14 @@ dev.off()
 cluster_df = read_csv(banksy_cluster_path, show_col_types = FALSE)
 stopifnot(identical(spe$key, cluster_df$key))
 spe$banksy = case_when(
-        cluster_df$banksy_lambda0_8 %in% c(4, 6, 11) ~ 'Habenula',
-        cluster_df$banksy_lambda0_8 == 10 ~ 'Top Outlier: Other Genes',
-        cluster_df$banksy_lambda0_8 == 15 ~ 'Top Outlier: Excluded Genes',
+        cluster_df$banksy_lambda0_8 %in% c(4, 5, 10) ~ 'Habenula',
+        cluster_df$banksy_lambda0_8 == 14 ~ 'Top Outlier',
         TRUE ~ 'Other'
     ) |>
-    factor(
-        levels = c(
-            'Habenula', 'Top Outlier: Other Genes',
-            'Top Outlier: Excluded Genes', 'Other'
-        )
-    )
+    factor(levels = c('Habenula', 'Top Outlier', 'Other'))
 
 custom_colors = c(
-    'Habenula' = '#96bbbb',
-    'Top Outlier: Other Genes' = '#0125C4',
-    'Top Outlier: Excluded Genes' = '#90121C',
-    'Other' = '#F1C606'
+    'Habenula' = '#96bbbb', 'Top Outlier' = '#0125C4', 'Other' = '#F1C606'
 )
 p = vis_clus(
         spe, sampleid = "H1-XQQD7C7_D1_9037", clustervar = "banksy",
@@ -246,18 +237,14 @@ p = tibble(
         cluster = cluster_df$banksy_lambda0_8,
         sample_id = spe$sample_id
     ) |>
-    filter(cluster %in% c(10, 15)) |>
+    filter(cluster == 14) |>
     rbind(tibble(cluster = "All Cells", sample_id = spe$sample_id)) |>
     mutate(
         cluster = factor(
             case_when(
-                cluster == 10 ~ "Outlier: Other Genes",
-                cluster == 15 ~ "Outlier: Excluded Genes",
-                TRUE ~ "All Cells"
+                cluster == 14 ~ "Outlier", TRUE ~ "All Cells"
             ),
-            levels = c(
-                "Outlier: Other Genes", "Outlier: Excluded Genes", "All Cells"
-            )
+            levels = c("Outlier", "All Cells")
         ),
         sample_id = sample_id |>
             str_replace('.*_([0-9]{4})$', 'Lot 2: Br\\1') |>
