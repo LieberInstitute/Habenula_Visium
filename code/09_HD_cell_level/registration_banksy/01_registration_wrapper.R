@@ -10,7 +10,7 @@ res_neat = sub('\\.', '_', as.character(res))
 
 spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
 cluster_path = here(
-    'processed-data', '09_HD_cell_level', 'banksy', 'lambda0_2',
+    'processed-data', '09_HD_cell_level', 'banksy', 'lambda0_8',
     sprintf('leiden_res%s.csv', res_neat)
 )
 pseudo_path = here(
@@ -34,7 +34,7 @@ assays(spe)$counts = as(assays(spe)$counts, "dgCMatrix")
 #   Add in cluster assignments to 'spe'
 cluster_df = read_csv(cluster_path, show_col_types = FALSE)
 stopifnot(all(spe$key %in% cluster_df$key))
-spe$banksy = cluster_df$banksy_lambda0_2[match(spe$key, cluster_df$key)]
+spe$banksy = cluster_df$banksy_lambda0_8[match(spe$key, cluster_df$key)]
 spe$banksy = factor(spe$banksy, levels = sort(unique(spe$banksy)))
 
 #   Pseudobulk

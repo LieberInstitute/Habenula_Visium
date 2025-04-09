@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/09_HD_cell_level/registration_banksy/logs/01_registration_wrapper_%a.txt
 #SBATCH -e ../../../processed-data/09_HD_cell_level/registration_banksy/logs/01_registration_wrapper_%a.txt
-#SBATCH --array=15
+#SBATCH --array=1-20%5
 
 set -e
 
