@@ -37,7 +37,11 @@ colData(spe) = colData(spe) |>
     as_tibble() |>
     mutate(barcode = colnames(spe)) |>
     left_join(
-        read_csv(cluster_path, show_col_types = FALSE),
+        read_csv(
+            cluster_path,
+            show_col_types = FALSE,
+            col_select = c('sample_id', 'barcode', sprintf('FICTURE_k%d', k))
+        ),
         by = c('sample_id', 'barcode')
     ) |>
     rename(ficture = sprintf('FICTURE_k%d', k)) |>
@@ -53,7 +57,16 @@ gtf = import(gtf_path) |>
     filter(type == "gene") |>
     select(gene_id, gene_name)
 
-stopifnot(all(rownames(spe) %in% gtf$gene_id))
+#   A tiny fraction genes were used in clustering by FICTURE by don't have
+#   gene symbols in the GTF. Just drop these genes from spatial registration
+genes_in_gtf = rownames(spe) %in% gtf$gene_id
+warning(
+    sprintf(
+        "Dropping %d genes not in GTF (%d total)",
+        sum(!genes_in_gtf), length(genes_in_gtf)
+    )
+)
+spe = spe[genes_in_gtf, ]
 rowData(spe) = gtf[match(rownames(spe), gtf$gene_id), ]
 
 #   Pseudobulk
