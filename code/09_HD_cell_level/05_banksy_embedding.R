@@ -112,21 +112,68 @@ spe = runBanksyUMAP(
     seed = random_seed
 )
 
+################################################################################
+#   Explore effect of Harmony on UMAP
+################################################################################
+
+spe$lot = ifelse(
+    spe$sample_id == 'H1-W369TJK_D1_9090', 'Lot 1', 'Lot 2'
+)
+
+#   All samples together, colored by sample ID and lot (separate plots)
+for (color_var in c('sample_id', 'lot')) {
+    p = plot_grid(
+        plotReducedDim(
+                spe, sprintf("UMAP_M1_lam%s", lambda), point_size = 0.6,
+                point_alpha = 0.5, color_by = color_var
+            ) +
+            theme_classic(base_size = 18) +
+            theme(legend.position = "none"),
+        plotReducedDim(
+                spe, "UMAP_HARMONY", point_size = 0.6, point_alpha = 0.5,
+                color_by = color_var
+            ) +
+            theme_classic(base_size = 18) +
+            guides(
+                color = guide_legend(override.aes = list(size = 4, alpha = 1))
+            ),
+            nrow = 1,
+            rel_widths = c(1, 1.2)
+    )
+    png(
+        file.path(plot_dir, sprintf('harmony_umap_%s_together.png', color_var)),
+        width = 1200, height = 600
+    )
+    print(p)
+    dev.off()
+}
+
+#   Faceted by sample, colored by lot
 p = plot_grid(
     plotReducedDim(
             spe, sprintf("UMAP_M1_lam%s", lambda), point_size = 0.6,
-            point_alpha = 0.5, color_by = "sample_id"
+            point_alpha = 0.5, color_by = 'lot'
         ) +
-        theme(legend.position = "none"),
+        facet_wrap(~ spe$sample_id, nrow = 1) +
+        theme_bw(base_size = 18) +
+        guides(
+            color = guide_legend(override.aes = list(size = 4, alpha = 1))
+        ),
     plotReducedDim(
             spe, "UMAP_HARMONY", point_size = 0.6, point_alpha = 0.5,
-            color_by = "sample_id"
+            color_by = 'lot'
         ) +
-       guides(color = guide_legend(override.aes = list(size = 4, alpha = 1))),
-    nrow = 1,
-    rel_widths = c(1, 1.2)
+        facet_wrap(~ spe$sample_id, nrow = 1) +
+        theme_bw(base_size = 18) +
+        guides(
+            color = guide_legend(override.aes = list(size = 4, alpha = 1))
+        ),
+        nrow = 2
 )
-png(file.path(plot_dir, 'harmony_umap.png'), width = 1500, height = 750)
+png(
+    file.path(plot_dir, 'harmony_umap_apart.png'),
+    width = 1500, height = 750
+)
 print(p)
 dev.off()
 
