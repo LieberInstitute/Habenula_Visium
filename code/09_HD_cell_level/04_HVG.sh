@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=20G
-#SBATCH --job-name=04_HVG_PCA
+#SBATCH --job-name=04_HVG
 #SBATCH -c 4
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/probe_fix/logs/04_HVG_PCA.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/probe_fix/logs/04_HVG_PCA.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/probe_fix/logs/04_HVG.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/probe_fix/logs/04_HVG.txt
 
 set -e
 
@@ -25,7 +25,7 @@ module load conda_R/4.4
 ## List current modules for reproducibility
 module list
 
-Rscript 04_HVG_PCA.R
+Rscript 04_HVG.R
 
 echo "**** Job ends ****"
 date

@@ -17,10 +17,9 @@ counts
 - `07_xenium_genes.*`: Check how thoroughly the Xenium gene panel is expressed
 in Visium HD
 
-## Highly variable genes and PCA
+## Highly variable genes
 
-- `04_HVG_PCA.*`: Find highly variable genes and add PCA (computed on these
-HVGs) to the normalized `SpatialExperiment` in place
+- `04_HVG.*`: Find top 10% highly variable genes
 
 ## Clustering cells
 
