@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../processed-data/10_HD_bin_level/probe_fix/logs/04_nnSVG_%a.txt
 #SBATCH -e ../../processed-data/10_HD_bin_level/probe_fix/logs/04_nnSVG_%a.txt
-#SBATCH --array=1
+#SBATCH --array=1-5%5
 
 set -e
 
