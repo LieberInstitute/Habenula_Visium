@@ -140,8 +140,10 @@ spe = spe[
 spe = spe[
     ,
     (spe$sample_id != 'H1-XQQD7C7_A1_8518') |
-    (spatialCoords(spe)[, 'pxl_row_in_fullres'] <= H1_XQQD7C7_A1_8518_horizontal_artifact) |
-    (spatialCoords(spe)[, 'pxl_col_in_fullres'] <= H1_XQQD7C7_A1_8518_vertical_artifact)
+    (
+        (spatialCoords(spe)[, 'pxl_row_in_fullres'] <= H1_XQQD7C7_A1_8518_horizontal_artifact) &
+        (spatialCoords(spe)[, 'pxl_col_in_fullres'] <= H1_XQQD7C7_A1_8518_vertical_artifact)
+    )
 ]
 
 spatial_qc_plots(spe, file.path(plot_dir, 'after'))
