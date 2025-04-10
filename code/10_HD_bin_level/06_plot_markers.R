@@ -11,7 +11,9 @@ plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'marker_genes')
 marker_genes = list(
     white_matter = c("MBP", "GFAP", "PLP1", "AQP4"),
     habenula = c("POU4F1", "GPR151", "CHRNB4", "HTR2C"),
-    thalamus = c("LYPD6B", "ADARB2", "RORB")
+    #   originally included "ADARB2", which is no longer expressed (it's
+    #   measured in the raw object with 0 counts)
+    thalamus = c("LYPD6B", "RORB")
 )
 
 dir.create(plot_dir, showWarnings = FALSE)
