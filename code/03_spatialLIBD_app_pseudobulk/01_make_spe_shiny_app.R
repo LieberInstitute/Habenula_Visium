@@ -30,6 +30,6 @@ saveRDS(spe, path_out)
 ## Set up soft links if needed
 withr::with_dir(
     here("code", "03_spatialLIBD_app_pseudobulk"),
-    system("ln -s ../../processed-data/04_harmony_BayesSpace/spe_pseudobulk_shiny.rds spe_pseudobulk_shiny.rds")
+    system("ln -s ../../processed-data/05_brain_area_differential_expression/spe_pseudobulk_shiny.rds spe_pseudobulk_shiny.rds")
 )
 
