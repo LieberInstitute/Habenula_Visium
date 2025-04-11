@@ -2,12 +2,7 @@ library("spatialLIBD")
 library("markdown")
 library("here")
 
-## This the folder 03_spatialLIBD_app_deploy_k16/ to deploy the subset spatialLIBD shiny at BS k16
-
-# 2021-11-11T05:30:50.218127+00:00 shinyapps[5096402]: Warning: Error in loadNamespace: there is no package called ‘markdown’
-
-## To install new spatialLIBD 1.15.4 (development version):
-## .    https://bioconductor.org/packages/devel/data/experiment/html/spatialLIBD.html
+here::here("code", "03_spatialLIBD_app_pseudobulk")
 
 ## spatialLIBD uses golem.
 ## Golem is a framework for building production-grade shiny applications
@@ -19,15 +14,20 @@ options(repos = BiocManager::repositories())
 ######### Load All required objects #########
 
 ## Set BayesSpace k selection
-BayesSpace_k <- 24
+BayesSpace_k <- "09"
 
-## load harmony_BayesSpace spe object
-spe <- readRDS("spe_subset_for_spatialLIBD.rds")
+# ## load harmony_BayesSpace spe object
+spe <- readRDS("spe_pseudobulk_shiny.rds")
 # lobstr::obj_size(spe)
 # 4.03 GB
 
-## load the pseudobulked object sce_pseudo
-sce_pseudo_name <- paste0("sce_pseudo_BayesSpace_k", BayesSpace_k,".rds")
+colnames(colData(spe))
+#head(spe$BayesSpace_harmony_k16)
+# NULL
+
+## load the pseudobulk object sce_pseudo
+# sce_pseudo_name <- paste0("sce_pseudo_BayesSpace_k", BayesSpace_k,".rds")
+sce_pseudo_name <- paste0("sce_pseudo_PCA_brain_area_k", BayesSpace_k,".rds")
 sce_pseudo <- readRDS(sce_pseudo_name)
 
 ## load modeling results for any k9 clustering/pseudobulking
@@ -46,8 +46,12 @@ spe <- cluster_import(spe,
     cluster_dir = "clusters_BayesSpace",
     prefix = ""
 )
+# Overwriting 'spe$key'. Set 'overwrite = FALSE' if you do not want to overwrite it
+
 BS_k_column <- paste0("BayesSpace_harmony_k", BayesSpace_k)
 spe$BayesSpace <- spe[[BS_k_column]]
+#colnames(colData(spe))
+#head(spe$BayesSpace)
 
 ## Quickly explore the data
 vars <- colnames(colData(spe))
@@ -55,9 +59,9 @@ colnames(colData(spe)) <- vars <- gsub("X10x", "10x", vars)
 
 colors_BayesSpace <- Polychrome::palette36.colors(28)
 names(colors_BayesSpace) <- c(1:28)
-m <- match(as.character(spe$BayesSpace_harmony_k16), names(colors_BayesSpace))
+m <- match(as.character(spe$BayesSpace_harmony_k09), names(colors_BayesSpace))
 stopifnot(all(!is.na(m)))
-spe$BayesSpace_colors <- spe$BayesSpace_harmony_k16_colors <- colors_BayesSpace[m]
+spe$BayesSpace_colors <- spe$BayesSpace_harmony_k09_colors <- colors_BayesSpace[m]
 
 
 title_name <- paste0("spatialHabenula, Visium, Sp", BayesSpace_k)
@@ -74,9 +78,8 @@ spatialLIBD::run_app(
         "overlaps_tissue",
         vars[grep("^10x_", vars)],
         vars[grep("^scran_", vars)],
-        "edge_spots",
+        "edge_spot",
         vars[grep("^SNN_k10", vars)],
-        # vars[grep("^BayesSpace_pca", vars)],
         vars[grep("^BayesSpace_harmony_", vars)],
         "BayesSpace_colors"
     ),
@@ -87,7 +90,7 @@ spatialLIBD::run_app(
         "expr_chrM_ratio",
         "edge_distance"
     ),
-    default_cluster = "BayesSpace", #"10x_graphclust",
+    default_cluster = "BayesSpace",
     docs_path = "www"
 )
 
