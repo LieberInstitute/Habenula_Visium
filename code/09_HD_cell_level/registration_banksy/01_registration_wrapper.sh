@@ -6,7 +6,8 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
-#SBATCH --array=1-40%5
+#SBATCH --array=18-20,27-29%6
+#SBATCH --exclude=compute-095
 
 ## Define loops and appropriately subset each variable for the array task ID
 all_res=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2)
