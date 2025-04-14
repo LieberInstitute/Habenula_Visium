@@ -16,7 +16,7 @@ all_lambda=(0.2 0.8)
 lambda=${all_lambda[$(( $SLURM_ARRAY_TASK_ID / 1 % 2 ))]}
 
 ## Explicitly pipe script output to a log
-log_path=../../../processed-data/09_HD_cell_level/registration_banksy/logs/01_aaa_${res}_${lambda}_${SLURM_ARRAY_TASK_ID}.txt
+log_path=../../../processed-data/09_HD_cell_level/registration_banksy/logs/01_registration_wrapper_${res}_${lambda}_${SLURM_ARRAY_TASK_ID}.txt
 
 {
 set -e
@@ -32,7 +32,7 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.4
+module load conda_R/4.4.x
 
 ## List current modules for reproducibility
 module list
