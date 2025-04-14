@@ -22,7 +22,7 @@ message("Using the following parameters:")
 print(opt)
 
 res_neat = sub('\\.', '_', as.character(opt$res))
-lambda_neat = sub('\\.', '_', as.character(opt$lambda))
+lambda_neat = paste0('lambda', sub('\\.', '_', as.character(opt$lambda)))
 
 spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
 cluster_path = here(
