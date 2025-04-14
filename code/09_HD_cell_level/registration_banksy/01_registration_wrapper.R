@@ -3,27 +3,43 @@ library(spatialLIBD)
 library(HDF5Array)
 library(sessioninfo)
 library(tidyverse)
+library(getopt)
 
-#   Get Leiden resolution from array task ID
-res = (seq_len(20) / 10)[as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))]
-res_neat = sub('\\.', '_', as.character(res))
+# Import command-line parameters
+spec <- matrix(
+    c(
+        c("res", "lambda"),
+        c("r", "l"),
+        rep("1", 2),
+        rep("numeric", 2),
+        c("Leiden resolution", "Banksy lambda parameter")
+    ),
+    ncol = 5
+)
+opt <- getopt(spec)
+
+message("Using the following parameters:")
+print(opt)
+
+res_neat = sub('\\.', '_', as.character(opt$res))
+lambda_neat = sub('\\.', '_', as.character(opt$lambda))
 
 spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
 cluster_path = here(
-    'processed-data', '09_HD_cell_level', 'banksy', 'lambda0_8',
+    'processed-data', '09_HD_cell_level', 'banksy', lambda_neat,
     sprintf('leiden_res%s.csv', res_neat)
 )
 pseudo_path = here(
     'processed-data', '09_HD_cell_level', 'registration_banksy',
-    'pseudobulk_spe', sprintf('%s.rds', res_neat)
+    'pseudobulk_spe', lambda_neat, sprintf('%s.rds', res_neat)
 )
 model_path = here(
     'processed-data', '09_HD_cell_level', 'registration_banksy',
-    'modeling_results', sprintf('%s.rds', res_neat)
+    'modeling_results', lambda_neat, sprintf('%s.rds', res_neat)
 )
 
 dir.create(dirname(pseudo_path), showWarnings = FALSE, recursive = TRUE)
-dir.create(dirname(model_path), showWarnings = FALSE)
+dir.create(dirname(model_path), showWarnings = FALSE, recursive = TRUE)
 
 #   Load and bring counts into memory to speed up computations. Despite the huge
 #   size of the data, the memory footprint is manageable due to the extreme
@@ -34,7 +50,9 @@ assays(spe)$counts = as(assays(spe)$counts, "dgCMatrix")
 #   Add in cluster assignments to 'spe'
 cluster_df = read_csv(cluster_path, show_col_types = FALSE)
 stopifnot(all(spe$key %in% cluster_df$key))
-spe$banksy = cluster_df$banksy_lambda0_8[match(spe$key, cluster_df$key)]
+spe$banksy = cluster_df[[paste0('banksy_', lambda_neat)]][
+    match(spe$key, cluster_df$key)
+]
 spe$banksy = factor(spe$banksy, levels = sort(unique(spe$banksy)))
 
 #   Pseudobulk
