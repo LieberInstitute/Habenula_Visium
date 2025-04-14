@@ -13,7 +13,7 @@ library(VennDiagram)
 spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
 banksy_model_path = here(
     'processed-data', '09_HD_cell_level', 'registration_banksy',
-    'modeling_results', '1.rds'
+    'modeling_results', 'lambda0_8', '1.rds'
 )
 ficture_model_path = here(
     'processed-data', '10_HD_bin_level', 'ficture_harmony',
