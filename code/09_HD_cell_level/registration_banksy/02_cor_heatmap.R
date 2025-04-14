@@ -3,11 +3,30 @@ library(tidyverse)
 library(SpatialExperiment)
 library(spatialLIBD)
 library(sessioninfo)
+library(getopt)
 
-plot_dir = here('plots', '09_HD_cell_level', 'registration_banksy')
+# Import command-line parameters
+spec <- matrix(
+    c(
+        c("ref", "lambda"),
+        c("r", "l"),
+        rep("1", 2),
+        c("integer", "numeric"),
+        c("Reference data index", "Banksy lambda parameter")
+    ),
+    ncol = 5
+)
+opt <- getopt(spec)
+
+message("Using the following parameters:")
+print(opt)
+
+lambda_neat = sub('\\.', '_', as.character(opt$lambda))
+
+plot_dir = here('plots', '09_HD_cell_level', 'registration_banksy', lambda_neat)
 model_paths = here(
     'processed-data', '09_HD_cell_level', 'registration_banksy',
-    'modeling_results',
+    'modeling_results', lambda_neat,
     sprintf('%s.rds', sub('\\.', '_', as.character(seq_len(20) / 10)))
 )
 
@@ -39,16 +58,16 @@ ref_names = c(
 )
 
 #   Get the reference data for this task
-task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-ref_path = ref_paths[task_id]
-ref_name = ref_names[task_id]
+ref_path = ref_paths[opt$ref]
+ref_name = ref_names[opt$ref]
 
 out_path = here(
     'processed-data', '09_HD_cell_level', 'registration_banksy',
-    sprintf('cor_vs_%s.rds', ref_name)
+    lambda_neat, sprintf('cor_vs_%s.rds', ref_name)
 )
 
-dir.create(plot_dir, showWarnings = FALSE)
+dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(dirname(out_path), showWarnings = FALSE)
 
 #   Read in enrichment stats for Banksy clusters at all Leiden resolutions
 t_stats = lapply(model_paths, function(path) readRDS(path))

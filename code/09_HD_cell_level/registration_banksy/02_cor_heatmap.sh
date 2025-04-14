@@ -4,10 +4,21 @@
 #SBATCH --job-name=02_cor_heatmap
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/09_HD_cell_level/registration_banksy/logs/02_cor_heatmap_%a.txt
-#SBATCH -e ../../../processed-data/09_HD_cell_level/registration_banksy/logs/02_cor_heatmap_%a.txt
-#SBATCH --array=1-30%5
+#SBATCH -o /dev/null
+#SBATCH -e /dev/null
+#SBATCH --array=1-60%5
 
+## Define loops and appropriately subset each variable for the array task ID
+all_ref=$(seq 1 30)
+ref=${all_ref[$(( $SLURM_ARRAY_TASK_ID / 2 % 30 ))]}
+
+all_lambda=(0.2 0.8)
+lambda=${all_lambda[$(( $SLURM_ARRAY_TASK_ID / 1 % 2 ))]}
+
+## Explicitly pipe script output to a log
+log_path=../../../processed-data/09_HD_cell_level/registration_banksy/logs/02_aaa_${ref}_${lambda}_${SLURM_ARRAY_TASK_ID}.txt
+
+{
 set -e
 
 echo "**** Job starts ****"
@@ -26,10 +37,13 @@ module load conda_R/4.4.x
 ## List current modules for reproducibility
 module list
 
-Rscript 02_cor_heatmap.R
+## Edit with your job command
+Rscript 02_cor_heatmap.R --ref ${ref} --lambda ${lambda}
 
 echo "**** Job ends ****"
 date
 
-## This script was made using slurmjobs version 1.2.4
+} > $log_path 2>&1
+
+## This script was made using slurmjobs version 1.3.0
 ## available from http://research.libd.org/slurmjobs/
