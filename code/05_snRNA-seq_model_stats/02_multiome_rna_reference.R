@@ -114,10 +114,10 @@ newname_clusters <- levels(SeuratOBJ)
 
 ## Hb clusters mixed with other cell-types will be removed
 
-low_hb_clusters <- c(1, 4, 8, 12, 17, 32)
-low_hb_clusters <- paste0("C.", str_pad(low_hb_clusters, width = 2, pad = "0"))
+# low_hb_clusters <- c(1, 4, 8, 12, 17, 32)
+# low_hb_clusters <- paste0("C.", str_pad(low_hb_clusters, width = 2, pad = "0"))
 # [1] "C.01" "C.04" "C.08" "C.12" "C.17" "C.32"
-low_c <- paste0("^", low_hb_clusters[1], "*")
+# low_c <- paste0("^", low_hb_clusters[1], "*")
 # low_c = "^C\\.01\\s\\w*"   # "C.01 DD_LHb"
 # low_c %in% c(newname_clusters)
 
@@ -291,6 +291,13 @@ sce_modeling_results$enrichment[1:5, 1:5]
 
 ## V2 is a 'polished' and 'sorted' reference version. Here some clusters with low hb cells were removed
 ##        and the dataset was arranged by first the hb-groups followed by the other cell-types
+
+saveRDS(
+  sce,
+  here(dir_outRDS, "seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2_renamed_visium_v2b.rds")
+)
+
+message(" saved RDS rna-multiome with gene-ensembl IDs!")
 
 saveRDS(
   sce_modeling_results,
