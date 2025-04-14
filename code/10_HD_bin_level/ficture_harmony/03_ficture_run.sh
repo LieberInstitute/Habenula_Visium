@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/03_ficture_run_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/03_ficture_run_%a.txt
-#SBATCH --array=2-40%3
+#SBATCH --array=2
 
 set -e
 
@@ -30,14 +30,27 @@ out_dir=$repo_dir/processed-data/10_HD_bin_level/ficture_harmony/ficture_outputs
 mkdir -p $out_dir
 
 #   Run full FICTURE pipeline
-ficture run_together \
-    --in-tsv $in_dir/normalized_input.tsv.gz \
-    --in-minmax $in_dir/normalized_minmax.tsv \
-    --out-dir $out_dir \
-    --mu-scale 1 \
-    --major-axis X \
-    --all \
-    --n-factor ${SLURM_ARRAY_TASK_ID}
+if [[ $SLURM_ARRAY_TASK_ID -eq 2 ]]; then
+    #   Overwride the default of finding top 3 factors, since only 2 exist
+    ficture run_together \
+        --in-tsv $in_dir/normalized_input.tsv.gz \
+        --in-minmax $in_dir/normalized_minmax.tsv \
+        --out-dir $out_dir \
+        --mu-scale 1 \
+        --major-axis X \
+        --all \
+        --n-factor ${SLURM_ARRAY_TASK_ID} \
+        --decode-top-k 2
+else
+    ficture run_together \
+        --in-tsv $in_dir/normalized_input.tsv.gz \
+        --in-minmax $in_dir/normalized_minmax.tsv \
+        --out-dir $out_dir \
+        --mu-scale 1 \
+        --major-axis X \
+        --all \
+        --n-factor ${SLURM_ARRAY_TASK_ID}
+fi
 
 echo "**** Job ends ****"
 date
