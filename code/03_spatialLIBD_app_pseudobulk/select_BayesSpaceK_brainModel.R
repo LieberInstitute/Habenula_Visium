@@ -16,6 +16,8 @@ BayesSpace_k <- "09"
 ## Set up soft link to modeling results
 
 model_result <- paste0('modeling_results_BayesSpace_k', BayesSpace_k, '.Rdata')
+withr::with_dir(here("code", "03_spatialLIBD_app_pseudobulk"), system(paste("unlink",  model_result)))
+
 softLink_command <- paste0('ln -s ../../processed-data/05_brain_area_differential_expression/modeling_results_BS/', model_result, ' ', model_result)
 withr::with_dir(
     here("code", "03_spatialLIBD_app_pseudobulk"),
@@ -24,7 +26,9 @@ withr::with_dir(
 
 ## Set up soft link to pseudobulk data
 
-pseudo_result <- paste0('sce_pseudo_BayesSpace_k', BayesSpace_k, '.rds')
+pseudo_result <- paste0('sce_pseudo_PCA_brain_area_k', BayesSpace_k, '.rds')
+withr::with_dir(here("code", "03_spatialLIBD_app_pseudobulk"), system(paste("unlink",  pseudo_result)))
+
 softLink_command <- paste0('ln -s ../../processed-data/05_brain_area_differential_expression/', pseudo_result, ' ', pseudo_result)
 withr::with_dir(
     here("code", "03_spatialLIBD_app_pseudobulk"),
@@ -34,21 +38,26 @@ withr::with_dir(
 ## Set up soft link to significant genes data
 
 sig_genes_result <- paste0('sig_genes_k', BayesSpace_k, '.Rdata')
+withr::with_dir(here("code", "03_spatialLIBD_app_pseudobulk"), system(paste("unlink",  sig_genes_result)))
+
 softLink_command <- paste0('ln -s ../../processed-data/05_brain_area_differential_expression/', sig_genes_result, ' ', sig_genes_result)
 withr::with_dir(
     here("code", "03_spatialLIBD_app_pseudobulk"),
     system(softLink_command)
 )
 
-withr::with_dir(
-    here("code", "03_spatialLIBD_app_pseudobulk"),
-    #system("ln -s ../../processed-data/04_harmony_BayesSpace/spe_harmony_shiny.rds
-    system("ln -s ../../processed-data/04_harmony_BayesSpace/spe_pseudobulk_shiny.rds  spe_subset_for_spatialLIBD.rds")
-)
+## Set up soft link to subset k
+
+# subset_shiny <- "spe_pseudobulk_shiny.rds"
+# withr::with_dir(here("code", "03_spatialLIBD_app_pseudobulk"), system(paste("unlink",  subset_shiny)))
+# withr::with_dir(
+#     here("code", "03_spatialLIBD_app_pseudobulk"),
+#     system("ln -s ../../processed-data/04_harmony_BayesSpace/spe_pseudobulk_shiny.rds spe_pseudobulk_shiny.rds")
+# )
 
 withr::with_dir(
     here("code", "03_spatialLIBD_app_pseudobulk", "www"),
-    system("ln -s ../../../README.md README.md")
+    system("ln -s -f ../../../README.md README.md")
 )
 
 
@@ -57,21 +66,27 @@ withr::with_dir(
 sce_pseudo <- readRDS(pseudo_result)
 # lobstr::obj_size(sce_pseudo) # 6.21 MB
 
-## load modeling results for k16
+## load modeling results for k09
 load(model_result, verbose = TRUE)
-model_result
 # lobstr::obj_size(modeling_results) # 17.94 MB
 
 ## For sig_genes_extract_all() to work https://github.com/LieberInstitute/Visium_IF_AD/blob/5e3518a9d379e90f593f5826cc24ec958f81f4aa/code/05_deploy_app_wholegenome/app.R#L37-L44
 ## Quick inspection of the BayesSpace k selection
 names(colData(sce_pseudo))
+# [1] "age"             "BayesSpace"      "brain_area"      "brain_area_DEG"  "brain_id"        "diagnosis"
+# [7] "expr_chrM"       "expr_chrM_ratio" "nspots"          "pmi"             "rin"             "sample_id"
+# [13] "sex"             "sum_umi"
+
 length(levels(sce_pseudo$BayesSpace))
+## Note some levels could be removed. Ex. in BS_k=9 level Sp09D05 doesn't exist
 
 ## Extract BayesSpace information to shiny spatialLIBD column
 sce_pseudo$spatialLIBD <- sce_pseudo$BayesSpace
 
 ## Check that we have the right number of tests
-k <- BayesSpace_k
+# k <- BayesSpace_k
+## Pull the current number of domains on the dataset
+k <- length(grep("stat", colnames(modeling_results$enrichment)))
 tests <- lapply(modeling_results, function(x) {
     colnames(x)[grep("stat", colnames(x))]
 })
@@ -86,8 +101,9 @@ sig_genes <- sig_genes_extract_all(
     modeling_results = modeling_results,
     sce_layer = sce_pseudo
 )
+
 ## Quick inspection
-str(sig_genes)
+#str(sig_genes)
 table(sig_genes@listData$model_type)
 # anova enrichment   pairwise
 # 2618      62832    1445136
@@ -98,14 +114,14 @@ table(sig_genes@listData$model_type)
 stopifnot(length(unique(sig_genes$test)) == choose(k, 2) * 2 + k + 1)
 
 lobstr::obj_size(sig_genes)
-# 3.69 GB
+# 626.74 MB
 
 ## Drop parts we don't need to reduce the memory
 # sig_genes
 sig_genes$in_rows <- NULL
 sig_genes$in_rows_top20 <- NULL
 lobstr::obj_size(sig_genes)
-# 181.43 MB
+# 149.35 MB
 
 ## Extract FDR < 5%
 ## From
@@ -121,6 +137,7 @@ fix_csv <- function(df) {
 }
 
 z <- fix_csv(as.data.frame(subset(sig_genes, fdr < 0.05)))
+
 ## Quick inspection
 colnames(z)
 dim(z)  # For BayesSpace k24: [1] 212102     11
@@ -128,7 +145,7 @@ table(sig_genes$model_type)
 table(z$model_type)
 
 ## Save ALL the significant DEG that passed the fdr at 5%
-model_topAll_csv <- paste0("spatialHb_model_results_k", k, "_ALL_FDR5perc.csv")
+model_topAll_csv <- paste0("spatialHb_model_results_k", BayesSpace_k, "_ALL_FDR5perc.csv")
 model_topAll_csv <- here("processed-data", "05_brain_area_differential_expression", model_topAll_csv)
 write.csv(z, model_topAll_csv)
 
@@ -138,11 +155,11 @@ z <- subset(z, top <= 25)
 dim(z)  # For BayesSpace k24: [1] 9485   11
 table(z$model_type)
 
-model_top25_csv <- paste0("spatialHb_model_results_k", k, "_FDR5perc_top25.csv")
+model_top25_csv <- paste0("spatialHb_model_results_k", BayesSpace_k, "_FDR5perc_top25.csv")
 model_top25_csv <- here("processed-data", "05_brain_area_differential_expression", model_top25_csv)
 write.csv(z, model_top25_csv)
 
-sig_genes_csv <- paste0("sig_genes_k" , k,".Rdata")
+sig_genes_csv <- paste0("sig_genes_k" , BayesSpace_k,".Rdata")
 sig_genes_csv <- here("processed-data", "05_brain_area_differential_expression", sig_genes_csv)
 save(sig_genes, file = sig_genes_csv)
 
