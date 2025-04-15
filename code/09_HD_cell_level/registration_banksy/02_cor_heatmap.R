@@ -21,7 +21,7 @@ opt <- getopt(spec)
 message("Using the following parameters:")
 print(opt)
 
-lambda_neat = sub('\\.', '_', as.character(opt$lambda))
+lambda_neat = paste0('lambda', sub('\\.', '_', as.character(opt$lambda)))
 
 plot_dir = here('plots', '09_HD_cell_level', 'registration_banksy', lambda_neat)
 model_paths = here(
