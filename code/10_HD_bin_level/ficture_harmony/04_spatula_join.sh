@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/04_spatula_join_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/04_spatula_join_%a.txt
-#SBATCH --array=4-10%4
+#SBATCH --array=2-40%10
 
 echo "**** Job starts ****"
 date
@@ -34,13 +34,23 @@ in_tsv=$repo_dir/processed-data/10_HD_bin_level/ficture_harmony/ficture_inputs/n
     | gzip -c > $out_dir/nF${SLURM_ARRAY_TASK_ID}.d_12.decode.prj_12.r_4_5.pixel.sorted_by_major_axis.tsv.gz
 
 #   Write transcript-level output
-spatula join-pixel-tsv \
-    --mol-tsv $in_tsv \
-    --pix-prefix-tsv factor_,$out_dir/nF${SLURM_ARRAY_TASK_ID}.d_12.decode.prj_12.r_4_5.pixel.sorted_by_major_axis.tsv.gz \
-    --out-prefix $out_dir/normalized_joined_input \
-    --out-max-k 3 \
-    --out-max-p 3 \
-    --mu-scale 1
+if [[ $SLURM_ARRAY_TASK_ID -eq 2 ]]; then
+    spatula join-pixel-tsv \
+        --mol-tsv $in_tsv \
+        --pix-prefix-tsv factor_,$out_dir/nF${SLURM_ARRAY_TASK_ID}.d_12.decode.prj_12.r_4_5.pixel.sorted_by_major_axis.tsv.gz \
+        --out-prefix $out_dir/normalized_joined_input \
+        --out-max-k 2 \
+        --out-max-p 2 \
+        --mu-scale 1
+else
+    spatula join-pixel-tsv \
+        --mol-tsv $in_tsv \
+        --pix-prefix-tsv factor_,$out_dir/nF${SLURM_ARRAY_TASK_ID}.d_12.decode.prj_12.r_4_5.pixel.sorted_by_major_axis.tsv.gz \
+        --out-prefix $out_dir/normalized_joined_input \
+        --out-max-k 3 \
+        --out-max-p 3 \
+        --mu-scale 1
+fi
 
 echo "**** Job ends ****"
 date
