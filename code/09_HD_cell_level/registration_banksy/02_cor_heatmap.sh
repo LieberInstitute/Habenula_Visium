@@ -16,7 +16,7 @@ all_lambda=(0.2 0.8)
 lambda=${all_lambda[$(( $SLURM_ARRAY_TASK_ID / 1 % 2 ))]}
 
 ## Explicitly pipe script output to a log
-log_path=../../../processed-data/09_HD_cell_level/registration_banksy/logs/02_cor_heatmap_${ref}_${lambda}_${SLURM_ARRAY_TASK_ID}.txt
+log_path=../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/02_cor_heatmap_${ref}_${lambda}_${SLURM_ARRAY_TASK_ID}.txt
 
 {
 set -e

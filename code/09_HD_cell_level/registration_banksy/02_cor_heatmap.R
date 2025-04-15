@@ -23,9 +23,11 @@ print(opt)
 
 lambda_neat = paste0('lambda', sub('\\.', '_', as.character(opt$lambda)))
 
-plot_dir = here('plots', '09_HD_cell_level', 'registration_banksy', lambda_neat)
+plot_dir = here(
+    'plots', '09_HD_cell_level', 'probe_fix', 'registration_banksy', lambda_neat
+)
 model_paths = here(
-    'processed-data', '09_HD_cell_level', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
     'modeling_results', lambda_neat,
     sprintf('%s.rds', sub('\\.', '_', as.character(seq_len(20) / 10)))
 )
@@ -62,7 +64,7 @@ ref_path = ref_paths[opt$ref]
 ref_name = ref_names[opt$ref]
 
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
     lambda_neat, sprintf('cor_vs_%s.rds', ref_name)
 )
 

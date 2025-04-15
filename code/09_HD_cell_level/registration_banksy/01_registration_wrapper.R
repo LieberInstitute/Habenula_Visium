@@ -24,17 +24,19 @@ print(opt)
 res_neat = sub('\\.', '_', as.character(opt$res))
 lambda_neat = paste0('lambda', sub('\\.', '_', as.character(opt$lambda)))
 
-spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
+spe_dir = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+)
 cluster_path = here(
-    'processed-data', '09_HD_cell_level', 'banksy', lambda_neat,
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', lambda_neat,
     sprintf('leiden_res%s.csv', res_neat)
 )
 pseudo_path = here(
-    'processed-data', '09_HD_cell_level', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
     'pseudobulk_spe', lambda_neat, sprintf('%s.rds', res_neat)
 )
 model_path = here(
-    'processed-data', '09_HD_cell_level', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
     'modeling_results', lambda_neat, sprintf('%s.rds', res_neat)
 )
 
