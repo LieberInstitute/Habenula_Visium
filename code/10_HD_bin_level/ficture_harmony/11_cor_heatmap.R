@@ -9,10 +9,6 @@ model_paths = here(
     'processed-data', '10_HD_bin_level', 'ficture_harmony', 'registration',
     'modeling_results', sprintf('%s.rds', 3:40)
 )
-out_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'registration',
-    sprintf('cor_vs_%s.rds', ref_name)
-)
 plot_dir = here('plots', '10_HD_bin_level', 'ficture_harmony', 'registration')
 
 #   List all paths and names for reference data
