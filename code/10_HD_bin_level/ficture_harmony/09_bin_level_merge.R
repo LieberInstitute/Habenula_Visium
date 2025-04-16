@@ -31,7 +31,7 @@ col_data = colData(spe) |>
 rm(spe)
 gc()
 
-for (k in 3:4) {
+for (k in 3:40) {
     message(Sys.time(), sprintf(' | Reading in k = %d results...', k))
     ficture_df = sprintf(ficture_input_paths, k, k) |>
         #   Read in quickly but format as a tibble
