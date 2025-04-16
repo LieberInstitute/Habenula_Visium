@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/10_registration_wrapper_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/10_registration_wrapper_%a.txt
-#SBATCH --array=3
+#SBATCH --array=3-40%10
 
 set -e
 
