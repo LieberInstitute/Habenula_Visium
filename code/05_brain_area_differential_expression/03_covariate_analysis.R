@@ -74,6 +74,7 @@ for (k in k_values) {
   
   for (domain in unique(plot_data$BayesSpace)) {
     # test: domain <- "Sp09D08 ~ Hb"
+    # test2: domain <- "Sp03D02 ~ Hb"
     
     y_max_nspots <- max(plot_data$nspots) + 20
     domain_data <- plot_data |> filter(BayesSpace == domain)
@@ -90,9 +91,9 @@ for (k in k_values) {
       ggtitle(paste("BayesSpace Domain:", domain)) +
       theme_bw() + 
       theme(legend.position = "bottom",
-            axis.text.x = element_text(angle = 45, size = 10)) +
+            axis.text.x = element_text(size = 10)) +
       stat_compare_means(aes(group = brain_area2, label = paste0("p = ", after_stat(p.format))),
-                         label.y = y_max_nspots, method = "t.test")
+                         label.y = y_max_nspots) #, method = "t.test"
     print(plot)
     
   }
@@ -140,18 +141,20 @@ for (k in k_values) {
     geom_text(aes(label = sample_id, color = brain_area2), 
               position = position_jitter(width = 0.1, height = 0.2), 
               size = 1.75, hjust = 0.5, vjust = 1) + 
-    theme_bw() + 
+    theme_bw() +
+    scale_x_discrete(labels = scales::label_wrap(10)) +  
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  
     theme(legend.position = "bottom") +
     stat_compare_means(aes(group = brain_area2, label = paste0("p = ", after_stat(p.format))),
                        label.y = y_max_sum_umi) + #, method = "t.test"
     geom_text(data = p_values_sum_umi, aes(x = BayesSpace, y = y_max_sum_umi - 200000,
-                                           label = paste0("FDR = ", signif(fdr, 3))), size = 3, color = "black")
+                                           label = paste0("FDR = ", signif(fdr, 2))), size = 3, color = "black")
     print(plot)
   
   plot_name <- paste0("sum_umi_boxplot_k", k_nice, ".png")
   ggsave(filename = here(plot_dir, plot_name), plot = plot, width = 12, height = 8)
   
-  # Generate expr_chrM_ratio boxplots with all spatial domains in 1 plot
+  # Generate "expr_chrM_ratio" box plots with all spatial domains in 1 plot
   
   p_values_mito <- compare_means(expr_chrM_ratio ~ brain_area2, data = plot_data, group.by = "BayesSpace", method = "t.test")
   p_values_mito$fdr <- p.adjust(p_values_mito$p, method = "fdr")
@@ -165,12 +168,14 @@ for (k in k_values) {
     geom_text(aes(label = sample_id, color = brain_area2), 
               position = position_jitter(width = 0, height = 0), 
               size = 1.75, hjust = 0, vjust = 1) + 
-    theme_bw() + 
-    theme(legend.position = "bottom") + 
+    theme_bw() +
+    scale_x_discrete(labels = scales::label_wrap(10)) +  
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  
+    theme(legend.position = "bottom") +
     stat_compare_means(aes(group = brain_area2, label = paste0("p = ", after_stat(p.format))),
                        label.y = y_max_mito) + # , method = "t.test"
     geom_text(data = p_values_mito, aes(x = BayesSpace, y = y_max_mito - 0.005,
-                                        label = paste0("FDR = ", signif(fdr, 3))), size = 3, color = "black")
+                                        label = paste0("FDR = ", signif(fdr, 2))), size = 3, color = "black")
   print(plot)
   
   plot_name <- paste0("expr_chrM_ratio_boxplot_k", k_nice, ".png")
@@ -180,8 +185,9 @@ for (k in k_values) {
 
 
 ###### Additional analysis (since age and PMI remain constant) #############
-k_nice <- "9"
-# data_file <- file.path(data_dir, paste0("summed_k", k_nice, ".rds"))
+
+# k_nice <- "9"
+
 data_file <- file.path(data_dir, paste0("sce_pseudo_PCA_brain_area_k", k_nice, ".rds"))
 plot_data <- as.data.frame(colData(spe_filtered)) |>
   select(sample_id, brain_area, brain_area2, BayesSpace, nspots, sum_umi, expr_chrM_ratio, pmi, age)
@@ -190,8 +196,10 @@ plot_data_summary <- plot_data |>
   select(sample_id, age, brain_area2, expr_chrM_ratio, pmi) |>
   distinct(sample_id, .keep_all = TRUE)
 
-# Function for creating and saving boxplots
+# Function for creating and saving box plots
+
 create_boxplot <- function(data, x, y, y_label, filename) {
+  
   pdf(here(plot_dir, filename), width = 8, height = 6)
   y_max <- max(data[[y]]) + 5
   print(ggboxplot(
@@ -208,6 +216,7 @@ create_boxplot <- function(data, x, y, y_label, filename) {
       show.legend = FALSE
     ) +
     theme_bw() +
+    ggtitle(paste("BayesSpace Domain:", k_nice)) +
     theme(legend.position = "bottom") +
     stat_compare_means(aes(group = brain_area2,label = paste0("p = ", after_stat(p.format))),
                        label.y = y_max) #, method = "t.test"
@@ -217,8 +226,8 @@ create_boxplot <- function(data, x, y, y_label, filename) {
 
 # Generate boxplots
 colnames(plot_data_summary)
-create_boxplot(plot_data_summary, "brain_area2", "pmi", "PMI", "full_pmi_distribution.pdf")
-create_boxplot(plot_data_summary, "brain_area2", "age", "Age", "full_age_distribution_by_brain-area.pdf")
+create_boxplot(plot_data_summary, "brain_area2", "pmi", "PMI", paste0("full_pmi_distribution_k", k_nice, ".pdf"))
+create_boxplot(plot_data_summary, "brain_area2", "age", "Age", paste0("full_age_distribution_k", k_nice, ".pdf"))
 
 # Function for Violin Plots
 # ! Insufficient values in manual scale. 5 needed but only 2 provided.
