@@ -6,6 +6,7 @@ library(HDF5Array)
 library(sessioninfo)
 library(tidyverse)
 library(rtracklayer)
+library(data.table)
 
 #   Get k from array task ID
 k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
@@ -26,6 +27,7 @@ model_path = here(
     'modeling_results', sprintf('%s.rds', k)
 )
 gtf_path = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2020-A/genes/genes.gtf'
+ficture_colnames = c('sample_id', 'barcode', sprintf('FICTURE_k%d', k))
 
 dir.create(dirname(pseudo_path), showWarnings = FALSE, recursive = TRUE)
 dir.create(dirname(model_path), showWarnings = FALSE)
@@ -37,14 +39,11 @@ colData(spe) = colData(spe) |>
     as_tibble() |>
     mutate(barcode = colnames(spe)) |>
     left_join(
-        read_csv(
-            cluster_path,
-            show_col_types = FALSE,
-            col_select = c('sample_id', 'barcode', sprintf('FICTURE_k%d', k))
-        ),
+        fread(cluster_path, select = ficture_colnames) |>
+            as_tibble(),
         by = c('sample_id', 'barcode')
     ) |>
-    rename(ficture = sprintf('FICTURE_k%d', k)) |>
+    dplyr::rename(ficture = sprintf('FICTURE_k%d', k)) |>
     mutate(ficture = factor(ficture, levels = sort(unique(ficture)))) |>
     DataFrame()
 spe = spe[, !is.na(spe$ficture)]
