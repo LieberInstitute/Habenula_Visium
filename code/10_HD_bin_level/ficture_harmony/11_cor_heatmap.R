@@ -1,8 +1,3 @@
-
-
-#####
-#remotes::install_github('LieberInstitute/spatialLIBD')
-
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
@@ -10,9 +5,9 @@ library(HDF5Array)
 library(sessioninfo)
 library(spatialLIBD)
 
-model_path = here(
+model_paths = here(
     'processed-data', '10_HD_bin_level', 'ficture_harmony', 'registration',
-    'modeling_results', sprintf('%s.rds', 2:40)
+    'modeling_results', sprintf('%s.rds', 3:40)
 )
 out_path = here(
     'processed-data', '10_HD_bin_level', 'ficture_harmony', 'registration',
@@ -56,6 +51,8 @@ out_path = here(
     'processed-data', '10_HD_bin_level', 'ficture_harmony', 'registration',
     sprintf('cor_vs_%s.rds', ref_name)
 )
+
+dir.create(plot_dir, showWarnings = FALSE)
 
 #   Read in enrichment stats for Banksy clusters at all Leiden resolutions
 t_stats = lapply(model_paths, function(path) readRDS(path))
