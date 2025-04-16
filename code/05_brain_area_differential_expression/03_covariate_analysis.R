@@ -79,7 +79,7 @@ for (k in k_values) {
     domain_data <- plot_data |> filter(BayesSpace == domain)
     plot <- ggboxplot(
       domain_data, x = "brain_area2", y = "nspots", 
-      color = "brain_area2", palette = c("blue", "red", "green", "black", "purple"), 
+      color = "brain_area2", palette = c("blue", "red", "black", "purple"), 
       add = "jitter", shape = 19, 
       xlab = "Brain Area", ylab = "Number of Spots") + 
       geom_text(
@@ -106,7 +106,7 @@ for (k in k_values) {
   y_max_nspots <- max(plot_data$nspots) + 50
   plot <- ggboxplot(
     plot_data, x = "BayesSpace", y = "nspots", 
-    color = "brain_area2", palette = c("blue", "red", "green", "black"), 
+    color = "brain_area2", palette = c("blue", "red", "black", "purple"), 
     add = "jitter", shape = 19, 
     xlab = "BayesSpace Domain", ylab = "Number of Spots"
   ) + 
@@ -133,7 +133,7 @@ for (k in k_values) {
   y_max_sum_umi <- max(plot_data$sum_umi) + 600000
   plot <- ggboxplot(
     plot_data, x = "BayesSpace", y = "sum_umi", 
-    color = "brain_area2", palette = c("blue", "red", "green", "black", "purple"), 
+    color = "brain_area2", palette = c("blue", "red", "black", "purple"), 
     add = "jitter", shape = 19, 
     xlab = "BayesSpace Domain", ylab = "sum_umi"
   ) + 
@@ -158,7 +158,7 @@ for (k in k_values) {
   y_max_mito <- max(plot_data$expr_chrM_ratio) + 0.02
   plot <- ggboxplot(
     plot_data, x = "BayesSpace", y = "expr_chrM_ratio", 
-    color = "brain_area2", palette = c("blue", "red", "green", "black", "purple"), 
+    color = "brain_area2", palette = c("blue", "red", "black", "purple"), 
     add = "jitter", shape = 19, 
     xlab = "BayesSpace Domain", ylab = "expr_chrM_ratio"
   ) + 
@@ -209,12 +209,14 @@ create_boxplot <- function(data, x, y, y_label, filename) {
     ) +
     theme_bw() +
     theme(legend.position = "bottom") +
-    stat_compare_means(aes(group = diagnosis,label = paste0("p = ", after_stat(p.format))),label.y = y_max, method = "t.test")
+    stat_compare_means(aes(group = brain_area2,label = paste0("p = ", after_stat(p.format))),
+                       label.y = y_max) #, method = "t.test"
   )
   dev.off()
 }
 
 # Generate boxplots
+colnames(plot_data_summary)
 create_boxplot(plot_data_summary, "brain_area2", "pmi", "PMI", "full_pmi_distribution.pdf")
 create_boxplot(plot_data_summary, "brain_area2", "age", "Age", "full_age_distribution_by_brain-area.pdf")
 
