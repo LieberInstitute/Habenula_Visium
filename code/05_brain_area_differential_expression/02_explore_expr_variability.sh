@@ -7,10 +7,14 @@
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
 # SBATCH --mail-type=ALL
-#SBATCH --array=2-28%20
+#SBATCH --array=1-3%3
+
+## Define BayesSpace k of interest
+BS_k=(3 9 17)
+BS_k=${BS_k[$(( $SLURM_ARRAY_TASK_ID / 1 % 3 ))]}
 
 ## Explicitly pipe script output to a log
-log_path=logs/02_explore_expr_variability_${SLURM_ARRAY_TASK_ID}.txt
+log_path=logs/02_explore_expr_variability_BS${BS_k}.txt
 
 {
 set -e
@@ -32,7 +36,7 @@ module load conda_R/4.4.x
 module list
 
 ## Edit with your job command
-Rscript 02_explore_expr_variability.R
+Rscript 02_explore_expr_variability.R --BS_k ${BS_k}
 
 echo "**** Job ends ****"
 date
