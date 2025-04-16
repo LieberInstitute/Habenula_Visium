@@ -190,10 +190,10 @@ for (k in k_values) {
 
 data_file <- file.path(data_dir, paste0("sce_pseudo_PCA_brain_area_k", k_nice, ".rds"))
 plot_data <- as.data.frame(colData(spe_filtered)) |>
-  select(sample_id, brain_area, brain_area2, BayesSpace, nspots, sum_umi, expr_chrM_ratio, pmi, age)
+  select(sample_id, brain_id, brain_area, brain_area2, BayesSpace, nspots, sum_umi, expr_chrM_ratio, pmi, age)
 
 plot_data_summary <- plot_data |>
-  select(sample_id, age, brain_area2, expr_chrM_ratio, pmi) |>
+  select(sample_id, brain_id, age, brain_area2, expr_chrM_ratio, pmi) |>
   distinct(sample_id, .keep_all = TRUE)
 
 # Function for creating and saving box plots
@@ -258,13 +258,26 @@ create_boxplot(plot_data_summary, "brain_area2", "age", "Age", paste0("full_age_
 # create_violin_plot(plot_data_summary, "brain_area2", "age","brain_area2", "AGE", "age_violin.pdf") #y_max <- max(data[[y]]) + 5
 # 
 # Age vs. expr_chrM_ratio scatter plot
+# Check and remove NA's
+
+summary(plot_data_summary[, c("age", "expr_chrM_ratio", "brain_area2")])
+colSums(is.na(plot_data_summary[, c("age", "expr_chrM_ratio", "brain_area2")]))
+plot_data_summary$brain_area2 <- droplevels(plot_data_summary$brain_area2)
+levels(plot_data_summary$brain_area2)
+
+plot_data_summary |>
+  group_by(age) |>
+  tally()
+
+# Note. brain_area2 has fewer than 2 non-missing observations to plot by age, which is causing geom_smooth(method = "lm") to fail.
+
 pdf(here(plot_dir, "age_vs_expr_chrM_by_brain-area.pdf"), width = 8, height = 6)
 ggplot(plot_data_summary, aes(x = age, y = expr_chrM_ratio, color = brain_area2)) +
   geom_point(size = 3, alpha = 0.8) +
   geom_smooth(method = "lm", se = TRUE, aes(fill = brain_area2), alpha = 0.2) +
   geom_text_repel(aes(label = sample_id), size = 3, max.overlaps = 15) +
-  scale_color_manual(values = c("0" = "blue", "1" = "red", "2" = "green", "4" = "black", "5" = "purple")) +
-  scale_fill_manual(values =  c("0" = "blue", "1" = "red", "2" = "green", "4" = "black", "5" = "purple")) +
+  scale_color_manual(values = c("G1" = "blue", "G2" = "red", "G3" = "black", "G4" = "purple")) +
+  scale_fill_manual(values =  c("G1" = "blue", "G2" = "red", "G3" = "black", "G4" = "purple")) +
   labs(x = "Age", y = "expr_chrM_ratio", color = "brain_area2") +
   theme_bw() +
   theme(legend.position = "bottom")
