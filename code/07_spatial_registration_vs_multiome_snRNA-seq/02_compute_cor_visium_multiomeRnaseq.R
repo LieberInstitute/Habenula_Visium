@@ -1,5 +1,7 @@
 # copied from https://github.com/LieberInstitute/spatialDLPFC/blob/bd93c980d7653579f81ff1c91c309cea0c7474a6/code/analysis/08_spatial_registration/
 
+#################### BayesSpace vs Multiome-snRNAseq ##########################################
+
 library("spatialLIBD")
 library("tidyverse")
 library("jaffelab")
@@ -96,7 +98,7 @@ bayesSpace_registration <-
     get(load(x))
   })
 stopifnot(is.list(bayesSpace_registration))
-# names(bayesSpace_registration[[1]])
+names(bayesSpace_registration[[1]])
 # [1] "anova"      "enrichment" "pairwise"  
 
 ## Select t-stats from the registration enrichment data
@@ -108,7 +110,7 @@ registration_t_stats <-
     return(t_stats)
   })
 stopifnot(is.list(registration_t_stats))
-# head(registration_t_stats[[1]])
+head(registration_t_stats[[1]])
                   # Sp02D01    Sp02D02
 # ENSG00000237491 -1.6855500  1.6855500
 # ENSG00000228794 -1.6513162  1.6513162
@@ -166,7 +168,7 @@ plt_corr_snmultiome <- function(suffix_name) {
     # cor_layer <- 
     #   rownames(cor_layer) <- paste0(rownames(cor_layer), " ~ ", annotated_clusters[match(rownames(cor_layer), annotated_clusters$cluster)])
 
-    rdata_name <- paste0("bayesSpacce_layer_cor_top100_", k,"_", suffix_name, ".Rdata")
+    rdata_name <- paste0("bayesSpace_cor_top100_", k,"_", suffix_name, ".Rdata")
     save(cor_layer, file = here(data_dir, rdata_name))
     
     ## print layer correlation plot for specific k
@@ -175,7 +177,9 @@ plt_corr_snmultiome <- function(suffix_name) {
     print(
       layer_stat_cor_plot(
         cor_layer, annotation = annotated_clusters,
-        heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
+        heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
+        column_names_gp = gpar(fontsize = 10),
+        row_names_gp = gpar(fontsize = 10)
       )
     )
     
@@ -190,6 +194,14 @@ plt_corr_snmultiome(suffix_reference)
 
 
 message("Spatial correlation with snRNAseq multiome data done!")
+
+
+
+library("slurmjobs")
+
+## A regular job with 10 cores on the 'imaginary' partition
+job_single("02_compute_cor_visium_multiomeRnaseq", cores = 2, partition = "katun", create_shell = TRUE)
+
 
 
 ## Reproducibility information
