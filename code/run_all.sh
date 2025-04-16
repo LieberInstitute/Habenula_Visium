@@ -245,11 +245,27 @@ cd ${CODEDIR}/${SUBDIR}
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
 ## First remove old plots
-rm -f logs/01_create_pseudobulk_data_*.txt
-rm -f ${PROCESSEDIR}/${SUBDIR}/sce_pseudo_brain_area_k*.rds
+rm -f logs/01_create_pseudobulk_data_BS*.txt
+rm -f ${PROCESSEDIR}/${SUBDIR}/sce_pseudo_PCA_brain_area_k*.rds
 rm -f ${PROCESSEDIR}/${SUBDIR}/stats_summary_csv/*.csv
 
-sbatch 01_create_pseudobulk_data.sh
+id1_pseudoDE=$(sbatch --parsable 01_create_pseudobulk_data.sh)
+
+## First remove old plots
+rm -f logs/02_explore_expr_variability_BS*.txt
+rm -f ${PLOTDIR}/${SUBDIR}/sce_pseudo_PC*.pdf
+rm -f ${PLOTDIR}/${SUBDIR}/sce_pseudo_gene_explanatory_vars_k*.pdf
+
+#sbatch 02_explore_expr_variability.sh
+id2_pseudoDE=$(sbatch --parsable --dependency=afterok:$id1_pseudoDE 02_explore_expr_variability.sh)
+
+## First remove old plots
+rm -f logs/03_covariate_analysis.txt
+rm -f ${PLOTDIR}/${SUBDIR}/03_covariate_analysis/*.pdf
+rm -f ${PLOTDIR}/${SUBDIR}/03_covariate_analysis/*.png
+
+#sbatch 02_explore_expr_variability.sh
+sbatch --dependency=afterok:$id2_pseudoDE 03_covariate_analysis.sh
 
 echo "Process completed!"
 
@@ -260,16 +276,14 @@ echo "#########   Compute enrichment with registration_wrapper  ################
 echo "#########   From RNA multiome modality (WNN Leiden res=2, knn=30) ########## "
 echo "############################################################################ "
 
-## FYI. The reference with the scRNAseq data are processed with: 
+## FYI. The reference with the scRNAseq data are processed with:
 ## 01_pseudobulk_reference.R
 
 ## Build enrichment stats objects from multiome scRNAseq data
 
 ## change directory
 SUBDIR="05_snRNA-seq_model_stats"
-
 cd ${CODEDIR}/${SUBDIR}
-
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
 ## First remove old plots
@@ -280,6 +294,21 @@ sbatch 02_multiome_rna_reference.sh
 
 
 
+echo "Compute enrichment with registration_wrapper to snRNAseq data"
+echo "- This is a modified version to merge 'MHb' and 'LHb' in one major cluster called 'Hb'"
+SUBDIR="05_snRNA-seq_model_stats"
+cd ${CODEDIR}/${SUBDIR}
+echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
+
+## First remove old reference
+#rm -f logs/02_multiome_rna_reference.txt
+rm -f ${PROCESSEDIR}/${SUBDIR}/pseudobulk_Hb_merged_final_Annotations*.rds
+rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_Hb_merged_final_Annotations*.rds
+# Call R script
+Rscript 03_pseudobulk_reference_habenula_merged.R
+
+
+
 echo "############################################################################ "
 echo "#########   Spatial Registrattion              ############################# "
 echo "#########                                      ############################# "
@@ -287,7 +316,7 @@ echo "##########################################################################
 
 ## Compute Spatial registration for both Fine and Broad snRNAseq vs Multiome snRNAseq (CSC)
 ## x-axis = snRNAseq cell-types
-## y-axis = spatial Habenula Visium domains 
+## y-axis = spatial Habenula Visium domains
 
 ## change directory
 SUBDIR="06_spatial_registration_vs_snRNA-seq"
@@ -314,7 +343,7 @@ cd ${CODEDIR}/${SUBDIR}
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
 ## Compute correlations for snRNAseq vs Multiome snRNAseq (CSC)
-## Plot in both verical and horizontal formatR 
+## Plot in both verical and horizontal formatR
 
 ## First remove old data and plots
 rm -f logs/01_compute_cor_snRnaseq_multiomeRnaseq_*.txt
@@ -333,9 +362,20 @@ sbatch 02_compute_cor_visium_multiomeRnaseq.sh
 
 
 
+echo "############################################################################ "
+echo "#########   Make SpatialLIBD app.              ############################# "
+echo "#########   For pseudobulk data.               ############################# "
+echo "############################################################################ "
 
-
-
+## (1) Be sure to create a smaller spe object for the shiny app
+## Ex. spe_harmony_shiny.rds or spe_pseudobulk_shiny.rds
+code/03_spatialLIBD_app_pseudobulk/03_spatialLIBD_app_pseudobulk/01_make_spe_shiny_app.R
+## (2) create soft-links, dirs, readme and documentation
+code/03_spatialLIBD_app_pseudobulk/03_spatialLIBD_app_pseudobulk/select_BayesSpaceK_brainModel.R
+## (3) check/test app
+code/03_spatialLIBD_app_pseudobulk/03_spatialLIBD_app_pseudobulk/app.R
+## (3) check/test app
+code/03_spatialLIBD_app_pseudobulk/03_spatialLIBD_app_pseudobulk/deploy.R
 
 
 ## Cynthia SC - Feb, 2025
