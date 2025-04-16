@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/04_spatula_join_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/04_spatula_join_%a.txt
-#SBATCH --array=2-40%10
+#SBATCH --array=41
 
 echo "**** Job starts ****"
 date

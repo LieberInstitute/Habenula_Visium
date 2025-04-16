@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=100G
+#SBATCH --mem=200G
 #SBATCH --job-name=03_ficture_run
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/03_ficture_run_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/03_ficture_run_%a.txt
-#SBATCH --array=2
+#SBATCH --array=2,41%2
 
 set -e
 
@@ -20,7 +20,7 @@ echo "Job name: ${SLURM_JOB_NAME}"
 echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
-ml ficture/dev_a455e5c
+module load visium_hd/1.0
 
 #   Path definitions
 repo_dir=$(git rev-parse --show-toplevel)
@@ -40,6 +40,7 @@ if [[ $SLURM_ARRAY_TASK_ID -eq 2 ]]; then
         --major-axis X \
         --all \
         --n-factor ${SLURM_ARRAY_TASK_ID} \
+        --fractional-count 0 \
         --decode-top-k 2
 else
     ficture run_together \
@@ -49,7 +50,8 @@ else
         --mu-scale 1 \
         --major-axis X \
         --all \
-        --n-factor ${SLURM_ARRAY_TASK_ID}
+        --n-factor ${SLURM_ARRAY_TASK_ID} \
+        --fractional-count 0
 fi
 
 echo "**** Job ends ****"
