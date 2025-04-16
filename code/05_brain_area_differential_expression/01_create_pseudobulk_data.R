@@ -34,10 +34,12 @@ dir.create(dir_csv, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_csv))
 
 ## load spe data
+
 spe_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony.rds")
 spe <- readRDS(spe_in)
 
 ## Import BayesSpace clusters
+
 clusters_BayesSpace_dir <- here(
   "processed-data",
   "04_harmony_BayesSpace",
@@ -75,6 +77,26 @@ head(unique(spe$BayesSpace))
 # [1] Sp02D02 Sp02D01
 # Levels: Sp02D01 Sp02D02
 
+levels(colData(spe)$BayesSpace)
+# [1] "Sp02D01" "Sp02D02" 
+
+## load spatial-registration to pull short annotated labels
+
+dir_labels <- here("processed-data", 
+                  "06_spatial_registration_vs_snRNA-seq", 
+                  "cor_BayesSpace_vs_snRNA-seq_top100_Hb_merged.Rdata")
+load(dir_labels)
+# [3] "cor_broad"               "cor_fine"
+levels(cor_broad)
+# sort(rownames(cor_broad[[k-1]]))
+
+# rename the levels to make id readable in the plots
+
+colData(spe)$BayesSpace <- factor(colData(spe)$BayesSpace)
+levels(colData(spe)$BayesSpace) <- c(sort(rownames(cor_broad[[k-1]])))
+levels(colData(spe)$BayesSpace)
+# [1] "Sp02D01 ~ Oligo"      "Sp02D02 ~ Inhib.Thal"
+
 # Add a new column based on brain_id condition - This will be used as variable for exploring variation
 
 #colnames(colData(spe))
@@ -82,27 +104,28 @@ table(colData(spe)$sample_id)
 table(colData(spe)$brain_area)
 table(colData(spe)$BayesSpace)
 
-## Assign new 'brain-area' based in posterior-anterior locations defined by KDM
-colData(spe)$brain_area_DEG <- case_when(
-  colData(spe)$sample_id == "V13B23-285_A1" ~ "0",
+## Assign new 'brain-area' based in posterior-anterior locations defined by KDM based on RNAScope
+
+colData(spe)$brain_area2 <- case_when(
+  colData(spe)$sample_id == "V13B23-285_A1" ~ "G0",
   colData(spe)$sample_id == "V13B23-285_B1" |
     colData(spe)$sample_id == "V14F07-340_A1" |
     colData(spe)$sample_id == "V13B23-280_A1" ~
-    "1",
+    "G1",
   colData(spe)$sample_id == "V13B23-285_C1" |
     colData(spe)$sample_id == "V14F07-340_B1" |
     colData(spe)$sample_id == "V13B23-280_B1" ~
-    "2",
+    "G2",
   colData(spe)$sample_id == "V13B23-285_D1" |
     colData(spe)$sample_id == "V14F07-340_C1" |
     colData(spe)$sample_id == "V13B23-280_C1" ~
-    "3",
+    "G3",
   colData(spe)$sample_id == "V14F07-340_D1" |
     colData(spe)$sample_id == "V13B23-280_D1" ~
-    "4"
+    "G4"
 )
-table(colData(spe)$brain_id, colData(spe)$brain_area_DEG)
-#           0    1    2    3    4
+table(colData(spe)$brain_id, colData(spe)$brain_area2)
+#           G0   G1   G2   G3   G4
 # Br8518 3803 3119 3201 3118    0
 # Br9037    0 3117 2921 3580 3515
 # Br9090    0 1669 1689 1794 1883
@@ -193,12 +216,11 @@ if (is.factor(spe_pseudo_k$BayesSpace)) {
   levels(spe_pseudo_k$BayesSpace)
 }
 
-spe_pseudo_k$brain_area_DEG <- factor(spe_pseudo_k$brain_area_DEG)
+spe_pseudo_k$brain_area2 <- factor(spe_pseudo_k$brain_area2)
 if (is.factor(spe_pseudo_k$BayesSpace_pseudo)) {
-  spe_pseudo_k$brain_area_DEG <- droplevels(spe_pseudo_k$brain_area_DEG)
-  levels(spe_pseudo_k$brain_area_DEG)
+  spe_pseudo_k$brain_area2 <- droplevels(spe_pseudo_k$brain_area2)
 }
-
+levels(spe_pseudo_k$brain_area2)
 
 ## Compute the logcounts
 
@@ -279,7 +301,7 @@ colData(spe_pseudo_k) <- colData(spe_pseudo_k)[, sort(c(
   "sex",
   "diagnosis",
   "brain_area",
-  "brain_area_DEG",
+  "brain_area2",
   "nspots",
   "sum_umi",
   "expr_chrM",
