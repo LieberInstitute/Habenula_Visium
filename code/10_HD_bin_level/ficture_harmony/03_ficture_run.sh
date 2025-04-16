@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=200G
+#SBATCH --mem=150G
 #SBATCH --job-name=03_ficture_run
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/03_ficture_run_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/03_ficture_run_%a.txt
-#SBATCH --array=2,41%2
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/03_ficture_run_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/03_ficture_run_%a.txt
+#SBATCH --array=3-40%7
 
 set -e
 
@@ -20,12 +20,12 @@ echo "Job name: ${SLURM_JOB_NAME}"
 echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
-module load visium_hd/1.0
+module load ficture/dev_a455e5c
 
 #   Path definitions
 repo_dir=$(git rev-parse --show-toplevel)
-in_dir=$repo_dir/processed-data/10_HD_bin_level/ficture_harmony/ficture_inputs
-out_dir=$repo_dir/processed-data/10_HD_bin_level/ficture_harmony/ficture_outputs/normalized/k_${SLURM_ARRAY_TASK_ID}
+in_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_inputs
+out_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_outputs/normalized/k_${SLURM_ARRAY_TASK_ID}
 
 mkdir -p $out_dir
 
@@ -40,7 +40,6 @@ if [[ $SLURM_ARRAY_TASK_ID -eq 2 ]]; then
         --major-axis X \
         --all \
         --n-factor ${SLURM_ARRAY_TASK_ID} \
-        --fractional-count 0 \
         --decode-top-k 2
 else
     ficture run_together \
@@ -50,8 +49,7 @@ else
         --mu-scale 1 \
         --major-axis X \
         --all \
-        --n-factor ${SLURM_ARRAY_TASK_ID} \
-        --fractional-count 0
+        --n-factor ${SLURM_ARRAY_TASK_ID}
 fi
 
 echo "**** Job ends ****"

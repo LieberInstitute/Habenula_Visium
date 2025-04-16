@@ -6,13 +6,14 @@ library(sessioninfo)
 library(HDF5Array)
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-spe_out_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'spe_raw.rds'
-)
-
 sample_ids = readLines(sample_id_path)
+
+spe_out_path = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'spe_raw.rds'
+)
 sr_out_dirs = here(
-    'processed-data', '01_spaceranger', sample_ids, 'outs',
+    'processed-data', '01_spaceranger', 'probe_fix', sample_ids, 'outs',
     'binned_outputs', 'square_002um'
 )
 

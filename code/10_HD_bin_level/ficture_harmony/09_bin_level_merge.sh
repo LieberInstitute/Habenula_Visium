@@ -3,9 +3,9 @@
 #SBATCH --mem=64G
 #SBATCH --job-name=09_bin_level_merge
 #SBATCH -c 1
-#SBATCH -t 2-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/09_bin_level_merge.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/09_bin_level_merge.txt
+#SBATCH -t 1-0:00:00
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/09_bin_level_merge.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/09_bin_level_merge.txt
 
 set -e
 
