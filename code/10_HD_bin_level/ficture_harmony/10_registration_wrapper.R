@@ -12,19 +12,20 @@ library(data.table)
 k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 
 spe_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'spe_raw.rds'
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'spe_raw.rds'
 )
 cluster_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
     'bin_level_clusters.csv.gz'
 )
 pseudo_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'registration',
-    'pseudobulk_spe', sprintf('%s.rds', k)
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'registration', 'pseudobulk_spe', sprintf('%s.rds', k)
 )
 model_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'registration',
-    'modeling_results', sprintf('%s.rds', k)
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'registration', 'modeling_results', sprintf('%s.rds', k)
 )
 gtf_path = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2020-A/genes/genes.gtf'
 ficture_colnames = c('sample_id', 'barcode', sprintf('FICTURE_k%d', k))

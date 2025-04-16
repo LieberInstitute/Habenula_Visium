@@ -6,10 +6,12 @@ library(sessioninfo)
 library(spatialLIBD)
 
 model_paths = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'registration',
-    'modeling_results', sprintf('%s.rds', 3:40)
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'registration', 'modeling_results', sprintf('%s.rds', 3:40)
 )
-plot_dir = here('plots', '10_HD_bin_level', 'ficture_harmony', 'registration')
+plot_dir = here(
+    'plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony', 'registration'
+)
 
 #   List all paths and names for reference data
 ref_paths = c(
@@ -44,11 +46,11 @@ ref_path = ref_paths[task_id]
 ref_name = ref_names[task_id]
 
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony', 'registration',
-    sprintf('cor_vs_%s.rds', ref_name)
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'registration', sprintf('cor_vs_%s.rds', ref_name)
 )
 
-dir.create(plot_dir, showWarnings = FALSE)
+dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 
 #   Read in enrichment stats for Banksy clusters at all Leiden resolutions
 t_stats = lapply(model_paths, function(path) readRDS(path))

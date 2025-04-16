@@ -4,8 +4,8 @@
 #SBATCH --job-name=10_registration_wrapper
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/10_registration_wrapper_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/ficture_harmony/logs/10_registration_wrapper_%a.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/10_registration_wrapper_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/10_registration_wrapper_%a.txt
 #SBATCH --array=3-40%10
 
 set -e
