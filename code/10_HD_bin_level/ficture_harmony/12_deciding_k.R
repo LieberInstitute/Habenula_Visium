@@ -1,3 +1,9 @@
+#   Since there are a huge number of spatial registration results to comb
+#   through, this script intends to automate selecting interesting results.
+#   In particular, one of our main goals is to find several distinct clusters
+#   that partition the habenula. It's also nice to see clean matches against
+#   non-habenula cell types.
+
 library(here)
 library(tidyverse)
 library(spatialLIBD)
