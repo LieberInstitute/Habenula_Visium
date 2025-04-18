@@ -11,8 +11,22 @@ ficture_cluster_path = here(
     'processed-data', '10_HD_bin_level', 'ficture_harmony',
     'bin_level_clusters.csv.gz'
 )
+banksy_cor_paths = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
+    '%s', 'cor_vs_snRNAseq_fine.rds'
+)
+banksy_cluster_paths = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', '%s',
+    'leiden_res%s.csv'
+)
+all_banksy_res = seq_len(20) / 10
+all_banksy_lambda = c(0.2, 0.8)
 marker_cor_val = 0.3
 non_marker_cor_val = 0.15
+
+################################################################################
+#   Functions
+################################################################################
 
 process_cor_df = function(cor_df) {
     #   Tidy up and convert to long format
@@ -27,7 +41,7 @@ process_cor_df = function(cor_df) {
         )
     
     #   Number of clusters registering only to habenula cell types
-    num_pure_hb_clusters = cor_df |>
+    num_hb_clusters = cor_df |>
         group_by(cluster) |>
         summarize(
             only_hb = all(
@@ -70,29 +84,91 @@ process_cor_df = function(cor_df) {
         length()
     
     summary_df = tibble(
-        num_pure_hb_clusters = num_pure_hb_clusters,
-        num_non_hb_cell_types = num_non_hb_cell_types,
-        num_hb_cell_types = num_hb_cell_types,
+        num_hb_clus = num_hb_clusters,
+        num_non_hb_CT = num_non_hb_cell_types,
+        num_hb_CT = num_hb_cell_types,
         k = length(unique(cor_df$cluster)),
     )
 
     return(summary_df)
 }
 
-ficture_cor = readRDS(ficture_cor_path)
-ficture_df = do.call(rbind, lapply(ficture_cor, process_cor_df))
+################################################################################
+#   Gather metrics across clustering results
+################################################################################
 
-#   Clusters at k = 21 and k = 13 rate highly by the 3 metrics. We're first
-#   prioritizing the ability of clustering to split the habenula. Next, we
-#   consider how many habenula cell types are represented in habenula clusters,
-#   and also how many non-habenula cell types
-message('Top 5 k values by several metrics:')
-ficture_df |>
+#   Collect metrics for all FICTURE spatial registration results
+ficture_cor = readRDS(ficture_cor_path)
+ficture_df = do.call(rbind, lapply(ficture_cor, process_cor_df)) |>
+    mutate(method = 'ficture', res = NA, lambda = NA)
+
+#   Collect metrics for all Banksy spatial registration results
+banksy_df_list = list()
+for (lambda in all_banksy_lambda) {
+    lambda_neat = sub('\\.', '_', as.character(lambda))
+    banksy_cor = sprintf(banksy_cor_paths, sprintf('lambda%s', lambda_neat)) |>
+        readRDS()
+
+    for (i in seq_len(length(all_banksy_res))) {
+        banksy_df_list[[length(banksy_df_list) + 1]] = process_cor_df(
+                banksy_cor[[i]]
+            ) |>
+            mutate(
+                method = 'banksy',
+                res = all_banksy_res[i],
+                lambda = lambda
+            )
+    }
+}
+banksy_df = do.call(rbind, banksy_df_list)
+
+################################################################################
+#   Explore top-ranking results
+################################################################################
+
+#   We're first prioritizing the ability of clustering to split the habenula.
+#   Next, we consider how many habenula cell types are represented in habenula
+#   clusters, and also how many non-habenula cell types
+message('Top 5 clustering settings (non-Hb cell types first):')
+rbind(ficture_df, banksy_df) |>
     arrange(
-        desc(num_pure_hb_clusters),
-        desc(num_non_hb_cell_types),
-        desc(num_hb_cell_types)
+        desc(num_hb_clus),
+        desc(num_non_hb_CT),
+        desc(num_hb_CT)
     ) |>
     print(n = 5)
+
+message('Top 5 clustering settings (Hb cell types first):')
+rbind(ficture_df, banksy_df) |>
+    arrange(
+        desc(num_hb_clus),
+        desc(num_hb_CT),
+        desc(num_non_hb_CT)
+    ) |>
+    print(n = 5)
+
+message('Top 3 clustering settings by method (non-Hb cell types first):')
+rbind(ficture_df, banksy_df) |>
+    group_by(method) |>
+    arrange(
+        desc(num_hb_clus),
+        desc(num_non_hb_CT),
+        desc(num_hb_CT)
+    ) |>
+    slice_head(n = 3) |>
+    ungroup() |>
+    print(n = 6)
+
+message('Top 3 clustering settings by method (Hb cell types first):')
+rbind(ficture_df, banksy_df) |>
+    group_by(method) |>
+    arrange(
+        desc(num_hb_clus),
+        desc(num_hb_CT),
+        desc(num_non_hb_CT)
+    ) |>
+    slice_head(n = 3) |>
+    ungroup() |>
+    print(n = 6)
 
 session_info()
