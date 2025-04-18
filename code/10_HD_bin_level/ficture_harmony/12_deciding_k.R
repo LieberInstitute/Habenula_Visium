@@ -31,9 +31,10 @@ process_cor_df = function(cor_df) {
         group_by(cluster) |>
         summarize(
             only_hb = all(
-                ifelse(cor_val > marker_cor_val, is_habenula, TRUE) &
-                ifelse(!is_habenula, cor_val < non_marker_cor_val, TRUE)
-            )
+                    ifelse(cor_val > marker_cor_val, is_habenula, TRUE) &
+                    ifelse(!is_habenula, cor_val < non_marker_cor_val, TRUE)
+                ) &
+                any(cor_val > marker_cor_val)
         ) |>
         filter(only_hb) |>
         nrow()
@@ -46,21 +47,37 @@ process_cor_df = function(cor_df) {
         filter(
             (cor_val[1] > marker_cor_val) &
             !is_habenula[1] &
-            (cor_val[2] < non_marker_cor_val)
+            (cor_val[2] < non_marker_cor_val),
+            cor_val > marker_cor_val
         ) |>
-        filter(cor_val > marker_cor_val) |>
         pull(cell_type) |>
         unique() |>
         length()
     
-    cor_df |>
+    #   Number of habenula cell types having at least one cluster registering
+    #   to them
+    num_hb_cell_types = cor_df |>
         group_by(cluster) |>
         filter(
             all(
                 ifelse(cor_val > marker_cor_val, is_habenula, TRUE) &
                 ifelse(!is_habenula, cor_val < non_marker_cor_val, TRUE)
-            )
+            ),
+            cor_val > marker_cor_val
         ) |>
+        pull(cell_type) |>
+        unique() |>
+        length()
+    
+    summary_df = tibble(
+        num_pure_hb_clusters = num_pure_hb_clusters,
+        num_non_hb_cell_types = num_non_hb_cell_types,
+        num_hb_cell_types = num_hb_cell_types,
+        k = length(unique(cor_df$cluster)),
+    )
+
+    return(summary_df)
 }
 
 ficture_cor = readRDS(ficture_cor_path)
+ficture_df = do.call(rbind, lapply(ficture_cor, process_cor_df))
