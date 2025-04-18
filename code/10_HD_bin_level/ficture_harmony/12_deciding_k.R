@@ -26,6 +26,7 @@ banksy_cluster_paths = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', '%s',
     'leiden_res%s.csv'
 )
+plot_dir = here('plots', '10_HD_bin_level', 'ficture_harmony')
 
 all_banksy_res = seq_len(20) / 10
 all_banksy_lambda = c(0.2, 0.8)
@@ -183,7 +184,7 @@ rbind(ficture_df, banksy_df) |>
     print(n = 6)
 
 ################################################################################
-#   Read in clustering results
+#   Read in and clean clustering results
 ################################################################################
 
 ficture_df = fread(ficture_cluster_path) |>
@@ -205,5 +206,13 @@ ficture_df = fread(ficture_cluster_path) |>
         k = as.integer(sub('^FICTURE_k', '', k)),
         method = 'ficture'
     )
+
+p = ggplot(ficture_df, aes(x = k, y = num_balanced)) +
+    geom_line() +
+    labs(x = 'k', y = 'Number of Balanced Clusters') +
+    theme_bw(base_size = 20)
+pdf(file.path(plot_dir, 'sample_specificity.pdf'))
+print(p)
+dev.off()
 
 session_info()
