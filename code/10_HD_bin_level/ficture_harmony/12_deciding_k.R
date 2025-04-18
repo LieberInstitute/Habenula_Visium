@@ -5,6 +5,7 @@
 #   non-habenula cell types.
 
 library(here)
+library(data.table)
 library(tidyverse)
 library(spatialLIBD)
 library(sessioninfo)
@@ -25,10 +26,14 @@ banksy_cluster_paths = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', '%s',
     'leiden_res%s.csv'
 )
+
 all_banksy_res = seq_len(20) / 10
 all_banksy_lambda = c(0.2, 0.8)
+
 marker_cor_val = 0.3
 non_marker_cor_val = 0.15
+
+sample_cutoff = 0.5
 
 ################################################################################
 #   Functions
@@ -176,5 +181,29 @@ rbind(ficture_df, banksy_df) |>
     slice_head(n = 3) |>
     ungroup() |>
     print(n = 6)
+
+################################################################################
+#   Read in clustering results
+################################################################################
+
+ficture_df = fread(ficture_cluster_path) |>
+    as_tibble() |>
+    mutate(sample_id = factor(sample_id)) |>
+    pivot_longer(
+        cols = matches('^FICTURE_k'),
+        names_to = 'k', values_to = 'cluster'
+    ) |>
+    filter(!is.na(cluster)) |>
+    group_by(sample_id, k, cluster) |>
+    summarize(num_bins = n()) |>
+    group_by(k, cluster) |>
+    summarize(max_prop = max(num_bins) / sum(num_bins)) |>
+    group_by(k) |>
+    summarize(num_balanced = sum(max_prop <= sample_cutoff)) |>
+    ungroup() |>
+    mutate(
+        k = as.integer(sub('^FICTURE_k', '', k)),
+        method = 'ficture'
+    )
 
 session_info()
