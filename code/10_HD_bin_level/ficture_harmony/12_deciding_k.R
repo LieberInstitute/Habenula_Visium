@@ -81,3 +81,18 @@ process_cor_df = function(cor_df) {
 
 ficture_cor = readRDS(ficture_cor_path)
 ficture_df = do.call(rbind, lapply(ficture_cor, process_cor_df))
+
+#   Clusters at k = 21 and k = 13 rate highly by the 3 metrics. We're first
+#   prioritizing the ability of clustering to split the habenula. Next, we
+#   consider how many habenula cell types are represented in habenula clusters,
+#   and also how many non-habenula cell types
+message('Top 5 k values by several metrics:')
+ficture_df |>
+    arrange(
+        desc(num_pure_hb_clusters),
+        desc(num_non_hb_cell_types),
+        desc(num_hb_cell_types)
+    ) |>
+    print(n = 5)
+
+session_info()
