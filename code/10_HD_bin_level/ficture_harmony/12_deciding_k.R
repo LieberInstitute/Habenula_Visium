@@ -3,6 +3,9 @@
 #   In particular, one of our main goals is to find several distinct clusters
 #   that partition the habenula. It's also nice to see clean matches against
 #   non-habenula cell types.
+#
+#   Another intention of this script is to see if clusters become more
+#   sample-specific as k increases
 
 library(here)
 library(data.table)
@@ -207,9 +210,40 @@ ficture_df = fread(ficture_cluster_path) |>
         method = 'ficture'
     )
 
-p = ggplot(ficture_df, aes(x = k, y = num_balanced)) +
+banksy_df_list = list()
+for (lambda in all_banksy_lambda) {
+    lambda_neat = paste0('lambda', sub('\\.', '_', as.character(lambda)))
+    for (res in all_banksy_res) {
+        res_neat = sub('\\.', '_', as.character(res))
+        banksy_df_list[[length(banksy_df_list) + 1]] = sprintf(
+                banksy_cluster_paths, lambda_neat, res_neat
+            ) |>
+            read_csv(show_col_types = FALSE) |>
+            dplyr::rename(cluster = paste0('banksy_', lambda_neat)) |>
+            mutate(
+                sample_id = factor(sub('^[0-9]+_', '', key)),
+                k = length(unique(cluster)),
+                method = paste0('banksy_', lambda_neat)
+            )
+    }
+}
+
+banksy_df = do.call(rbind, banksy_df_list) |>
+    group_by(method, sample_id, k, cluster) |>
+    summarize(num_bins = n()) |>
+    group_by(method, k, cluster) |>
+    summarize(max_prop = max(num_bins) / sum(num_bins)) |>
+    group_by(method, k) |>
+    summarize(num_balanced = sum(max_prop <= sample_cutoff)) |>
+    ungroup() |>
+    select(k, num_balanced, method)
+
+p = ggplot(
+        rbind(ficture_df, banksy_df),
+        aes(x = k, y = num_balanced, color = method)
+    ) +
     geom_line() +
-    labs(x = 'k', y = 'Number of Balanced Clusters') +
+    labs(x = 'k', y = 'Number of Balanced Clusters', color = 'Method') +
     theme_bw(base_size = 20)
 pdf(file.path(plot_dir, 'sample_specificity.pdf'))
 print(p)
