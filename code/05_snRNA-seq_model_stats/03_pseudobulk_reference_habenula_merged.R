@@ -49,15 +49,9 @@ table(sce_final$final_Annotations_broad, useNA = "ifany")
 ## Access cluster assignments to merge "LHb" and "MHb" in one cluster as "Habenula"
 
 sce_final$final_Annotations_broad <-
-  gsub("^[M|L]+", "", sce_final$final_Annotations_broad)
-
-# merged_clusters <- as.character(colData(sce_final)$final_Annotations_broad)
-# merged_clusters[merged_clusters %in% c("LHb", "MHb")] <- "Habenula"
-# # Add new labels to colData
-# colData(sce_final)$final_Annotations_broad <- factor(merged_clusters)
-# # verify results
+  gsub("^\\bMHb|\\bLHb", "Habenula", sce_final$final_Annotations_broad)
 table(colData(sce_final)$final_Annotations_broad)
-# Astrocyte       Endo Excit.Thal   Habenula Inhib.Thal  Microglia      Oligo 
+# Astrocyte  Endo Excit.Thal   Habenula Inhib.Thal  Microglia      Oligo 
 # 538         38       1800       2924       7612        145       2178 
 # OPC 
 # 1796 
