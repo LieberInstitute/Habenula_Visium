@@ -265,6 +265,7 @@ rm -f ${PLOTDIR}/${SUBDIR}/03_covariate_analysis/*.pdf
 rm -f ${PLOTDIR}/${SUBDIR}/03_covariate_analysis/*.png
 
 #sbatch 02_explore_expr_variability.sh
+# sbatch 03_covariate_analysis.sh
 sbatch --dependency=afterok:$id2_pseudoDE 03_covariate_analysis.sh
 
 echo "Process completed!"
@@ -311,18 +312,17 @@ Rscript 03_pseudobulk_reference_habenula_merged.R
 
 echo "############################################################################ "
 echo "#########   Spatial Registrattion              ############################# "
-echo "#########                                      ############################# "
+echo "#########   - snRNAseq vs Visium               ############################# "
+echo "#########   - snRNAseq vs Multiome RNA.        ############################# "
 echo "############################################################################ "
 
-## Compute Spatial registration for both Fine and Broad snRNAseq vs Multiome snRNAseq (CSC)
+## Compute Spatial registration for both Fine and Broad (snRNAseq) vs Bayes-Space Visium
 ## x-axis = snRNAseq cell-types
 ## y-axis = spatial Habenula Visium domains
 
 ## change directory
 SUBDIR="06_spatial_registration_vs_snRNA-seq"
-
 cd ${CODEDIR}/${SUBDIR}
-
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
 ## First remove old data and plots
@@ -334,12 +334,9 @@ rm -f ${PLOTDIR}/${SUBDIR}/*_fineRes.pdf
 
 sbatch 01_compute_cor.sh
 
-
 ## change directory
 SUBDIR="07_spatial_registration_vs_multiome_snRNA-seq"
-
 cd ${CODEDIR}/${SUBDIR}
-
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
 ## Compute correlations for snRNAseq vs Multiome snRNAseq (CSC)
