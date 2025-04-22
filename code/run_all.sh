@@ -37,11 +37,6 @@ echo "Processed dir: ${PROCESSEDIR}"
 echo "Plot dir: ${PLOTDIR}"
 
 
-## Update code style
-# cd ${CODEDIR}
-# Rscript update_style.R
-
-
 ########  Basic workflow ########
 
 ######## Build basic spe object ########
@@ -274,15 +269,11 @@ echo "Process completed!"
 
 echo "############################################################################ "
 echo "#########   Compute enrichment with registration_wrapper  ################## "
-echo "#########   From RNA multiome modality (WNN Leiden res=2, knn=30) ########## "
+echo "#########   - RNA multiome (WNN Leiden res=2, knn=30)             ########## "
+echo "#########   - snRNAseq Human Pilot                                ########## "
 echo "############################################################################ "
 
-## FYI. The reference with the scRNAseq data are processed with:
-## 01_pseudobulk_reference.R
-
 ## Build enrichment stats objects from multiome scRNAseq data
-
-## change directory
 SUBDIR="05_snRNA-seq_model_stats"
 cd ${CODEDIR}/${SUBDIR}
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
@@ -293,20 +284,18 @@ rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_snRNA-multiome.rds
 
 sbatch 02_multiome_rna_reference.sh
 
+echo "############################################################################ "
+echo "Modified version for snRNAseq with 'MHb' and 'LHb' merged"
 
-
-echo "Compute enrichment with registration_wrapper to snRNAseq data"
-echo "- This is a modified version to merge 'MHb' and 'LHb' in one major cluster called 'Hb'"
 SUBDIR="05_snRNA-seq_model_stats"
 cd ${CODEDIR}/${SUBDIR}
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
 ## First remove old reference
-#rm -f logs/02_multiome_rna_reference.txt
 rm -f ${PROCESSEDIR}/${SUBDIR}/pseudobulk_Hb_merged_final_Annotations*.rds
 rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_Hb_merged_final_Annotations*.rds
-# Call R script
-Rscript 03_pseudobulk_reference_habenula_merged.R
+
+sbatch 03_pseudobulk_reference_habenula_merged.sh
 
 
 
