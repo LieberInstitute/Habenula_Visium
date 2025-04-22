@@ -125,6 +125,13 @@ colnames(head(modeling_results$enrichment))
 head(modeling_results$enrichment)
 
 
+# library(slurmjobs)
+# slurmjobs::job_single('03_pseudobulk_reference_habenula_merged',
+#                       create_shell = TRUE, memory = '60G',
+#                       command = "03_pseudobulk_reference_habenula_merged.R",
+#                       partition = "katun")
+
+
 ## Reproducibility information
 print("Reproducibility information:")
 Sys.time()
