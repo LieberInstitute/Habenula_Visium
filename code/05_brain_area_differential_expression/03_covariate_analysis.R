@@ -19,6 +19,7 @@ plot_dir <- here(
   "03_covariate_analysis"
 )
 if (!dir.exists(data_dir)) dir.create(data_dir, recursive = TRUE)
+if (!dir.exists(plot_dir)) dir.create(plot_dir, recursive = TRUE)
 
 # Define k values to iterate over
 k_values <- c(3, 9, 17)
@@ -133,9 +134,8 @@ for (k in k_values) {
   p_values_nspots <- compare_means(
     nspots ~ brain_area2,
     data = plot_data,
-    group.by = "BayesSpace",
-    method = "t.test"
-  )
+    group.by = "BayesSpace"
+  ) # method = "t.test"
   p_values_nspots$fdr <- p.adjust(p_values_nspots$p, method = "fdr")
   y_max_nspots <- max(plot_data$nspots) + 50
   plot <- ggboxplot(
@@ -245,9 +245,8 @@ for (k in k_values) {
   p_values_mito <- compare_means(
     expr_chrM_ratio ~ brain_area2,
     data = plot_data,
-    group.by = "BayesSpace",
-    method = "t.test"
-  )
+    group.by = "BayesSpace"
+  ) # method = "t.test"
   p_values_mito$fdr <- p.adjust(p_values_mito$p, method = "fdr")
   y_max_mito <- max(plot_data$expr_chrM_ratio) + 0.02
   plot <- ggboxplot(
