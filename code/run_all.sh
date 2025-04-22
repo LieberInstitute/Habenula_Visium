@@ -27,6 +27,8 @@ echo ""
 echo "Job id: ${SLURM_JOBID}"
 
 
+echo "Main Directories ########################################################## "
+
 MAINDIR="/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium"
 CODEDIR="${MAINDIR}/code"
 PROCESSEDIR="${MAINDIR}/processed-data"
@@ -37,102 +39,57 @@ echo "Processed dir: ${PROCESSEDIR}"
 echo "Plot dir: ${PLOTDIR}"
 
 
-########  Basic workflow ########
+echo "Build spe basic ########################################################## "
 
-######## Build basic spe object ########
-
-echo "Running process (1) ###################################### "
-
-## change directory
 SUBDIR="02_build_spe"
-
 cd ${CODEDIR}/${SUBDIR}
-
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
-
-echo "Running 01_build_basic_spe.sh"
 
 ## create log dir or rm previous log files and output files
 [ -f logs/01_build_basic_spe.txt ] && rm logs/01_build_basic_spe.txt
-
 ## move previous rds
 [ -f ${PROCESSEDIR}/${SUBDIR}/spe.rds ] && mv ${PROCESSEDIR}/${SUBDIR}/spe.rds ${PROCESSEDIR}/${SUBDIR}/tmp
 [ -f ${PROCESSEDIR}/${SUBDIR}/spe_raw.rds ] && mv ${PROCESSEDIR}/${SUBDIR}/spe_raw.rds ${PROCESSEDIR}/${SUBDIR}/tmp
-
 echo "Previous logs and output files deleted or moved to tmp dir!"
 
-## Run main job
 id1=$(sbatch --parsable 01_build_basic_spe.sh)
-
 echo ${id1}
 
-echo "Build spe completed! ###################################### "
 
-echo "Running process (2) ###################################### "
-echo "Running 02_scran_exploratory_QCs.sh"
-
-## create log dir or rm previous log files and output files
+echo "Scran exploratory QCs #################################################### "
 
 [ -f logs/02_scran_exploratory_QCs.txt ] && rm logs/02_scran_exploratory_QCs.txt
 rm -f ${PLOTDIR}/${SUBDIR}/*.pdf
-
 ## mv previous rds
 [ -f ${PROCESSEDIR}/${SUBDIR}/spe_qc_low_lib_edge.rds ] && rm ${PROCESSEDIR}/${SUBDIR}/spe_qc_low_lib_edge.rds
 
 ## Run dependency job
 id2=$(sbatch --parsable --dependency=afterok:$id1 02_scran_exploratory_QCs.sh)
-
 echo $id2
 
-echo "EDA with scran completed! ###################################### "
 
-
-echo "Running process (3) ###################################### "
-echo "Running 03_SpotSweeper.sh"
-
-## create log dir or rm previous log files and output files
+echo "SpotSweeper QCs ######################################################### "
 
 [ -f logs/03_SpotSweeper.txt ] && rm logs/03_SpotSweeper.txt
-rm ${PLOTDIR}/${SUBDIR}/03_SpotSweeper/*.pdf
-#[ -f ${PROCESSEDIR}/${SUBDIR}/03_SpotSweeper/*.csv ] &&
-rm ${PROCESSEDIR}/${SUBDIR}/03_SpotSweeper/*.csv
-
+rm -f ${PLOTDIR}/${SUBDIR}/03_SpotSweeper/*.pdf
+rm -f ${PROCESSEDIR}/${SUBDIR}/03_SpotSweeper/*.csv
 ## mv previous rds
 [ -f ${PROCESSEDIR}/${SUBDIR}/spe_scran_spotsweeper.rds ] && rm ${PROCESSEDIR}/${SUBDIR}/spe_scran_spotsweeper.rds
 
 ## Run dependency job after scran outliers identification
 id3=$(sbatch --parsable --dependency=afterok:$id2 03_SpotSweeper.sh)
-
 echo $id3
 
-echo "EDA with SpotSweeper completed! ###################################### "
 
+echo "#########   Batch correction and clustering    ########################## "
 
-echo "**** Job ends ****"
-date
+######## Prepare dataset, normalize, harmonize and run BayesSpace ##############
 
-} > $log_path 2>&1
-
-
-echo "############################################################################ "
-echo "#########   Batch correction and clustering    ############################# "
-echo "#########                                      ############################# "
-echo "############################################################################ "
-
-echo "Running Harmoy ###################################### "
-echo "sbatch 03-preprocess_and_harmony.sh"
-
-######## Prepare dataset, normalize, harmonize and run BayesSpace ########
-
-## change directory
 SUBDIR="04_harmony_BayesSpace"
-
 cd ${CODEDIR}/${SUBDIR}
-
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
 01-filter_normalize.R
-
 02-compute_GLM-PCA.sh
 
 ## Run Harmony
@@ -153,49 +110,24 @@ rm -rf ${PROCESSEDIR}/${SUBDIR}/clusters_graphbased_cut_at/
 rm -rf ${PROCESSEDIR}/${SUBDIR}/g*harmony.Rdata
 rm -rf ${PROCESSEDIR}/${SUBDIR}/spe_harmony.rds
 
-echo "Previous logs and output files deleted!"
-
 ## Run job
 sbatch 03-preprocess_and_harmony.sh # need to add the sh script
 
-echo "Processing Harmony ... wait"
-squeue -u csoto
 
-echo "Harmony completed! ###################################### "
-
-
-echo "Running BayesSpace ###################################### "
-echo "04-BayesSpace_k_search.sh"
+echo "#########   BayesSpace ################################################## "
 
 ## create log dir or rm previous log files and output files
 rm -f logs/04-BayesSpace_k_search*.txt
 rm -f ${PLOTDIR}/${SUBDIR}/BayesSpace/BayesSpace_harmony_k*_raw.pdf
 rm -rf ${PROCESSEDIR}/${SUBDIR}/clusters_BayesSpace/BayesSpace_harmony_k*
 
-echo "Previous logs and output files deleted!"
-
-## Run job
 sbatch 04-BayesSpace_k_search.sh
 
-echo "Processing BayesSpace ... wait"
-squeue -u csoto
-
-echo "BayesSpace ###################################### "
-
-
-echo "############################################################################ "
-echo "#########   cell-type differential expression  ############################# "
-echo "#########                                      ############################# "
-echo "############################################################################ "
-
-echo "Running pseudobulk ###################################### "
-echo "01_create_pseudobulk_data.sh"
+echo "#########   cell-type differential expression  ########################### "
 
 ## change directory
 SUBDIR="05_layer_differential_expression"
-
 cd ${CODEDIR}/${SUBDIR}
-
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
 ## First remove old plots
@@ -204,10 +136,9 @@ rm -f logs/01_create_pseudobulk_data_*.txt
 rm -f ${PROCESSEDIR}/${SUBDIR}/sce_pseudo_BayesSpace_k*.rds
 
 sbatch 01_create_pseudobulk_data.sh
-squeue -u csoto
 
-echo "Running exploring variance ###################################### "
-echo "02_explore_expr_variability.sh"
+
+echo "#########   Running exploring variance ################################## "
 
 ## First remove old plots
 rm -f logs/02_explore_expr_variability_*.txt
@@ -215,11 +146,9 @@ rm -f ${PLOTDIR}/${SUBDIR}/sce_pseudo_PCs_k*.pdf
 rm -f ${PLOTDIR}/${SUBDIR}/sce_pseudo_gene_explanatory_vars_k*.pdf
 
 sbatch 02_explore_expr_variability.sh
-squeue -u csoto
 
 
-echo "Running model BayesSpace ###################################### "
-echo "03_model_BayesSpace.sh"
+echo  "#########   Running model BayesSpace #################################### "
 
 ## First remove old plots
 rm -f logs/03_model_BayesSpace*.err
@@ -227,16 +156,12 @@ rm -f logs/03_model_BayesSpace*.out
 
 sbatch 03_model_BayesSpace.sh
 
-echo "############################################################################ "
-echo "#########   Explore BRAIN-AREA differential expression  #################### "
-echo "#########                                               #################### "
-echo "############################################################################ "
+
+echo "#########   Explore BRAIN-AREA differential expression  ################# "
 
 ## change directory
 SUBDIR="05_brain_area_differential_expression"
-
 cd ${CODEDIR}/${SUBDIR}
-
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
 ## First remove old plots
@@ -263,15 +188,10 @@ rm -f ${PLOTDIR}/${SUBDIR}/03_covariate_analysis/*.png
 # sbatch 03_covariate_analysis.sh
 sbatch --dependency=afterok:$id2_pseudoDE 03_covariate_analysis.sh
 
-echo "Process completed!"
 
-
-
-echo "############################################################################ "
 echo "#########   Compute enrichment with registration_wrapper  ################## "
 echo "#########   - RNA multiome (WNN Leiden res=2, knn=30)             ########## "
 echo "#########   - snRNAseq Human Pilot                                ########## "
-echo "############################################################################ "
 
 ## Build enrichment stats objects from multiome scRNAseq data
 SUBDIR="05_snRNA-seq_model_stats"
@@ -284,8 +204,8 @@ rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_snRNA-multiome.rds
 
 sbatch 02_multiome_rna_reference.sh
 
-echo "############################################################################ "
-echo "Modified version for snRNAseq with 'MHb' and 'LHb' merged"
+
+echo  "#########   - Modified version for snRNAseq with 'MHb' and 'LHb' merged ### "
 
 SUBDIR="05_snRNA-seq_model_stats"
 cd ${CODEDIR}/${SUBDIR}
@@ -298,12 +218,9 @@ rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_Hb_merged_final_Annotations*.rds
 sbatch 03_pseudobulk_reference_habenula_merged.sh
 
 
-
-echo "############################################################################ "
 echo "#########   Spatial Registrattion              ############################# "
 echo "#########   - snRNAseq vs Visium               ############################# "
 echo "#########   - snRNAseq vs Multiome RNA.        ############################# "
-echo "############################################################################ "
 
 ## Compute Spatial registration for both Fine and Broad (snRNAseq) vs Bayes-Space Visium
 ## x-axis = snRNAseq cell-types
@@ -347,11 +264,8 @@ rm -f ${PLOTDIR}/${SUBDIR}/cor_top100_spatial_registration_snMultiome_v2.pdf
 sbatch 02_compute_cor_visium_multiomeRnaseq.sh
 
 
-
-echo "############################################################################ "
 echo "#########   Make SpatialLIBD app.              ############################# "
 echo "#########   For pseudobulk data.               ############################# "
-echo "############################################################################ "
 
 ## (1) Be sure to create a smaller spe object for the shiny app
 ## Ex. spe_harmony_shiny.rds or spe_pseudobulk_shiny.rds
@@ -363,5 +277,9 @@ code/03_spatialLIBD_app_pseudobulk/03_spatialLIBD_app_pseudobulk/app.R
 ## (3) check/test app
 code/03_spatialLIBD_app_pseudobulk/03_spatialLIBD_app_pseudobulk/deploy.R
 
+echo "**** Job ends ****"
+date
+
+} > $log_path 2>&1
 
 ## Cynthia SC - Feb, 2025
