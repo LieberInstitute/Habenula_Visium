@@ -22,7 +22,8 @@ if (!dir.exists(data_dir)) dir.create(data_dir, recursive = TRUE)
 if (!dir.exists(plot_dir)) dir.create(plot_dir, recursive = TRUE)
 
 # Define k values to iterate over
-k_values <- c(3, 9, 17)
+# k_values <- c(3, 9, 17)
+k_values <- c(3, 13, 21, 27)
 
 for (k in k_values) {
   # k = 9
