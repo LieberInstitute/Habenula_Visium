@@ -11,7 +11,7 @@
 
 ## Define BayesSpace k of interest
 #BS_k=(3 9 17)
-BS_k=(3 13 21 27)
+BS_k=(3 13 21 26)
 BS_k=${BS_k[$(( $SLURM_ARRAY_TASK_ID / 1 % 4 ))]}
 
 ## Explicitly pipe script output to a log
