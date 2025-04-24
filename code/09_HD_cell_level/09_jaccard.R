@@ -17,18 +17,29 @@ cluster_bad_path = here(
     'leiden_res1.csv'
 )
 
-spe_good = loadHDF5SummarizedExperiment(spe_good_dir)
-cluster_good = read_csv(cluster_good_path, show_col_types = FALSE) |>
-    dplyr::rename(cluster_good = banksy_lambda0_8)
-
-cluster_good_df = tibble(
-        x = round(spatialCoords(spe_good)[, 'pxl_col_in_fullres'], 1),
-        y = round(spatialCoords(spe_good)[, 'pxl_row_in_fullres'], 1),
-        sample_id = spe_good$sample_id,
-        key = spe_good$key,
-        segmentation_type = spe_good$labels_joint_source
-    ) |>
-    filter(segmentation_type == 'primary') |>
-    left_join(cluster_good, by = 'key') |>
-    select(x, y, sample_id, cluster_good)
+prep_clustering_results = function(spe_dir, cluster_path, cluster_colname) {
+    spe = loadHDF5SummarizedExperiment(spe_dir)
     
+    cluster_df = tibble(
+            x = round(spatialCoords(spe)[, 'pxl_col_in_fullres'], 1),
+            y = round(spatialCoords(spe)[, 'pxl_row_in_fullres'], 1),
+            sample_id = spe$sample_id,
+            key = spe$key,
+            segmentation_type = spe$labels_joint_source
+        ) |>
+        filter(segmentation_type == 'primary') |>
+        left_join(read_csv(cluster_path, show_col_types = FALSE), by = 'key') |>
+        dplyr::rename(!!cluster_colname := banksy_lambda0_8) |>
+        select(x, y, sample_id, {{ cluster_colname }})
+
+    stopifnot(!any(is.na(cluster_df[[cluster_colname]])))
+    
+    return(cluster_df)
+}
+
+cluster_good_df = prep_clustering_results(
+    spe_good_dir, cluster_good_path, 'cluster_good'
+)
+cluster_bad_df = prep_clustering_results(
+    spe_bad_dir, cluster_bad_path, 'cluster_bad'
+)
