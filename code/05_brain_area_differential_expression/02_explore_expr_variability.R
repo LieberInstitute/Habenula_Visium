@@ -98,7 +98,7 @@ vars <- c(
   "sample_id",
   "donor", 
   "BayesSpace",
-  "age",
+  # "age", # it's equivalent to 'donor'
   "brain_area2",
   #"brain_area",
   #"expr_chrM",
@@ -122,13 +122,16 @@ levels(colors_bayesSpace)
 
 pdf(file = file.path(dir_plots, paste0("sce_pseudo_PCs_k", sprintf("%02d", k), ".pdf")), width = 8, height = 8)
 fontSize = 6
+
 for (var in vars) {
   # var = "BayesSpace"
+  ## control legend font.size on BayesSpace plots
+  legend.text.font.size <- if (var == "BayesSpace") { if (k < 15) 7 else 5 } else { 7 }
   p <- plotPCA(
     spe_pseudo,
     colour_by = var,
     ncomponents = min(12, length(metadata(spe_pseudo)$PCA_var_explained)),
-    point_size = 0.5,
+    point_size = 0.3,
     label_format = c("%s %02i", " (%i%%)"),
     percentVar = metadata(spe_pseudo)$PCA_var_explained
   ) 
@@ -138,7 +141,7 @@ for (var in vars) {
           axis.text.y = element_text(size = fontSize),
           axis.text.x = element_text(angle = 90, size = fontSize),
           legend.title = element_text(size = 10),
-          legend.text = element_text(size = 7))
+          legend.text = element_text(size = legend.text.font.size))
   if (var == "BayesSpace") {
     p <- p + scale_color_manual("BayesSpace", values = colors_bayesSpace[1:k])
   }
@@ -146,7 +149,7 @@ for (var in vars) {
 }
 dev.off()
 
-message("Plot PCs with different variables done!")
+message("PCs plots with different variables done!")
 
 message("Getting variance explained ...")
 
