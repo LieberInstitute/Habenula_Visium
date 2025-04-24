@@ -62,16 +62,20 @@ for (k in k_values) {
   
   df <- as.data.frame(colData(spe_pseudo))
   pcs_df <- as.data.frame(reducedDim(spe_pseudo, "PCA")[, 1:20])
-
+  
   df_long <- cbind(df, pcs_df) |>
     pivot_longer(cols = starts_with("PC"), names_to = "PC", values_to = "value")
+  ## forces the PC levels to follow "PC1" to "PC20" in numeric order (avoid unsorted by string value on facet_wrap)
+  df_long$PC <- factor(df_long$PC, levels = paste0("PC", 1:20))
   
   pdf(file = file.path(plot_dir, paste0("CCA_pseudo_PCs-BrainArea_k", sprintf("%02d", k), ".pdf")), width = 8, height = 8)
   
   ggplot(df_long, aes(x = brain_area2, y = value, fill = brain_area2)) +
     geom_boxplot() +
     facet_wrap(~ PC, scales = "free_y") +
-    theme_bw()
+    ggtitle(paste("BayesSpace Domain:", k_nice)) +
+    theme_bw() + 
+    labs(x = NULL, y = NULL)
   
   dev.off()
   
