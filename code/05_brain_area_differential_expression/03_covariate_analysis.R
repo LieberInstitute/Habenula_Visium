@@ -100,6 +100,7 @@ for (k in k_values) {
 
     y_max_nspots <- max(plot_data$nspots) + 20
     domain_data <- plot_data |> filter(BayesSpace == domain)
+    
     plot <- ggboxplot(
       domain_data,
       x = "brain_area2",
@@ -121,16 +122,24 @@ for (k in k_values) {
       ggtitle(paste("BayesSpace Domain:", domain)) +
       theme_bw() +
       theme(legend.position = "bottom", axis.text.x = element_text(size = 10)) +
+      # FIXED stat_compare_means font-size
       stat_compare_means(
-        aes(group = brain_area2, label = paste0("p = ", after_stat(p.format))),
-        label.y = y_max_nspots
-      ) #, method = "t.test"
+        aes(group = brain_area2),
+        label = "p.format",
+        label.y = y_max_nspots,
+        size = 4 
+      )
+    
     print(plot)
+    
   }
 
   dev.off()
 
   ## nspots boxplots with all spatial domains in 1 plot
+  
+  ## control width.plot.size to avoid overlaping labels
+  width.plot.size <- if (as.integer(k_nice) < 15) 12 else if (as.integer(k_nice) < 21) 14 else 16
 
   p_values_nspots <- compare_means(
     nspots ~ brain_area2,
@@ -161,10 +170,16 @@ for (k in k_values) {
     scale_x_discrete(labels = scales::label_wrap(10)) + # Wrap labels every 10 characters
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) + # Rotate and justify
     theme(legend.position = "bottom") +
+    # stat_compare_means(
+    #   aes(group = brain_area2, label = paste0("p = ", after_stat(p.format))),
+    #   label.y = y_max_nspots
+    # ) +
     stat_compare_means(
-      aes(group = brain_area2, label = paste0("p = ", after_stat(p.format))),
-      label.y = y_max_nspots
-    ) + #, method = "t.test"
+      aes(group = brain_area2),
+      label = "p.format",
+      label.y = y_max_nspots,
+      size = 3 
+    ) +
     geom_text(
       data = p_values_nspots,
       aes(
@@ -181,7 +196,7 @@ for (k in k_values) {
   ggsave(
     filename = here(plot_dir, plot_name),
     plot = plot,
-    width = 12,
+    width = width.plot.size,
     height = 8
   )
 
@@ -217,10 +232,16 @@ for (k in k_values) {
     scale_x_discrete(labels = scales::label_wrap(10)) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     theme(legend.position = "bottom") +
+    # stat_compare_means(
+    #   aes(group = brain_area2, label = paste0("p = ", after_stat(p.format))),
+    #   label.y = y_max_sum_umi
+    # ) + 
     stat_compare_means(
-      aes(group = brain_area2, label = paste0("p = ", after_stat(p.format))),
-      label.y = y_max_sum_umi
-    ) + #, method = "t.test"
+      aes(group = brain_area2),
+      label = "p.format",
+      label.y = y_max_nspots,
+      size = 3 
+    ) +
     geom_text(
       data = p_values_sum_umi,
       aes(
@@ -237,7 +258,7 @@ for (k in k_values) {
   ggsave(
     filename = here(plot_dir, plot_name),
     plot = plot,
-    width = 12,
+    width = width.plot.size,
     height = 8
   )
 
@@ -247,7 +268,7 @@ for (k in k_values) {
     expr_chrM_ratio ~ brain_area2,
     data = plot_data,
     group.by = "BayesSpace"
-  ) # method = "t.test"
+  )
   p_values_mito$fdr <- p.adjust(p_values_mito$p, method = "fdr")
   y_max_mito <- max(plot_data$expr_chrM_ratio) + 0.02
   plot <- ggboxplot(
@@ -272,10 +293,16 @@ for (k in k_values) {
     scale_x_discrete(labels = scales::label_wrap(10)) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     theme(legend.position = "bottom") +
+    # stat_compare_means(
+    #   aes(group = brain_area2, label = paste0("p = ", after_stat(p.format))),
+    #   label.y = y_max_mito
+    # ) + # , method = "t.test"
     stat_compare_means(
-      aes(group = brain_area2, label = paste0("p = ", after_stat(p.format))),
-      label.y = y_max_mito
-    ) + # , method = "t.test"
+      aes(group = brain_area2),
+      label = "p.format",
+      label.y = y_max_nspots,
+      size = 3 
+    ) +
     geom_text(
       data = p_values_mito,
       aes(
@@ -292,13 +319,13 @@ for (k in k_values) {
   ggsave(
     filename = here(plot_dir, plot_name),
     plot = plot,
-    width = 12,
+    width = width.plot.size,
     height = 8
   )
 }
 
 
-###### Additional analysis (since age and PMI remain constant) #############
+###### Additional analysis #############
 
 # k_nice <- "9"
 
@@ -361,6 +388,7 @@ create_boxplot <- function(data, x, y, y_label, filename) {
 }
 
 # Generate boxplots
+
 colnames(plot_data_summary)
 create_boxplot(
   plot_data_summary,
@@ -410,6 +438,8 @@ ggplot(
   theme_bw() +
   theme(legend.position = "bottom")
 dev.off()
+
+
 
 
 # library("slurmjobs")
