@@ -14,11 +14,11 @@ library(spatialLIBD)
 library(sessioninfo)
 
 ficture_cor_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
     'registration', 'cor_vs_snRNAseq_fine.rds'
 )
 ficture_cluster_path = here(
-    'processed-data', '10_HD_bin_level', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
     'bin_level_clusters.csv.gz'
 )
 banksy_cor_paths = here(
@@ -29,7 +29,7 @@ banksy_cluster_paths = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', '%s',
     'leiden_res%s.csv'
 )
-plot_dir = here('plots', '10_HD_bin_level', 'ficture_harmony')
+plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony')
 
 all_banksy_res = seq_len(20) / 10
 all_banksy_lambda = c(0.2, 0.8)
