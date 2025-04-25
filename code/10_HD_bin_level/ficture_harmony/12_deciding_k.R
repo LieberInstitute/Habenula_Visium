@@ -46,6 +46,7 @@ sample_cutoff = 0.5
 process_cor_df = function(cor_df) {
     #   Tidy up and convert to long format
     cor_df = cor_df |>
+        t() |>
         as.data.frame() |>
         rownames_to_column('cell_type') |>
         as_tibble() |>
