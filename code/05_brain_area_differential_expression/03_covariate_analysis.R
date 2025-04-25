@@ -91,6 +91,7 @@ for (k in k_values) {
   }
 
   # Generate nspots boxplots for each BayesSpace domain
+  
   plot_name <- paste0("nspots_by_bayesspace_k", k_nice, ".pdf")
   pdf(here(plot_dir, plot_name), width = 8, height = 6)
 
@@ -137,7 +138,6 @@ for (k in k_values) {
   dev.off()
 
   ## nspots boxplots with all spatial domains in 1 plot
-  
   ## control width.plot.size to avoid overlaping labels
   width.plot.size <- if (as.integer(k_nice) < 15) 12 else if (as.integer(k_nice) < 21) 14 else 16
 
@@ -239,7 +239,7 @@ for (k in k_values) {
     stat_compare_means(
       aes(group = brain_area2),
       label = "p.format",
-      label.y = y_max_nspots,
+      label.y = y_max_sum_umi,
       size = 3 
     ) +
     geom_text(
@@ -300,7 +300,7 @@ for (k in k_values) {
     stat_compare_means(
       aes(group = brain_area2),
       label = "p.format",
-      label.y = y_max_nspots,
+      label.y = y_max_mito,
       size = 3 
     ) +
     geom_text(
@@ -438,8 +438,6 @@ ggplot(
   theme_bw() +
   theme(legend.position = "bottom")
 dev.off()
-
-
 
 
 # library("slurmjobs")
