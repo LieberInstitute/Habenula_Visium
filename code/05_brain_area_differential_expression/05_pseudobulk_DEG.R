@@ -25,7 +25,9 @@ if (!dir.exists(data_dir)) dir.create(data_dir, recursive = TRUE)
 plot_dir <- here("plots", "05_brain_area_differential_expression")
 if (!dir.exists(plot_dir)) dir.create(plot_dir, recursive = TRUE)
 
-k_values <- c(3, 9, 17)
+# Define k values to iterate over
+# k_values <- c(3, 9, 17) --- previous k(s) selected
+k_values <- c(3, 13, 21, 26) # new k(s) selected based on the Habnuela reference merged to only one Habenula class
 
 
 ##########functions for pseudobulk, saving results and volcano plots##########
@@ -37,8 +39,7 @@ run_pseudoBulkDGE <- function(data, design, coef, method) {
     label = data$BayesSpace,
     design = design,
     coef = coef,
-    condition = data$brain_area_DEG,
-    # condition = data$diagnosis,
+    condition = data$brain_area2,
     row.data = rowData(data),
     method = method
   )
@@ -87,44 +88,47 @@ create_volcano_plots <- function(results, model_name, output_dir) {
 
 for (k in k_values) {
   
-  # k = 9
+  # k = 13
   k_nice <- sprintf("%02d", k)  # Format k
   
   message("Processing BayesSpace k=", k_nice)
   
   # Load data for the current k
-  # data_file <- file.path(input_dir, paste0("round_test_summed_k", k_nice, ".rds"))
-  data_file <- file.path(input_dir, paste0("sce_pseudo_PCA_brain_area_k", sprintf("%02d", k), ".rds"))
+  data_file <- file.path(input_dir, paste0("sce_pseudo_PCA_brain_area_k", k, ".rds"))
   data <- readRDS(data_file)
-  colnames(colData(data))
-  # [1] "age"            "BayesSpace"     "brain_area_DEG" "brain_id"      
-  # [5] "diagnosis"      "nspots"         "sample_id"      "sex"
+  #colnames(colData(data))
+  # [1] "age"             "BayesSpace"      "brain_area"      "brain_area2"    
+  # [5] "brain_id"        "diagnosis"       "expr_chrM"       "expr_chrM_ratio"
+  # [9] "nspots"          "pmi"             "rin"             "sample_id"      
+  # [13] "sex"             "sum_umi"   
+  #table(data$brain_area2)
+  #ncol(data) 
   
-  table(data$brain_area_DEG)
-  # ncol(data) 
+  ######### 1: Dx Naive Model #############
   
-  message("Brain Area Model")
-  model1 = model.matrix(~brain_area_DEG + sample_id + brain_id, colData(data))
-  #de_results_1 <- run_pseudoBulkDGE(data, ~ brain_area_DEG, "brain_area_DEG", "edgeR")
-  #de_results_1 <- run_pseudoBulkDGE(data, ~ diagnosis + Visium_Reagent, "diagnosisAutism", "edgeR")
-
-  # creates a design (or model) matrix, e.g., by expanding factors to a set of dummy variables
-  # (depending on the contrasts) and expanding interactions similarly
-  mtx_model <- model.matrix(~brain_area_DEG, colData(data))
+  message("Model 1")
+  message("Brain-Area: Naive Model")
+  # model1 = model.matrix(~brain_area2 + sample_id + brain_id, colData(data))
+  mtx_model <- model.matrix(~ brain_area2 + brain_id, colData(data))
   colnames(mtx_model)
-  
-  colnames(mtx_model)
+  # [1] "(Intercept)"            "brain_area2G1"          "brain_area2G2"         
+  # [4] "brain_area2G3"          "brain_area2G4"          "sample_idV13B23-280_B1"
+  # [7] "sample_idV13B23-280_C1" "sample_idV13B23-280_D1" "sample_idV13B23-285_A1"
+  # [10] "sample_idV13B23-285_B1" "sample_idV13B23-285_C1" "sample_idV13B23-285_D1"
+  # [13] "sample_idV14F07-340_A1" "sample_idV14F07-340_B1" "sample_idV14F07-340_C1"
+  # [16] "sample_idV14F07-340_D1" "brain_idBr9037"         "brain_idBr9090"       
+    
+  de_results_1 <- run_pseudoBulkDGE(data, ~ brain_area2 + sample_id, "brain_area2G4", "edgeR")
   
   ## Wrapper function around edgeR's quasi-likelihood methods to conveniently perform DE analyses on pseudo-bulk 
-  
   de_results <- pseudoBulkDGE(
     data,
     label = data$BayesSpace,         # specifying the cluster or cell type assignment for each column
-    condition = data$brain_area_DEG, # specifying the experimental condition
-    design = ~brain_area_DEG,        # represents the null hypothesis
-    # design = model.matrix(~brain_area_DEG + sex + age, colData(data))
-    coef="brain_area_DEGPosterior"  
+    condition = data$brain_area2,    # specifying the experimental condition
+    design = ~ brain_area2,        # represents the null hypothesis
+    coef="brain_area2G2"  
   )
+  de_results
   
   # Genes that are filtered out will still show up in the DataFrame with all statistics set to NA
   #de_results$Sp09D04
