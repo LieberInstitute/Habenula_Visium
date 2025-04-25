@@ -1,3 +1,7 @@
+#   Explore how clustering results line up before and after filtering bad
+#   probes. One problematic cluster (composed of many bad probes) was very
+#   spatially scattered-- is this true after filtering bad probes?
+
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
@@ -15,6 +19,13 @@ cluster_good_path = here(
 cluster_bad_path = here(
     'processed-data', '09_HD_cell_level', 'banksy', 'lambda0_8',
     'leiden_res1.csv'
+)
+svg_good_path = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'nnSVG_out',
+    'merged_SVGs.txt'
+)
+svg_bad_path = here(
+    'processed-data', '10_HD_bin_level', 'nnSVG_out', 'merged_SVGs.txt'
 )
 plot_dir = here(
     'plots', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_8',
@@ -88,3 +99,12 @@ p = do.call(rbind, jaccard_df_list) |>
 pdf(file.path(plot_dir, 'jaccard_index.pdf'), width = 9)
 print(p)
 dev.off()
+
+#   Banksy results are extremely similar. Is it because the input genes are
+#   mostly the same?
+svg_good = readLines(svg_good_path)
+svg_bad = readLines(svg_bad_path)
+stopifnot(length(svg_good) == length(svg_bad))
+message(sprintf('SVG intersect proportion: %.2f', mean(svg_good %in% svg_bad)))
+
+session_info()
