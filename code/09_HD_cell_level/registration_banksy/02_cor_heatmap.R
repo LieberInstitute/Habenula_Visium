@@ -29,7 +29,7 @@ plot_dir = here(
 model_paths = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
     'modeling_results', lambda_neat,
-    sprintf('%s.rds', sub('\\.', '_', as.character(seq_len(20) / 10)))
+    sprintf('%s.rds', c(sub('\\.', '_', as.character(seq_len(20) / 10)), 4, 8))
 )
 
 #   List all paths and names for reference data
