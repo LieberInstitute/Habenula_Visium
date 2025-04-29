@@ -22,12 +22,12 @@ data_dir <- here("processed-data", "05_brain_area_differential_expression")
 if (!dir.exists(data_dir)) dir.create(data_dir, recursive = TRUE)
 
 #plot_dir <- here("plots", "06_differential_expression", "03_pseudoBulkDGE")
-plot_dir <- here("plots", "05_brain_area_differential_expression")
+plot_dir <- here("plots", "05_brain_area_differential_expression", "05_pseudobulk_DEG")
 if (!dir.exists(plot_dir)) dir.create(plot_dir, recursive = TRUE)
 
 # Define k values to iterate over
 # k_values <- c(3, 9, 17) --- previous k(s) selected
-k_values <- c(3, 13, 21, 26) # new k(s) selected based on the Habnuela reference merged to only one Habenula class
+k_values <- c(3, 13, 21, 26) # new k(s) selected based on the Habenula reference merged to only one Habenula class
 
 
 ##########functions for pseudobulk, saving results and volcano plots##########
@@ -104,6 +104,28 @@ for (k in k_values) {
   #table(data$brain_area2)
   #ncol(data) 
   
+  # Remove level "G0" from the data, as we only have one sample for this group
+  levels(data$brain_area2)
+  table(data$brain_area2, data$brain_id)
+  coldata_tbl <- as_tibble(colData(data))
+  filtered_coldata <- coldata_tbl |>
+    filter(brain_area2 != "G0")
+  # Get the matching sample names
+  keep_samples <- filtered_coldata$sample_id # <- replace with your actual column name
+  # Subset the SpatialExperiment object
+  data <- data[, colnames(data) %in% keep_samples]
+  # drop unused levels
+  colData(data)$brain_area2 <- droplevels(
+    colData(data)$brain_area2
+  )
+  levels(data$brain_area2)
+  table(data$brain_area2, data$brain_id)
+  # Br8518 Br9037 Br9090
+  # G1     12     12     12
+  # G2     12     12     11
+  # G3     12     12     11
+  # G4      0     12     12
+  
   ######### 1: Dx Naive Model #############
   
   message("Model 1")
@@ -111,21 +133,18 @@ for (k in k_values) {
   # model1 = model.matrix(~brain_area2 + sample_id + brain_id, colData(data))
   mtx_model <- model.matrix(~ brain_area2 + brain_id, colData(data))
   colnames(mtx_model)
-  # [1] "(Intercept)"            "brain_area2G1"          "brain_area2G2"         
-  # [4] "brain_area2G3"          "brain_area2G4"          "sample_idV13B23-280_B1"
-  # [7] "sample_idV13B23-280_C1" "sample_idV13B23-280_D1" "sample_idV13B23-285_A1"
-  # [10] "sample_idV13B23-285_B1" "sample_idV13B23-285_C1" "sample_idV13B23-285_D1"
-  # [13] "sample_idV14F07-340_A1" "sample_idV14F07-340_B1" "sample_idV14F07-340_C1"
-  # [16] "sample_idV14F07-340_D1" "brain_idBr9037"         "brain_idBr9090"       
-    
-  de_results_1 <- run_pseudoBulkDGE(data, ~ brain_area2 + sample_id, "brain_area2G4", "edgeR")
+  # [1] "(Intercept)"    "brain_area2G1"  "brain_area2G2"  "brain_area2G3" 
+  # [5] "brain_area2G4"  "brain_idBr9037" "brain_idBr9090" 
+  head(mtx_model)
+  ba_to_compare <- colnames(mtx_model)[grepl("^brain_area2G[1-4]$", colnames(mtx_model))]
+  # [1] "brain_area2G2" "brain_area2G3" "brain_area2G4"
   
   ## Wrapper function around edgeR's quasi-likelihood methods to conveniently perform DE analyses on pseudo-bulk 
   de_results <- pseudoBulkDGE(
     data,
     label = data$BayesSpace,         # specifying the cluster or cell type assignment for each column
     condition = data$brain_area2,    # specifying the experimental condition
-    design = ~ brain_area2,        # represents the null hypothesis
+    design = ~ brain_area2,          # represents the null hypothesis
     coef="brain_area2G2"  
   )
   de_results
