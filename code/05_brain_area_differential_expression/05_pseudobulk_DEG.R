@@ -3,8 +3,9 @@ library("spatialLIBD")
 library("SingleCellExperiment")
 library("scran")
 library("edgeR")
+library("purrr")
 # library("limma")
-library("BayesSpace")
+# library("BayesSpace")
 library("ggplot2")
 library("ggpubr")
 library("ggrepel")
@@ -38,7 +39,7 @@ run_pseudoBulkDGE <- function(data, design, coef, method) {
     data,
     label = data$BayesSpace,
     design = design,
-    coef = coef,
+    coef = coef,                    # "brain_area2G2" "brain_area2G3" "brain_area2G4"
     condition = data$brain_area2,
     row.data = rowData(data),
     method = method
@@ -138,34 +139,19 @@ for (k in k_values) {
   head(mtx_model)
   ba_to_compare <- colnames(mtx_model)[grepl("^brain_area2G[1-4]$", colnames(mtx_model))]
   # [1] "brain_area2G2" "brain_area2G3" "brain_area2G4"
-  
-  ## Wrapper function around edgeR's quasi-likelihood methods to conveniently perform DE analyses on pseudo-bulk 
-  de_results <- pseudoBulkDGE(
-    data,
-    label = data$BayesSpace,         # specifying the cluster or cell type assignment for each column
-    condition = data$brain_area2,    # specifying the experimental condition
-    design = ~ brain_area2,          # represents the null hypothesis
-    coef="brain_area2G2"  
-  )
-  de_results
-  
-  # Genes that are filtered out will still show up in the DataFrame with all statistics set to NA
-  #de_results$Sp09D04
-  de_results$Sp07D05
-  # DataFrame with 26610 rows and 5 columns
-  # logFC    logCPM         F    PValue       FDR
-  # <numeric> <numeric> <numeric> <numeric> <numeric>
-  # ENSG00000243485        NA        NA        NA        NA        NA
-  # ENSG00000238009        NA        NA        NA        NA        NA
-  # ENSG00000241860        NA        NA        NA        NA        NA
-  
-  class(de_results)
-  # [1] "SimpleList"
-  # attr(,"package")
-  # [1] "S4Vectors"
-  #str(de_results)
-  library("S4Vectors")
 
+  #de_results_1 <- run_pseudoBulkDGE(data, ~ diagnosis + Visium_Reagent, "diagnosisAutism", "edgeR")
+  de_results_1 <- run_pseudoBulkDGE(data, ~ brain_area2 + brain_id, "brain_area2G2", "edgeR")
+  # fast verification of results 
+  map(names(de_results_1), ~ (de_results_1[[.x]][c("logFC", "logCPM", "F", "PValue", "FDR")]))
+  #pvals <- as.vector(de_results_1[["Sp13D11 ~ Habenula"]][["PValue"]])
+  #summary(pvals)
+  map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["PValue"]])))
+  map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["FDR"]])))
+  
+  # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
+  #create_volcano_plots(de_results_1, paste0("model1_k", k_nice), here(plot_dir, paste0("model1_k", k_nice)))
+  
   # Remove NA values from each element in the SimpleList
   
   # Function to remove NA values safely
