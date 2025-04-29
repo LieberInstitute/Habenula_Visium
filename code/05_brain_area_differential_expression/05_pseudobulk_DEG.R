@@ -66,21 +66,50 @@ run_pseudoBulkDGE <- function(data, design, coef, method) {
 
 ## Function to create and save Enhanced Volcano plots
 create_volcano_plots <- function(results, model_name, output_dir) {
-  # results = de_results
+  
+  # create directory for specific model  
+  if (!dir.exists(model_name)) dir.create(here(plot_dir, model_name), recursive = TRUE)
+  # results = de_results_1
+  # model_name = paste0("model1_k", k_nice)
+  # output_dir = here(plot_dir, paste0("model1_k", k_nice))
   for (domain in names(results)) {
-    # domain_results = "Sp07D01"
-    domain_results <- results[[domain]]
-    pdf_file_path <- file.path(output_dir, paste0("volcano_", domain, "_", model_name, ".pdf"))
     
+    # domain = "Sp13D11 ~ Habenula"
+    domain_results <- results[[domain]]
+
+    # replace tilde " ~ " from file-name with "-"
+    f_name = paste0("volcano_", domain, "_", model_name, ".pdf")
+    f_name = gsub(" ~ ", "-", f_name)
+    
+    pdf_file_path <- file.path(output_dir, f_name)
+    print(pdf_file_path)
     pdf(file = pdf_file_path, width = 8, height = 8)
+    
+    # remove NA's
+    sum(is.na(domain_results$PValue))
+    # Keep only rows where both logFC and adj.P.Val are not NA
+    domain_results <- domain_results[!is.na(domain_results$logFC) & !is.na(domain_results$PValue), ]
+    sum(is.na(domain_results$PValue))
+    
+    lab = domain_results$gene_name
+    
     plot(EnhancedVolcano(domain_results,
                          lab = domain_results$gene_name,
                          x = 'logFC',
-                         y = 'adj.P.Val',
+                         y =  "PValue",  #'adj.P.Val',
                          title = paste("BayesSpace cluster", domain),
-                         subtitle = paste("Brain Area -", model_name)
+                         subtitle = paste("Brain Area -", model_name),
+                         pCutoff = 0.05,          # Adjust as needed
+                         FCcutoff = 1,            # Adjust log2 fold change threshold
+                         pointSize = 2.0,
+                         labSize = 4.0,
+                         drawConnectors = TRUE,   # Optional: lines from points to labels
+                         widthConnectors = 0.5,
+                         max.overlaps = 50        # Helps manage overcrowding
     ))
+    
     dev.off()
+    
   }
 }
 
@@ -139,9 +168,9 @@ for (k in k_values) {
   head(mtx_model)
   ba_to_compare <- colnames(mtx_model)[grepl("^brain_area2G[1-4]$", colnames(mtx_model))]
   # [1] "brain_area2G2" "brain_area2G3" "brain_area2G4"
-
-  #de_results_1 <- run_pseudoBulkDGE(data, ~ diagnosis + Visium_Reagent, "diagnosisAutism", "edgeR")
+  # run pseudoBulkDGE for brain_area2G2
   de_results_1 <- run_pseudoBulkDGE(data, ~ brain_area2 + brain_id, "brain_area2G2", "edgeR")
+  
   # fast verification of results 
   map(names(de_results_1), ~ (de_results_1[[.x]][c("logFC", "logCPM", "F", "PValue", "FDR")]))
   #pvals <- as.vector(de_results_1[["Sp13D11 ~ Habenula"]][["PValue"]])
@@ -150,10 +179,12 @@ for (k in k_values) {
   map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["FDR"]])))
   
   # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
-  #create_volcano_plots(de_results_1, paste0("model1_k", k_nice), here(plot_dir, paste0("model1_k", k_nice)))
+  
+  
+  create_volcano_plots(de_results_1, paste0("model1_k", k_nice), here(plot_dir, paste0("model1_k", k_nice)))
   
   # Remove NA values from each element in the SimpleList
-  
+  de_results <- de_results_1
   # Function to remove NA values safely
   library(IRanges)
   library(S4Vectors)
@@ -168,7 +199,7 @@ for (k in k_values) {
   
   # Apply function to each DFrame inside the SimpleDFrameList
   de_results@listData <- lapply(de_results@listData, remove_na_dframe)
-  head(de_results$Sp07D05, n=3) 
+  head(de_results[[1]], n=3) 
   # DataFrame with 5418 rows and 5 columns
   # logFC    logCPM         F    PValue       FDR
   # <numeric> <numeric> <numeric> <numeric> <numeric>
@@ -177,8 +208,9 @@ for (k in k_values) {
   # ENSG00000078808 -0.5644011   6.83174 4.6106839 0.0419523  0.264309
   library(tidyverse)
   ## Quick inspection
-  tmp_x <- as.data.frame(de_results$Sp07D05) |> filter(FDR < 0.05)
-  head(tmp_x, n=3)
+  map(names(de_results), ~ summary(as.vector(de_results[[.x]][["FDR"]])))
+  df <- as.data.frame(de_results[[1]]) |> filter(FDR < 0.05)
+  head(df, n=3)
   # >   as.data.frame(de_results$Sp07D05) |> filter(FDR < 0.05)
   # logFC    logCPM        F       PValue         FDR
   # ENSG00000117614  1.0465828  6.728571 17.33725 3.399336e-04 0.036112950
