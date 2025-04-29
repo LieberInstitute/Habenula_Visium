@@ -68,7 +68,7 @@ run_pseudoBulkDGE <- function(data, design, coef, method) {
 create_volcano_plots <- function(results, model_name, output_dir) {
   
   # create directory for specific model  
-  if (!dir.exists(model_name)) dir.create(here(plot_dir, model_name), recursive = TRUE)
+  if (!dir.exists(model_name)) dir.create(here(plot_dir, model_name), recursive = TRUE, showWarnings = FALSE)
   # results = de_results_1
   # model_name = paste0("model1_k", k_nice)
   # output_dir = here(plot_dir, paste0("model1_k", k_nice))
@@ -80,6 +80,7 @@ create_volcano_plots <- function(results, model_name, output_dir) {
     # replace tilde " ~ " from file-name with "-"
     f_name = paste0("volcano_", domain, "_", model_name, ".pdf")
     f_name = gsub(" ~ ", "-", f_name)
+    f_name = gsub("/", "", f_name)
     
     pdf_file_path <- file.path(output_dir, f_name)
     print(pdf_file_path)
@@ -92,24 +93,27 @@ create_volcano_plots <- function(results, model_name, output_dir) {
     sum(is.na(domain_results$PValue))
     
     lab = domain_results$gene_name
+    top_genes <- head(domain_results$gene_name[order(domain_results$PValue)], 20)
     
     plot(EnhancedVolcano(domain_results,
                          lab = domain_results$gene_name,
+                         selectLab = top_genes,     # Only label these
                          x = 'logFC',
                          y =  "PValue",  #'adj.P.Val',
                          title = paste("BayesSpace cluster", domain),
                          subtitle = paste("Brain Area -", model_name),
-                         pCutoff = 0.05,          # Adjust as needed
-                         FCcutoff = 1,            # Adjust log2 fold change threshold
-                         pointSize = 2.0,
-                         labSize = 4.0,
-                         drawConnectors = TRUE,   # Optional: lines from points to labels
-                         widthConnectors = 0.5,
-                         max.overlaps = 50        # Helps manage overcrowding
+                         # pCutoff = 0.05,          # Adjust as needed
+                         # FCcutoff = 1,            # Adjust log2 fold change threshold
+                         # pointSize = 2.0,
+                         # labSize = 4.0,
+                         # drawConnectors = TRUE,   # Optional: lines from points to labels
+                         # widthConnectors = 0.5,
+                         max.overlaps = inf        # Helps manage overcrowding
     ))
     
     dev.off()
     
+
   }
 }
 
