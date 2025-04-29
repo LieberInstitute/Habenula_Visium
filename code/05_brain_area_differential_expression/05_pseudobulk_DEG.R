@@ -65,7 +65,7 @@ run_pseudoBulkDGE <- function(data, design, coef, method) {
 # }
 
 ## Function to create and save Enhanced Volcano plots
-create_volcano_plots <- function(results, model_name, output_dir) {
+create_volcano_plots <- function(results, model_name, output_dir, brain_area) {
   
   # create directory for specific model  
   if (!dir.exists(model_name)) dir.create(here(plot_dir, model_name), recursive = TRUE, showWarnings = FALSE)
@@ -101,7 +101,7 @@ create_volcano_plots <- function(results, model_name, output_dir) {
                          x = 'logFC',
                          y =  "PValue",  #'adj.P.Val',
                          title = paste("BayesSpace cluster", domain),
-                         subtitle = paste("Brain Area -", model_name),
+                         subtitle = paste(brain_area, " - ", model_name),
                          # pCutoff = 0.05,          # Adjust as needed
                          # FCcutoff = 1,            # Adjust log2 fold change threshold
                          # pointSize = 2.0,
@@ -185,7 +185,7 @@ for (k in k_values) {
   # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
   
   
-  create_volcano_plots(de_results_1, paste0("model1_k", k_nice), here(plot_dir, paste0("model1_k", k_nice)))
+  create_volcano_plots(de_results_1, paste0("model1_k", k_nice), here(plot_dir, paste0("model1_k", k_nice)), "brain_area2G2")
   
   # Remove NA values from each element in the SimpleList
   de_results <- de_results_1
