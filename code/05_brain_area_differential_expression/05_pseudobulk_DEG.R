@@ -91,29 +91,30 @@ create_volcano_plots <- function(results, model_name, output_dir, brain_area) {
     print(pdf_file_path)
     pdf(file = pdf_file_path, width = 8, height = 8)
     
-    # Keep only rows where both logFC and adj.P.Val are not NA
-    domain_results <- domain_results[!is.na(domain_results$logFC) & !is.na(domain_results$adj.P.Val), ]
-    sum(is.na(domain_results$adj.P.Val))
+    # Keep only rows where both logFC and FDR (adj.P.Val) are not NA
+    domain_results <- domain_results[!is.na(domain_results$logFC) & !is.na(domain_results$FDR), ]
+    sum(is.na(domain_results$FDR))
     # Ensure adj.P.Val is truly numeric
-    domain_results$adj.P.Val <- as.numeric(domain_results$adj.P.Val)
+    domain_results$FDR <- as.numeric(domain_results$FDR)
     
     lab = domain_results$gene_name
-    top_genes <- head(domain_results$gene_name[order(domain_results$adj.P.Val)], 20)
+    top_genes <- head(domain_results$gene_name[order(domain_results$FDR)], 20)
     
     plot(EnhancedVolcano(domain_results,
                          lab = domain_results$gene_name,
                          selectLab = top_genes,     # Only label these
                          x = 'logFC',
-                         y =  "adj.P.Val",
+                         y =  "FDR",
                          title = paste("BayesSpace cluster", domain),
                          subtitle = paste(brain_area, " - ", model_name),
-                         # pCutoff = 0.05,          # Adjust as needed
-                         # FCcutoff = 1,            # Adjust log2 fold change threshold
-                         # pointSize = 2.0,
-                         # labSize = 4.0,
-                         # drawConnectors = TRUE,   # Optional: lines from points to labels
-                         # widthConnectors = 0.5,
-                         max.overlaps = inf        # Helps manage overcrowding
+                         pCutoff = 0.05,            # Adjust as needed
+                         FCcutoff = 0.5,            # Adjust log2 fold change threshold
+                         pointSize = 2.0,
+                         labSize = 4.0,
+                         drawConnectors = TRUE,   # Optional: lines from points to labels
+                         widthConnectors = 0.5
+                         # col=c('black', 'black', 'black', 'red3'),
+                         # max.overlaps = inf        # Helps manage overcrowding
     ))
     
     dev.off()
@@ -165,16 +166,23 @@ for (k in k_values) {
   # G3     12     12     11
   # G4      0     12     12
   
-  ######### 1: Dx Naive Model #############
+  ######### 1: Brain Naive Model #############
   
   message("Model 1")
   message("Brain-Area: Naive Model")
-  # model1 = model.matrix(~brain_area2 + sample_id + brain_id, colData(data))
   mtx_model <- model.matrix(~ brain_area2 + brain_id, colData(data))
   colnames(mtx_model)
   # [1] "(Intercept)"    "brain_area2G1"  "brain_area2G2"  "brain_area2G3" 
   # [5] "brain_area2G4"  "brain_idBr9037" "brain_idBr9090" 
-  head(mtx_model)
+  # head(mtx_model)
+  #                 (Intercept) brain_area2G2 brain_area2G3 brain_area2G4
+  # V13B23-280_A1           1             0             0             0
+  # V13B23-280_B1           1             1             0             0
+  # V13B23-280_C1           1             0             1             0
+  # V13B23-280_D1           1             0             0             1
+  # V13B23-285_B1           1             0             0             0
+  # V13B23-285_C1           1             1             0             0
+  
   ## extract the brain areas to compare
   ba_to_compare <- colnames(mtx_model)[grepl("^brain_area2G[1-4]$", colnames(mtx_model))]
   print(ba_to_compare)
@@ -183,30 +191,21 @@ for (k in k_values) {
   ## compute pseudoBulkDGE for all brain_areas, plus build volcano plots by SpD
   
   for (ba in ba_to_compare) {
-    # ba = "brain_area2G3"
-    # de_results_1 <- run_pseudoBulkDGE(data, ~ brain_area2 + brain_id, "brain_area2G2", "edgeR")
+    # ba = "brain_area2G2"
+    
     de_results_1 <- run_pseudoBulkDGE(data, ~ brain_area2 + brain_id, ba, "edgeR")
-    
-    ## manually add adj.P.Val ===== as it isn't calculated automatically by scran::pseudoBulkDGE 
     names(de_results_1)
-    de_results_1 <- lapply(de_results_1, function(res) {
-      # Add adjusted p-values (Benjamini-Hochberg FDR) and save it back
-      res$adj.P.Val <- as.numeric(p.adjust(res$PValue, method = "BH"))
-      res
-    })
-    
-    # fast verification of results 
-    map(names(de_results_1), ~ (de_results_1[[.x]][c("logFC", "logCPM", "F", "PValue", "FDR", "adj.P.Val")]))
-    #pvals <- as.vector(de_results_1[["Sp13D11 ~ Habenula"]][["PValue"]])
-    #summary(pvals)
+    head(de_results_1[[1]])[c("logFC", "logCPM", "F", "PValue", "FDR")]
+
+    # Quick verification
+    map(names(de_results_1), ~ (de_results_1[[.x]][c("logFC", "logCPM", "F", "PValue", "FDR")]))
     map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["PValue"]])))
-    map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["adj.P.Val"]])))
     map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["FDR"]])))
     
     # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
     
     # create_volcano_plots(de_results_1, paste0("model1_k", k_nice), here(plot_dir, paste0("model1_k", k_nice)), "brain_area2G2")
-    subdir_name <- paste0("model1_k-", k_nice,"-", ba)
+    subdir_name <- paste0("model1_k", k_nice,"-", ba)
     create_volcano_plots(de_results_1, subdir_name, here(plot_dir, subdir_name), ba)
 
   }
