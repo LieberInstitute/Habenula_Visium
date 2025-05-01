@@ -4,6 +4,8 @@ library("SingleCellExperiment")
 library("scran")
 library("edgeR")
 library("purrr")
+library("IRanges")
+library("S4Vectors")
 # library("limma")
 # library("BayesSpace")
 library("ggplot2")
@@ -35,7 +37,8 @@ k_values <- c(3, 13, 21, 26) # new k(s) selected based on the Habenula reference
 
 ## Function to perform pseudoBulkDGE and return results
 run_pseudoBulkDGE <- function(data, design, coef, method) {
-  de_results <- pseudoBulkDGE(
+  #  runs quasi-likelihood F-tests using the edgeR pipeline
+  de_results <- scran::pseudoBulkDGE(
     data,
     label = data$BayesSpace,
     design = design,
@@ -44,6 +47,7 @@ run_pseudoBulkDGE <- function(data, design, coef, method) {
     row.data = rowData(data),
     method = method
   )
+
 }
 
 # ## Function to filter and save results based on p-value < 0.05
@@ -75,6 +79,7 @@ create_volcano_plots <- function(results, model_name, output_dir, brain_area) {
   for (domain in names(results)) {
     
     # domain = "Sp13D11 ~ Habenula"
+    # domain = "Sp13D01 ~ Oligo"
     domain_results <- results[[domain]]
 
     # replace tilde " ~ " from file-name with "-"
@@ -86,20 +91,20 @@ create_volcano_plots <- function(results, model_name, output_dir, brain_area) {
     print(pdf_file_path)
     pdf(file = pdf_file_path, width = 8, height = 8)
     
-    # remove NA's
-    sum(is.na(domain_results$PValue))
     # Keep only rows where both logFC and adj.P.Val are not NA
-    domain_results <- domain_results[!is.na(domain_results$logFC) & !is.na(domain_results$PValue), ]
-    sum(is.na(domain_results$PValue))
+    domain_results <- domain_results[!is.na(domain_results$logFC) & !is.na(domain_results$adj.P.Val), ]
+    sum(is.na(domain_results$adj.P.Val))
+    # Ensure adj.P.Val is truly numeric
+    domain_results$adj.P.Val <- as.numeric(domain_results$adj.P.Val)
     
     lab = domain_results$gene_name
-    top_genes <- head(domain_results$gene_name[order(domain_results$PValue)], 20)
+    top_genes <- head(domain_results$gene_name[order(domain_results$adj.P.Val)], 20)
     
     plot(EnhancedVolcano(domain_results,
                          lab = domain_results$gene_name,
                          selectLab = top_genes,     # Only label these
                          x = 'logFC',
-                         y =  "PValue",  #'adj.P.Val',
+                         y =  "adj.P.Val",
                          title = paste("BayesSpace cluster", domain),
                          subtitle = paste(brain_area, " - ", model_name),
                          # pCutoff = 0.05,          # Adjust as needed
@@ -175,104 +180,25 @@ for (k in k_values) {
   # run pseudoBulkDGE for brain_area2G2
   de_results_1 <- run_pseudoBulkDGE(data, ~ brain_area2 + brain_id, "brain_area2G2", "edgeR")
   
+  ## manually add adj.P.Val ===== as it isn't calculated automatically by scran::pseudoBulkDGE 
+  names(de_results_1)
+  de_results_1 <- lapply(de_results_1, function(res) {
+    # Add adjusted p-values (Benjamini-Hochberg FDR) and save it back
+    res$adj.P.Val <- as.numeric(p.adjust(res$PValue, method = "BH"))
+    res
+  })
+  
   # fast verification of results 
-  map(names(de_results_1), ~ (de_results_1[[.x]][c("logFC", "logCPM", "F", "PValue", "FDR")]))
+  map(names(de_results_1), ~ (de_results_1[[.x]][c("logFC", "logCPM", "F", "PValue", "FDR", "adj.P.Val")]))
   #pvals <- as.vector(de_results_1[["Sp13D11 ~ Habenula"]][["PValue"]])
   #summary(pvals)
   map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["PValue"]])))
+  map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["adj.P.Val"]])))
   map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["FDR"]])))
   
   # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
   
-  
   create_volcano_plots(de_results_1, paste0("model1_k", k_nice), here(plot_dir, paste0("model1_k", k_nice)), "brain_area2G2")
-  
-  # Remove NA values from each element in the SimpleList
-  de_results <- de_results_1
-  # Function to remove NA values safely
-  library(IRanges)
-  library(S4Vectors)
-  
-  # Function to remove NA rows from each DFrame
-  remove_na_dframe <- function(df) {
-    if (is(df, "DFrame")) {
-      return(df[complete.cases(df), , drop = FALSE])  # Remove rows with NA
-    }
-    return(df)  # Return unchanged if not a DFrame
-  }
-  
-  # Apply function to each DFrame inside the SimpleDFrameList
-  de_results@listData <- lapply(de_results@listData, remove_na_dframe)
-  head(de_results[[1]], n=3) 
-  # DataFrame with 5418 rows and 5 columns
-  # logFC    logCPM         F    PValue       FDR
-  # <numeric> <numeric> <numeric> <numeric> <numeric>
-  # ENSG00000188290  0.0296771   6.20166 0.0128958 0.9105208  0.967854
-  # ENSG00000187608  0.1583498   6.36799 0.3202612 0.5766405  0.819354
-  # ENSG00000078808 -0.5644011   6.83174 4.6106839 0.0419523  0.264309
-  library(tidyverse)
-  ## Quick inspection
-  map(names(de_results), ~ summary(as.vector(de_results[[.x]][["FDR"]])))
-  df <- as.data.frame(de_results[[1]]) |> filter(FDR < 0.05)
-  head(df, n=3)
-  # >   as.data.frame(de_results$Sp07D05) |> filter(FDR < 0.05)
-  # logFC    logCPM        F       PValue         FDR
-  # ENSG00000117614  1.0465828  6.728571 17.33725 3.399336e-04 0.036112950
-  # ENSG00000171812 -1.1657048  6.031604 15.00548 7.102045e-04 0.046855044
-  # ENSG00000198162  1.3927120  6.737752 21.72077 9.539201e-05 0.022426378
-
-  # Save results
-  saveRDS(de_results, file = here(data_dir, paste0("DE_brain_are_results_k", k_nice, ".rds")))
-  
-  
-  # Convert SimpleDFrameList to a single data frame to make on Volcano plot
-  de_df <- do.call(rbind, de_results@listData)
-  # Rename columns if needed
-  colnames(de_df) <- tolower(colnames(de_df))  # Convert to lowercase for consistency
-  # Ensure it is a data.frame
-  de_df <- as.data.frame(de_df)
-  
-  # Ensure that de_df has logFC and pval (or padj for adjusted p-values):
-  if (!all(c("logfc", "pval") %in% colnames(de_df))) {
-    stop("Error: Required columns 'logFC' and 'pval' are missing!")
-  }
-  
-  # Add -log10(p-value) for better visualization
-  library(dplyr)
-  colnames(de_df)
-  de_df <- de_df |> 
-    mutate(
-      neg_log10_pval = -log10(pvalue),
-      significance = case_when(
-        pvalue < 0.05 & abs(logfc) > 1 ~ "Significant",
-        TRUE ~ "Not Significant"
-      )
-    )
-  
-  # Check column names
-  colnames(de_df)
-  head(de_df, n=3)
-  
-  volcanoPlt <- ggplot(de_df, aes(x = logfc, y = neg_log10_pval, color = significance)) +
-    geom_point(alpha = 0.6, size = 2) +  # Scatter plot
-    scale_color_manual(values = c("Significant" = "red", "Not Significant" = "gray")) +
-    geom_vline(xintercept = c(-1, 1), linetype = "dashed", color = "blue") +  # LogFC threshold
-    geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "black") +  # p-value threshold
-    labs(
-      title = paste0("Brain-Area model - BS:", k_nice),
-      x = "Log2 Fold Change (logFC)",
-      y = "-log10(P-value)",
-      color = "Significance"
-    ) +
-    theme_minimal()
-  print(volcanoPlt)  
-  # # create_volcano_plots <- function(results, model_name, output_dir)
-  # create_volcano_plots(de_results, 
-  #                      paste0("DE_brain_are_results_k", k_nice), 
-  #                      #here(plot_dir, paste0("DE_brain_are_results_k", k_nice)))
-  #                      here(plot_dir))
-  # Error in h(simpleError(msg, call)) : 
-  #   error in evaluating the argument 'x' in selecting a method for function 'plot': adj.P.Val is not numeric!
 
 }
 
