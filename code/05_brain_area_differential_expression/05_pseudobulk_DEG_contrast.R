@@ -35,20 +35,20 @@ k_values <- c(3, 13, 21, 26) # new k(s) selected based on the Habenula reference
 
 ##########functions for pseudobulk, saving results and volcano plots##########
 
-## Function to perform pseudoBulkDGE and return results
-run_pseudoBulkDGE <- function(data, design, coef, method) {
-  #  runs quasi-likelihood F-tests using the edgeR pipeline
-  de_results <- scran::pseudoBulkDGE(
-    data,
-    label = data$BayesSpace,
-    design = design,
-    coef = coef,                    # "brain_area2G2" "brain_area2G3" "brain_area2G4"
-    condition = data$brain_area2,
-    row.data = rowData(data),
-    method = method
-  )
-
-}
+# ## Function to perform pseudoBulkDGE and return results
+# run_pseudoBulkDGE <- function(data, design, coef, method) {
+#   #  runs quasi-likelihood F-tests using the edgeR pipeline
+#   de_results <- scran::pseudoBulkDGE(
+#     data,
+#     label = data$BayesSpace,
+#     design = design,
+#     coef = coef,                    # "brain_area2G2" "brain_area2G3" "brain_area2G4"
+#     condition = data$brain_area2,
+#     row.data = rowData(data),
+#     method = method
+#   )
+# 
+# }
 
 
 ## Function to create and save Enhanced Volcano plots
@@ -115,7 +115,7 @@ runPseudobulkEdgeR <- function(
     pb,                  # pseudobulk data
     group_var,           # column name in colData(sce) to use for group comparison (e.g. "brain_area2")
     contrast_levels,     # vector of two levels to contrast (e.g., c("G2", "G1"))
-    min_genes = 10
+    min_genes = 50
 ) {
   library(scuttle)
   library(edgeR)
@@ -214,74 +214,62 @@ for (k in k_values) {
   ##      and I can get `dge_result$fit`, `dge_result$design`, and run custom contrasts for the brain-areas
   
   
-  # for (ba in ba_to_compare) {
-  #   # ba = "brain_area2G2"
+  # Get all pairwise combinations of group levels
+  group_levels <- levels(factor(colData(data)$brain_area2))
+  # [1] "G1" "G2" "G3" "G4"
+  pairwise_contrasts <- combn(group_levels, 2, simplify = FALSE)
+  table(pairwise_contrasts)
+  
+  ######### Model 1: Brain Naive Model #############
+  
+  message("Model 1")
+  message("Brain-Area: Naive Model")
+  
+  # Compute DE results across every pair of group comparisons (e.g. G2 vs G1, G3 vs G1, G3 vs G2, etc.)
+  
+  # Store all results in a list
+  
+  dge_results_list <- lapply(pairwise_contrasts, function(contrast_pair) {
+    cat("Running contrast:", paste(contrast_pair, collapse = " vs "), "\n")
     
-    ######### Model 1: Brain Naive Model #############
-    
-    message("Model 1")
-    message("Brain-Area: Naive Model")
-
-    res_G2vsG1 <- runPseudobulkEdgeR(
+    res <- runPseudobulkEdgeR(
       pb = data,
       group_var = "brain_area2",
-      contrast_levels = c("G2", "G1")
+      contrast_levels = contrast_pair
     )
     
-    head(res_G2vsG1)
-    #                     logFC   logCPM         F      PValue       FDR
-    # ENSG00000074657  0.3563410 5.786637 10.001880 0.001884399 0.9999613
-    # ENSG00000157593  0.5712547 5.386361  9.274807 0.002712389 0.9999613
-    # ENSG00000100225  0.3704179 6.019549  8.567266 0.003958746 0.9999613
-    # ENSG00000183513  0.4371085 5.865209  8.357765 0.004402942 0.9999613
-    # ENSG00000175265  0.4104273 5.624887  7.529694 0.006773970 0.9999613
-    # ENSG00000114805 -0.6765182 4.774126  6.885194 0.009451898 0.9999613
-    #                               gene contrast
-    # ENSG00000074657 ENSG00000074657  G2 - G1
-    # ENSG00000157593 ENSG00000157593  G2 - G1
-    # ENSG00000100225 ENSG00000100225  G2 - G1
-    # ENSG00000183513 ENSG00000183513  G2 - G1
-    # ENSG00000175265 ENSG00000175265  G2 - G1
-    # ENSG00000114805 ENSG00000114805  G2 - G1
+    return(res)
+  })
+  
+  # Combine all into one data.frame
+  dge_results_df <- bind_rows(dge_results_list)
+  head(dge_results_df)
+  
+  
+  # for (ba in ba_to_compare) {
+
+    # res_G2vsG1 <- runPseudobulkEdgeR(
+    #   pb = data,
+    #   group_var = "brain_area2",
+    #   contrast_levels = c("G2", "G1")
+    # )
+    # 
+    # head(res_G2vsG1)
+    # #                     logFC   logCPM         F      PValue       FDR
+    # # ENSG00000074657  0.3563410 5.786637 10.001880 0.001884399 0.9999613
+    # # ENSG00000157593  0.5712547 5.386361  9.274807 0.002712389 0.9999613
+    # # ENSG00000100225  0.3704179 6.019549  8.567266 0.003958746 0.9999613
+    # # ENSG00000183513  0.4371085 5.865209  8.357765 0.004402942 0.9999613
+    # # ENSG00000175265  0.4104273 5.624887  7.529694 0.006773970 0.9999613
+    # # ENSG00000114805 -0.6765182 4.774126  6.885194 0.009451898 0.9999613
+    # #                               gene contrast
+    # # ENSG00000074657 ENSG00000074657  G2 - G1
+    # # ENSG00000157593 ENSG00000157593  G2 - G1
+    # # ENSG00000100225 ENSG00000100225  G2 - G1
+    # # ENSG00000183513 ENSG00000183513  G2 - G1
+    # # ENSG00000175265 ENSG00000175265  G2 - G1
+    # # ENSG00000114805 ENSG00000114805  G2 - G1
     
-    # ## (2) Prepare edgeR object
-    # library(edgeR)
-    # counts <- assay(data, "counts")
-    # col_data <- colData(data)
-    # 
-    # # Step 3a: Create edgeR object and design matrix
-    # y <- DGEList(counts = counts)
-    # # Add gene filtering (optional but recommended)
-    # keep <- filterByExpr(y, group = col_data$brain_area2)
-    # y <- y[keep, , keep.lib.sizes = FALSE]
-    # # Normalize
-    # y <- calcNormFactors(y)
-    # # Build design matrix
-    # design <- model.matrix(~ 0 + brain_area2, data = col_data)
-    # colnames(design) <- gsub("brain_area2", "", colnames(design))  # Cleaner names like G1, G2, G3, etc.
-    # colnames(design)    
-    # head(design)
-    # 
-    # # Estimate dispersions
-    # y <- estimateDisp(y, design)
-    # # Fit negative binomial GLM
-    # fit <- glmQLFit(y, design)
-    # 
-    # # Define contrast
-    # contrast_matrix <- makeContrasts(G2vsG1 = G2 - G1, levels = design)
-    # # Perform QL test
-    # qlf <- glmQLFTest(fit, contrast = contrast_matrix)
-
-    
-    # ## quick inspection
-    # names(de_results_1)
-    # head(de_results_1[[1]])[c("logFC", "logCPM", "F", "PValue", "FDR")]
-    # map(names(de_results_1), ~ (de_results_1[[.x]][c("logFC", "logCPM", "F", "PValue", "FDR")]))
-    # #summary(pvals)
-    # map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["PValue"]])))
-    # map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["FDR"]])))
-
-
     # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
     
     subdir_name <- paste0("model1_k", k_nice,"-", ba)
