@@ -175,31 +175,42 @@ for (k in k_values) {
   # [1] "(Intercept)"    "brain_area2G1"  "brain_area2G2"  "brain_area2G3" 
   # [5] "brain_area2G4"  "brain_idBr9037" "brain_idBr9090" 
   head(mtx_model)
+  ## extract the brain areas to compare
   ba_to_compare <- colnames(mtx_model)[grepl("^brain_area2G[1-4]$", colnames(mtx_model))]
+  print(ba_to_compare)
   # [1] "brain_area2G2" "brain_area2G3" "brain_area2G4"
-  # run pseudoBulkDGE for brain_area2G2
-  de_results_1 <- run_pseudoBulkDGE(data, ~ brain_area2 + brain_id, "brain_area2G2", "edgeR")
   
-  ## manually add adj.P.Val ===== as it isn't calculated automatically by scran::pseudoBulkDGE 
-  names(de_results_1)
-  de_results_1 <- lapply(de_results_1, function(res) {
-    # Add adjusted p-values (Benjamini-Hochberg FDR) and save it back
-    res$adj.P.Val <- as.numeric(p.adjust(res$PValue, method = "BH"))
-    res
-  })
+  ## compute pseudoBulkDGE for all brain_areas, plus build volcano plots by SpD
   
-  # fast verification of results 
-  map(names(de_results_1), ~ (de_results_1[[.x]][c("logFC", "logCPM", "F", "PValue", "FDR", "adj.P.Val")]))
-  #pvals <- as.vector(de_results_1[["Sp13D11 ~ Habenula"]][["PValue"]])
-  #summary(pvals)
-  map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["PValue"]])))
-  map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["adj.P.Val"]])))
-  map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["FDR"]])))
-  
-  # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
-  
-  create_volcano_plots(de_results_1, paste0("model1_k", k_nice), here(plot_dir, paste0("model1_k", k_nice)), "brain_area2G2")
+  for (ba in ba_to_compare) {
+    # ba = "brain_area2G3"
+    # de_results_1 <- run_pseudoBulkDGE(data, ~ brain_area2 + brain_id, "brain_area2G2", "edgeR")
+    de_results_1 <- run_pseudoBulkDGE(data, ~ brain_area2 + brain_id, ba, "edgeR")
+    
+    ## manually add adj.P.Val ===== as it isn't calculated automatically by scran::pseudoBulkDGE 
+    names(de_results_1)
+    de_results_1 <- lapply(de_results_1, function(res) {
+      # Add adjusted p-values (Benjamini-Hochberg FDR) and save it back
+      res$adj.P.Val <- as.numeric(p.adjust(res$PValue, method = "BH"))
+      res
+    })
+    
+    # fast verification of results 
+    map(names(de_results_1), ~ (de_results_1[[.x]][c("logFC", "logCPM", "F", "PValue", "FDR", "adj.P.Val")]))
+    #pvals <- as.vector(de_results_1[["Sp13D11 ~ Habenula"]][["PValue"]])
+    #summary(pvals)
+    map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["PValue"]])))
+    map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["adj.P.Val"]])))
+    map(names(de_results_1), ~ summary(as.vector(de_results_1[[.x]][["FDR"]])))
+    
+    # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
+    
+    # create_volcano_plots(de_results_1, paste0("model1_k", k_nice), here(plot_dir, paste0("model1_k", k_nice)), "brain_area2G2")
+    subdir_name <- paste0("model1_k-", k_nice,"-", ba)
+    create_volcano_plots(de_results_1, subdir_name, here(plot_dir, subdir_name), ba)
 
+  }
+  
 }
 
 
