@@ -3,6 +3,7 @@ library("spatialLIBD")
 library("SingleCellExperiment")
 library("scran")
 library("edgeR")
+library("scuttle")
 library("purrr")
 library("IRanges")
 library("S4Vectors")
@@ -31,24 +32,6 @@ if (!dir.exists(plot_dir)) dir.create(plot_dir, recursive = TRUE)
 # Define k values to iterate over
 # k_values <- c(3, 9, 17) --- previous k(s) selected
 k_values <- c(3, 13, 21, 26) # new k(s) selected based on the Habenula reference merged to only one Habenula class
-
-
-##########functions for pseudobulk, saving results and volcano plots##########
-
-# ## Function to perform pseudoBulkDGE and return results
-# run_pseudoBulkDGE <- function(data, design, coef, method) {
-#   #  runs quasi-likelihood F-tests using the edgeR pipeline
-#   de_results <- scran::pseudoBulkDGE(
-#     data,
-#     label = data$BayesSpace,
-#     design = design,
-#     coef = coef,                    # "brain_area2G2" "brain_area2G3" "brain_area2G4"
-#     condition = data$brain_area2,
-#     row.data = rowData(data),
-#     method = method
-#   )
-# 
-# }
 
 
 ## Function to create and save Enhanced Volcano plots
@@ -105,27 +88,26 @@ create_volcano_plots <- function(results,
     
     dev.off()
     
-
   }
 }
 
 
-# Function to apply a specific contrast
+## Function to compare multiple contrast
 runPseudobulkEdgeR <- function(
-    pb,                  # pseudobulk data
+    sce,                 # pseudobulk data
     group_var,           # column name in colData(sce) to use for group comparison (e.g. "brain_area2")
     contrast_levels,     # vector of two levels to contrast (e.g., c("G2", "G1"))
+    assay_type = "counts",
     min_genes = 50
 ) {
-  library(scuttle)
-  library(edgeR)
   
-  # Step 1: Aggregate counts across cells - We already have pseudobulk data
-  col_data <- colData(pb)
+  # Step 1: Aggregate counts across cells - We already have pseudobulk data, so we ommit this step
+  counts <- assay(sce, assay_type)
+  col_data <- colData(sce)
   
   # Step 2: Create DGEList and filter
   y <- DGEList(counts = counts)
-  
+
   # Drop low-expression genes
   keep <- filterByExpr(y, group = col_data[[group_var]])
   y <- y[keep, , keep.lib.sizes = FALSE]
@@ -138,6 +120,7 @@ runPseudobulkEdgeR <- function(
   y <- calcNormFactors(y)
   
   # Step 3: Design matrix with no intercept
+  # '~ 0' is used to specify NO Intercept; explicit group means without a baseline group (e.g., for clean contrasts)
   design <- model.matrix(~ 0 + col_data[[group_var]])
   group_names <- levels(factor(col_data[[group_var]]))
   colnames(design) <- group_names
@@ -145,7 +128,7 @@ runPseudobulkEdgeR <- function(
   # Step 4: Fit model
   y <- estimateDisp(y, design)
   fit <- glmQLFit(y, design)
-  
+
   # Step 5: Define contrast
   stopifnot(all(contrast_levels %in% group_names))
   contrast_str <- paste0(contrast_levels[1], " - ", contrast_levels[2])
@@ -153,12 +136,14 @@ runPseudobulkEdgeR <- function(
   
   # Step 6: QL test
   qlf <- glmQLFTest(fit, contrast = contrast_mat)
-  
+
   # Step 7: Return results
   result <- topTags(qlf, n = Inf)$table
   result$gene <- rownames(result)
   result$contrast <- contrast_str
+  
   return(result)
+  
 }
 
 
@@ -173,7 +158,7 @@ for (k in k_values) {
   
   message("Processing BayesSpace k=", k_nice)
   
-  # Load data for the current k
+  ## Load data for the current k
   data_file <- file.path(input_dir, paste0("sce_pseudo_PCA_brain_area_k", k, ".rds"))
   data <- readRDS(data_file)
   #colnames(colData(data))
@@ -184,9 +169,17 @@ for (k in k_values) {
   #table(data$brain_area2)
   #ncol(data) 
   
-  # Remove level "G0" from the data, as we only have one sample for this group
+  ## Remove level "G0" from the data, as we only have one sample for this group
+  
   levels(data$brain_area2)
   table(data$brain_area2, data$brain_id)
+  # Br8518 Br9037 Br9090
+  # G0     11      0      0
+  # G1     12     12     12
+  # G2     12     12     11
+  # G3     12     12     11
+  # G4      0     12     12
+  
   coldata_tbl <- as_tibble(colData(data))
   filtered_coldata <- coldata_tbl |>
     filter(brain_area2 != "G0")
@@ -206,7 +199,6 @@ for (k in k_values) {
   # G3     12     12     11
   # G4      0     12     12
   
-  
   ## The new scran::pseudoBulkDGE() no longer lets you run the full model without coef — which means it doesn’t expose the fit object needed for custom contrasts.
   ## So, I use the fitted model to manually define and test contrasts using the DGE package
   ## I have to manually aggregate pseudobulk counts and then run the model using standard edgeR workflow
@@ -214,11 +206,11 @@ for (k in k_values) {
   ##      and I can get `dge_result$fit`, `dge_result$design`, and run custom contrasts for the brain-areas
   
   
-  # Get all pairwise combinations of group levels
+  ## Get all pairwise combinations of group levels
   group_levels <- levels(factor(colData(data)$brain_area2))
   # [1] "G1" "G2" "G3" "G4"
   pairwise_contrasts <- combn(group_levels, 2, simplify = FALSE)
-  table(pairwise_contrasts)
+  head(pairwise_contrasts)
   
   ######### Model 1: Brain Naive Model #############
   
@@ -227,55 +219,55 @@ for (k in k_values) {
   
   # Compute DE results across every pair of group comparisons (e.g. G2 vs G1, G3 vs G1, G3 vs G2, etc.)
   
-  # Store all results in a list
-  
+  ## Store all results in a list
   dge_results_list <- lapply(pairwise_contrasts, function(contrast_pair) {
     cat("Running contrast:", paste(contrast_pair, collapse = " vs "), "\n")
     
     res <- runPseudobulkEdgeR(
-      pb = data,
+      sce = data,
       group_var = "brain_area2",
       contrast_levels = contrast_pair
     )
-    
+
     return(res)
+    
   })
   
+  
+  str(dge_results_list)
+  head(dge_results_list[[1]])
+  #                       logFC   logCPM         F      PValue       FDR
+  # ENSG00000074657 -0.3563410 5.786637 10.001880 0.001884399 0.9999613
+  # ENSG00000157593 -0.5712547 5.386361  9.274807 0.002712389 0.9999613
+  # ENSG00000100225 -0.3704179 6.019549  8.567266 0.003958746 0.9999613
+  # ENSG00000183513 -0.4371085 5.865209  8.357765 0.004402942 0.9999613
+  # ENSG00000175265 -0.4104273 5.624887  7.529694 0.006773970 0.9999613
+  # ENSG00000114805  0.6765182 4.774126  6.885194 0.009451898 0.9999613
+  # gene contrast
+  # ENSG00000074657 ENSG00000074657  G1 - G2
+  # ENSG00000157593 ENSG00000157593  G1 - G2
+  # ENSG00000100225 ENSG00000100225  G1 - G2
+  # ENSG00000183513 ENSG00000183513  G1 - G2
+  # ENSG00000175265 ENSG00000175265  G1 - G2
+  # ENSG00000114805 ENSG00000114805  G1 - G2
+  
   # Combine all into one data.frame
+  
+  dge_results_df <- dge_results_list # testing
   dge_results_df <- bind_rows(dge_results_list)
   head(dge_results_df)
+  table(dge_results_df$contrast)
+  # G1 - G2 G1 - G3 G1 - G4 G2 - G3 G2 - G4 G3 - G4 
+  # 6352    6352    6352    6352    6352    6352 
   
+  ## Filter data to prepare for plots 
   
-  # for (ba in ba_to_compare) {
+  subset(dge_results_df, FDR < 0.05 & abs(logFC) > 1)
 
-    # res_G2vsG1 <- runPseudobulkEdgeR(
-    #   pb = data,
-    #   group_var = "brain_area2",
-    #   contrast_levels = c("G2", "G1")
-    # )
-    # 
-    # head(res_G2vsG1)
-    # #                     logFC   logCPM         F      PValue       FDR
-    # # ENSG00000074657  0.3563410 5.786637 10.001880 0.001884399 0.9999613
-    # # ENSG00000157593  0.5712547 5.386361  9.274807 0.002712389 0.9999613
-    # # ENSG00000100225  0.3704179 6.019549  8.567266 0.003958746 0.9999613
-    # # ENSG00000183513  0.4371085 5.865209  8.357765 0.004402942 0.9999613
-    # # ENSG00000175265  0.4104273 5.624887  7.529694 0.006773970 0.9999613
-    # # ENSG00000114805 -0.6765182 4.774126  6.885194 0.009451898 0.9999613
-    # #                               gene contrast
-    # # ENSG00000074657 ENSG00000074657  G2 - G1
-    # # ENSG00000157593 ENSG00000157593  G2 - G1
-    # # ENSG00000100225 ENSG00000100225  G2 - G1
-    # # ENSG00000183513 ENSG00000183513  G2 - G1
-    # # ENSG00000175265 ENSG00000175265  G2 - G1
-    # # ENSG00000114805 ENSG00000114805  G2 - G1
-    
-    # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
-    
-    subdir_name <- paste0("model1_k", k_nice,"-", ba)
-    create_volcano_plots(de_results_1, subdir_name, here(plot_dir, subdir_name), ba)
+  # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
 
-  # }
+  #create_volcano_plots(dge_results_df, subdir_name, here(plot_dir, subdir_name))
+  # create_volcano_plots(de_results_1, subdir_name, here(plot_dir, subdir_name), ba)
   
 }
 
