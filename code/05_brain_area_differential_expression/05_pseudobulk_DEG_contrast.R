@@ -40,13 +40,15 @@ if (!dir.exists(plot_dir)) dir.create(plot_dir, recursive = TRUE)
 k_values <- c(3, 13, 21, 26) # new k(s) selected based on the Habenula reference merged to only one Habenula class
 
 
-create_volcano_plots <- function(contrast_grps, 
+create_volcano_plots <- function(sce,
+                                 contrast_grps, 
                                  output_dir,
                                  model_name) {
   
   ## Plot all contrast computed for specific Bayes-Space k
   
   # for testing
+  # sce = data
   # contrast_grps = dge_results_df
   # model_name = paste0("model1_k", k_nice)
   
@@ -54,11 +56,10 @@ create_volcano_plots <- function(contrast_grps,
   output_subdir = here(output_dir, paste0(model_name, "_contrast"))
   if (!dir.exists(output_subdir)) dir.create(output_subdir, , recursive = TRUE, showWarnings = FALSE)
   
-  for (cg in seq_along(contrast_grps)) {
+  for (cg in seq_along(contrast_grps)[-length(contrast_grps)]) {
     
-    # domain = "Sp13D11 ~ Habenula"
-    # domain = "Sp13D01 ~ Oligo"
-    # cg = 1
+    # First contrast grp
+    # cg = 1 
     cg_name <- gsub(" ", "", unique(contrast_grps[[cg]]["contrast"]))
     
     print(cg)
@@ -66,6 +67,12 @@ create_volcano_plots <- function(contrast_grps,
     # Processing contrast group: G1-G2
     
     domain_results <- contrast_grps[[cg]] 
+    
+    ## Add gene names to your DE results. Create a named vector and map the gene_names
+    gene_name_map <- rowData(data)$gene_name
+    names(gene_name_map) <- rownames(data)
+    domain_results$gene_name <- gene_name_map[rownames(domain_results)]
+    
     
     # cutomize file name
     f_name = paste0("volcano_", cg_name, "_", model_name, ".pdf")
@@ -81,11 +88,11 @@ create_volcano_plots <- function(contrast_grps,
     # Ensure adj.P.Val is truly numeric
     domain_results$FDR <- as.numeric(domain_results$FDR)
     
-    lab = domain_results$gene
-    top_genes <- head(domain_results$gene[order(domain_results$FDR)], 20)
+    lab = domain_results$gene_name
+    top_genes <- head(domain_results$gene_name[order(domain_results$FDR)], 20)
     
     plot(EnhancedVolcano(domain_results,
-                         lab = domain_results$gene,
+                         lab = domain_results$gene_name,
                          selectLab = top_genes,     # Only label these
                          x = 'logFC',
                          y =  "FDR",
@@ -185,6 +192,7 @@ for (k in k_values) {
   # [13] "sex"             "sum_umi"   
   #table(data$brain_area2)
   #ncol(data) 
+  #rowData(data)$gene_name  # or $symbol, or $GeneSymbol depending on source
   
   ## Remove level "G0" from the data, as we only have one sample for this group
   
@@ -250,9 +258,8 @@ for (k in k_values) {
     
   })
   
-  
-  str(dge_results_list)
-  head(dge_results_list[[1]])
+  # e.g. First contrast group
+  #head(dge_results_list[[1]])
   #                       logFC   logCPM         F      PValue       FDR
   # ENSG00000074657 -0.3563410 5.786637 10.001880 0.001884399 0.9999613
   # ENSG00000157593 -0.5712547 5.386361  9.274807 0.002712389 0.9999613
@@ -282,7 +289,7 @@ for (k in k_values) {
 
   # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
 
-  create_volcano_plots(dge_results_df, plot_dir, paste0("model1_k", k_nice))
+  create_volcano_plots(data, dge_results_df, plot_dir, paste0("model1_k", k_nice))
   # create_volcano_plots(de_results_1, subdir_name, here(plot_dir, subdir_name), ba)
   
 }
