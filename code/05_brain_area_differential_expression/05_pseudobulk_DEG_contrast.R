@@ -66,12 +66,12 @@ create_volcano_plots <- function(sce,
     message("Processing contrast group: ", cg_name)
     # Processing contrast group: G1-G2
     
-    domain_results <- contrast_grps[[cg]] 
+    contrast_grp_results <- contrast_grps[[cg]] 
     
     ## Add gene names to your DE results. Create a named vector and map the gene_names
     gene_name_map <- rowData(data)$gene_name
     names(gene_name_map) <- rownames(data)
-    domain_results$gene_name <- gene_name_map[rownames(domain_results)]
+    contrast_grp_results$gene_name <- gene_name_map[rownames(contrast_grp_results)]
     
     
     # cutomize file name
@@ -83,16 +83,16 @@ create_volcano_plots <- function(sce,
     pdf(file = pdf_file_path, width = 8, height = 8)
     
     # Keep only rows where both logFC and FDR (adj.P.Val) are not NA
-    domain_results <- domain_results[!is.na(domain_results$logFC) & !is.na(domain_results$FDR), ]
-    sum(is.na(domain_results$FDR))
+    contrast_grp_results <- contrast_grp_results[!is.na(contrast_grp_results$logFC) & !is.na(contrast_grp_results$FDR), ]
+    sum(is.na(contrast_grp_results$FDR))
     # Ensure adj.P.Val is truly numeric
-    domain_results$FDR <- as.numeric(domain_results$FDR)
+    contrast_grp_results$FDR <- as.numeric(contrast_grp_results$FDR)
     
-    lab = domain_results$gene_name
-    top_genes <- head(domain_results$gene_name[order(domain_results$FDR)], 20)
+    lab = contrast_grp_results$gene_name
+    top_genes <- head(contrast_grp_results$gene_name[order(contrast_grp_results$FDR)], 20)
     
-    plot(EnhancedVolcano(domain_results,
-                         lab = domain_results$gene_name,
+    plot(EnhancedVolcano(contrast_grp_results,
+                         lab = contrast_grp_results$gene_name,
                          selectLab = top_genes,     # Only label these
                          x = 'logFC',
                          y =  "FDR",
@@ -290,7 +290,6 @@ for (k in k_values) {
   # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
 
   create_volcano_plots(data, dge_results_df, plot_dir, paste0("model1_k", k_nice))
-  # create_volcano_plots(de_results_1, subdir_name, here(plot_dir, subdir_name), ba)
   
 }
 
