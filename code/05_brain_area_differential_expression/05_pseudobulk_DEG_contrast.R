@@ -17,6 +17,12 @@ library("dplyr")
 library("here")
 library("sessioninfo")
 
+
+## In pseudobulk DE using tools like edgeR or scran::pseudoBulkDGE(), the PValue and FDR (False Discovery Rate) are calculated:
+#  Across all genes, per contrast, not per cluster
+#  Here, I plot the results to build a base line and continue polishing the script
+
+
 #### Set up dirs ####
 # input_dir <- here("processed-data", "06_differential_expression", "01_pseudobulk_data")
 input_dir <- here("processed-data", "05_brain_area_differential_expression")
@@ -34,29 +40,38 @@ if (!dir.exists(plot_dir)) dir.create(plot_dir, recursive = TRUE)
 k_values <- c(3, 13, 21, 26) # new k(s) selected based on the Habenula reference merged to only one Habenula class
 
 
-## Function to create and save Enhanced Volcano plots
-create_volcano_plots <- function(results, 
-                                 model_name,
+create_volcano_plots <- function(contrast_grps, 
                                  output_dir,
-                                 brain_area) {
+                                 model_name) {
   
-  # create directory for specific model  
-  if (!dir.exists(model_name)) dir.create(here(plot_dir, model_name), recursive = TRUE, showWarnings = FALSE)
-  # results = de_results_1
+  ## Plot all contrast computed for specific Bayes-Space k
+  
+  # for testing
+  # contrast_grps = dge_results_df
   # model_name = paste0("model1_k", k_nice)
-  # output_dir = here(plot_dir, paste0("model1_k", k_nice))
-  for (domain in names(results)) {
+  
+  # customize subdir name
+  output_subdir = here(output_dir, paste0(model_name, "_contrast"))
+  if (!dir.exists(output_subdir)) dir.create(output_subdir, , recursive = TRUE, showWarnings = FALSE)
+  
+  for (cg in seq_along(contrast_grps)) {
     
     # domain = "Sp13D11 ~ Habenula"
     # domain = "Sp13D01 ~ Oligo"
-    domain_results <- results[[domain]]
-
-    # replace tilde " ~ " from file-name with "-"
-    f_name = paste0("volcano_", domain, "_", model_name, ".pdf")
-    f_name = gsub(" ~ ", "-", f_name)
-    f_name = gsub("/", "", f_name)
+    # cg = 1
+    cg_name <- gsub(" ", "", unique(contrast_grps[[cg]]["contrast"]))
     
-    pdf_file_path <- file.path(output_dir, f_name)
+    print(cg)
+    message("Processing contrast group: ", cg_name)
+    # Processing contrast group: G1-G2
+    
+    domain_results <- contrast_grps[[cg]] 
+    
+    # cutomize file name
+    f_name = paste0("volcano_", cg_name, "_", model_name, ".pdf")
+    # volcano_G1-G2_model1_k13.pdf
+    
+    pdf_file_path <- file.path(output_subdir, f_name)
     print(pdf_file_path)
     pdf(file = pdf_file_path, width = 8, height = 8)
     
@@ -66,16 +81,16 @@ create_volcano_plots <- function(results,
     # Ensure adj.P.Val is truly numeric
     domain_results$FDR <- as.numeric(domain_results$FDR)
     
-    lab = domain_results$gene_name
-    top_genes <- head(domain_results$gene_name[order(domain_results$FDR)], 20)
+    lab = domain_results$gene
+    top_genes <- head(domain_results$gene[order(domain_results$FDR)], 20)
     
     plot(EnhancedVolcano(domain_results,
-                         lab = domain_results$gene_name,
+                         lab = domain_results$gene,
                          selectLab = top_genes,     # Only label these
                          x = 'logFC',
                          y =  "FDR",
-                         title = paste("BayesSpace cluster", domain),
-                         subtitle = paste(brain_area, " - ", model_name),
+                         title = paste("Contrast grp: ", cg_name),
+                         subtitle = model_name,
                          pCutoff = 0.05,            # Adjust as needed
                          FCcutoff = 0.5,            # Adjust log2 fold change threshold
                          pointSize = 2.0,
@@ -89,6 +104,7 @@ create_volcano_plots <- function(results,
     dev.off()
     
   }
+  
 }
 
 
@@ -146,10 +162,11 @@ runPseudobulkEdgeR <- function(
   
 }
 
+## In pseudobulk DE using tools like edgeR or scran::pseudoBulkDGE(), the PValue and FDR (False Discovery Rate) are calculated:
+#  Across all genes, per contrast, not per cluster
+#  Here, I plot the results to build a base line and continue polishing the script
 
-
-
-# Iterate over each k value and process the pseudoBulkDGE analysis
+## Iterate over each k value and process the pseudoBulkDGE analysis
 
 for (k in k_values) {
   
@@ -254,19 +271,18 @@ for (k in k_values) {
   # Combine all into one data.frame
   
   dge_results_df <- dge_results_list # testing
-  dge_results_df <- bind_rows(dge_results_list)
-  head(dge_results_df)
-  table(dge_results_df$contrast)
-  # G1 - G2 G1 - G3 G1 - G4 G2 - G3 G2 - G4 G3 - G4 
-  # 6352    6352    6352    6352    6352    6352 
+  # dge_results_df <- bind_rows(dge_results_list)
+  # head(dge_results_df)
+  # table(dge_results_df$contrast)
+  # # G1 - G2 G1 - G3 G1 - G4 G2 - G3 G2 - G4 G3 - G4 
+  # # 6352    6352    6352    6352    6352    6352 
   
-  ## Filter data to prepare for plots 
-  
-  subset(dge_results_df, FDR < 0.05 & abs(logFC) > 1)
+  # ## Filter data to prepare for plots 
+  # subset(dge_results_df, FDR < 0.05 & abs(logFC) > 1)
 
   # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
 
-  #create_volcano_plots(dge_results_df, subdir_name, here(plot_dir, subdir_name))
+  create_volcano_plots(dge_results_df, plot_dir, paste0("model1_k", k_nice))
   # create_volcano_plots(de_results_1, subdir_name, here(plot_dir, subdir_name), ba)
   
 }
