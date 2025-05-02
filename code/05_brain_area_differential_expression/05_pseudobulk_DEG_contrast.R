@@ -224,7 +224,11 @@ for (k in k_values) {
   # G2     12     12     11
   # G3     12     12     11
   # G4      0     12     12
-
+  
+  ## Subset all Habenula domains from the Bayes-Space domain names - g.e. For BS k13 = SpD11
+  levels_vec <- levels(colData(data)$BayesSpace)
+  habenula_levels <- levels_vec[grepl("Habenula", levels_vec)]
+  habenula_levels
   
   data <- data[, data$BayesSpace == habenula_levels]
   # Drop unused levels in brain_area2
