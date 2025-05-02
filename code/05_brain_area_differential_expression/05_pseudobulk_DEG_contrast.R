@@ -56,7 +56,8 @@ create_volcano_plots <- function(sce,
   output_subdir = here(output_dir, paste0(model_name, "_contrast"))
   if (!dir.exists(output_subdir)) dir.create(output_subdir, , recursive = TRUE, showWarnings = FALSE)
   
-  for (cg in seq_along(contrast_grps)[-length(contrast_grps)]) {
+  #for (cg in seq_along(contrast_grps)[-length(contrast_grps)]) {
+  for (cg in seq_along(contrast_grps)) {
     
     # First contrast grp
     # cg = 1 
@@ -72,7 +73,6 @@ create_volcano_plots <- function(sce,
     gene_name_map <- rowData(data)$gene_name
     names(gene_name_map) <- rownames(data)
     contrast_grp_results$gene_name <- gene_name_map[rownames(contrast_grp_results)]
-    
     
     # cutomize file name
     f_name = paste0("volcano_", cg_name, "_", model_name, ".pdf")
@@ -120,6 +120,7 @@ runPseudobulkEdgeR <- function(
     sce,                 # pseudobulk data
     group_var,           # column name in colData(sce) to use for group comparison (e.g. "brain_area2")
     contrast_levels,     # vector of two levels to contrast (e.g., c("G2", "G1"))
+    covariates = c("brain_id"),
     assay_type = "counts",
     min_genes = 50
 ) {
@@ -223,6 +224,15 @@ for (k in k_values) {
   # G2     12     12     11
   # G3     12     12     11
   # G4      0     12     12
+
+  
+  data <- data[, data$BayesSpace == habenula_levels]
+  # Drop unused levels in brain_area2
+  data$brain_area2 <- droplevels(data$brain_area2)
+  # Optional check brain-area grp in the subseted data
+  table(data$brain_area2)
+  # G1 G2 G3 G4 
+  # 3  3  3  2 
   
   ## The new scran::pseudoBulkDGE() no longer lets you run the full model without coef — which means it doesn’t expose the fit object needed for custom contrasts.
   ## So, I use the fitted model to manually define and test contrasts using the DGE package
@@ -237,7 +247,7 @@ for (k in k_values) {
   pairwise_contrasts <- combn(group_levels, 2, simplify = FALSE)
   head(pairwise_contrasts)
   
-  ######### Model 1: Brain Naive Model #############
+  ######### Model 1: Brain-Area Naive Model #############
   
   message("Model 1")
   message("Brain-Area: Naive Model")
@@ -246,6 +256,7 @@ for (k in k_values) {
   
   ## Store all results in a list
   dge_results_list <- lapply(pairwise_contrasts, function(contrast_pair) {
+    
     cat("Running contrast:", paste(contrast_pair, collapse = " vs "), "\n")
     
     res <- runPseudobulkEdgeR(
@@ -257,6 +268,11 @@ for (k in k_values) {
     return(res)
     
   })
+  
+  ######### Model 2: Brain-Area + 1 co-variable #############
+  
+  #use coef = "brain_area2G2:sexM" or create a contrast.
+  #design = ~ brain_area2 * brain_id
   
   # e.g. First contrast group
   #head(dge_results_list[[1]])
@@ -289,7 +305,10 @@ for (k in k_values) {
 
   # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
 
-  create_volcano_plots(data, dge_results_df, plot_dir, paste0("model1_k", k_nice))
+  ## all contrast over all clusters
+  #create_volcano_plots(data, dge_results_df, plot_dir, paste0("model1_k", k_nice))
+  ## all contrast over all clusters only in the Hb domain(s) 
+  create_volcano_plots(data, dge_results_df, plot_dir, paste0("model1_k", k_nice, "_HbSpD_ba_bID"))
   
 }
 
