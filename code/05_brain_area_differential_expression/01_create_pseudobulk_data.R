@@ -78,12 +78,12 @@ head(unique(spe$BayesSpace))
 # Levels: Sp02D01 Sp02D02
 
 levels(colData(spe)$BayesSpace)
-# [1] "Sp02D01" "Sp02D02" 
+# [1] "Sp02D01" "Sp02D02"
 
 ## load spatial-registration to pull short annotated labels
 
-dir_labels <- here("processed-data", 
-                  "06_spatial_registration_vs_snRNA-seq", 
+dir_labels <- here("processed-data",
+                  "06_spatial_registration_vs_snRNA-seq",
                   "cor_BayesSpace_vs_snRNA-seq_top100_Hb_merged.Rdata")
 load(dir_labels)
 # [3] "cor_broad"               "cor_fine"
@@ -97,12 +97,27 @@ levels(colData(spe)$BayesSpace) <- c(sort(rownames(cor_broad[[k-1]])))
 levels(colData(spe)$BayesSpace)
 # [1] "Sp02D01 ~ Oligo"      "Sp02D02 ~ Inhib.Thal"
 
-# Add a new column based on brain_id condition - This will be used as variable for exploring variation
+## we need to rename annotated BayesSpace names/levels to fix error further when computing other process
+# g.e. 'registration_stats_pairwise' needs syntactically valid names
+old_bs_names <- spe$BayesSpace
+new_bs_names <- gsub("/", "_",  # substitute cell-type '/' separator
+                     gsub(" ~ ", ".", spe$BayesSpace)) # substitute ' ~ '
+new_bs_names <- gsub("\\*$", "",  new_bs_names) # substitute '*' added to significant cell-types
+unique(new_bs_names)
+# [1] "Sp13D08.OPC_Astroc" "Sp13D11.Habenula"   "Sp13D07.Astrocyte"
+# [4] "Sp13D01.Oligo"      "Sp13D02.Endo"       "Sp13D10.Oligo"
+# [7] "Sp13D03.Endo"       "Sp13D04.Astrocyte"  "Sp13D06.Astrocyte"
+# [10] "Sp13D09.Astrocyte_" "Sp13D13.Oligo"      "Sp13D12.Oligo"
+# [13] "Sp13D05.Inhib.Thal"
+level_map <- setNames(new_bs_names, old_bs_names)
+# Match original BayesSpace labels in sce to new names
+spe$BayesSpace <- level_map[as.character(spe$BayesSpace)]
+spe$BayesSpace <- factor(spe$BayesSpace)
+levels(colData(spe)$BayesSpace)
 
 #colnames(colData(spe))
-table(colData(spe)$sample_id)
-table(colData(spe)$brain_area)
-table(colData(spe)$BayesSpace)
+table(colData(spe)$brain_id, colData(spe)$sample_id)
+table(colData(spe)$brain_id, colData(spe)$BayesSpace)
 
 ## Assign new 'brain-area' based in posterior-anterior locations defined by KDM based on RNAScope
 
