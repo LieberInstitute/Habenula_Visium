@@ -41,6 +41,20 @@ sce_pseudo <-
     )
   )
 
+## rename annotated BayesSpace names/levels to fix error when computing 'registration_stats_pairwise' - we need syntactically valid names
+old_bs_names <- sce_pseudo$BayesSpace
+new_bs_names <- gsub("/", "_",  # substitute cell-type '/' separator
+                     gsub(" ~ ", ".", sce_pseudo$BayesSpace)) # substitute ' ~ '
+new_bs_names <- gsub("\\*$", "",  new_bs_names) # substitute '*' added to significant cell-types
+unique(new_bs_names)
+# [1] "Sp13D01.Oligo"      "Sp13D02.Endo"       "Sp13D03.Endo"
+# [4] "Sp13D04.Astrocyte"  "Sp13D06.Astrocyte"  "Sp13D07.Astrocyte"
+# [7] "Sp13D08.OPC_Astroc" "Sp13D09.Astrocyte_" "Sp13D10.Oligo"
+# [10] "Sp13D11.Habenula"   "Sp13D12.Oligo"      "Sp13D13.Oligo"
+level_map <- setNames(new_bs_names, old_bs_names)
+# Match original BayesSpace labels in sce to new names
+sce_pseudo$BayesSpace <- level_map[as.character(sce_pseudo$BayesSpace)]
+
 ## To avoid having to change parameters later on
 sce_pseudo$registration_variable <- sce_pseudo$BayesSpace
 sce_pseudo$registration_sample_id <- sce_pseudo$sample_id
