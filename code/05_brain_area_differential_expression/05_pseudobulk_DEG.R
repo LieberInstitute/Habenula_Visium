@@ -16,6 +16,16 @@ library("dplyr")
 library("here")
 library("sessioninfo")
 
+
+# Note that scran::pseudoBulkDGE() does not allow you to specify which contrasts or groups to test directly in the function call when you have multiple coefficients 
+#   (e.g., 4 brain areas). In short:
+# As this is a wrapper that helps run DGE (differential gene expression) analysis on aggregated pseudobulk data,  
+#.  when we pass a design matrix with multiple coefficients (like 4 brain areas), it:
+# - By default, return all model coefficients (not contrasts).
+# - It does not interpret or apply contrasts for you, and 
+# - It runs a likelihood ratio test (LRT) or Wald test, depending on the method used (edgeR vs DESeq2).
+
+
 #### Set up dirs ####
 # input_dir <- here("processed-data", "06_differential_expression", "01_pseudobulk_data")
 input_dir <- here("processed-data", "05_brain_area_differential_expression")
@@ -50,23 +60,6 @@ run_pseudoBulkDGE <- function(data, design, coef, method) {
 
 }
 
-# ## Function to filter and save results based on p-value < 0.05
-# save_filtered_results <- function(results, model_name, output_dir) {
-#   filtered_list <- list()
-#
-#   for (domain in names(results)) {
-#     filtered_genes <- as.data.frame(results[[domain]]) |>
-#       filter(!is.na(P.Value) & !is.na(logFC) & P.Value < 0.05) |>
-#       select(gene_name, P.Value, logFC, gene_id, AveExpr)
-#
-#     filtered_list[[domain]] <- filtered_genes
-#   }
-#
-#   combined_results <- bind_rows(filtered_list, .id = "BayesSpace_Domain")
-#   write.csv(combined_results, file = file.path(output_dir, paste0("combined_", model_name, ".csv")), row.names = FALSE)
-#
-#   return(combined_results)
-# }
 
 ## Function to create and save Enhanced Volcano plots
 create_volcano_plots <- function(results, model_name, output_dir, brain_area) {
@@ -76,10 +69,12 @@ create_volcano_plots <- function(results, model_name, output_dir, brain_area) {
   # results = de_results_1
   # model_name = paste0("model1_k", k_nice)
   # output_dir = here(plot_dir, paste0("model1_k", k_nice))
+  
   for (domain in names(results)) {
     
     # domain = "Sp13D11 ~ Habenula"
     # domain = "Sp13D01 ~ Oligo"
+    
     domain_results <- results[[domain]]
 
     # replace tilde " ~ " from file-name with "-"
