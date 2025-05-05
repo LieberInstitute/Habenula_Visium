@@ -75,3 +75,17 @@ primary_df = (
         )
         .assign(sample_id = sample_id)
 )
+
+secondary_df = adata.obs[['microenvironment_secondary']][
+    (adata.obs['microenvironment_joint_source'] == 'secondary') &
+    (adata.obs['labels_gex'] == 0) &
+    (adata.obs['microenvironment_joint'] != 0) # not actually sure why this isn't redundant
+]
+secondary_df = (
+    secondary_df
+        .reset_index()
+        .rename(
+            {'index': 'bin_id', 'microenvironment_primary': 'cell_id'}, axis = 1
+        )
+        .assign(sample_id = sample_id)
+)
