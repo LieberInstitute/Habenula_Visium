@@ -90,30 +90,31 @@ load(dir_labels)
 levels(cor_broad)
 # sort(rownames(cor_broad[[k-1]]))
 
-# rename the levels to make id readable in the plots
+# rename the levels to make them readable in the plots (used Hb pilot Broad annotations)
 
 colData(spe)$BayesSpace <- factor(colData(spe)$BayesSpace)
 levels(colData(spe)$BayesSpace) <- c(sort(rownames(cor_broad[[k-1]])))
 levels(colData(spe)$BayesSpace)
 # [1] "Sp02D01 ~ Oligo"      "Sp02D02 ~ Inhib.Thal"
 
-## we need to rename annotated BayesSpace names/levels to fix error further when computing other process
-# g.e. 'registration_stats_pairwise' needs syntactically valid names
+## we need to double-check the annotated BayesSpace names/levels do have syntactically valid names
+#  - this avoid error further when computing other process. g.e: 'registration_stats_pairwise'
 old_bs_names <- spe$BayesSpace
 new_bs_names <- gsub("/", "_",  # substitute cell-type '/' separator
                      gsub(" ~ ", ".", spe$BayesSpace)) # substitute ' ~ '
 new_bs_names <- gsub("\\*$", "",  new_bs_names) # substitute '*' added to significant cell-types
 unique(new_bs_names)
+level_map <- setNames(new_bs_names, old_bs_names)
+# Match original BayesSpace labels in spe to new names
+spe$BayesSpace <- level_map[as.character(spe$BayesSpace)]
+unique(spe$BayesSpace)
+spe$BayesSpace <- factor(spe$BayesSpace)
+levels(colData(spe)$BayesSpace)
 # [1] "Sp13D08.OPC_Astroc" "Sp13D11.Habenula"   "Sp13D07.Astrocyte"
 # [4] "Sp13D01.Oligo"      "Sp13D02.Endo"       "Sp13D10.Oligo"
 # [7] "Sp13D03.Endo"       "Sp13D04.Astrocyte"  "Sp13D06.Astrocyte"
 # [10] "Sp13D09.Astrocyte_" "Sp13D13.Oligo"      "Sp13D12.Oligo"
 # [13] "Sp13D05.Inhib.Thal"
-level_map <- setNames(new_bs_names, old_bs_names)
-# Match original BayesSpace labels in sce to new names
-spe$BayesSpace <- level_map[as.character(spe$BayesSpace)]
-spe$BayesSpace <- factor(spe$BayesSpace)
-levels(colData(spe)$BayesSpace)
 
 #colnames(colData(spe))
 table(colData(spe)$brain_id, colData(spe)$sample_id)
@@ -159,6 +160,15 @@ table(colData(spe)$brain_id)
 # Br8518 Br9037 Br9090
 # 13241  13133   7035
 
+
+## save new spe object containing clusters with Broad annotation (human-pilot project) + new defined gene-brain regions from anterior to posterior
+
+spe_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony_ann.rds")
+saveRDS(
+  spe, file = file.path(spe_in)
+)
+
+
 ############################
 
 message("Processing BayesSpace k=", k_nice)
@@ -168,11 +178,20 @@ message("Processing BayesSpace k=", k_nice)
 spe_pseudo_k <- aggregateAcrossCells(
   spe,
   DataFrame(
-    BayesSpace = spe[[paste0("BayesSpace_harmony_k", k_nice)]],
+    BayesSpace_p = spe[[paste0("BayesSpace_harmony_k", k_nice)]],
     reg_sample_id = spe$sample_id
   )
 )
+# make the BayesSpace levels identical 
+spe_pseudo_k$BayesSpace_p <- spe_pseudo_k$BayesSpace
+identical(spe_pseudo_k$BayesSpace, spe_pseudo_k$BayesSpace_p) 
 levels(spe_pseudo_k$BayesSpace)
+levels(spe_pseudo_k$BayesSpace_p)
+# [1] "Sp13D01.Oligo"      "Sp13D02.Endo"       "Sp13D03.Endo"      
+# [4] "Sp13D04.Astrocyte"  "Sp13D05.Inhib.Thal" "Sp13D06.Astrocyte" 
+# [7] "Sp13D07.Astrocyte"  "Sp13D08.OPC_Astroc" "Sp13D09.Astrocyte_"
+# [10] "Sp13D10.Oligo"      "Sp13D11.Habenula"   "Sp13D12.Oligo"     
+# [13] "Sp13D13.Oligo"   
 
 message("Aggregation completed for k=", k_nice)
 message(
@@ -184,6 +203,7 @@ message(
 
 colData(spe_pseudo_k)$nspots <- colData(spe_pseudo_k)$ncells
 colData(spe_pseudo_k)$ncells <- NULL # Remove the old column
+# add sample-ids to pseudobulk object
 colnames(spe_pseudo_k) <- spe_pseudo_k$sample_id
 
 
@@ -222,14 +242,7 @@ spe_pseudo_k$expr_chrM_ratio <- spe_pseudo_k$expr_chrM / spe_pseudo_k$sum_umi
 
 spe_pseudo_k$age <- as.numeric(spe_pseudo_k$age)
 
-# Convert relevant variables to factors
-
-if (is.factor(spe_pseudo_k$BayesSpace)) {
-  ## Drop unused var_registration levels if we had to drop some due to min_nspots:
-  ## registration_variable equivalent here: BayesSpace_pseudo
-  spe_pseudo_k$BayesSpace <- droplevels(spe_pseudo_k$BayesSpace)
-  levels(spe_pseudo_k$BayesSpace)
-}
+# Convert other relevant variables to factors
 
 spe_pseudo_k$brain_area2 <- factor(spe_pseudo_k$brain_area2)
 if (is.factor(spe_pseudo_k$BayesSpace_pseudo)) {
@@ -309,6 +322,7 @@ message('Pseudobulk completed ')
 ## Simplify the colData()  for the pseudo-bulked data
 
 # colnames(colData(spe_pseudo_k))
+#spe_pseudo_k$BayesSpace
 colData(spe_pseudo_k) <- colData(spe_pseudo_k)[, sort(c(
   "sample_id",
   "brain_id",
