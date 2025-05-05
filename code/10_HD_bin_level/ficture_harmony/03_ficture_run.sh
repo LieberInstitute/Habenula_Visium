@@ -6,7 +6,7 @@
 #SBATCH -t 2-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/03_ficture_run_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/03_ficture_run_%a.txt
-#SBATCH --array=4,23%2
+#SBATCH --array=4-40:2,70,100%10
 
 set -e
 
@@ -20,11 +20,11 @@ echo "Job name: ${SLURM_JOB_NAME}"
 echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
-module load ficture/dev_a455e5c
+module load visium_hd/1.0
 
 #   Path definitions
 repo_dir=$(git rev-parse --show-toplevel)
-in_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_inputs
+in_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_inputs/normalized
 out_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_outputs/normalized/k_${SLURM_ARRAY_TASK_ID}
 
 mkdir -p $out_dir
@@ -33,23 +33,25 @@ mkdir -p $out_dir
 if [[ $SLURM_ARRAY_TASK_ID -eq 2 ]]; then
     #   Overwride the default of finding top 3 factors, since only 2 exist
     ficture run_together \
-        --in-tsv $in_dir/normalized_input.tsv.gz \
-        --in-minmax $in_dir/normalized_minmax.tsv \
+        --in-tsv $in_dir/input.tsv.gz \
+        --in-minmax $in_dir/minmax.tsv \
         --out-dir $out_dir \
         --mu-scale 1 \
         --major-axis X \
         --all \
         --n-factor ${SLURM_ARRAY_TASK_ID} \
-        --decode-top-k 2
+        --decode-top-k 2 \
+        --fractional-count 1
 else
     ficture run_together \
-        --in-tsv $in_dir/normalized_input.tsv.gz \
-        --in-minmax $in_dir/normalized_minmax.tsv \
+        --in-tsv $in_dir/input.tsv.gz \
+        --in-minmax $in_dir/minmax.tsv \
         --out-dir $out_dir \
         --mu-scale 1 \
         --major-axis X \
         --all \
-        --n-factor ${SLURM_ARRAY_TASK_ID}
+        --n-factor ${SLURM_ARRAY_TASK_ID} \
+        --fractional-count 1
 fi
 
 echo "**** Job ends ****"
