@@ -7,8 +7,6 @@ library("scuttle")
 library("purrr")
 library("IRanges")
 library("S4Vectors")
-# library("limma")
-# library("BayesSpace")
 library("ggplot2")
 library("ggpubr")
 library("ggrepel")
@@ -349,8 +347,8 @@ for (hab_level in habenula_levels) {
 
       message("Model 1")
       message("Brain-Area: Naive Model")
-      model_name = paste0(hab_level, "_model1__", "brainArea_sampleID")
-      plt_subdir <- here(plot_dir, "brainArea_sampleID")
+      model_name = paste0(hab_level, "_model1__", "sampleID-brainID")
+      plt_subdir <- here(plot_dir, "sampleID-brainID")
       if (!dir.exists(plt_subdir)) dir.create(plt_subdir, recursive = TRUE)
 
       # Compute DE results across every pair of group comparisons (e.g. G2 vs G1, G3 vs G1, G3 vs G2, etc.)
@@ -373,8 +371,47 @@ for (hab_level in habenula_levels) {
       create_volcano_plots_pValue(spe_pseudo, dge_results_list, plt_subdir, model_name)
       # Plot volcano with all contrast using FDR:
       create_volcano_plots(spe_pseudo, dge_results_list, plt_subdir, model_name)
+      ## Plot raw p-values to check if we have a flat or U-shaped (not enriched near 0), suggesting no strong DE
+      f_name <- here(plt_subdir, paste0("histograms_of_pvalues-", model_name, ".pdf"))
+      pdf(f_name, width = 7, height = 5)
+      map(dge_results_list, ~ hist(.x$PValue, breaks = 50, main = "Histogram of raw p-values"))
+      dev.off()
 
-      ## checking DE results #######################################################
+      ######### Model 2: Brain-Area: sample_id nspots ###########################
+
+      message("Model 1")
+      message("Brain-Area: Naive Model")
+      model_name = paste0(hab_level, "_model1__", "_sampleID-nspots")
+      plt_subdir <- here(plot_dir, "sampleID-nspots")
+      if (!dir.exists(plt_subdir)) dir.create(plt_subdir, recursive = TRUE)
+
+      # Compute DE results across every pair of group comparisons (e.g. G2 vs G1, G3 vs G1, G3 vs G2, etc.)
+
+      ## Store all results in a list
+      dge_results_list <- lapply(pairwise_contrasts, function(contrast_pair) {
+          cat("Running contrast:", paste(contrast_pair, collapse = " vs "), "\n")
+
+          res <- runPseudobulkEdgeR(
+              sce = spe_pseudo,
+              group_var = "brain_area2",
+              contrast_levels = contrast_pair,
+              covariates = c("sample_id", "nspots"),
+          )
+
+          return(res)
+      })
+
+      # Plot volcano with all contrast using p-value (just to check):
+      create_volcano_plots_pValue(spe_pseudo, dge_results_list, plt_subdir, model_name)
+      # Plot volcano with all contrast using FDR:
+      create_volcano_plots(spe_pseudo, dge_results_list, plt_subdir, model_name)
+      ## Plot raw p-values to check if we have a flat or U-shaped (not enriched near 0), suggesting no strong DE
+      f_name <- here(plt_subdir, paste0("histograms_of_pvalues-", model_name, ".pdf"))
+      pdf(f_name, width = 7, height = 5)
+      map(dge_results_list, ~ hist(.x$PValue, breaks = 50, main = "Histogram of raw p-values"))
+      dev.off()
+
+      ## checking DE results ####################################################
 
       # message("Genes tested: ", nrow(dge_results_list[[1]]))
       # if (nrow(dge_results_list[[1]]) < 200) { message("Small number of genes tested. Likely inflated FDRs. Tested: ", nrow(dge_results_list[[1]])) }
@@ -382,11 +419,6 @@ for (hab_level in habenula_levels) {
       # table(dge_results_list[[1]]$PValue < 0.05)
       # table(dge_results_list[[1]]$FDR < 0.05)
       #
-      ## Plot raw p-values to check if we have a flat or U-shaped (not enriched near 0), suggesting no strong DE
-      f_name <- here(plt_subdir, paste0("histograms_of_pvalues-", model_name, ".pdf"))
-      pdf(f_name, width = 7, height = 5)
-      map(dge_results_list, ~ hist(.x$PValue, breaks = 50, main = "Histogram of raw p-values"))
-      dev.off()
 
       # Combine all into one data.frame
 
