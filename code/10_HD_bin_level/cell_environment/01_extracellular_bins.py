@@ -18,6 +18,10 @@ pre_out_path = here(
 )
 plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'cell_environment')
 mpp = 0.3
+random_state = 0
+num_random_cells = 5
+
+os.makedirs(plot_dir, exist_ok=True)
 
 adata = sc.read(pre_out_path)
 
@@ -26,7 +30,7 @@ b2c.expand_labels(
     adata, 
     labels_key='labels_he_expanded', 
     expanded_labels_key="microenvironment_primary",
-    max_bin_distance = 5
+    max_bin_distance = 3
 )
 
 #   Sanity checks: cell labels should be preserved when expanding
@@ -40,7 +44,7 @@ b2c.expand_labels(
     adata, 
     labels_key='labels_gex', 
     expanded_labels_key="microenvironment_secondary",
-    max_bin_distance = 3
+    max_bin_distance = 5
 )
 
 #   Sanity checks: cell labels should be preserved when expanding
@@ -89,3 +93,34 @@ secondary_df = (
         )
         .assign(sample_id = sample_id)
 )
+
+#   Add 'cell_component' column for informative coloring of plots
+adata.obs['cell_component'] = 'Unlabeled'
+adata.obs.loc[adata.obs['microenvironment_secondary'] != 0, 'cell_component'] = 'Sec. Extracellular'
+adata.obs.loc[adata.obs['labels_gex'] != 0, 'cell_component'] = 'Sec. Cell Body'
+adata.obs.loc[adata.obs['microenvironment_primary'] != 0, 'cell_component'] = 'Extracellular'
+adata.obs.loc[adata.obs['labels_he_expanded'] != 0, 'cell_component'] = 'Cell Body'
+adata.obs.loc[adata.obs['labels_he'] != 0, 'cell_component'] = 'Nucleus'
+
+random_cells = primary_df.sample(
+    n = num_random_cells, random_state = random_state
+)['cell_id'].values
+
+for i in range(num_random_cells):
+    small_adata = adata[adata.obs['microenvironment_primary'] == random_cells[i], :]
+    small_adata = adata[
+        (adata.obs['array_row'] >= small_adata.obs['array_row'].min() - 40) &
+        (adata.obs['array_row'] <= small_adata.obs['array_row'].max() + 40) &
+        (adata.obs['array_col'] >= small_adata.obs['array_col'].min() - 40) &
+        (adata.obs['array_col'] <= small_adata.obs['array_col'].max() + 40),
+        :
+    ]
+    
+    sc.pl.spatial(
+        small_adata, color=[None, "cell_component"],
+        img_key=f"{mpp}_mpp_150_buffer", basis="spatial_cropped_150_buffer"
+    )
+    plt.savefig(
+        os.path.join(plot_dir, f'{sample_id}_primary_cell{i+1}.png')
+    )
+    plt.close('all')
