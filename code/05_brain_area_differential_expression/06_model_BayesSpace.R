@@ -24,6 +24,9 @@ library("here")
 library("sessioninfo")
 library("spatialLIBD")
 
+# > packageVersion("spatialLIBD")
+# [1] ‘1.21.4’
+
 ## output directory
 dir_rdata <- here("processed-data","05_brain_area_differential_expression")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
