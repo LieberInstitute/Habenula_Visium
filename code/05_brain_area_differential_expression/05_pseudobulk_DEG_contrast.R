@@ -45,16 +45,17 @@ create_volcano_plots <- function(sce_p,
                                  output_dir,
                                  model_name) {
 
-  ## Plot all contrast computed for specific Bayes-Space k
+  ## Plot all contrast computed for specific Bayes-Space k - By FDR
 
   # for testing
   # sce = spe_pseudo
   # contrast_grps = dge_results_df
   # model_name = paste0("model1_k", k_nice)
 
-  # customize subdir name
-  output_subdir = here(output_dir, paste0(model_name, "_contrast"))
-  if (!dir.exists(output_subdir)) dir.create(output_subdir, , recursive = TRUE, showWarnings = FALSE)
+    f_name = paste0("volcano_FDR_", model_name, ".pdf")
+    pdf_file_path <- file.path(output_dir, f_name)
+    print(pdf_file_path)
+    pdf(file = pdf_file_path, width = 8, height = 8)
 
   for (cg in seq_along(contrast_grps)) {
 
@@ -72,14 +73,6 @@ create_volcano_plots <- function(sce_p,
     gene_name_map <- rowData(sce_p)$gene_name
     names(gene_name_map) <- rownames(sce_p)
     contrast_grp_results$gene_name <- gene_name_map[rownames(contrast_grp_results)]
-
-    # cutomize file name
-    f_name = paste0("volcano_", cg_name, "_", model_name, ".pdf")
-    # volcano_G1-G2_model1_k13.pdf
-
-    pdf_file_path <- file.path(output_subdir, f_name)
-    print(pdf_file_path)
-    pdf(file = pdf_file_path, width = 8, height = 8)
 
     # Keep only rows where both logFC and FDR (adj.P.Val) are not NA
     contrast_grp_results <- contrast_grp_results[!is.na(contrast_grp_results$logFC) & !is.na(contrast_grp_results$FDR), ]
@@ -107,9 +100,8 @@ create_volcano_plots <- function(sce_p,
                          # max.overlaps = inf        # Helps manage overcrowding
     ))
 
-    dev.off()
-
   }
+  dev.off()
 
 }
 
@@ -318,6 +310,8 @@ for (k in k_values) {
   map(dge_results_list, ~ hist(.x$PValue, breaks = 50, main = "Histogram of raw p-values"))
   dev.off()
 
+  # Plot volcano using p-value (just to check):
+  create_volcano_plots_pValue(spe_pseudo, dge_results_list, plot_dir, model_name)
 
   ######### Model 2: Brain-Area + 1 co-variable #############
 
@@ -364,7 +358,70 @@ for (k in k_values) {
 
 
 
+create_volcano_plots_pValue <- function(sce_p,
+                                        contrast_grps,
+                                        output_dir,
+                                        model_name) {
 
+    ## Plot all contrast computed for specific Bayes-Space k
+    ## plot Volcano with PValues just to check
+
+    # Testing:
+    # sce = spe_pseudo
+    # contrast_grps = dge_results_df
+    # model_name = paste0("model1_k", k_nice)
+
+    f_name = paste0("volcano_PValue_", model_name, ".pdf")
+    pdf_file_path <- file.path(output_dir, f_name)
+    print(pdf_file_path)
+    pdf(file = pdf_file_path, width = 8, height = 8)
+
+    for (cg in seq_along(contrast_grps)) {
+
+        # First contrast grp
+        # cg = 1
+        cg_name <- gsub(" ", "", unique(contrast_grps[[cg]]["contrast"]))
+
+        print(cg)
+        message("Processing contrast group: ", cg_name)
+        # Processing contrast group: G1-G2
+
+        contrast_grp_results <- contrast_grps[[cg]]
+
+        ## Add gene names to your DE results. Create a named vector and map the gene_names
+        gene_name_map <- rowData(sce_p)$gene_name
+        names(gene_name_map) <- rownames(sce_p)
+        contrast_grp_results$gene_name <- gene_name_map[rownames(contrast_grp_results)]
+
+        # Keep only rows where both logFC and FDR (adj.P.Val) are not NA
+        contrast_grp_results <- contrast_grp_results[!is.na(contrast_grp_results$logFC) & !is.na(contrast_grp_results$PValue), ]
+        sum(is.na(contrast_grp_results$PValue))
+        # Ensure adj.P.Val is truly numeric
+        contrast_grp_results$PValue <- as.numeric(contrast_grp_results$PValue)
+
+        lab = contrast_grp_results$gene_name
+        top_genes <- head(contrast_grp_results$gene_name[order(contrast_grp_results$PValue)], 20)
+
+        plot(EnhancedVolcano(contrast_grp_results,
+                             lab = contrast_grp_results$gene_name,
+                             selectLab = top_genes,     # Only label these
+                             x = 'logFC',
+                             y =  "PValue",
+                             title = paste("Contrast grp: ", cg_name),
+                             subtitle = model_name,
+                             pCutoff = 0.05,            # Adjust as needed
+                             FCcutoff = 0.5,            # Adjust log2 fold change threshold
+                             pointSize = 2.0,
+                             labSize = 4.0,
+                             drawConnectors = TRUE,   # Optional: lines from points to labels
+                             widthConnectors = 0.5
+        ))
+
+    }
+
+    dev.off()
+
+}
 
 
 
