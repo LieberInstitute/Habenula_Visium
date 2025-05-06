@@ -111,7 +111,7 @@ runPseudobulkEdgeR <- function(
     sce_p,               # pseudobulk data
     group_var,           # column name in colData(sce) to use for group comparison (e.g. "brain_area2")
     contrast_levels,     # vector of two levels to contrast (e.g., c("G2", "G1"))
-    covariates = c("sample_id", "brain_id"),
+    covariates = covars, # c("sample_id", "brain_id"),
     assay_type = "counts",
     min_genes = 200
 ) {
@@ -274,7 +274,7 @@ for (k in k_values) {
   # [[1]]
   # [1] "G1" "G2"
 
-  ######### Model 1: Brain-Area Naive Model #############
+  ######### Model 1: Brain-Area Naive Model ####################################
 
   message("Model 1")
   message("Brain-Area: Naive Model")
@@ -290,54 +290,36 @@ for (k in k_values) {
     res <- runPseudobulkEdgeR(
       sce = spe_pseudo,
       group_var = "brain_area2",
-      contrast_levels = contrast_pair
+      contrast_levels = contrast_pair,
+      covariates = c("sample_id", "brain_id"),
     )
 
     return(res)
 
   })
 
-  ## checking DE List results
-  message("Genes tested: ", nrow(dge_results_list[[1]]))
-  if (nrow(dge_results_list[[1]]) < 200) { message("Small number of genes tested. Likely inflated FDRs. Tested: ", nrow(dge_results_list[[1]])) }
-  summary(dge_results_list[[1]])
-  table(dge_results_list[[1]]$PValue < 0.05)
-  table(dge_results_list[[1]]$FDR < 0.05)
-
-  ## lot raw p-values to check if we have a flat or U-shaped (not enriched near 0), suggesting no strong DE
-  f_name <- here(plot_dir, paste0("histograms_of_pvalues-", model_name, ".pdf"))
-  pdf(f_name, width = 7, height = 5)
-  map(dge_results_list, ~ hist(.x$PValue, breaks = 50, main = "Histogram of raw p-values"))
-  dev.off()
-
-  # Plot volcano using p-value (just to check):
+  # Plot volcano with all contrast using p-value (just to check):
   create_volcano_plots_pValue(spe_pseudo, dge_results_list, plot_dir, model_name)
+  # Plot volcano with all contrast using FDR:
+  create_volcano_plots(spe_pseudo, dge_results_list, plot_dir, model_name)
 
-  ######### Model 2: Brain-Area + 1 co-variable #############
 
-  #use coef = "brain_area2G2:sexM" or create a contrast.
-  #design = ~ brain_area2 * brain_id
+  ## checking DE results #######################################################
 
-  # e.g. First contrast group
-  #head(dge_results_list[[1]])
-  #                       logFC   logCPM         F      PValue       FDR
-  # ENSG00000074657 -0.3563410 5.786637 10.001880 0.001884399 0.9999613
-  # ENSG00000157593 -0.5712547 5.386361  9.274807 0.002712389 0.9999613
-  # ENSG00000100225 -0.3704179 6.019549  8.567266 0.003958746 0.9999613
-  # ENSG00000183513 -0.4371085 5.865209  8.357765 0.004402942 0.9999613
-  # ENSG00000175265 -0.4104273 5.624887  7.529694 0.006773970 0.9999613
-  # ENSG00000114805  0.6765182 4.774126  6.885194 0.009451898 0.9999613
-  # gene contrast
-  # ENSG00000074657 ENSG00000074657  G1 - G2
-  # ENSG00000157593 ENSG00000157593  G1 - G2
-  # ENSG00000100225 ENSG00000100225  G1 - G2
-  # ENSG00000183513 ENSG00000183513  G1 - G2
-  # ENSG00000175265 ENSG00000175265  G1 - G2
-  # ENSG00000114805 ENSG00000114805  G1 - G2
+  # message("Genes tested: ", nrow(dge_results_list[[1]]))
+  # if (nrow(dge_results_list[[1]]) < 200) { message("Small number of genes tested. Likely inflated FDRs. Tested: ", nrow(dge_results_list[[1]])) }
+  # summary(dge_results_list[[1]])
+  # table(dge_results_list[[1]]$PValue < 0.05)
+  # table(dge_results_list[[1]]$FDR < 0.05)
+  #
+  # ## lot raw p-values to check if we have a flat or U-shaped (not enriched near 0), suggesting no strong DE
+  # f_name <- here(plot_dir, paste0("histograms_of_pvalues-", model_name, ".pdf"))
+  # pdf(f_name, width = 7, height = 5)
+  # map(dge_results_list, ~ hist(.x$PValue, breaks = 50, main = "Histogram of raw p-values"))
+  # dev.off()
 
   # Combine all into one data.frame
 
-  dge_results_df <- dge_results_list # testing
   # dge_results_df <- bind_rows(dge_results_list)
   # head(dge_results_df)
   # table(dge_results_df$contrast)
@@ -349,10 +331,6 @@ for (k in k_values) {
 
   # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
 
-  ## all contrast over all clusters
-  #create_volcano_plots(data, dge_results_df, plot_dir, paste0("model1_k", k_nice))
-  ## all contrast over all clusters only in the Hb domain(s)
-  create_volcano_plots(spe_pseudo, dge_results_df, plot_dir, model_name)
 
 }
 
@@ -422,6 +400,13 @@ create_volcano_plots_pValue <- function(sce_p,
     dev.off()
 
 }
+
+
+library("slurmjobs")
+slurmjobs::job_single('05_pseudobulk_DEG_contrast',
+                      create_shell = TRUE, memory = '30G',
+                      command = "05_pseudobulk_DEG_contrast.R",
+                      partition = "katun")
 
 
 
