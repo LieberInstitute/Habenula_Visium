@@ -20,6 +20,7 @@ plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'cell_environment')
 mpp = 0.3
 random_state = 0
 num_random_cells = 5
+min_bins_per_cell = 4
 
 os.makedirs(plot_dir, exist_ok=True)
 
@@ -30,7 +31,7 @@ b2c.expand_labels(
     adata, 
     labels_key='labels_he_expanded', 
     expanded_labels_key="microenvironment_primary",
-    max_bin_distance = 3
+    max_bin_distance = 4
 )
 
 #   Sanity checks: cell labels should be preserved when expanding
@@ -44,7 +45,7 @@ b2c.expand_labels(
     adata, 
     labels_key='labels_gex', 
     expanded_labels_key="microenvironment_secondary",
-    max_bin_distance = 5
+    max_bin_distance = 4
 )
 
 #   Sanity checks: cell labels should be preserved when expanding
@@ -65,6 +66,25 @@ b2c.salvage_secondary_labels(
 #   bins, but never previously primary ones
 assert all(adata.obs['microenvironment_joint_source'][adata.obs['labels_joint_source'] == 'primary'] == 'primary')
 assert not all(adata.obs['microenvironment_joint_source'][adata.obs['labels_joint_source'] == 'secondary'] == 'secondary')
+
+#   At this point, one problem can emerge: because primary labels take priority
+#   over secondary ones, the cell body of a previously secondary cell can be
+#   overwritten by a primary label (microenvironment), while the extracellular
+#   microenvironment remains. In this case, we want to drop the associated
+#   microenvironment bins, since they don't correspond to a cell.
+a = (
+    adata.obs
+        .loc[
+            (adata.obs['microenvironment_joint_source'] == 'secondary') &
+            (adata.obs['labels_gex'] != 0),
+            :
+        ]
+        .groupby('labels_gex')
+        .filter(lambda x: len(x) < min_bins_per_cell)
+        ['labels_gex']
+        .unique()
+)
+adata = adata[~adata.obs['microenvironment_secondary'].isin(a), :]
 
 primary_df = adata.obs[['microenvironment_primary']][
     (adata.obs['microenvironment_joint_source'] == 'primary') &
