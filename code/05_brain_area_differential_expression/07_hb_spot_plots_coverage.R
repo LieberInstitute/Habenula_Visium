@@ -1,11 +1,13 @@
 library("here")
 library("spatialLIBD") #[1] ‘1.21.4’
+library("purrr")
 library("sessioninfo")
 
 ## load spe data
 
 spe_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony_ann.rds")
 spe <- readRDS(spe_in)
+
 
 ## Quick inspection
 spe
@@ -64,3 +66,7 @@ vis_grid_clus(
              "grey", "grey", "grey", "grey", "blue",
              "grey", "grey")
 )
+
+
+
+

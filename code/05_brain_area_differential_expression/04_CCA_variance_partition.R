@@ -101,7 +101,6 @@ for (k in k_values) {
   #   theme_bw() +
   #   labs(x = "Brain Area", y = "PC1", title = "PC1 by Brain Area")
   
-  
   ## Then, build Box-Plots of PCs vs Brain-Areas to check variance among Brain-Areas  
   
   ## Access PCA reduced dimensions
@@ -138,6 +137,7 @@ for (k in k_values) {
   rm("spe_pseudo")
   
 }
+
 
 message("CCA done!")
 
