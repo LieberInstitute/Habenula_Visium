@@ -73,52 +73,68 @@ spe$BayesSpace <- factor(
     )
   )
 )
-head(unique(spe$BayesSpace))
+
+sort(unique(spe$BayesSpace))
 # [1] Sp02D02 Sp02D01
 # Levels: Sp02D01 Sp02D02
-
 levels(colData(spe)$BayesSpace)
 # [1] "Sp02D01" "Sp02D02"
 
-## load spatial-registration to pull short annotated labels
+## load annotated data at 'Broad' level to extract short annotated labels
 
 dir_labels <- here("processed-data",
                   "06_spatial_registration_vs_snRNA-seq",
                   "cor_BayesSpace_vs_snRNA-seq_top100_Hb_merged.Rdata")
 load(dir_labels)
 # [3] "cor_broad"               "cor_fine"
-levels(cor_broad)
-# sort(rownames(cor_broad[[k-1]]))
 
-# rename the levels to make them readable in the plots (used Hb pilot Broad annotations)
+# rename the levels to make them readable in the plots (uses Hb pilot Broad annotations)
 
-colData(spe)$BayesSpace <- factor(colData(spe)$BayesSpace)
+# colData(spe)$BayesSpace <- factor(colData(spe)$BayesSpace)
 levels(colData(spe)$BayesSpace) <- c(sort(rownames(cor_broad[[k-1]])))
 levels(colData(spe)$BayesSpace)
 # [1] "Sp02D01 ~ Oligo"      "Sp02D02 ~ Inhib.Thal"
 
-## we need to double-check the annotated BayesSpace names/levels do have syntactically valid names
+## we need to double-check if the annotated BayesSpace names/levels do have syntactically valid names
 #  - this avoid error further when computing other process. g.e: 'registration_stats_pairwise'
-old_bs_names <- spe$BayesSpace
-new_bs_names <- gsub("/", "_",  # substitute cell-type '/' separator
-                     gsub(" ~ ", ".", spe$BayesSpace)) # substitute ' ~ '
-new_bs_names <- gsub("\\*$", "",  new_bs_names) # substitute '*' added to significant cell-types
-unique(new_bs_names)
-level_map <- setNames(new_bs_names, old_bs_names)
-# Match original BayesSpace labels in spe to new names
-spe$BayesSpace <- level_map[as.character(spe$BayesSpace)]
-unique(spe$BayesSpace)
-spe$BayesSpace <- factor(spe$BayesSpace)
-levels(colData(spe)$BayesSpace)
-# [1] "Sp13D08.OPC_Astroc" "Sp13D11.Habenula"   "Sp13D07.Astrocyte"
-# [4] "Sp13D01.Oligo"      "Sp13D02.Endo"       "Sp13D10.Oligo"
-# [7] "Sp13D03.Endo"       "Sp13D04.Astrocyte"  "Sp13D06.Astrocyte"
-# [10] "Sp13D09.Astrocyte_" "Sp13D13.Oligo"      "Sp13D12.Oligo"
-# [13] "Sp13D05.Inhib.Thal"
 
-#colnames(colData(spe))
+# Make sure it's a factor
+spe$BayesSpace <- factor(spe$BayesSpace)
+# Clean the levels (not the values)
+levels(spe$BayesSpace) <- gsub("\\s*~\\s*", ".", levels(spe$BayesSpace))  # Replace ~
+levels(spe$BayesSpace) <- gsub("/", "_", levels(spe$BayesSpace))          # Replace /
+levels(spe$BayesSpace) <- gsub("\\*$", "", levels(spe$BayesSpace))        # Remove *
+# Check
+levels(spe$BayesSpace)
+head(spe$BayesSpace)
+
+
+## quick inspection: check how many genes expressed by cluster we have before pseudobulk
+
 table(colData(spe)$brain_id, colData(spe)$sample_id)
 table(colData(spe)$brain_id, colData(spe)$BayesSpace)
+
+# number of genes before pseudobulk
+expr_mat <- assay(spe, "logcounts")
+clusters <- spe$BayesSpace
+unique_clusters <- levels(factor(clusters))
+genes_per_cluster <- sapply(unique_clusters, function(clust) {
+    # Subset expression matrix to spots in this cluster
+    cluster_expr <- expr_mat[, clusters == clust]
+    # Count genes with at least one non-zero value in the cluster
+    sum(rowSums(cluster_expr > 0) > 0)
+})
+gene_counts_df <- data.frame(
+    Cluster = unique_clusters,
+    Num_Expressed_Genes = genes_per_cluster,
+    row.names = NULL
+)
+# gene_counts_df
+#               Cluster Num_Expressed_Genes
+# 1      Sp03D01.Oligo               18798
+# 2   Sp03D02.Habenula               26223
+# 3 Sp03D03.Inhib.Thal               21454
+
 
 ## Assign new 'brain-area' based in posterior-anterior locations defined by KDM based on RNAScope
 
@@ -140,28 +156,27 @@ colData(spe)$brain_area2 <- case_when(
     colData(spe)$sample_id == "V13B23-280_D1" ~
     "G4"
 )
+
+# Make sure it's a factor
+spe$brain_area2 <- factor(spe$brain_area2)
+table(spe$BayesSpace, spe$brain_area2)
+#                       G0   G1   G2   G3   G4
+# Sp03D01.Oligo       700 1538 1231 1335 1154
+# Sp03D02.Habenula   3100 6031 6239 6763 3963
+# Sp03D03.Inhib.Thal    3  336  341  394  281
+
 table(colData(spe)$brain_id, colData(spe)$brain_area2)
 #           G0   G1   G2   G3   G4
 # Br8518 3803 3119 3201 3118    0
 # Br9037    0 3117 2921 3580 3515
 # Br9090    0 1669 1689 1794 1883
 
-# Previous definition
-# colData(spe)$brain_area_DEG <- ifelse(
-#   colData(spe)$brain_area == "AR6" | colData(spe)$brain_area == "AL5",
-#   "Anterior",
-#   "Posterior"
-# )
-# table(colData(spe)$brain_area_DEG)
-# Anterior Posterior
-# 22571     10838
-
 table(colData(spe)$brain_id)
 # Br8518 Br9037 Br9090
 # 13241  13133   7035
 
 
-## save new spe object containing clusters with Broad annotation (human-pilot project) + new defined gene-brain regions from anterior to posterior
+## save new spe object containing clusters with Broad annotations (human-pilot project) + new defined gene-brain regions from anterior to posterior
 
 spe_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony_ann.rds")
 saveRDS(
@@ -175,23 +190,42 @@ message("Processing BayesSpace k=", k_nice)
 
 # Perform pseudobulk across BayesSpace and sample_id
 
-spe_pseudo_k <- aggregateAcrossCells(
+spe_pseudo_k <- scuttle::aggregateAcrossCells(
   spe,
   DataFrame(
     BayesSpace_p = spe[[paste0("BayesSpace_harmony_k", k_nice)]],
     reg_sample_id = spe$sample_id
   )
 )
-# make the BayesSpace levels identical 
+
+## quick inspection: check how many genes expressed by cluster we have after pseudobulk
+
+expr_mat <- assay(spe_pseudo_k, "counts")  # or "counts" if logcounts not available
+clusters <- spe_pseudo_k$BayesSpace
+unique_clusters <- unique(clusters)
+# Count expressed genes per cluster
+genes_per_cluster <- sapply(unique_clusters, function(clust) {
+    cluster_expr <- expr_mat[, clusters == clust]
+    # Count genes with expression > 0 in at least one pseudobulked sample
+    sum(rowSums(cluster_expr > 0) > 0)
+})
+gene_counts_df <- data.frame(
+    Cluster = unique_clusters,
+    Num_Expressed_Genes = genes_per_cluster,
+    row.names = NULL
+)
+gene_counts_df
+#               Cluster Num_Expressed_Genes
+# 1      Sp03D01.Oligo               18798
+# 2   Sp03D02.Habenula               26223
+# 3 Sp03D03.Inhib.Thal               21454
+
+
+# make the BayesSpace levels identical
 spe_pseudo_k$BayesSpace_p <- spe_pseudo_k$BayesSpace
-identical(spe_pseudo_k$BayesSpace, spe_pseudo_k$BayesSpace_p) 
-levels(spe_pseudo_k$BayesSpace)
-levels(spe_pseudo_k$BayesSpace_p)
-# [1] "Sp13D01.Oligo"      "Sp13D02.Endo"       "Sp13D03.Endo"      
-# [4] "Sp13D04.Astrocyte"  "Sp13D05.Inhib.Thal" "Sp13D06.Astrocyte" 
-# [7] "Sp13D07.Astrocyte"  "Sp13D08.OPC_Astroc" "Sp13D09.Astrocyte_"
-# [10] "Sp13D10.Oligo"      "Sp13D11.Habenula"   "Sp13D12.Oligo"     
-# [13] "Sp13D13.Oligo"   
+identical(spe_pseudo_k$BayesSpace, spe_pseudo_k$BayesSpace_p)
+levels(spe_pseudo_k$BayesSpace) == levels(spe_pseudo_k$BayesSpace_p)
+# [1] TRUE TRUE TRUE
 
 message("Aggregation completed for k=", k_nice)
 message(
@@ -387,22 +421,6 @@ spe_pseudo <- scater::runPCA(
 dim(reducedDim(spe_pseudo, "PCA"))
 # [1] 24 23
 
-# message(
-#   Sys.time(),
-#   " % of variance explained for the top ",
-#   n_components,
-#   " PCs:"
-# )
-# ##  computes the percent of variance explained by each of the principal components - created with prcomp
-# metadata(spe_pseudo) <- list(
-#   "PCA_var_explained" = jaffelab::getPcaVars(pca)[seq_len(n_components)]
-# )
-# # metadata(spe_pseudo)
-# colnames(pca$x) <- paste0("PC", sprintf("%02d", seq_len(ncol(pca$x))))
-# # head(pca$x)
-# # View PCA values
-# head(reducedDim(spe_pseudo, "PCA"))
-# reducedDims(spe_pseudo) <- list(PCA = pca$x)
 
 ## For the spatialLIBD shiny app
 
@@ -424,7 +442,7 @@ saveRDS(
   spe_pseudo,
   file = file.path(
     dir_rdata,
-    paste0("sce_pseudo_PCA_brain_area_k", sprintf("%02d", k), ".rds")
+    paste0("sce_pseudo_PCA_brain_area_k", k_nice, ".rds")
   )
 )
 
