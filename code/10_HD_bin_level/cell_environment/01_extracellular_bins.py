@@ -118,31 +118,20 @@ adata = adata[
 #   Form DataFrame of extracellular bins for export
 ################################################################################
 
-primary_df = adata.obs[['microenvironment_primary']][
-    (adata.obs['microenvironment_joint_source'] == 'primary') &
-    (adata.obs['labels_he_expanded'] == 0) &
-    (adata.obs['microenvironment_joint'] != 0) # not actually sure why this isn't redundant
-]
-primary_df = (
-    primary_df
-        .reset_index()
-        .rename(
-            {'index': 'bin_id', 'microenvironment_primary': 'cell_id'}, axis = 1
-        )
-        .assign(sample_id = sample_id)
-)
+extracellular_df = adata.obs[
+    adata.obs['cell_component'].isin(['Prim. Extracellular', 'Sec. Extracellular'])
+].copy()
 
-secondary_df = adata.obs[['microenvironment_secondary']][
-    (adata.obs['microenvironment_joint_source'] == 'secondary') &
-    (adata.obs['labels_gex'] == 0) &
-    (adata.obs['microenvironment_joint'] != 0) # not actually sure why this isn't redundant
+#   Add 'cell_id' column
+extracellular_df['cell_id'] = extracellular_df['microenvironment_secondary']
+mask = extracellular_df['cell_component'] == 'Prim. Extracellular'
+extracellular_df.loc[mask, 'cell_id'] = extracellular_df.loc[
+    mask, 'microenvironment_primary'
 ]
-secondary_df = (
-    secondary_df
-        .reset_index()
-        .rename(
-            {'index': 'bin_id', 'microenvironment_secondary': 'cell_id'}, axis = 1
-        )
+
+extracellular_df = (
+    extracellular_df[['cell_id']]
+        .reset_index(names = 'bin_id')
         .assign(sample_id = sample_id)
 )
 
@@ -150,12 +139,15 @@ secondary_df = (
 #   Visualize cell segmentations and surrounding microenvironment
 ################################################################################
 
-random_cells = primary_df.sample(
-    n = num_random_cells, random_state = random_state
-)['cell_id'].values
+random_cell = (
+    extracellular_df
+        .loc[mask.values, :]
+        .sample(n = 1, random_state = random_state)
+        ['cell_id']
+        .values[0]
+)
+small_adata = adata[adata.obs['microenvironment_primary'] == random_cell, :]
 
-for i in range(num_random_cells):
-small_adata = adata[adata.obs['microenvironment_primary'] == random_cells[i], :]
 small_adata = adata[
     (adata.obs['array_row'] >= small_adata.obs['array_row'].min() - 40) &
     (adata.obs['array_row'] <= small_adata.obs['array_row'].max() + 40) &
@@ -169,6 +161,6 @@ sc.pl.spatial(
     img_key=f"{mpp}_mpp_150_buffer", basis="spatial_cropped_150_buffer"
 )
 plt.savefig(
-    os.path.join(plot_dir, f'{sample_id}_primary_cell{i+1}.png')
+    os.path.join(plot_dir, f'{sample_id}_random_cells.png')
 )
 plt.close('all')
