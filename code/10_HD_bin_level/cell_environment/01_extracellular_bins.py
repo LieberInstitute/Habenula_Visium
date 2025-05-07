@@ -24,6 +24,10 @@ min_bins_per_cell = 4
 
 os.makedirs(plot_dir, exist_ok=True)
 
+################################################################################
+#   Find microenvironment around primary and secondary segmentations
+################################################################################
+
 adata = sc.read(pre_out_path)
 
 #   Label microenvironment around primary segmentations (nuclei)
@@ -67,24 +71,52 @@ b2c.salvage_secondary_labels(
 assert all(adata.obs['microenvironment_joint_source'][adata.obs['labels_joint_source'] == 'primary'] == 'primary')
 assert not all(adata.obs['microenvironment_joint_source'][adata.obs['labels_joint_source'] == 'secondary'] == 'secondary')
 
+################################################################################
+#   Drop secondary microenvironment bins not associated with a cell
+################################################################################
+
+#   Add 'cell_component' column for informative coloring of plots
+adata.obs['cell_component'] = 'Unlabeled'
+adata.obs.loc[adata.obs['microenvironment_secondary'] != 0, 'cell_component'] = 'Sec. Extracellular'
+adata.obs.loc[adata.obs['labels_gex'] != 0, 'cell_component'] = 'Sec. Cell Body'
+adata.obs.loc[adata.obs['microenvironment_primary'] != 0, 'cell_component'] = 'Prim. Extracellular'
+adata.obs.loc[adata.obs['labels_he_expanded'] != 0, 'cell_component'] = 'Prim. Cell Body'
+adata.obs.loc[adata.obs['labels_he'] != 0, 'cell_component'] = 'Prim. Nucleus'
+
 #   At this point, one problem can emerge: because primary labels take priority
 #   over secondary ones, the cell body of a previously secondary cell can be
 #   overwritten by a primary label (microenvironment), while the extracellular
 #   microenvironment remains. In this case, we want to drop the associated
 #   microenvironment bins, since they don't correspond to a cell.
-a = (
+temp = (
     adata.obs
-        .loc[
-            (adata.obs['microenvironment_joint_source'] == 'secondary') &
-            (adata.obs['labels_gex'] != 0),
-            :
-        ]
+        .loc[adata.obs['labels_gex'] != 0, :]
         .groupby('labels_gex')
-        .filter(lambda x: len(x) < min_bins_per_cell)
-        ['labels_gex']
+        .apply(
+            lambda x: (x['cell_component'] == 'Sec. Cell Body').sum(),
+            include_groups=False
+        )
+        .reset_index()
+)
+bad_cells = (
+    temp
+        .loc[temp.iloc[:, 1] < min_bins_per_cell, 'labels_gex']
         .unique()
 )
-adata = adata[~adata.obs['microenvironment_secondary'].isin(a), :]
+
+num_secondary = len(adata.obs['microenvironment_secondary'].unique()) - 1
+print(f"Dropping {len(bad_cells)} of {num_secondary} ({round(100 * len(bad_cells) / num_secondary, 1)}%) secondary cells with fewer than {min_bins_per_cell} bins")
+adata = adata[
+    ~(
+        adata.obs['microenvironment_secondary'].isin(bad_cells) &
+        adata.obs['cell_component'].isin(['Sec. Extracellular', 'Sec. Cell Body'])
+    ),
+    :
+]
+
+################################################################################
+#   Form DataFrame of extracellular bins for export
+################################################################################
 
 primary_df = adata.obs[['microenvironment_primary']][
     (adata.obs['microenvironment_joint_source'] == 'primary') &
@@ -109,38 +141,34 @@ secondary_df = (
     secondary_df
         .reset_index()
         .rename(
-            {'index': 'bin_id', 'microenvironment_primary': 'cell_id'}, axis = 1
+            {'index': 'bin_id', 'microenvironment_secondary': 'cell_id'}, axis = 1
         )
         .assign(sample_id = sample_id)
 )
 
-#   Add 'cell_component' column for informative coloring of plots
-adata.obs['cell_component'] = 'Unlabeled'
-adata.obs.loc[adata.obs['microenvironment_secondary'] != 0, 'cell_component'] = 'Sec. Extracellular'
-adata.obs.loc[adata.obs['labels_gex'] != 0, 'cell_component'] = 'Sec. Cell Body'
-adata.obs.loc[adata.obs['microenvironment_primary'] != 0, 'cell_component'] = 'Extracellular'
-adata.obs.loc[adata.obs['labels_he_expanded'] != 0, 'cell_component'] = 'Cell Body'
-adata.obs.loc[adata.obs['labels_he'] != 0, 'cell_component'] = 'Nucleus'
+################################################################################
+#   Visualize cell segmentations and surrounding microenvironment
+################################################################################
 
 random_cells = primary_df.sample(
     n = num_random_cells, random_state = random_state
 )['cell_id'].values
 
 for i in range(num_random_cells):
-    small_adata = adata[adata.obs['microenvironment_primary'] == random_cells[i], :]
-    small_adata = adata[
-        (adata.obs['array_row'] >= small_adata.obs['array_row'].min() - 40) &
-        (adata.obs['array_row'] <= small_adata.obs['array_row'].max() + 40) &
-        (adata.obs['array_col'] >= small_adata.obs['array_col'].min() - 40) &
-        (adata.obs['array_col'] <= small_adata.obs['array_col'].max() + 40),
-        :
-    ]
-    
-    sc.pl.spatial(
-        small_adata, color=[None, "cell_component"],
-        img_key=f"{mpp}_mpp_150_buffer", basis="spatial_cropped_150_buffer"
-    )
-    plt.savefig(
-        os.path.join(plot_dir, f'{sample_id}_primary_cell{i+1}.png')
-    )
-    plt.close('all')
+small_adata = adata[adata.obs['microenvironment_primary'] == random_cells[i], :]
+small_adata = adata[
+    (adata.obs['array_row'] >= small_adata.obs['array_row'].min() - 40) &
+    (adata.obs['array_row'] <= small_adata.obs['array_row'].max() + 40) &
+    (adata.obs['array_col'] >= small_adata.obs['array_col'].min() - 40) &
+    (adata.obs['array_col'] <= small_adata.obs['array_col'].max() + 40),
+    :
+]
+
+sc.pl.spatial(
+    small_adata, color=[None, "cell_component"],
+    img_key=f"{mpp}_mpp_150_buffer", basis="spatial_cropped_150_buffer"
+)
+plt.savefig(
+    os.path.join(plot_dir, f'{sample_id}_primary_cell{i+1}.png')
+)
+plt.close('all')
