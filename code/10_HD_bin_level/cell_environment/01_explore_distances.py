@@ -1,3 +1,9 @@
+#   We want to look at the microenvironment around cells, but what radius from
+#   each cell centroid is appropriate? This script tries to find an optimum by
+#   finding the point where the number of bins occupied by the smallest 50% of cells
+#   stops increasing despite further expansion (indicating cells are too dense to
+#   benefit much from further expansion).
+
 import scanpy as sc
 import os
 from pyhere import here
