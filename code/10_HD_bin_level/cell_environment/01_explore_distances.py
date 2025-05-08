@@ -9,7 +9,6 @@ import os
 from pyhere import here
 import session_info
 import datetime
-import matplotlib.pyplot as plt
 import plotnine as pn
 import pandas as pd
 
@@ -27,6 +26,10 @@ ficture_path = here(
 pre_out_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix',
     f'{sample_id}_pre_bin2cell.h5ad'
+)
+df_out_path = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'occupation.csv'
 )
 plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'cell_environment')
 
@@ -52,7 +55,7 @@ num_cells = (
 expansion_distance = [0]
 occupation = [num_cells[:int(len(num_cells) / 2)].sum() / adata.shape[0]]
 
-for exp_d in range(1, 11):
+for exp_d in list(range(1, 11)) + [15, 20]:
     adata = ebf.find_microenvironment(adata, expansion_distance = exp_d)
     #   Take the combined number of bins occupied by cells in the lower 50% by
     #   size. The idea is that expansion should not increase this number past a
@@ -78,6 +81,7 @@ occupation_df = pd.DataFrame(
         'occupation': occupation
     }
 )
+occupation_df.to_csv(df_out_path, index = False)
 
 #   Plot fraction of bins occupied by the smallest 50% of cells against
 #   expansion distance
@@ -103,7 +107,7 @@ ficture_df = (
 )
 adata.obs['FICTURE_k4'] = ficture_df['FICTURE_k4']
 
-adata = ebf.find_microenvironment(adata, expansion_distance = 4)
+adata = ebf.find_microenvironment(adata, expansion_distance = 5)
 adata = ebf.drop_bad_secondary_cells(adata, min_bins_per_cell = 4)
 
 ################################################################################
