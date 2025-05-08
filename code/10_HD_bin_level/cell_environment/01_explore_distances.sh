@@ -19,12 +19,14 @@ echo "Job name: ${SLURM_JOB_NAME}"
 echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
-module load visium_hd/1.0
-
-## List current modules for reproducibility
 module list
 
+module load visium_hd/1.0
 python 01_explore_distances.py
+
+module unload visium_hd
+module load conda_R/4.4.x
+Rscript 01_explore_distances.R
 
 echo "**** Job ends ****"
 date
