@@ -75,7 +75,7 @@ occupation_df = pd.DataFrame(
 
 #   Plot fraction of bins occupied by the smallest 50% of cells against
 #   expansion distance
-(
+p = (
     pn.ggplot(
             occupation_df, pn.aes(x = 'expansion_distance', y = 'occupation')
         ) +
@@ -86,7 +86,6 @@ occupation_df = pd.DataFrame(
             y = 'Fraction of Bins Occupied\nby Smallest 50%',
         )
 )
-plt.savefig(os.path.join(plot_dir, 'occupation.png'))
-plt.close('all')
+p.save(filename = 'occupation.png', path = plot_dir)
 
 session_info.show()
