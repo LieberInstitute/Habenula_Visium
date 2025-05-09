@@ -16,10 +16,8 @@ plot_path = here(
     'habenula_spot_plot.png'
 )
 sample_id = 'H1-W369TJK_D1_9090'
-habenula_clusters = c(2, 11, 18)
-cluster_colors = c(
-    '2' = '#0150B8', '11' = '#C23853', '18' = '#E3AA25', 'Other' = '#ACB3B6'
-)
+habenula_clusters = c(2, 11)
+cluster_colors = c('2' = '#0150B8', '11' = '#C23853', 'Other' = '#ACB3B6')
 
 #   Load and subset to a good-looking sample
 spe = loadHDF5SummarizedExperiment(spe_dir)
