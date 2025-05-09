@@ -4,8 +4,8 @@
 #SBATCH --job-name=03_habenula_spot_plots
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/09_HD_cell_level/registration_banksy/logs/03_habenula_spot_plots.txt
-#SBATCH -e ../../../processed-data/09_HD_cell_level/registration_banksy/logs/03_habenula_spot_plots.txt
+#SBATCH -o ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/03_habenula_spot_plots.txt
+#SBATCH -e ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/03_habenula_spot_plots.txt
 
 set -e
 

@@ -4,28 +4,31 @@ library(HDF5Array)
 library(sessioninfo)
 library(tidyverse)
 
-spe_dir = here('processed-data', '09_HD_cell_level', 'spe_norm_filtered')
+spe_dir = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+)
 cluster_path = here(
-    'processed-data', '09_HD_cell_level', 'banksy', 'lambda0_8',
-    'leiden_res1.csv'
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
+    'leiden_res1_4.csv'
 )
 plot_path = here(
-    'plots', '09_HD_cell_level', 'registration_banksy', 'habenula_spot_plot.png'
+    'plots', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
+    'habenula_spot_plot.png'
 )
-sample_id = 'H1-MVPY9BW_A1_8433'
-habenula_clusters = c(4, 6, 11)
+sample_id = 'H1-W369TJK_D1_9090'
+habenula_clusters = c(2, 11, 18)
 cluster_colors = c(
-    '4' = '#0150B8', '6' = '#C23853', '11' = '#E3AA25', 'Other' = '#ACB3B6'
+    '2' = '#0150B8', '11' = '#C23853', '18' = '#E3AA25', 'Other' = '#ACB3B6'
 )
 
-#   Load ans subset to a good-looking sample
+#   Load and subset to a good-looking sample
 spe = loadHDF5SummarizedExperiment(spe_dir)
 spe = spe[, spe$sample_id == sample_id]
 
 #   Add in cluster assignments to 'spe'
 cluster_df = read_csv(cluster_path, show_col_types = FALSE)
 stopifnot(all(spe$key %in% cluster_df$key))
-spe$banksy = cluster_df$banksy_lambda0_8[match(spe$key, cluster_df$key)]
+spe$banksy = cluster_df$banksy_lambda0_2[match(spe$key, cluster_df$key)]
 
 spe$banksy = factor(
     ifelse(
