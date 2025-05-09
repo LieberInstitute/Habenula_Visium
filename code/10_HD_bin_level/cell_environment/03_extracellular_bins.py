@@ -18,7 +18,7 @@ out_path = here(
 
 mpp = 0.3
 min_bins_per_cell = 4
-expansion_distance = 6
+expansion_distance = 5
 
 os.makedirs(plot_dir, exist_ok=True)
 
