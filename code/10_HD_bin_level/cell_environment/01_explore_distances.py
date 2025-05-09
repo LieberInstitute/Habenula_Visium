@@ -8,7 +8,7 @@ import scanpy as sc
 import os
 from pyhere import here
 import session_info
-import datetime
+import matplotlib.pyplot as plt
 import plotnine as pn
 import pandas as pd
 
@@ -96,7 +96,7 @@ p = (
             y = 'Fraction of Bins Occupied\nby Smallest 50%',
         )
 )
-p.save(filename = 'occupation.png', path = plot_dir)
+p.save(filename = os.path.join(plot_dir, 'occupation.png'))
 
 #   Add in FICTURE clusters (k = 4) for this sample to adata.obs
 ficture_df = pd.read_csv(ficture_path, usecols = ficture_cols)
@@ -107,7 +107,7 @@ ficture_df = (
 )
 adata.obs['FICTURE_k4'] = ficture_df['FICTURE_k4']
 
-adata = ebf.find_microenvironment(adata, expansion_distance = 5)
+adata = ebf.find_microenvironment(adata, expansion_distance = 6)
 adata = ebf.drop_bad_secondary_cells(adata, min_bins_per_cell = 4)
 
 ################################################################################
