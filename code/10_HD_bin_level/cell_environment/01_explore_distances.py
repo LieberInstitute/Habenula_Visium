@@ -9,12 +9,14 @@ import os
 from pyhere import here
 import session_info
 import matplotlib.pyplot as plt
-import plotnine as pn
 import pandas as pd
 
 import extracellular_bins_functions as ebf
 
-sample_id = 'H1-W369TJK_D1_9090'
+sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
+with open(sample_id_path, 'r') as f:
+    sample_id = f.read().splitlines()[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
+
 ficture_cols = ['sample_id', 'barcode', 'FICTURE_k4']
 ficture_WM_cluster = 2
 mpp = 0.3
@@ -29,11 +31,12 @@ pre_out_path = here(
 )
 df_out_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
-    'occupation.csv'
+    'occupation', f'{sample_id}.csv'
 )
 plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'cell_environment')
 
 os.makedirs(plot_dir, exist_ok=True)
+os.makedirs(df_out_path.parent, exist_ok=True)
 
 ################################################################################
 #   Determine optimal expansion distance
@@ -83,96 +86,87 @@ occupation_df = pd.DataFrame(
 )
 occupation_df.to_csv(df_out_path, index = False)
 
-#   Plot fraction of bins occupied by the smallest 50% of cells against
-#   expansion distance
-p = (
-    pn.ggplot(
-            occupation_df, pn.aes(x = 'expansion_distance', y = 'occupation')
-        ) +
-        pn.geom_line() +
-        pn.theme_bw(base_size = 20) +
-        pn.labs(
-            x = 'Expansion Distance (Num. Bins)',
-            y = 'Fraction of Bins Occupied\nby Smallest 50%',
-        )
-)
-p.save(filename = os.path.join(plot_dir, 'occupation.png'))
+#   For this particular sample, there are white matter tracts where we'll
+#   explore cell density
+if sample_id == 'H1-W369TJK_D1_9090':
+    #   Add in FICTURE clusters (k = 4) for this sample to adata.obs
+    ficture_df = pd.read_csv(ficture_path, usecols = ficture_cols)
+    ficture_df = (
+        ficture_df
+            .loc[
+                ficture_df['sample_id'] == sample_id,
+                ['barcode', 'FICTURE_k4']
+            ]
+            .set_index('barcode')
+    )
+    adata.obs['FICTURE_k4'] = ficture_df['FICTURE_k4']
 
-#   Add in FICTURE clusters (k = 4) for this sample to adata.obs
-ficture_df = pd.read_csv(ficture_path, usecols = ficture_cols)
-ficture_df = (
-    ficture_df
-        .loc[ficture_df['sample_id'] == sample_id, ['barcode', 'FICTURE_k4']]
-        .set_index('barcode')
-)
-adata.obs['FICTURE_k4'] = ficture_df['FICTURE_k4']
+    adata = ebf.find_microenvironment(adata, expansion_distance = 6)
+    adata = ebf.drop_bad_secondary_cells(adata, min_bins_per_cell = 4)
 
-adata = ebf.find_microenvironment(adata, expansion_distance = 6)
-adata = ebf.drop_bad_secondary_cells(adata, min_bins_per_cell = 4)
+    ############################################################################
+    #   Plot cells in a region rich in white matter
+    ############################################################################
 
-################################################################################
-#   Plot cells in a region rich in white matter
-################################################################################
+    #   For this sample, there are two slices of tissue that center at different
+    #   values of array_col. Find the center of the white matter in one of the
+    #   tissue slices
+    small_obs = adata.obs[
+        (adata.obs['array_col'] > adata.obs['array_col'].max() / 2) &
+        (adata.obs['FICTURE_k4'] == ficture_WM_cluster)
+    ]
+    row_centroid = small_obs['array_row'].mean()
+    col_centroid = small_obs['array_col'].mean()
 
-#   For this sample, there are two slices of tissue that center at different
-#   values of array_col. Find the center of the white matter in one of the
-#   tissue slices
-small_obs = adata.obs[
-    (adata.obs['array_col'] > adata.obs['array_col'].max() / 2) &
-    (adata.obs['FICTURE_k4'] == ficture_WM_cluster)
-]
-row_centroid = small_obs['array_row'].mean()
-col_centroid = small_obs['array_col'].mean()
+    #   After trial and error, a bit of a pertubation from the centroid yields a
+    #   region rich in white matter
+    small_adata = adata[
+        (adata.obs['array_row'] >= row_centroid - 100 - 40) &
+        (adata.obs['array_row'] <= row_centroid - 100 + 40) &
+        (adata.obs['array_col'] >= col_centroid - 40) &
+        (adata.obs['array_col'] <= col_centroid + 40),
+        :
+    ]
+    print(f'Distribution of FICTURE clusters in white-matter-rich region (WM is {ficture_WM_cluster}):')
+    print(small_adata.obs['FICTURE_k4'].value_counts())
 
-#   After trial and error, a bit of a pertubation from the centroid yields a
-#   region rich in white matter
-small_adata = adata[
-    (adata.obs['array_row'] >= row_centroid - 100 - 40) &
-    (adata.obs['array_row'] <= row_centroid - 100 + 40) &
-    (adata.obs['array_col'] >= col_centroid - 40) &
-    (adata.obs['array_col'] <= col_centroid + 40),
-    :
-]
-print(f'Distribution of FICTURE clusters in white-matter-rich region (WM is {ficture_WM_cluster}):')
-print(small_adata.obs['FICTURE_k4'].value_counts())
+    small_adata.obs['FICTURE_k4'] = small_adata.obs['FICTURE_k4'].astype(str)
+    sc.pl.spatial(
+        small_adata, color=[None, "cell_component", "FICTURE_k4"],
+        img_key=f"{mpp}_mpp_150_buffer", basis="spatial_cropped_150_buffer"
+    )
+    plt.savefig(
+        os.path.join(plot_dir, f'{sample_id}_WM.png')
+    )
+    plt.close('all')
 
-small_adata.obs['FICTURE_k4'] = small_adata.obs['FICTURE_k4'].astype(str)
-sc.pl.spatial(
-    small_adata, color=[None, "cell_component", "FICTURE_k4"],
-    img_key=f"{mpp}_mpp_150_buffer", basis="spatial_cropped_150_buffer"
-)
-plt.savefig(
-    os.path.join(plot_dir, f'{sample_id}_WM.png')
-)
-plt.close('all')
+    ############################################################################
+    #   Plot cells in a region without much white matter
+    ############################################################################
 
-################################################################################
-#   Plot cells in a region without much white matter
-################################################################################
+    row_centroid = int(adata.obs['array_row'].max() / 2)
+    col_centroid = int(3 * adata.obs['array_col'].max() / 4)
 
-row_centroid = int(adata.obs['array_row'].max() / 2)
-col_centroid = int(3 * adata.obs['array_col'].max() / 4)
+    small_adata = adata[
+        (adata.obs['array_row'] >= row_centroid - 40) &
+        (adata.obs['array_row'] <= row_centroid + 40) &
+        (adata.obs['array_col'] >= col_centroid - 40) &
+        (adata.obs['array_col'] <= col_centroid + 40),
+        :
+    ]
+    print(f'Distribution of FICTURE clusters in white-matter-absent region (WM is {ficture_WM_cluster}):')
+    print(small_adata.obs['FICTURE_k4'].value_counts())
+    print('Distribution of full tissue sample:')
+    print(adata.obs['FICTURE_k4'].value_counts())
 
-small_adata = adata[
-    (adata.obs['array_row'] >= row_centroid - 40) &
-    (adata.obs['array_row'] <= row_centroid + 40) &
-    (adata.obs['array_col'] >= col_centroid - 40) &
-    (adata.obs['array_col'] <= col_centroid + 40),
-    :
-]
-print(f'Distribution of FICTURE clusters in white-matter-absent region (WM is {ficture_WM_cluster}):')
-print(small_adata.obs['FICTURE_k4'].value_counts())
-print('Distribution of full tissue sample:')
-print(adata.obs['FICTURE_k4'].value_counts())
-
-small_adata.obs['FICTURE_k4'] = small_adata.obs['FICTURE_k4'].astype(str)
-sc.pl.spatial(
-    small_adata, color=[None, "cell_component", "FICTURE_k4"],
-    img_key=f"{mpp}_mpp_150_buffer", basis="spatial_cropped_150_buffer"
-)
-plt.savefig(
-    os.path.join(plot_dir, f'{sample_id}_nonWM.png')
-)
-plt.close('all')
+    small_adata.obs['FICTURE_k4'] = small_adata.obs['FICTURE_k4'].astype(str)
+    sc.pl.spatial(
+        small_adata, color=[None, "cell_component", "FICTURE_k4"],
+        img_key=f"{mpp}_mpp_150_buffer", basis="spatial_cropped_150_buffer"
+    )
+    plt.savefig(
+        os.path.join(plot_dir, f'{sample_id}_nonWM.png')
+    )
+    plt.close('all')
 
 session_info.show()
