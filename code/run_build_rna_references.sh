@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --partition=katun
-#SBATCH --job-name=run_all_create_references_ann
+#SBATCH --job-name=run_build_rna_references
 #SBATCH -c 1
 #SBATCH -t 1-00:00:00
 #SBATCH --mem=15GB
@@ -9,7 +9,7 @@
 # SBATCH --mail-type=ALL
 
 ## Explicitly pipe script output to a log
-log_path=logs/run_all_create_references_ann.txt
+log_path=logs/run_build_rna_references.txt
 
 {
 set -e
@@ -39,26 +39,30 @@ echo "Processed dir: ${PROCESSEDIR}"
 echo "Plot dir: ${PLOTDIR}"
 
 
+## Build enrichment stats objects from multiome scRNAseq data
+SUBDIR="05_snRNA-seq_model_stats"
+cd ${CODEDIR}/${SUBDIR}
+echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
+
+## First remove old plots
+rm -f logs/02_multiome_rna_reference.txt
+rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_snRNA-multiome.rds
+
 
 echo "Build snRNASeq reference with final annotations from: "
 echo "https://github.com/LieberInstitute/Habenula_Pilot ######################### "
 
-SUBDIR="05_snRNA-seq_model_stats"
-cd ${CODEDIR}/${SUBDIR}
 Rscript 01_pseudobulk_reference.R
 
 echo "Build multiome-RNA reference with final annotations from: "
 echo "https://github.com/LieberInstitute/Hb_multiome ######################### "
 
-SUBDIR="05_snRNA-seq_model_stats"
-cd ${CODEDIR}/${SUBDIR}
 sbatch 02_multiome_rna_reference.sh
 
 echo "Build multiome-RNA reference with final annotations from: "
 echo "https://github.com/LieberInstitute/Hb_multiome ######################### "
+echo "Alternative version for Habenula clusters merged"
 
-SUBDIR="05_snRNA-seq_model_stats"
-cd ${CODEDIR}/${SUBDIR}
 sbatch 03_pseudobulk_reference_habenula_merged.sh
 
 
