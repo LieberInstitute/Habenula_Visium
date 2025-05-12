@@ -38,12 +38,13 @@ echo "Main dir: ${MAINDIR}"
 echo "Processed dir: ${PROCESSEDIR}"
 echo "Plot dir: ${PLOTDIR}"
 
-echo "Build snRNASeq reference with final ann from: "
-echo "https://github.com/LieberInstitute/Habenula_Pilot ######################### "
 
-SUBDIR="05_snRNA-seq_model_stats"
-cd ${CODEDIR}/${SUBDIR}
-Rscript 01_pseudobulk_reference.R
+
+echo "*** NOTES: ***"
+echo "To re-build the single-cell references go to:  `run_build_rna_references.sh`"
+echo "To re-build spatial-registration go to: `run_spatial_registration.sh`"
+
+
 
 echo "Build spe basic ########################################################## "
 
@@ -195,80 +196,6 @@ rm -f ${PLOTDIR}/${SUBDIR}/03_covariate_analysis/*.png
 # sbatch 03_covariate_analysis.sh
 sbatch --dependency=afterok:$id2_pseudoDE 03_covariate_analysis.sh
 
-
-echo "#########   Compute enrichment with registration_wrapper  ################## "
-echo "#########   - RNA multiome (WNN Leiden res=2, knn=30)             ########## "
-echo "#########   - snRNAseq Human Pilot                                ########## "
-
-## Build enrichment stats objects from multiome scRNAseq data
-SUBDIR="05_snRNA-seq_model_stats"
-cd ${CODEDIR}/${SUBDIR}
-echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
-
-## First remove old plots
-rm -f logs/02_multiome_rna_reference.txt
-rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_snRNA-multiome.rds
-
-sbatch 02_multiome_rna_reference.sh
-
-
-echo  "#########   - Build a modified version for snRNAseq with 'MHb' and 'LHb' merged ### "
-
-SUBDIR="05_snRNA-seq_model_stats"
-cd ${CODEDIR}/${SUBDIR}
-echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
-
-## First remove old reference
-rm -f ${PROCESSEDIR}/${SUBDIR}/pseudobulk_Hb_merged_final_Annotations*.rds
-rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_Hb_merged_final_Annotations*.rds
-
-sbatch 03_pseudobulk_reference_habenula_merged.sh
-
-
-echo "#########   Spatial Registrattion              ############################# "
-echo "#########   - snRNAseq vs Visium               ############################# "
-echo "#########   - snRNAseq vs Multiome RNA.        ############################# "
-
-## Compute Spatial registration for both Fine and Broad (snRNAseq) vs Bayes-Space Visium
-## x-axis = snRNAseq cell-types
-## y-axis = spatial Habenula Visium domains
-
-## change directory
-SUBDIR="06_spatial_registration_vs_snRNA-seq"
-cd ${CODEDIR}/${SUBDIR}
-echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
-
-## First remove old data and plots
-rm -f logs/01_compute_cor.*.out
-rm -f logs/01_compute_cor.*.err
-rm -f ${PROCESSEDIR}/${SUBDIR}/cor_BayesSpace_vs_snRNA-seq_top100.Rdata
-rm -f ${PLOTDIR}/${SUBDIR}/*_broadRes.pdf
-rm -f ${PLOTDIR}/${SUBDIR}/*_fineRes.pdf
-
-sbatch 01_compute_cor.sh
-
-## change directory
-SUBDIR="07_spatial_registration_vs_multiome_snRNA-seq"
-cd ${CODEDIR}/${SUBDIR}
-echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
-
-## Compute correlations for snRNAseq vs Multiome snRNAseq (CSC)
-## Plot in both verical and horizontal formatR
-
-## First remove old data and plots
-rm -f logs/01_compute_cor_snRnaseq_multiomeRnaseq_*.txt
-rm -f ${PROCESSEDIR}/${SUBDIR}/cor_multiome_vs_snRNA-seq_top100_*.Rdata
-rm -f ${PLOTDIR}/${SUBDIR}/cor_top100_registration_snMultiome_snRNAseq_v2_*.pdf
-
-sbatch 01_compute_cor_snRnaseq_multiomeRnaseq.sh
-
-## Compute correlations for visium vs snRNAseq fine and broad resolution (CSC)
-
-rm -f logs/02_compute_cor_visium_multiomeRnaseq.txt
-rm -f ${PROCESSEDIR}/${SUBDIR}/bayesSpace_cor_top100_*.Rdata
-rm -f ${PLOTDIR}/${SUBDIR}/cor_top100_spatial_registration_snMultiome_v2.pdf
-
-sbatch 02_compute_cor_visium_multiomeRnaseq.sh
 
 
 echo "#########   Make SpatialLIBD app.              ############################# "
