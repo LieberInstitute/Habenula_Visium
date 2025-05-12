@@ -2,6 +2,7 @@ library(here)
 library(scran)
 library(tidyverse)
 library(SpatialExperiment)
+library(rjson)
 library(sessioninfo)
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
