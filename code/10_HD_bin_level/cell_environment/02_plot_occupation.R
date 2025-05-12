@@ -28,6 +28,7 @@ p = ggplot(
             group = sample_id
         )
     ) +
+    geom_point() +
     geom_line() +
     labs(
         x = 'Expansion Distance', y = 'Occupation Fraction',
@@ -45,6 +46,7 @@ occupation_df = occupation_df |>
 
 #   Mean occupation fractions
 p = ggplot(occupation_df, aes(x = expansion_distance, y = occupation)) +
+    geom_point() +
     geom_line() +
     labs(x = 'Expansion Distance', y = 'Occupation Fraction') +
     theme_bw(base_size = 20)
