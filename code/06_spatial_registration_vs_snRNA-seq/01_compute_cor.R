@@ -1,8 +1,3 @@
-# # library(slurmjobs)
-# # slurmjobs::job_single('01_compute_cor', create_shell = TRUE, memory = '20G', command = "01_compute_cor.R")
-# 
-# # To submit the job use: sbatch 01_compute_cor.sh
-
 
 ######### Compute Spatial-Registration for both Fine and Broad snRNAseq vs Multiome snRNAseq (CSC) ########
 
@@ -14,7 +9,10 @@ library("sessioninfo")
 
 
 ## Input dir
-dir_input <- here("processed-data", "05_layer_differential_expression", "modeling_results_BS")
+# Old version: 
+# dir_input <- here("processed-data", "05_layer_differential_expression", "modeling_results_BS")
+dir_input <- here("processed-data", "05_brain_area_differential_expression", "modeling_results_BS")
+
 
 ## Create output directories
 dir_rdata <- here("processed-data", "06_spatial_registration_vs_snRNA-seq")
@@ -24,7 +22,8 @@ dir_plot <- here("plots", "06_spatial_registration_vs_snRNA-seq")
 dir.create(dir_plot, showWarnings = FALSE, recursive = TRUE)
 
 ## specify the number of BayesSpace k to use 
-k <- seq(2,28)
+k=9
+#k <- seq(2,28)
 
 ## Load Registration Results 
 bayesSpace_registration_fn <-
@@ -63,7 +62,7 @@ stopifnot(is.list(registration_t_stats))
 registration_vars <-
     c("final_Annotations", "final_Annotations_broad")
 
-message(' Processing Spatial Registration for ', length(k), ' BayesSpace k')
+message(' Processing Spatial Registration for BayesSpace k=', k)
 
 compute_cor <- function(current_var) {
     # Load input snRNA-seq data
@@ -190,6 +189,11 @@ for (i in seq_len(length(cor_fine))) {
   )
 }
 dev.off()
+
+# library(slurmjobs)
+# slurmjobs::job_single('01_compute_cor', create_shell = TRUE, memory = '20G', command = "01_compute_cor.R")
+# 
+# To submit the job use: sbatch 01_compute_cor.sh
 
 
 ## Reproducibility information

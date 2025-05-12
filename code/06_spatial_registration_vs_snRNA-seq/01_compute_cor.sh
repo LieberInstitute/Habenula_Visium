@@ -6,7 +6,7 @@
 #SBATCH -t 1-00:00:00
 #SBATCH -o logs/01_compute_cor.%a.out
 #SBATCH -e logs/01_compute_cor.%a.err
-#SBATCH --mail-type=ALL
+# SBATCH --mail-type=ALL
 #SBATCH --array=2-28%20
 
 set -e
