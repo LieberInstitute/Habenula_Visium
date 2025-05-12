@@ -31,7 +31,7 @@ module load conda_R/4.4.x
 ## List current modules for reproducibility
 module list
 
-Rscript 04-BayesSpace_k_search.R 
+Rscript 04-BayesSpace_k_search.R
 
 echo "**** Job ends ****"
 date
