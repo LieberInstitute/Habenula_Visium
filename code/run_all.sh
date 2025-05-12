@@ -38,6 +38,12 @@ echo "Main dir: ${MAINDIR}"
 echo "Processed dir: ${PROCESSEDIR}"
 echo "Plot dir: ${PLOTDIR}"
 
+echo "Build snRNASeq reference with final ann from: "
+echo "https://github.com/LieberInstitute/Habenula_Pilot ######################### "
+
+SUBDIR="05_snRNA-seq_model_stats"
+cd ${CODEDIR}/${SUBDIR}
+Rscript 01_pseudobulk_reference.R
 
 echo "Build spe basic ########################################################## "
 
@@ -172,6 +178,7 @@ rm -f ${PROCESSEDIR}/${SUBDIR}/stats_summary_csv/*.csv
 id1_pseudoDE=$(sbatch --parsable 01_create_pseudobulk_data.sh)
 
 ## First remove old plots
+# Note: Previous results using the snRNA-seq reference with Hb split into MHb and LHb are stored in old_hb_no-merged/.
 rm -f logs/02_explore_expr_variability_BS*.txt
 rm -f ${PLOTDIR}/${SUBDIR}/sce_pseudo_PC*.pdf
 rm -f ${PLOTDIR}/${SUBDIR}/sce_pseudo_gene_explanatory_vars_k*.pdf
@@ -205,7 +212,7 @@ rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_snRNA-multiome.rds
 sbatch 02_multiome_rna_reference.sh
 
 
-echo  "#########   - Modified version for snRNAseq with 'MHb' and 'LHb' merged ### "
+echo  "#########   - Build a modified version for snRNAseq with 'MHb' and 'LHb' merged ### "
 
 SUBDIR="05_snRNA-seq_model_stats"
 cd ${CODEDIR}/${SUBDIR}
