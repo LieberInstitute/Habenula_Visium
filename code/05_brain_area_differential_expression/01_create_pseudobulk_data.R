@@ -11,9 +11,9 @@ library("compositions")
 
 ## copied from https://github.com/LieberInstitute/Visium_SPG_AD/blob/6ef1a1225d3dcd115f6272711ab684d050711378/code/11_grey_matter_only/01_create_pseudobulk_data.R
 
-# k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-args = commandArgs(trailingOnly = TRUE)
-k <- as.integer(args[2])
+k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+# args = commandArgs(trailingOnly = TRUE)
+# k <- as.integer(args[2])
 
 ## For testing
 if (is.na(k)) {
@@ -129,7 +129,8 @@ gene_counts_df <- data.frame(
     Num_Expressed_Genes = genes_per_cluster,
     row.names = NULL
 )
-# gene_counts_df
+message("Number of expressed genes before pseudobulk:  ")
+gene_counts_df
 #               Cluster Num_Expressed_Genes
 # 1      Sp03D01.Oligo               18798
 # 2   Sp03D02.Habenula               26223
@@ -214,6 +215,7 @@ gene_counts_df <- data.frame(
     Num_Expressed_Genes = genes_per_cluster,
     row.names = NULL
 )
+message("Number of expressed genes after pseudobulk:  ")
 gene_counts_df
 #               Cluster Num_Expressed_Genes
 # 1      Sp03D01.Oligo               18798
