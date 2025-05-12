@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=20G
-#SBATCH --job-name=04_prep_spe
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/04_prep_spe.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/04_prep_spe.txt
+#SBATCH --mem=64G
+#SBATCH --job-name=04_ficture_input
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/04_ficture_input.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/04_ficture_input.txt
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
 
@@ -22,7 +22,7 @@ echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 module list
 
 module load conda_R/4.4.x
-Rscript 04_prep_spe.R
+Rscript 04_ficture_input.R
 
 echo "**** Job ends ****"
 date
