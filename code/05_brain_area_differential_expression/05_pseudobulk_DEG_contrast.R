@@ -178,7 +178,7 @@ runPseudobulkEdgeR <- function(
     group_var,           # column name in colData(sce) to use for group comparison (e.g. "brain_area2")
     contrast_levels,     # vector of two levels to contrast (e.g., c("G2", "G1"))
     covariates = covars, # c("sample_id", "brain_id"),
-    assay_type = "counts",
+    model_name = model_name,
     min_genes = 200
 ) {
 
@@ -187,12 +187,12 @@ runPseudobulkEdgeR <- function(
     # group_var = "brain_area2"
     # contrast_levels = pairwise_contrasts[[1]]
 
-  # Step 1: Aggregate counts across cells - We already have pseudobulk data, so we ommit this step
-  counts <- assay(sce_p, assay_type)
+  # I already have pseudobulk data, so I just pull the assay. I use counts, because edgeR and limma-trend/voom expect integer counts
+  counts <- assay(sce_p, "counts")
   col_data <- colData(sce_p)
 
-  # Step 2: Create DGEList and filter
-  # samples = colData(current) argument is optional. Can be provided to attach sample-level metadata (e.g., brain_area, brain_id, cluster, etc.)
+  # Create DGEList and filter
+  # samples = colData(current) argument is optional. Provided as sample-level metadata (e.g., brain_area, brain_id, cluster, etc.)
   sample_metadata <- as.data.frame(colData(sce_p))
   rownames(sample_metadata) <- colnames(sce_p)
   # verify that data match
@@ -201,12 +201,12 @@ runPseudobulkEdgeR <- function(
   # y <- DGEList(counts = counts)
   y <- DGEList(counts = counts, samples = sample_metadata)
 
-  # Drop low-expression genes
+  # Drop low-expression genes that are not expressed above a log-CPM threshold in a minimum number of samples
   keep <- filterByExpr(y, group = col_data[[group_var]])
   message("Genes retained after filtering:")
   print(summary(keep))
-
-  y <- y[keep, , keep.lib.sizes = FALSE] # check / True-False results
+  # Subset DGEList to expressed genes + recalc lib size
+  y <- y[keep, , keep.lib.sizes = FALSE]
 
   if (nrow(y) < min_genes) {
     stop("Too few genes left after filtering.")
@@ -215,25 +215,37 @@ runPseudobulkEdgeR <- function(
   # Normalize
   y <- calcNormFactors(y)
 
-  # Step 3: Design matrix with no intercept
+  # # Plot mean-difference (MD) plot for each normalized pseudo-bulk profile
+  # # It should exhibit a trumpet shape centered at zero indicating that the normalization successfully removed systematic bias between profiles
+  # f_name <- here(plt_subdir, paste0(" mean-difference-", model_name, ".pdf"))
+  # pdf(f_name, width = 7, height = 5)
+  # par(mfrow=c(2,3))
+  # for (i in seq_len(ncol(y))) {
+  #     plotMD(y, column=i)
+  # }
+  # dev.off()
+  # message("Plot MD done")
+  
+  # Design matrix with no intercept
   # '~ 0' is used to specify NO Intercept; explicit group means without a baseline group (e.g., for clean contrasts)
-  design <- model.matrix(~ 0 + col_data[[group_var]])
+  #design <- model.matrix(~ 0 + col_data[[group_var]])
+  design <- model.matrix(~ 0 + col_data[[group_var]], y$sample_id)
   group_names <- levels(factor(col_data[[group_var]]))
   colnames(design) <- group_names
 
-  # Step 4: Fit model
+  # Fit model. Estimate 'negative binomial (NB) dispersions' and 'quasi-likelihood dispersions' 
   y <- estimateDisp(y, design)
-  fit <- glmQLFit(y, design)
+  fit <- glmQLFit(y, design, robust=TRUE)
 
-  # Step 5: Define contrast
+  # Define contrast
   stopifnot(all(contrast_levels %in% group_names))
   contrast_str <- paste0(contrast_levels[1], " - ", contrast_levels[2]) # g.e. "G1 - G2"
   contrast_mat <- makeContrasts(contrasts = contrast_str, levels = design)
 
-  # Step 6: QL test
+  # QL test. Test for differences in expression
   qlf <- glmQLFTest(fit, contrast = contrast_mat)
 
-  # Step 7: Return results
+  # Return results
   result <- topTags(qlf, n = Inf)$table
   result$gene <- rownames(result)
   result$contrast <- contrast_str
@@ -265,7 +277,7 @@ spe_pseudo <- readRDS(data_file)
 # [13] "sex"             "sum_umi"
 #table(spe_pseudo$brain_area2)
 #ncol(spe_pseudo)
-#rowData(spe_pseudo)$gene_name  # or $symbol, or $GeneSymbol depending on source
+#rowData(spe_pseudo)$gene_name  # $symbol or $GeneSymbol depending on source
 
 ## Remove level "G0" from the spe_pseudo, as we only have one sample for this group
 
@@ -299,17 +311,19 @@ habenula_levels
 ## Iterate on every Habenula cluster in the specific BS (k)
 
 for (hab_level in habenula_levels) {
-
+    
+    # hab_levels = habenula_levels[1]
     message("Processing DEG for Hb domain: ", hab_level)
 
-      spe_pseudo <- spe_pseudo[, spe_pseudo$BayesSpace == hab_level]
-      spe_pseudo$BayesSpace <- droplevels(spe_pseudo$BayesSpace)
-      table(spe_pseudo$BayesSpace)
+      spe_pseudo_subset <- spe_pseudo[, spe_pseudo$BayesSpace == hab_level]
+      spe_pseudo_subset$BayesSpace <- droplevels(spe_pseudo_subset$BayesSpace)
+      spe_pseudo_subset$BayesSpace
 
       ## quick inspection: check how many genes expressed by cluster we have after subset Hb domains from the pseudobulk data
 
-      expr_mat <- assay(spe_pseudo, "logcounts")
-      clusters <- spe_pseudo$BayesSpace
+      #expr_mat <- assay(spe_pseudo_subset, "logcounts")
+      expr_mat <- assay(spe_pseudo_subset, "counts")
+      clusters <- spe_pseudo_subset$BayesSpace
       unique_clusters <- unique(clusters)
       # Count expressed genes per cluster
       genes_per_cluster <- sapply(unique_clusters, function(clust) {
@@ -336,7 +350,7 @@ for (hab_level in habenula_levels) {
       ##      and I can get `dge_result$fit`, `dge_result$design`, and run custom contrasts for the brain-areas
 
       ## Get all pairwise combinations of group levels
-      group_levels <- levels(factor(colData(spe_pseudo)$brain_area2))
+      group_levels <- levels(factor(colData(spe_pseudo_subset)$brain_area2))
       # [1] "G1" "G2" "G3" "G4"
       pairwise_contrasts <- combn(group_levels, 2, simplify = FALSE)
       head(pairwise_contrasts)
@@ -358,19 +372,20 @@ for (hab_level in habenula_levels) {
         cat("Running contrast:", paste(contrast_pair, collapse = " vs "), "\n")
 
         res <- runPseudobulkEdgeR(
-          sce = spe_pseudo,
+          sce = spe_pseudo_subset,
           group_var = "brain_area2",
           contrast_levels = contrast_pair,
           covariates = c("sample_id", "brain_id"),
+          model_name = model_name
         )
 
         return(res)
       })
 
       # Plot volcano with all contrast using p-value (just to check):
-      create_volcano_plots_pValue(spe_pseudo, dge_results_list, plt_subdir, model_name)
+      create_volcano_plots_pValue(spe_pseudo_subset, dge_results_list, plt_subdir, model_name)
       # Plot volcano with all contrast using FDR:
-      create_volcano_plots(spe_pseudo, dge_results_list, plt_subdir, model_name)
+      create_volcano_plots(spe_pseudo_subset, dge_results_list, plt_subdir, model_name)
       ## Plot raw p-values to check if we have a flat or U-shaped (not enriched near 0), suggesting no strong DE
       f_name <- here(plt_subdir, paste0("histograms_of_pvalues-", model_name, ".pdf"))
       pdf(f_name, width = 7, height = 5)
@@ -392,7 +407,7 @@ for (hab_level in habenula_levels) {
           cat("Running contrast:", paste(contrast_pair, collapse = " vs "), "\n")
 
           res <- runPseudobulkEdgeR(
-              sce = spe_pseudo,
+              sce = spe_pseudo_subset,
               group_var = "brain_area2",
               contrast_levels = contrast_pair,
               covariates = c("sample_id", "nspots"),
@@ -402,9 +417,9 @@ for (hab_level in habenula_levels) {
       })
 
       # Plot volcano with all contrast using p-value (just to check):
-      create_volcano_plots_pValue(spe_pseudo, dge_results_list, plt_subdir, model_name)
+      create_volcano_plots_pValue(spe_pseudo_subset, dge_results_list, plt_subdir, model_name)
       # Plot volcano with all contrast using FDR:
-      create_volcano_plots(spe_pseudo, dge_results_list, plt_subdir, model_name)
+      create_volcano_plots(spe_pseudo_subset, dge_results_list, plt_subdir, model_name)
       ## Plot raw p-values to check if we have a flat or U-shaped (not enriched near 0), suggesting no strong DE
       f_name <- here(plt_subdir, paste0("histograms_of_pvalues-", model_name, ".pdf"))
       pdf(f_name, width = 7, height = 5)
@@ -431,7 +446,7 @@ for (hab_level in habenula_levels) {
       # ## Filter data to prepare for plots
       # subset(dge_results_df, FDR < 0.05 & abs(logFC) > 1)
 
-      # saveRDS(de_results_1, file = here(data_dir, paste0("de_results_1_k", k_nice, ".rds")))
+      saveRDS(dge_results_list, file = here(data_dir, paste0("de_results_k", k_nice, "_", model_name,  ".rds")))
 
 }
 
