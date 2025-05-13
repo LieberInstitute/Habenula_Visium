@@ -1,3 +1,11 @@
+########################################################################
+## Build stacked bar plots to compare Habenula manual annotations against BayesSpace clusters
+## Authors. CSC
+## Data: May 13rd, 2025
+## For 60 to 80k spots: $srun --pty --mem=30GB --x11 bash
+########################################################################
+
+
 library("spatialLIBD")
 library("dplyr")
 library("ggplot2")
@@ -38,7 +46,7 @@ spe <- cluster_import(
 ## quick inspection: check how many genes expressed by cluster we have after pseudobulk
 
 spe
-colnames(colData(spe))
+#colnames(colData(spe))
 spot_names <- colnames(spe)
 head(spot_names)
 # [1] "AAACAAGTATCTCCCA-1" "AAACACCAATAACTGC-1" "AAACAGCTTTCAGAAG-1"
@@ -51,46 +59,35 @@ f_name <- here(manual_ann_dir, "spatialLIBD_ManualAnnotation_2025-02-07_KDM-CSC_
 df_manual_annotations <- as.data.frame(read_delim(f_name, delim = ",", show_col_types = FALSE))
 dim(df_manual_annotations)
 # [1] 2089    3
-head(df_manual_annotations)                                                                                      
-# sample_id          spot_name          ManualAnnotation
-# 1 V13B23-285_A1 AAACGAAGAACATACC-1      Broad_Hb_v1
-# 2 V13B23-285_A1 AAATAACCATACGGGA-1      Broad_Hb_v1
-# 3 V13B23-285_A1 AAATGGCATGTCTTGT-1      Broad_Hb_v1
-# 4 V13B23-285_A1 AAATGTGGGTGCTCCT-1      Broad_Hb_v1
-# 5 V13B23-285_A1 AAATTACACGACTCTG-1      Broad_Hb_v1
-# 6 V13B23-285_A1 AACACGACTGTACTGA-1      Broad_Hb_v1    
-unique(df_manual_annotations$ManualAnnotation)
+#head(df_manual_annotations)                                                                                      
+#unique(df_manual_annotations$ManualAnnotation)
 
-message("Computing Hb domains for BS k: ", hab_level)
-    
 ## extract meta-data
-# colnames(spe)
-# colData(spe)
 df_domains <- colData(spe)
-head(df_domains)
+#head(df_domains)
 dim(df_domains)
 
 df_domains$spot_name_ann <- row.names(df_domains)
 row.names(df_domains) <- NULL
 df_domains <- as.data.frame(df_domains)
-colnames(df_domains)
+#colnames(df_domains)
 
 ## extract BayesSpace_harmony names
 all_domains <- colnames(df_domains)[grep("BayesSpace_harmony", colnames(df_domains))]
-all_domains
+#all_domains
 
 # Set PDF for combine plot by sample and cluster in x-axis
-pdf(file = file.path(dir_plots, paste0("stacked_bar_manual-vs-BS_by_clusters.pdf")))
+pdf(file = file.path(dir_plots, paste0("histogram_bar_manual-vs-BS_by_clusters-sample.pdf")))
 
 for (SpD in all_domains) {
     
-    # SpD = "BayesSpace_harmony_k03"
+    # SpD = all_domains[25]
     message("Searching matching spots between manual annotations and ", SpD)
     
     # select columns to use
     df_domain <- df_domains |>
         select(all_of(c("sample_id", SpD, "brain_id", "spot_name_ann")))
-    print(head(df_domain, n=3))
+    #print(head(df_domain, n=3))
     #     sample_id BayesSpace_harmony_k13 brain_id      spot_name_ann
     # 1 V13B23-280_A1                      8   Br9037 AAACAAGTATCTCCCA-1
     # 2 V13B23-280_A1                     11   Br9037 AAACACCAATAACTGC-1
@@ -113,7 +110,6 @@ for (SpD in all_domains) {
     df_plot <- df_domain_labeled %>%
         group_by(brain_id, sample_id, !!sym(SpD), match_status) %>%
         summarise(count = n(), .groups = "drop") # plot absolute counts
-    # summarise(prop = n() / sum(n()), .groups = "drop") # plot proportions
     head(df_plot)
 
     # # Plot #spots by brain_id
@@ -130,22 +126,56 @@ for (SpD in all_domains) {
     #     theme(axis.text.x = element_text(angle = 45, hjust = 1))
     
     # Combine sample and cluster in x-axis
-    plt1 <- ggplot(df_plot, aes(x = interaction(sample_id, !!sym(SpD)), y = count, fill = match_status)) +
+    df_plot <- df_plot %>%
+        mutate(x_label = interaction(sample_id, !!sym(SpD)))
+
+    # Extract cluster values (e.g., 1–13) from the SpD column
+    cluster_vals <- df_plot[[SpD]]
+    x_labels <- levels(df_plot$x_label)
+    
+    # Build label vector: show cluster value every k bars
+    custom_labels <- ifelse(seq_along(x_labels) %% k == 1, as.character(cluster_vals), "")
+    
+    # Get cluster values in the same order as x_label levels
+    cluster_by_x <- df_plot %>%
+        distinct(x_label, .keep_all = TRUE) %>%
+        arrange(factor(x_label, levels = levels(df_plot$x_label))) %>%
+        pull(!!sym(SpD))
+    
+    # prepare customized x-axis labels and add vertical lines to separate clusters
+    # Keep the first occurrence of each new cluster, blank for repeated values
+    custom_labels <- ifelse(
+        c(TRUE, diff(cluster_by_x) != 0),  # first is always TRUE
+        as.character(cluster_by_x),
+        ""
+    )
+    # Define bar positions based on interaction
+    bar_positions <- which(custom_labels != "")
+
+    plt1 <- ggplot(df_plot, aes(x = x_label, y = count, fill = match_status)) +
         geom_bar(stat = "identity") +
+        geom_vline(xintercept = bar_positions + 0.5, linetype = "solid", color = "darkgray") +
+        scale_x_discrete(labels = custom_labels) +
         labs(
-            title = paste0("Habenula vs No-Habenula by ", SpD, " and Sample"),
-            x = "Sample + Cluster",
+            title = paste0("Habenula vs No-Habenula: ", SpD),
+            x = paste0("Spatial-Domains"),
             y = "Number of Spots",
             fill = "Match Status"
         ) +
         theme_minimal() +
-        theme(axis.text.x = element_text(angle = 90, hjust = 1))
-    
+        theme(
+            axis.text.x = element_text(hjust = 1, size = 10),
+            panel.grid.major.x = element_blank(),
+            panel.grid.minor.x = element_blank(),
+            legend.position = "top"
+        )
     print(plt1)
     
+        
 }
 
 dev.off()    
+message("Plot 1 done!")
 
 
 # Set PDF for combine plot by sample and cluster in x-axis
@@ -153,13 +183,13 @@ pdf(file = file.path(dir_plots, paste0("stacked_bar_manual-vs-BS_by_clusters.pdf
 
 for (SpD in all_domains) {
     
-    # SpD = "BayesSpace_harmony_k03"
+    # SpD = all_domains[25]
     message("Searching matching spots between manual annotations and ", SpD)
     
     # select columns to use
     df_domain <- df_domains |>
         select(all_of(c("sample_id", SpD, "brain_id", "spot_name_ann")))
-    print(head(df_domain, n=3))
+    #print(head(df_domain, n=3))
     #     sample_id BayesSpace_harmony_k13 brain_id      spot_name_ann
     # 1 V13B23-280_A1                      8   Br9037 AAACAAGTATCTCCCA-1
     # 2 V13B23-280_A1                     11   Br9037 AAACACCAATAACTGC-1
@@ -185,10 +215,10 @@ for (SpD in all_domains) {
     #head(df_plot)
     
     # plot stacked bar with proportions by cluster in the x-axis
-    plt2 <- ggplot(df_plot, aes(x = as.factor(.data[[SpD]]), y = prop, fill = match_status)) +
+    plt1 <- ggplot(df_plot, aes(x = as.factor(.data[[SpD]]), y = prop, fill = match_status)) +
         geom_bar(stat = "identity") +
         labs(
-            title = paste0("Proportion of Habenula vs No-Habenula by ", SpD),
+            title = paste0("Habenula vs No-Habenula: ", SpD),
             x = SpD,
             y = "Proportion of Spots",
             fill = "Match Status"
@@ -202,12 +232,12 @@ for (SpD in all_domains) {
     #     color = "black"
     # )
     
-    
-    print(plt2)
+    print(plt1)
     
 }
 
 dev.off()    
+message("Plot 2 done!")
 
 
 message(' Plots completed!')
