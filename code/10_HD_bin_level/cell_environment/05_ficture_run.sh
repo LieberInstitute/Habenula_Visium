@@ -2,11 +2,11 @@
 #SBATCH -p katun
 #SBATCH --mem=200G
 #SBATCH --job-name=05_ficture_run
-#SBATCH -c 4
+#SBATCH -c 1
 #SBATCH -t 2-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/05_ficture_run_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/05_ficture_run_%a.txt
-#SBATCH --array=6-18:4%4
+#SBATCH --array=20-40:2%5
 
 set -e
 
@@ -22,7 +22,7 @@ echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 module load visium_hd/1.0
 
-echo "Using 4 cores"
+echo "Using 1 core"
 
 #   Path definitions
 repo_dir=$(git rev-parse --show-toplevel)
@@ -43,8 +43,7 @@ if [[ $SLURM_ARRAY_TASK_ID -eq 2 ]]; then
         --all \
         --n-factor ${SLURM_ARRAY_TASK_ID} \
         --decode-top-k 2 \
-        --fractional-count 1 \
-        --threads 4
+        --fractional-count 1
 else
     ficture run_together \
         --in-tsv $in_dir/normalized_input.tsv.gz \
@@ -54,8 +53,7 @@ else
         --major-axis X \
         --all \
         --n-factor ${SLURM_ARRAY_TASK_ID} \
-        --fractional-count 1 \
-        --threads 4
+        --fractional-count 1
 fi
 
 echo "**** Job ends ****"
