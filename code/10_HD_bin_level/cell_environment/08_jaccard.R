@@ -1,3 +1,8 @@
+#   For a specific value of k (determined by the array task), compare FICTURE
+#   results when using just the extracellular region vs the full tissue, as
+#   spatially they look similar. There may not necessarily be a benefit to
+#   subsetting to the extracellular region
+
 library(here)
 library(tidyverse)
 library(data.table)
