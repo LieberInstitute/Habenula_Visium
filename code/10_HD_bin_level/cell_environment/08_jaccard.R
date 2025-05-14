@@ -23,7 +23,11 @@ ficture_all_path = here(
         'normalized_joined_input.tsv.gz'
     ) |>
     sprintf(k, k)
-plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'cell_environment')
+plot_dir = here(
+    'plots', '10_HD_bin_level', 'probe_fix', 'cell_environment', 'jaccard'
+)
+
+dir.create(plot_dir, showWarnings = FALSE)
 
 ficture_colnames = c('sample_id', 'barcode', 'factor_K1')
 
@@ -83,7 +87,7 @@ p = do.call(rbind, jaccard_df_list) |>
         x = 'Extracellular Cluster', y = 'Full-Tissue Cluster',
         fill = 'Jaccard\nIndex'
     )
-pdf(file.path(plot_dir, 'jaccard_index.pdf'), width = 9)
+pdf(file.path(plot_dir, sprintf('k_%d.pdf', k)), width = 9)
 print(p)
 dev.off()
 
