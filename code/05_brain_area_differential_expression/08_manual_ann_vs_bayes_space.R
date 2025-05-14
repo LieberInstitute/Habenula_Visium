@@ -8,6 +8,7 @@
 
 library("spatialLIBD")
 library("dplyr")
+library("stringr")
 library("ggplot2")
 library("gridExtra")
 library("readr")
@@ -15,16 +16,12 @@ library("here")
 library("sessioninfo")
 
 
-k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-# k = 13
-k_nice <- sprintf("%02d", k) # Format k
-message("Processing BayesSpace k=", k_nice)
-
 dir_plots <- here("plots", "05_brain_area_differential_expression", "08_manual_ann_vs_bayes_space")
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 
 manual_ann_dir <- here("processed-data", "03_spatialLIBD_app", "Manual_annotations")
 rds_dir <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony.rds")
+
 spe <- readRDS(rds_dir)
 
 ## Import BayesSpace clusters
@@ -57,10 +54,20 @@ head(spot_names)
 f_name <- here(manual_ann_dir, "spatialLIBD_ManualAnnotation_2025-02-07_KDM-CSC_RNAScope_merged_spatialLIBD.csv")
 #readLines(f_name)
 df_manual_annotations <- as.data.frame(read_delim(f_name, delim = ",", show_col_types = FALSE))
-dim(df_manual_annotations)
-# [1] 2089    3
+
+## delete the spots annotated no longer use it. eg. bad quality samples
+length(df_manual_annotations$sample_id)
+unique(df_manual_annotations$sample_id)
+df_manual_annotations <- df_manual_annotations[!grepl("V13B23-281_[A-D]1", df_manual_annotations$sample_id), ]
+unique(df_manual_annotations$sample_id)
+
+# add a unique column to match barcodes
+df_manual_annotations$spot_name2 <- paste0(df_manual_annotations$sample_id, "-", df_manual_annotations$spot_name)
+length(df_manual_annotations$ManualAnnotation)
+message("Spots manually annotated: ", length(df_manual_annotations$ManualAnnotation))
+# Spots manually annotated: 1190 / 2089
+
 #head(df_manual_annotations)                                                                                      
-#unique(df_manual_annotations$ManualAnnotation)
 
 ## extract meta-data
 df_domains <- colData(spe)
@@ -81,36 +88,57 @@ pdf(file = file.path(dir_plots, paste0("histogram_bar_manual-vs-BS_by_clusters-s
 
 for (SpD in all_domains) {
     
-    # SpD = all_domains[25]
+    # SpD = all_domains[5]
     message("Searching matching spots between manual annotations and ", SpD)
+    # extract BS-k to separate in the plots by bins
+    k <- str_extract(SpD, "\\d+")
+    k <- as.numeric(k)
     
     # select columns to use
     df_domain <- df_domains |>
         select(all_of(c("sample_id", SpD, "brain_id", "spot_name_ann")))
+    
+    # add a unique column to match barcodes
+    df_domain$spot_name_ann2 <- paste0(df_domain$sample_id, "-", df_domain$spot_name_ann)
     #print(head(df_domain, n=3))
-    #     sample_id BayesSpace_harmony_k13 brain_id      spot_name_ann
-    # 1 V13B23-280_A1                      8   Br9037 AAACAAGTATCTCCCA-1
-    # 2 V13B23-280_A1                     11   Br9037 AAACACCAATAACTGC-1
-    # 3 V13B23-280_A1                      8   Br9037 AAACAGCTTTCAGAAG-1
+    # sample_id BayesSpace_harmony_k06 brain_id      spot_name_ann
+    # 1 V13B23-280_A1                      3   Br9037 AAACAAGTATCTCCCA-1
+    # 2 V13B23-280_A1                      3   Br9037 AAACACCAATAACTGC-1
+    # 3 V13B23-280_A1                      3   Br9037 AAACAGCTTTCAGAAG-1
+    # spot_name_ann2
+    # 1 V13B23-280_A1-AAACAAGTATCTCCCA-1
+    # 2 V13B23-280_A1-AAACACCAATAACTGC-1
+    # 3 V13B23-280_A1-AAACAGCTTTCAGAAG-1
+    
+    # remove samples not manually annotated - to match with the samples annotated
+    if (!length(unique(df_domain$sample_id)) == length(unique(df_manual_annotations$sample_id))) {
+        df_domain <- df_domain |>
+            filter(sample_id %in% unique(df_manual_annotations$sample_id))
+    }    
+    unique(df_domain$sample_id)
+    unique(df_manual_annotations$sample_id)
     message("Total spots: ", length(df_domain$spot_name_ann))
     
     # Mark Matches and Non-Matches by sample
-    df_domain_labeled <- df_domain %>%
-        mutate(match_status = ifelse(spot_name_ann %in% df_manual_annotations$spot_name, "Habenula", "No-Habenula")) %>%
+    anyDuplicated(df_domain$spot_name_ann2)         # should be 0
+    anyDuplicated(df_manual_annotations$spot_name2) # should be 0
+    #head(df_domain)
+    df_domain_labeled <- df_domain |>
+        mutate(match_status = ifelse(spot_name_ann2 %in% df_manual_annotations$spot_name2, "Habenula", "No-Habenula")) |>
         left_join(
-            df_manual_annotations[, c("spot_name", "ManualAnnotation")],
-            by = c("spot_name_ann" = "spot_name"),
-            relationship = "many-to-many"
+            df_manual_annotations[, "spot_name2", drop = FALSE],
+            by = c("spot_name_ann2" = "spot_name2")
+            #relationship = "many-to-many" -> spots are only unique by capture area
         )
     #names(df_domain_labeled)
     #head(df_domain_labeled)
     #table(df_domain_labeled$match_status, df_domain_labeled$sample_id)
     
     # count of how many spots per ManualAnnotation are Habenula or No-Habenula
-    df_plot <- df_domain_labeled %>%
-        group_by(brain_id, sample_id, !!sym(SpD), match_status) %>%
+    df_plot <- df_domain_labeled |>
+        group_by(brain_id, sample_id, !!sym(SpD), match_status) |>
         summarise(count = n(), .groups = "drop") # plot absolute counts
-    head(df_plot)
+    #head(df_plot)
 
     # # Plot #spots by brain_id
     # ggplot(df_plot, aes(x = as.factor(!!sym(SpD)), y = count, fill = match_status)) +
@@ -126,7 +154,7 @@ for (SpD in all_domains) {
     #     theme(axis.text.x = element_text(angle = 45, hjust = 1))
     
     # Combine sample and cluster in x-axis
-    df_plot <- df_plot %>%
+    df_plot <- df_plot |>
         mutate(x_label = interaction(sample_id, !!sym(SpD)))
 
     # Extract cluster values (e.g., 1–13) from the SpD column
@@ -137,9 +165,9 @@ for (SpD in all_domains) {
     custom_labels <- ifelse(seq_along(x_labels) %% k == 1, as.character(cluster_vals), "")
     
     # Get cluster values in the same order as x_label levels
-    cluster_by_x <- df_plot %>%
-        distinct(x_label, .keep_all = TRUE) %>%
-        arrange(factor(x_label, levels = levels(df_plot$x_label))) %>%
+    cluster_by_x <- df_plot |>
+        distinct(x_label, .keep_all = TRUE) |>
+        arrange(factor(x_label, levels = levels(df_plot$x_label))) |>
         pull(!!sym(SpD))
     
     # prepare customized x-axis labels and add vertical lines to separate clusters
@@ -149,8 +177,10 @@ for (SpD in all_domains) {
         as.character(cluster_by_x),
         ""
     )
+    custom_labels <- ifelse(custom_labels != "", paste0("SpD ", custom_labels), "")
+    
     # Define bar positions based on interaction
-    bar_positions <- which(custom_labels != "")
+    bar_positions <- which(custom_labels != "")-1
 
     plt1 <- ggplot(df_plot, aes(x = x_label, y = count, fill = match_status)) +
         geom_bar(stat = "identity") +
@@ -164,7 +194,7 @@ for (SpD in all_domains) {
         ) +
         theme_minimal() +
         theme(
-            axis.text.x = element_text(hjust = 1, size = 10),
+            axis.text.x = element_text(angle = 45, hjust = 1),
             panel.grid.major.x = element_blank(),
             panel.grid.minor.x = element_blank(),
             legend.position = "top"
@@ -183,39 +213,40 @@ pdf(file = file.path(dir_plots, paste0("stacked_bar_manual-vs-BS_by_clusters.pdf
 
 for (SpD in all_domains) {
     
-    # SpD = all_domains[25]
+    # SpD = all_domains[12]
     message("Searching matching spots between manual annotations and ", SpD)
     
     # select columns to use
     df_domain <- df_domains |>
         select(all_of(c("sample_id", SpD, "brain_id", "spot_name_ann")))
+    # add a unique column to match barcodes
+    df_domain$spot_name_ann2 <- paste0(df_domain$sample_id, "-", df_domain$spot_name_ann)
     #print(head(df_domain, n=3))
-    #     sample_id BayesSpace_harmony_k13 brain_id      spot_name_ann
-    # 1 V13B23-280_A1                      8   Br9037 AAACAAGTATCTCCCA-1
-    # 2 V13B23-280_A1                     11   Br9037 AAACACCAATAACTGC-1
-    # 3 V13B23-280_A1                      8   Br9037 AAACAGCTTTCAGAAG-1
+
     message("Total spots: ", length(df_domain$spot_name_ann))
     
     # Mark Matches and Non-Matches by sample
-    df_domain_labeled <- df_domain %>%
-        mutate(match_status = ifelse(spot_name_ann %in% df_manual_annotations$spot_name, "Habenula", "No-Habenula")) %>%
+    df_domain_labeled <- df_domain|>
+        mutate(match_status = ifelse(spot_name_ann2 %in% df_manual_annotations$spot_name2, "Habenula", "No-Habenula")) |>
         left_join(
-            df_manual_annotations[, c("spot_name", "ManualAnnotation")],
-            by = c("spot_name_ann" = "spot_name"),
-            relationship = "many-to-many"
+            df_manual_annotations[, "spot_name2", drop = FALSE],
+            by = c("spot_name_ann2" = "spot_name2")
         )
 
     # compute proportions
-    df_plot <- df_domain_labeled %>%
-        group_by(brain_id, sample_id, !!sym(SpD), match_status) %>%
-        summarise(count = n(), .groups = "drop") %>%
-        group_by(brain_id, sample_id, !!sym(SpD)) %>%
-        mutate(prop = count / sum(count)) %>%
+    df_plot <- df_domain_labeled |>
+        group_by(brain_id, sample_id, !!sym(SpD), match_status) |>
+        summarise(count = n(), .groups = "drop") |>
+        group_by(brain_id, sample_id, !!sym(SpD)) |>
+        mutate(prop = count / sum(count)) |>
         ungroup()
     #head(df_plot)
+    # Add prefix and set ordered factor 
+    df_plot[[SpD]] <- paste0("SpD", df_plot[[SpD]])
+    df_plot[[SpD]] <- factor(df_plot[[SpD]], levels = unique(df_plot[[SpD]]))
     
     # plot stacked bar with proportions by cluster in the x-axis
-    plt1 <- ggplot(df_plot, aes(x = as.factor(.data[[SpD]]), y = prop, fill = match_status)) +
+    plt1 <- ggplot(df_plot, aes(x = .data[[SpD]], y = prop, fill = match_status)) +
         geom_bar(stat = "identity") +
         labs(
             title = paste0("Habenula vs No-Habenula: ", SpD),
@@ -224,7 +255,12 @@ for (SpD in all_domains) {
             fill = "Match Status"
         ) +
         theme_minimal() +
-        theme(axis.text.x = element_text(angle = 45, hjust = 1)) #+
+        theme(
+            axis.text.x = element_text(angle = 45, hjust = 1),
+            panel.grid.major.x = element_blank(),
+            panel.grid.minor.x = element_blank(),
+            legend.position = "top"
+        ) #+
     # geom_text(
     #     aes(label = scales::percent(prop, accuracy = 1)),
     #     position = position_stack(vjust = 0.5),
