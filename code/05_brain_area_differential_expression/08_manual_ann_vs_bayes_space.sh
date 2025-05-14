@@ -7,10 +7,9 @@
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
 # SBATCH --mail-type=ALL
-#SBATCH --array=2-28%20
 
 ## Explicitly pipe script output to a log
-log_path=logs/08_manual_ann_vs_bayes_space_${SLURM_ARRAY_TASK_ID}.txt
+log_path=logs/08_manual_ann_vs_bayes_space.txt
 
 {
 set -e
