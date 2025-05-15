@@ -1,7 +1,8 @@
 #   For a specific value of k (determined by the array task), compare FICTURE
 #   results when using just the extracellular region vs the full tissue, as
 #   spatially they look similar. There may not necessarily be a benefit to
-#   subsetting to the extracellular region
+#   subsetting to the extracellular region. Just compute the plot for this k;
+#   in the next script, we'll plot a multi-page PDF with all results
 
 library(here)
 library(tidyverse)
@@ -23,13 +24,14 @@ ficture_all_path = here(
         'normalized_joined_input.tsv.gz'
     ) |>
     sprintf(k, k)
-plot_dir = here(
-    'plots', '10_HD_bin_level', 'probe_fix', 'cell_environment', 'jaccard'
-)
-
-dir.create(plot_dir, showWarnings = FALSE)
-
+out_path = here(
+        'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+        'temp_jaccard', 'k_%d.rds'
+    ) |>
+    sprintf(k)
 ficture_colnames = c('sample_id', 'barcode', 'factor_K1')
+
+dir.create(dirname(out_path), showWarnings = FALSE)
 
 message(Sys.time(), ' | Reading in extracellular results...')
 ficture_extra = fread(ficture_extra_path, select = ficture_colnames) |>
@@ -71,7 +73,7 @@ for (extra_val in unique(ficture$cluster_extra)) {
     }
 }
 
-#   Plot a heatmap of Jaccard indices
+#   Heatmap of Jaccard indices
 p = do.call(rbind, jaccard_df_list) |>
     ggplot(
         aes(
@@ -85,10 +87,8 @@ p = do.call(rbind, jaccard_df_list) |>
     theme_bw(base_size = 25) +
     labs(
         x = 'Extracellular Cluster', y = 'Full-Tissue Cluster',
-        fill = 'Jaccard\nIndex'
+        fill = 'Jaccard\nIndex', title = paste('k =', k)
     )
-pdf(file.path(plot_dir, sprintf('k_%d.pdf', k)), width = 9)
-print(p)
-dev.off()
+saveRDS(p, out_path)
 
 session_info()
