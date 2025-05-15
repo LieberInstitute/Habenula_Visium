@@ -68,13 +68,28 @@ if (ref_name == 'snRNAseq_fine') {
     #   with at least one X
     annotated_clusters = annotated_clusters |>
         filter(
-            grepl("(^[ML]Hb)|\\.Thal$", layer_label),
+            grepl("[ML]Hb|\\.Thal", layer_label),
             layer_confidence == 'good'
         )
     this_cor = this_cor |>
         as.data.frame() |>
         rownames_to_column('cluster') |>
-        select(cluster, matches("(^[ML]Hb)|\\.Thal$")) |>
+        select(cluster, matches("^[ML]Hb|\\.Thal$")) |>
+        filter(cluster %in% annotated_clusters$cluster) |>
+        column_to_rownames('cluster') |>
+        as.matrix()
+} else {
+    #   Filter to habenula clusters only, then take only clusters with at least
+    #   one X
+    annotated_clusters = annotated_clusters |>
+        filter(
+            grepl("DD_[ML]Hb", layer_label),
+            layer_confidence == 'good'
+        )
+    this_cor = this_cor |>
+        as.data.frame() |>
+        rownames_to_column('cluster') |>
+        select(cluster, matches("DD_[ML]Hb$")) |>
         filter(cluster %in% annotated_clusters$cluster) |>
         column_to_rownames('cluster') |>
         as.matrix()
