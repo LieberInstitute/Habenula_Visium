@@ -20,7 +20,7 @@ ref_paths = c(
     #   Fine snRNA-seq data
     here(
         "processed-data", "05_snRNA-seq_model_stats",
-        "enrichment_final_Annotations.rds",
+        "enrichment_final_Annotations.rds"
     ),
     #   Multiome data
     here(
@@ -39,7 +39,7 @@ ref_name = ref_names[index]
 t_stats = readRDS(model_path)$enrichment
 
 #   Load reference data
-if (grepl('^snRNAseq', ref_name)) {
+if (ref_name == 'snRNAseq_fine') {
     results_enrichment = list(enrichment = readRDS(ref_path))
 } else {
     results_enrichment = list(
@@ -62,6 +62,23 @@ rownames(this_cor) = sub('^X', '', rownames(this_cor))
 annotated_clusters = annotate_registered_clusters(
     this_cor, cutoff_merge_ratio = 0.1
 )
+
+if (ref_name == 'snRNAseq_fine') {
+    #   Filter to habenula and thalamus clusters only, then take only clusters
+    #   with at least one X
+    annotated_clusters = annotated_clusters |>
+        filter(
+            grepl("(^[ML]Hb)|\\.Thal$", layer_label),
+            layer_confidence == 'good'
+        )
+    this_cor = this_cor |>
+        as.data.frame() |>
+        rownames_to_column('cluster') |>
+        select(cluster, matches("(^[ML]Hb)|\\.Thal$")) |>
+        filter(cluster %in% annotated_clusters$cluster) |>
+        column_to_rownames('cluster') |>
+        as.matrix()
+}
 
 #   Make heatmaps
 pdf(file.path(plot_dir, sprintf("custom_%s.pdf", ref_name)))
