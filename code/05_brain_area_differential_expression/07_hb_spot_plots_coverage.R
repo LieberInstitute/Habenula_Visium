@@ -1,5 +1,14 @@
+########################################################################
+## Make spot plots using the SpatialLIBD app
+## Input: spe object with BayesSpace clusters
+##
+## Authors. CSC
+## Data: XXX
+## For 60 to 80k spots: $srun --pty --mem=60GB --x11 bash
+########################################################################
+
 library("here")
-library("spatialLIBD") #[1] ‘1.21.4’
+library("spatialLIBD") #[1] ‘1.21.5’
 library("purrr")
 library("sessioninfo")
 
@@ -21,8 +30,7 @@ dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 spe <- readRDS(spe_dir)
 spe
 
-# current SpDs annotated in pseudobulk spe
-# k13
+# current SpDs annotated in pseudobulk spe k13
 colnames(colData(spe))[grep("BayesSpace_harmony_", colnames(colData(spe)))]
 levels(colData(spe)$BayesSpace)
 # [1] "Sp13D01.Oligo"      "Sp13D02.Endo"       "Sp13D03.Endo"
@@ -33,8 +41,7 @@ levels(colData(spe)$BayesSpace)
 
 # prepare new levels to plot by other BS k of interest
 levels(colData(spe)$BayesSpace_harmony_k11)
-colData(spe)$BayesSpace_harmony_k11 <- factor(colData(spe)$BayesSpace_harmony_k11)
-levels(colData(spe)$BayesSpace_harmony_k11)
+#  [1] "1"  "2"  "3"  "4"  "5"  "6"  "7"  "8"  "9"  "10" "11"
 
 # Set custom levels
 new_labels <- paste0("SpD", sprintf("%02d", seq(1:11)))
@@ -54,6 +61,15 @@ levels(colData(spe)$BayesSpace_harmony_k11)
 # [5] "SpD05"            "Sp06-Putative-Hb" "Sp07-Putative-Hb" "SpD08"           
 # [9] "SpD09"            "SpD10"            "Sp11-Putative-Hb"
 
+# manual verification to identify missing SpD in many samples causing visualization issues
+table(colData(spe)$sample_id, colData(spe)$BayesSpace_harmony_k11)
+# 2 samples (V13B23−285_C1, V13B23−285_D1) have a SpD04, but this is missed on the other samples
+# Keep only rows where cluster is NOT SpD04 as this SpD (1) have only a few spots, and (2) tat the edge of the tissue in both samples
+spe <- spe[, colData(spe)$BayesSpace_harmony_k11 != "SpD04"]
+colData(spe)$BayesSpace_harmony_k11 <- droplevels(colData(spe)$BayesSpace_harmony_k11)
+levels(colData(spe)$BayesSpace_harmony_k11)
+table(colData(spe)$sample_id, colData(spe)$BayesSpace_harmony_k11)
+
 
 ## Set some initials for manage spot size in the plots
 
@@ -68,29 +84,32 @@ lst_order <- sort(unique(spe$sample_id))
 # [5] "V13B23-285_A1" "V13B23-285_B1" "V13B23-285_C1" "V13B23-285_D1"
 # [9] "V14F07-340_A1" "V14F07-340_B1" "V14F07-340_C1" "V14F07-340_D1"
 
-# vis_grid_clus(
-#     spe = spe,
-#     clustervar = "BayesSpace",
-#     sample_order = lst_order,
-#     height = var_height, # 8
-#     width = var_width, # 9
-#     point_size = var_point_size,
-#     pdf = here(dir_plots, paste0("spe_BayesSpace_k", k ,"_annotated_clustergrid.pdf")),
-#     sort_clust = FALSE,
-#     guide_point_size = 5,
-#     colors = c("grey", "#b2df8a", "#e41a1c", "#377eb8", "#4daf4a",
-#                "#ff7f00", "black", "#a65628", "#999999", "blue",
-#                "purple", "gold")
-# )
-
 ## For Kristen talk we pick up BS k=11 given the Hb (manually ann spots) proportion on the samples
 levels(colData(spe)$BayesSpace_harmony_k11)
-# [1] "SpD01"            "SpD02"            "SpD03"            "SpD04"           
-# [5] "SpD05"            "Sp06-Putative-Hb" "Sp07-Putative-Hb" "SpD08"           
-# [9] "SpD09"            "SpD10"            "Sp11-Putative-Hb"
+# [1] "SpD01"            "SpD02"            "SpD03"            "SpD05"           
+# [5] "Sp06-Putative-Hb" "Sp07-Putative-Hb" "SpD08"            "SpD09"           
+# [9] "SpD10"            "Sp11-Putative-Hb"
+
+
+color_vector <- c("grey", "#b2df8a", "#e41a1c", "#377eb8", "blue",
+                  "yellow", "black", "#a65628", "#999999", "purple")
+    
+vis_grid_clus(
+    spe = spe,
+    clustervar = "BayesSpace_harmony_k11",
+    sample_order = lst_order,
+    height = var_height, # 8
+    width = var_width, # 9
+    point_size = var_point_size,
+    pdf = here(dir_plots, paste0("spe_BayesSpace_k11_annotated_clustergrid.pdf")),
+    sort_clust = FALSE,
+    guide_point_size = 5,
+    colors = color_vector
+)
 
 ## test: remove color element for SpD04
-color_vector <- c("grey", "grey", "grey", "grey", "blue", "yellow", "grey", "grey", "grey","purple")
+color_vector <- c("grey", "grey", "grey", "grey", "blue",
+                  "yellow", "grey", "grey", "grey","purple")
 
 vis_grid_clus(
     spe = spe,
