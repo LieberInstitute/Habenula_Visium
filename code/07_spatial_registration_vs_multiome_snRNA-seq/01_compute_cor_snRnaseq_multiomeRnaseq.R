@@ -2,8 +2,6 @@
 ## Compute Spatial-Registration between snRNAseq (human pilot) and multiome scRNAseq + scATACseq
 ##
 ## Notes:
-## This project requires to load the module conda_R/4.3.x to preserve the chromatin accesability object embedded in the Seurat object,
-##      otherwise it coud trigger version conflicts. Be sure to load the module specified
 ## For 60 to 80k spots: $srun --pty --mem=60GB --x11 bash
 ##
 ## Authors. CSC
@@ -68,6 +66,11 @@ colnames(modeling_res_enrichment) <- gsub(
 # ENSG00000241860  0.7626024 -2.42952913  1.4923036   2.026956  1.2102714
 # ENSG00000237491 -0.2347861 -0.06842523  0.8264148   1.981078 -0.1328745
 
+
+################################################################################
+##  Compute correlation for FINE cluster annotations
+################################################################################
+
 if (designF == "vertical") {
   # designF="vertical"
 
@@ -90,7 +93,7 @@ if (designF == "vertical") {
     model_type = "enrichment",
     top_n = 100
   )
-  head(cor_fine)
+  #head(cor_fine)
   annotated_clusters_fine <- annotate_registered_clusters(
     cor_fine,
     confidence_threshold = 0.25,
@@ -164,7 +167,116 @@ layer_stat_cor_plot(
 dev.off()
 
 
-message("Compute correlation and plot in ", designF, " format DONE!!!")
+message("Spatial Registration DONE!!!")
+
+
+################################################################################
+##  Compute correlation for FINE cluster annotations
+##  Subset HB cell-types of interest
+################################################################################
+
+# Prepare matrix 
+# subset columns that contain "LHb", "MHb", or "Thal"? in the matrix 
+colnames(cor_fine)
+rownames(cor_fine)
+cor_fine_subset <- cor_fine[, grep("LHb|MHb|Thal", colnames(cor_fine))]
+colnames(cor_fine_subset)
+head(cor_fine_subset)
+# subset rows in the matrix that contain "LHb", "MHb", or "Thal"
+rownames(cor_fine_subset)
+cor_fine_subset <- cor_fine_subset[grep("LHb|MHb", rownames(cor_fine_subset)), ]
+rownames(cor_fine_subset)
+
+
+# sort the rownnames for visualization purposes, first "MHb" and then by number of cluster
+rows <- rownames(cor_fine_subset)
+is_mhb <- grepl("MHb", rows)
+get_num <- function(x) as.numeric(sub("C\\.(\\d+)\\..*", "\\1", x))
+cor_fine_subset <- cor_fine_subset[sorted_rows, ]
+# extract each Hb group
+mhb_rows <- rows[is_mhb]
+lhb_rows <- rows[!is_mhb]
+# apply numeric sort
+mhb_sorted <- mhb_rows[order(get_num(mhb_rows))]
+lhb_sorted <- lhb_rows[order(get_num(lhb_rows))]
+# combine the final order
+sorted_rows <- c(mhb_sorted, lhb_sorted)
+# apply to the matrix
+cor_fine_subset <- cor_fine_subset[sorted_rows, ]
+
+
+# check
+head(cor_fine_subset)
+# Excit.Thal  Inhib.Thal        LHb.1      LHb.2       LHb.3
+# C.07.DD_MHb -0.18087455 -0.20929663 -0.083099549 0.30069393 -0.19154713
+# C.10.DD_MHb -0.20214284 -0.18294131 -0.099094669 0.24391521 -0.16154950
+# C.11.DD_MHb -0.14751211 -0.26859964 -0.089097330 0.20954318 -0.16646870
+# C.14.DD_MHb -0.12910366 -0.13226261 -0.117463725 0.14939333 -0.20291995
+# C.16.DD_MHb -0.20638743 -0.16717636 -0.092611301 0.34953884 -0.10334603
+# C.36.DD_MHb -0.01983263 -0.07641907 -0.009109298 0.01957877 -0.06863969
+
+
+# extract Hb annotations of interest from 'annotated_clusters_fine' 
+annotated_clusters_fine_subset <- annotated_clusters_fine[grepl("LHb|MHb|Thal", annotated_clusters_fine$cluster), ]
+head(annotated_clusters_fine_subset)
+# cluster layer_confidence       layer_label
+# 1  C.05.DD_LHb             good       LHb.7/LHb.2
+# 2  C.18.DD_LHb             good LHb.1/LHb.3/LHb.4
+# 3  C.23.DD_LHb             good             LHb.1
+# 4  C.33.DD_LHb             good       LHb.3/LHb.1
+# 33 C.16.DD_MHb             good             LHb.6
+# 34 C.10.DD_MHb             good             MHb.1
+
+
+# sort the rownnames for visualization purposes, first "MHb" and then by number of cluster
+rows <- annotated_clusters_fine_subset$cluster
+is_mhb <- grepl("MHb", rows)
+get_num <- function(x) as.numeric(sub("C\\.(\\d+)\\..*", "\\1", x))
+cor_fine_subset <- cor_fine_subset[sorted_rows, ]
+# extract each Hb group
+mhb_rows <- rows[is_mhb]
+lhb_rows <- rows[!is_mhb]
+# apply numeric sort
+mhb_sorted <- mhb_rows[order(get_num(mhb_rows))]
+lhb_sorted <- lhb_rows[order(get_num(lhb_rows))]
+# combine the final order
+sorted_rows <- c(mhb_sorted, lhb_sorted)
+sorted_rows
+# reorder the annotated_clusters_fine_subset
+annotated_clusters_fine_subset <- annotated_clusters_fine_subset[
+    match(sorted_rows, annotated_clusters_fine_subset$cluster),
+]
+annotated_clusters_fine_subset$cluster
+
+plt_name <- "cor_top100_registration_snMultiome_snRNAseq_Habenula_clusters.pdf"
+
+library(grid) # need to print the plot, otherwise is clipped by internal function of layer_stat_cor_plot()
+
+
+pdf(here(dir_plot, plt_name), width = 10, height = 10)
+
+hm <- layer_stat_cor_plot(
+    cor_fine_subset,
+    annotation = annotated_clusters_fine_subset,
+    heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
+    column_names_gp = gpar(fontsize = 14),
+    row_names_gp = gpar(fontsize = 14),
+    cluster_rows = FALSE  # <-- turn off row clustering
+) 
+
+# Draw the heatmap with title
+draw(
+    hm,
+    column_title = "Spatial-Registration: LHb, MHb, and Thal",
+    column_title_gp = gpar(fontsize = 16, fontface = "bold")
+)
+
+
+dev.off()
+
+
+
+
 
 
 # library("slurmjobs")
