@@ -4,8 +4,8 @@
 #SBATCH --job-name=02_compute_corr_hb_merged
 #SBATCH -c 1
 #SBATCH -t 1-00:00:00
-#SBATCH -o -o logs/02_compute_corr_hb_merged.%a.out
-#SBATCH -o -o logs/02_compute_corr_hb_merged.%a.err
+#SBATCH -o logs/02_compute_corr_hb_merged.%a.out
+#SBATCH -e logs/02_compute_corr_hb_merged.%a.err
 # SBATCH --mail-type=ALL
 
 set -e
