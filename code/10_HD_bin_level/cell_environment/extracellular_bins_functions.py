@@ -110,7 +110,7 @@ def export_and_plot(adata, plot_dir, sample_id, mpp, random_state = 0):
     ].copy()
 
     #   Add 'cell_id' column
-    extracellular_df['cell_id'] = extracellular_df['microenvironment_secondary']
+    extracellular_df['cell_id'] = extracellular_df['labels_joint']
     mask = extracellular_df['cell_component'] == 'Prim. Extracellular'
     extracellular_df.loc[mask, 'cell_id'] = extracellular_df.loc[
         mask, 'microenvironment_primary'
