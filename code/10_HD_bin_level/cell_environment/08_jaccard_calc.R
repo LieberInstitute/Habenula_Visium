@@ -45,14 +45,13 @@ ficture_extra = fread(ficture_extra_path, select = ficture_colnames) |>
 message(Sys.time(), ' | Reading in full-tissue results...')
 ficture_all = fread(ficture_all_path, select = ficture_colnames) |>
     as_tibble() |>
-    group_by(sample_id, barcode) |>
-    slice_head(n = 1) |>
-    ungroup() |>
     filter(!is.na(factor_K1)) |>
     dplyr::rename(cluster_all = factor_K1)
 
 message(Sys.time(), ' | Joining...')
-ficture = inner_join(ficture_extra, ficture_all, by = c('sample_id', 'barcode'))
+ficture = inner_join(
+    ficture_extra, ficture_all, by = c('sample_id', 'barcode'), multiple = 'any'
+)
 
 #   Compute the Jaccard index for each combination of extracellular and
 #   full-tissue clusters
