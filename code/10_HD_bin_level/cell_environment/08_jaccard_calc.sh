@@ -6,7 +6,7 @@
 #SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/08_jaccard_calc_%a.txt
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH --array=4-40:2%10
+#SBATCH --array=70,100%2
 
 set -e
 
