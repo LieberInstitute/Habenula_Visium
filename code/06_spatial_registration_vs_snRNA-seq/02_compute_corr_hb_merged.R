@@ -130,7 +130,7 @@ annotated_clusters_fine <-
     confidence_threshold = 0.25,
     cutoff_merge_ratio = 0.25
   )
-
+head(annotated_clusters_fine)
 # Use annotation labels on the correlation matrices / restricted to 20 characters
 
 cor_fine <- mapply(
@@ -202,17 +202,22 @@ save(
 
 ##   Make heatmaps broad res
 
+f_name = "test.pdf"
+f_name = "cor_top100_visium_snRNAseq_registration_broadRes_Hb_merged.pdf"
 pdf(here(
   dir_plot,
-  "cor_top100_visium_snRNAseq_registration_broadRes_Hb_merged.pdf"
+  f_name
 ))
+
 for (i in seq_len(length(cor_broad))) {
   # i = 13
   print(
     layer_stat_cor_plot(
       cor_broad[[i]],
       annotation = annotated_clusters_broad[[i]],
-      heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
+      color_max = 1,
+      color_min = -1
+      #heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
     )
   )
 }
@@ -230,6 +235,9 @@ dev.off()
 #   )
 # }
 # dev.off()
+
+# library("slurmjobs")
+# slurmjobs::job_single('02_compute_corr_hb_merged', create_shell = TRUE, memory = '60G', command = "02_compute_corr_hb_merged.R")
 
 ## Reproducibility information
 print("Reproducibility information:")
