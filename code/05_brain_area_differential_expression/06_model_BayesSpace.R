@@ -5,11 +5,11 @@
 
 # To submit the job use: sbatch 03_model_BayesSpace.sh
 
-# k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 ## read input arguments
-args = commandArgs(trailingOnly = TRUE)
-k <- args[2]
+# args = commandArgs(trailingOnly = TRUE)
+# k <- args[2]
 # 13 = 1 Hb domain
 # 21 = 2 Hb domains
 # 26 = 3 Hb domains
@@ -19,6 +19,7 @@ if (is.na(k)) {
   k <- 13
 }
 
+k_nice <- sprintf("%02d", k)
 
 library("here")
 library("sessioninfo")
@@ -40,7 +41,7 @@ sce_pseudo <-
   readRDS(
     file.path(
       dir_rdata,
-      paste0("sce_pseudo_PCA_brain_area_k", sprintf("%02d", k), ".rds")
+      paste0("sce_pseudo_PCA_brain_area_k", k_nice, ".rds")
     )
   )
 
@@ -134,7 +135,7 @@ save(
   modeling_results,
   file = file.path(
     dir_rdata,
-    paste0("modeling_results_BayesSpace_k", sprintf("%02d", k), ".Rdata")
+    paste0("modeling_results_BayesSpace_k", k_nice, ".Rdata")
   )
 )
 
