@@ -11,6 +11,7 @@ library("sessioninfo")
 
 ## Input dir
 dir_input <- here("processed-data", "05_layer_differential_expression", "modeling_results_BS")
+#dir_input <- here("processed-data", "05_brain_area_differential_expression", "modeling_results_BS")
 
 ## Set up plotting
 plot_dir <- here("plots", "07_spatial_registration_vs_multiome_snRNA-seq")
@@ -41,14 +42,20 @@ head(sn_multiome_data$enrichment[5:10])
 # ENSG00000225880          1.0900785    1.994628          0.2073577 -0.06977143
 # ENSG00000230368          0.5377206    1.413340         -0.4024732  0.61983127
 
-colnames(unique(sn_multiome_data$enrichment))
+head(colnames(unique(sn_multiome_data$enrichment)))
+# # ======= clusters on v2 (polished version)
+# [1] "t_stat_C.01"         "t_stat_C.02"         "t_stat_C.03"        
+# [4] "t_stat_C.04"         "t_stat_C.05.DD_LHb"  "t_stat_C.06"        
+# [7] "t_stat_C.07.DD_MHb"  "t_stat_C.08"         "t_stat_C.09"        
+# [10] "t_stat_C.10.DD_MHb"  "t_stat_C.11.DD_MHb"  "t_stat_C.12"      
+# ======= clusters on v1
 # [1] "t_stat_C.01.DD_LHb"  "t_stat_C.02"         "t_stat_C.03"        
 # [4] "t_stat_C.04.DD_LHb"  "t_stat_C.05.DD_LHb"  "t_stat_C.06"        
 # [7] "t_stat_C.07.DD_MHb"  "t_stat_C.08.DD_LHb"  "t_stat_C.09"        
 # [10] "t_stat_C.10.DD_MHb"  "t_stat_C.11.DD_MHb"  "t_stat_C.12.DD_LHb" 
 
 
-## extract only enrichment data and sorted the t-stats by hb and not hb clusters
+## extract only enrichment stats and sorted the t-stats by hb and no hb clusters
 
 snRNA_t_stats_sorted <- function(sn_data) {  
   
@@ -76,13 +83,17 @@ snRNA_t_stats_sorted <- function(sn_data) {
   
 }
 
-## Load Registration Results 
-
-k_list <- c(2:28)
-names(k_list) <-
-  paste0("k", sprintf("%02d", k_list)) ## Use paper naming convention
 
 ## Load Registration Results 
+
+#k_list <- c(2:28) --> old version all clusters included
+k_list <- c(3,9,13,21,26)
+# testing k_list=13
+names(k_list) <- paste0("k", sprintf("%02d", k_list)) ## Use naming convention
+# [1] "k03" "k09" "k13" "k21" "k26"
+
+## Load Registration Results 
+
 bayesSpace_registration_fn <-
   map(k_list, ~ here(
     dir_input,
@@ -92,11 +103,16 @@ bayesSpace_registration_fn <-
       ".Rdata"
     )
   ))
+bayesSpace_registration_fn
+# bayesSpace_registration_fn[12]
+# [1] "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/05_brain_area_differential_expression/modeling_results_BS/modeling_results_BayesSpace_k11.Rdata"
+
 ## Load the 3 model results (anova, enrichment, pairwise) for each domain in the BS
 bayesSpace_registration <-
   lapply(bayesSpace_registration_fn, function(x) {
     get(load(x))
   })
+
 stopifnot(is.list(bayesSpace_registration))
 names(bayesSpace_registration[[1]])
 # [1] "anova"      "enrichment" "pairwise"  
@@ -137,18 +153,22 @@ map(registration_t_stats, jaffelab::corner)
 
 ## loop on the k(s) 
 
-plt_corr_snmultiome <- function(suffix_name) {
-  # suffix_name = "v2"
-  plt_name <- paste0("cor_top100_spatial_registration_snMultiome_", suffix_name,".pdf")
+plt_corr_snmultiome <- function(
+        suffix_name,
+        plt_name) {
+
+  #plt_name <- paste0("cor_top100_spatial_registration_snMultiome_", suffix_name,".pdf")
   pdf(here(plot_dir, plt_name))
 
   for (k in names(k_list)) {
-    # k = "k09"
-    print(k)
+    # k = "13"
+    message("Processing Spatial-Registration for BayesSpace k", k)
+    # bayesSpace_registration[['k13']]$enrichment
+    k = paste0("k", k)
     bayesSpace_registration_k <- bayesSpace_registration[[k]]$enrichment
     # head(bayesSpace_registration_k)
     cor_layer <- layer_stat_cor(
-      stats = bayesSpace_registration_k, #bayesSpace_registration$k09$enrichment,
+      stats = bayesSpace_registration_k, #bayesSpace_registration$k13$enrichment,
       modeling_results = sn_multiome_data,
       model_type = "enrichment",
       top_n = 100
@@ -190,17 +210,19 @@ plt_corr_snmultiome <- function(suffix_name) {
 
 }
 
-plt_corr_snmultiome(suffix_reference)
+#plt_corr_snmultiome(suffix_reference)
+#"v2"
+f_name <- paste0("testing_spatial_registration_snMultiome_", suffix_name,".pdf")
+plt_corr_snmultiome(suffix_reference, f_name)
 
 
-message("Spatial correlation with snRNAseq multiome data done!")
+message("Spatial correlation vs snRNAseq multiome data done!")
 
 
 
-library("slurmjobs")
-
+#library("slurmjobs")
 ## A regular job with 10 cores on the 'imaginary' partition
-job_single("02_compute_cor_visium_multiomeRnaseq", cores = 2, partition = "katun", create_shell = TRUE)
+#job_single("02_compute_cor_visium_multiomeRnaseq", cores = 2, partition = "katun", create_shell = TRUE)
 
 
 
