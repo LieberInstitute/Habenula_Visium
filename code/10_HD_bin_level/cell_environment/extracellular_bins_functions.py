@@ -142,7 +142,7 @@ def export_and_plot(adata, plot_dir, sample_id, mpp, random_state = 0):
     ].copy()
 
     #   For each secondary cell, find the corresponding label in 'labels_joint'
-    temp = (
+    label_key = (
         adata.obs
             .loc[adata.obs['labels_joint_source'] == 'secondary']
             .drop_duplicates(subset = 'labels_gex', keep = 'first')
@@ -157,9 +157,12 @@ def export_and_plot(adata, plot_dir, sample_id, mpp, random_state = 0):
     )
 
     #   Add 'cell_id' column
+    temp = extracellular_df.index
     extracellular_df = pd.merge(
-        extracellular_df, temp, how = 'left', on = 'microenvironment_secondary'
+        extracellular_df, label_key, how = 'left',
+        on = 'microenvironment_secondary'
     )
+    extracellular_df.index = temp
     extracellular_df['cell_id'] = extracellular_df['corresponding_joint']
     mask = extracellular_df['cell_component'] == 'Prim. Extracellular'
     extracellular_df.loc[mask, 'cell_id'] = extracellular_df.loc[
