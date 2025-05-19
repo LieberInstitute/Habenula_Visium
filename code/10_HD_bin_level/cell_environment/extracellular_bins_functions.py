@@ -4,6 +4,7 @@ import bin2cell as b2c
 import matplotlib.pyplot as plt
 import scanpy as sc
 import os
+import pandas as pd
 
 #   Find microenvironment around primary and secondary segmentations, expanding
 #   around the cell bodies by [expansion_distance] bins. Return the updated
@@ -148,8 +149,26 @@ def export_and_plot(adata, plot_dir, sample_id, mpp, random_state = 0):
         )
     ].copy()
 
+    #   For each secondary cell, find the corresponding label in 'labels_joint'
+    temp = (
+        adata.obs
+            .loc[adata.obs['labels_joint_source'] == 'secondary']
+            .drop_duplicates(subset = 'labels_gex', keep = 'first')
+            [['labels_gex', 'labels_joint']]
+            .rename(
+                {
+                    'labels_joint': 'corresponding_joint',
+                    'labels_gex': 'microenvironment_secondary'
+                },
+                axis = 1
+            )
+    )
+
     #   Add 'cell_id' column
-    extracellular_df['cell_id'] = extracellular_df['labels_joint']
+    extracellular_df = pd.merge(
+        extracellular_df, temp, how = 'left', on = 'microenvironment_secondary'
+    )
+    extracellular_df['cell_id'] = extracellular_df['corresponding_joint']
     mask = extracellular_df['cell_component'] == 'Prim. Extracellular'
     extracellular_df.loc[mask, 'cell_id'] = extracellular_df.loc[
         mask, 'microenvironment_primary'
