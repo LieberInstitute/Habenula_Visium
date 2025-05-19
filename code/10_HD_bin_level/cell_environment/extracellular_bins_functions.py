@@ -63,11 +63,50 @@ def drop_bad_secondary_cells(adata, min_bins_per_cell):
     adata.obs.loc[adata.obs['labels_he_expanded'] != 0, 'cell_component'] = 'Prim. Cell Body'
     adata.obs.loc[adata.obs['labels_he'] != 0, 'cell_component'] = 'Prim. Nucleus'
 
-    #   At this point, one problem can emerge: because primary labels take priority
-    #   over secondary ones, the cell body of a previously secondary cell can be
-    #   overwritten by a primary label (microenvironment), while the extracellular
-    #   microenvironment remains. In this case, we want to drop the associated
-    #   microenvironment bins, since they don't correspond to a cell.
+    #   After expansion, some cells may end up with no extracellular bins.
+    #   Track how often this happens
+    num_prim_ex = len(
+        adata.obs
+            .loc[
+                adata.obs['cell_component'] == 'Prim. Extracellular',
+                'microenvironment_primary'
+            ]
+            .unique()
+    )
+    num_prim_nuc = len(
+        adata.obs
+            .loc[
+                adata.obs['cell_component'] == 'Prim. Nucleus',
+                'microenvironment_primary'
+            ]
+            .unique()
+    )
+    num_sec_ex = len(
+        adata.obs
+            .loc[
+                adata.obs['cell_component'] == 'Sec. Extracellular',
+                'microenvironment_secondary'
+            ]
+            .unique()
+    )
+    num_sec_nuc = len(
+        adata.obs
+            .loc[
+                adata.obs['cell_component'] == 'Sec. Cell Body',
+                'microenvironment_secondary'
+            ]
+            .unique()
+    )
+    print(f'Warning: {num_prim_nuc - num_prim_ex} primary cells have no extracellular bins ({100*(num_prim_nuc - num_prim_ex)/num_prim_nuc:.1f}%)')
+    print(f'Warning: {num_sec_nuc - num_sec_ex} secondary cells have no extracellular bins ({100*(num_sec_nuc - num_sec_ex)/num_sec_nuc:.1f}%)')
+
+
+    #   At this point, one problem can emerge: because primary labels take
+    #   priority over secondary ones, the cell body of a previously secondary
+    #   cell can be overwritten by a primary label (microenvironment), while the
+    #   extracellular microenvironment remains. In this case, we want to drop
+    #   the associated microenvironment bins, since they don't correspond to a
+    #   cell.
     temp = (
         adata.obs
             .loc[adata.obs['labels_gex'] != 0, :]
