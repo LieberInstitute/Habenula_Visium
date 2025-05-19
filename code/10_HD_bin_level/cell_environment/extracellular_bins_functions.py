@@ -56,14 +56,6 @@ def find_microenvironment(adata, expansion_distance):
 #   Drop secondary microenvironment bins not associated with a cell of at least
 #   [min_bins_per_cell] bins. Return the updated AnnData
 def drop_bad_secondary_cells(adata, min_bins_per_cell):
-    #   Add 'cell_component' column for informative coloring of plots
-    adata.obs['cell_component'] = 'Unlabeled'
-    adata.obs.loc[adata.obs['microenvironment_secondary'] != 0, 'cell_component'] = 'Sec. Extracellular'
-    adata.obs.loc[adata.obs['labels_gex'] != 0, 'cell_component'] = 'Sec. Cell Body'
-    adata.obs.loc[adata.obs['microenvironment_primary'] != 0, 'cell_component'] = 'Prim. Extracellular'
-    adata.obs.loc[adata.obs['labels_he_expanded'] != 0, 'cell_component'] = 'Prim. Cell Body'
-    adata.obs.loc[adata.obs['labels_he'] != 0, 'cell_component'] = 'Prim. Nucleus'
-
     #   After expansion, some cells may end up with no extracellular bins.
     #   Track how often this happens
     num_prim_ex = len(
@@ -173,6 +165,7 @@ def export_and_plot(adata, plot_dir, sample_id, mpp, random_state = 0):
     extracellular_df.loc[mask, 'cell_id'] = extracellular_df.loc[
         mask, 'microenvironment_primary'
     ]
+    assert all(~extracellular_df['cell_id'].isna())
 
     #   Clean up
     extracellular_df = (

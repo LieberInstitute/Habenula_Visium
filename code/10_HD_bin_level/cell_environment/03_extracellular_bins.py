@@ -38,6 +38,23 @@ for sample_id in all_samples:
     adata = ebf.find_microenvironment(
         adata, expansion_distance = expansion_distance
     )
+
+    #   Add 'cell_component' column for informative coloring of plots
+    adata.obs['cell_component'] = 'Unlabeled'
+    adata.obs.loc[adata.obs['microenvironment_secondary'] != 0, 'cell_component'] = 'Sec. Extracellular'
+    adata.obs.loc[adata.obs['labels_gex'] != 0, 'cell_component'] = 'Sec. Cell Body'
+    adata.obs.loc[adata.obs['microenvironment_primary'] != 0, 'cell_component'] = 'Prim. Extracellular'
+    adata.obs.loc[adata.obs['labels_he_expanded'] != 0, 'cell_component'] = 'Prim. Cell Body'
+    adata.obs.loc[adata.obs['labels_he'] != 0, 'cell_component'] = 'Prim. Nucleus'
+
+    #   Surprisingly, bin2cell passively drops many secondary cells by giving all of
+    #   their bins (either this or none of the bins) a 'none' value in
+    #   'labels_joint_source'. Just drop such bins now (cell body only)
+    adata = adata[
+        (adata.obs['labels_joint_source'] == 'secondary') |
+        (adata.obs['cell_component'] != 'Sec. Cell Body')
+    ]
+
     adata = ebf.drop_bad_secondary_cells(
         adata, min_bins_per_cell = min_bins_per_cell
     )
