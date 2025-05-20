@@ -56,6 +56,38 @@ def find_microenvironment(adata, expansion_distance):
 #   Drop secondary microenvironment bins not associated with a cell of at least
 #   [min_bins_per_cell] bins. Return the updated AnnData
 def drop_bad_secondary_cells(adata, min_bins_per_cell):
+    #   At this point, one problem can emerge: because primary labels take
+    #   priority over secondary ones, the cell body of a previously secondary
+    #   cell can be overwritten by a primary label (microenvironment), while the
+    #   extracellular microenvironment remains. In this case, we want to drop
+    #   the associated microenvironment bins, since they don't correspond to a
+    #   cell.
+    temp = (
+        adata.obs
+            .loc[adata.obs['labels_gex'] != 0, :]
+            .groupby('labels_gex')
+            .apply(
+                lambda x: (x['cell_component'] == 'Sec. Cell Body').sum(),
+                include_groups=False
+            )
+            .reset_index()
+    )
+    bad_cells = (
+        temp
+            .loc[temp.iloc[:, 1] < min_bins_per_cell, 'labels_gex']
+            .unique()
+    )
+
+    num_secondary = len(adata.obs['microenvironment_secondary'].unique()) - 1
+    print(f"Dropping {len(bad_cells)} of {num_secondary} ({round(100 * len(bad_cells) / num_secondary, 1)}%) secondary cells with fewer than {min_bins_per_cell} bins")
+    adata = adata[
+        ~(
+            adata.obs['microenvironment_secondary'].isin(bad_cells) &
+            adata.obs['cell_component'].isin(['Sec. Extracellular', 'Sec. Cell Body'])
+        ),
+        :
+    ]
+
     #   After expansion, some cells may end up with no extracellular bins.
     #   Track how often this happens
     num_prim_ex = len(
@@ -92,39 +124,6 @@ def drop_bad_secondary_cells(adata, min_bins_per_cell):
     )
     print(f'Warning: {num_prim_nuc - num_prim_ex} primary cells have no extracellular bins ({100*(num_prim_nuc - num_prim_ex)/num_prim_nuc:.1f}%)')
     print(f'Warning: {num_sec_nuc - num_sec_ex} secondary cells have no extracellular bins ({100*(num_sec_nuc - num_sec_ex)/num_sec_nuc:.1f}%)')
-
-
-    #   At this point, one problem can emerge: because primary labels take
-    #   priority over secondary ones, the cell body of a previously secondary
-    #   cell can be overwritten by a primary label (microenvironment), while the
-    #   extracellular microenvironment remains. In this case, we want to drop
-    #   the associated microenvironment bins, since they don't correspond to a
-    #   cell.
-    temp = (
-        adata.obs
-            .loc[adata.obs['labels_gex'] != 0, :]
-            .groupby('labels_gex')
-            .apply(
-                lambda x: (x['cell_component'] == 'Sec. Cell Body').sum(),
-                include_groups=False
-            )
-            .reset_index()
-    )
-    bad_cells = (
-        temp
-            .loc[temp.iloc[:, 1] < min_bins_per_cell, 'labels_gex']
-            .unique()
-    )
-
-    num_secondary = len(adata.obs['microenvironment_secondary'].unique()) - 1
-    print(f"Dropping {len(bad_cells)} of {num_secondary} ({round(100 * len(bad_cells) / num_secondary, 1)}%) secondary cells with fewer than {min_bins_per_cell} bins")
-    adata = adata[
-        ~(
-            adata.obs['microenvironment_secondary'].isin(bad_cells) &
-            adata.obs['cell_component'].isin(['Sec. Extracellular', 'Sec. Cell Body'])
-        ),
-        :
-    ]
 
     return adata
 
