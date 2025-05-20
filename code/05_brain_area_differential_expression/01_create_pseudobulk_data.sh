@@ -9,12 +9,9 @@
 # SBATCH --mail-type=ALL
 #SBATCH --array=2-28%20
 
-## Define BayesSpace k of interest
-# BayesSpace with LHb and LHb: BS_k=(3 9 17)
-# BayesSpace with only one Habenula merged: BS_k=(3 13 21 26)
 
 ## Explicitly pipe script output to a log
-log_path=logs/01_create_pseudobulk_data_BS_${SLURM_ARRAY_TASK_ID}.txt
+log_path=logs/01_create_pseudobulk_data_${SLURM_ARRAY_TASK_ID}.txt
 
 {
 set -e
@@ -37,7 +34,6 @@ module list
 
 ## Edit with your job command
 Rscript 01_create_pseudobulk_data.R
-#Rscript 01_create_pseudobulk_data.R --BS_k ${BS_k}
 
 echo "**** Job ends ****"
 date
