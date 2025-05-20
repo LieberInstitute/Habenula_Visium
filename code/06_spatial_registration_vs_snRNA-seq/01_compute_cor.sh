@@ -7,7 +7,8 @@
 #SBATCH -o logs/01_compute_cor.%a.out
 #SBATCH -e logs/01_compute_cor.%a.err
 # SBATCH --mail-type=ALL
-#SBATCH --array=2-28%20
+# SBATCH --array=2-28%20
+
 
 set -e
 
@@ -19,7 +20,7 @@ echo "User: ${USER}"
 echo "Job id: ${SLURM_JOB_ID}"
 echo "Job name: ${SLURM_JOB_NAME}"
 echo "Node name: ${SLURMD_NODENAME}"
-echo "Task id: ${SLURM_ARRAY_TASK_ID}"
+# echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
 module load conda_R/4.4.x
