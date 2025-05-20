@@ -1,3 +1,11 @@
+########################################################################
+## Create pseudobulk 
+## Authors. CSC
+## Data: XX
+## For 60 to 80k spots: $srun --pty --mem=30GB --x11 bash
+########################################################################
+
+
 library("here")
 library("spatialLIBD")
 library("tidyverse")
@@ -12,15 +20,13 @@ library("compositions")
 ## copied from https://github.com/LieberInstitute/Visium_SPG_AD/blob/6ef1a1225d3dcd115f6272711ab684d050711378/code/11_grey_matter_only/01_create_pseudobulk_data.R
 
 k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-# args = commandArgs(trailingOnly = TRUE)
-# k <- as.integer(args[2])
 
 ## For testing
 if (is.na(k)) {
   k <- 2
 }
 
-message("Processing pseudobullk for k = ", k)
+k_nice <- sprintf("%02d", k)
 
 dir_rdata <- here("processed-data", "05_brain_area_differential_expression")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
@@ -37,9 +43,11 @@ stopifnot(file.exists(dir_csv))
 
 spe_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony.rds")
 spe <- readRDS(spe_in)
+# class: SpatialExperiment 
+# dim: 26610 33409 
 
 ## Import BayesSpace clusters
-
+colnames(colData(spe))
 clusters_BayesSpace_dir <- here(
   "processed-data",
   "04_harmony_BayesSpace",
@@ -54,14 +62,20 @@ spe <- cluster_import(
 )
 # Overwriting 'spe$key'. Set 'overwrite = FALSE' if you do not want to overwrite it.
 
+
+message("Processing pseudobullk for k = ", k_nice)
+
+
 ## Prepare data to pseudobulk
 
 # Quick inspection
 #colData(spe)[grep("BayesSpace_harmony", colnames(colData(spe)))]
 #length(grep("BayesSpace_harmony", colnames(colData(spe))))
+colnames(colData(spe))[grepl("BayesSpace_harmony*", colnames(colData(spe)))]
+table(spe$brain_id)
+table(spe$sample_id)
 
-k_nice <- sprintf("%02d", k)
-
+## set `BayesSpace` as factor
 spe$BayesSpace <- factor(
   paste0(
     "Sp",
@@ -74,9 +88,6 @@ spe$BayesSpace <- factor(
   )
 )
 
-sort(unique(spe$BayesSpace))
-# [1] Sp02D02 Sp02D01
-# Levels: Sp02D01 Sp02D02
 levels(colData(spe)$BayesSpace)
 # [1] "Sp02D01" "Sp02D02"
 
@@ -90,17 +101,12 @@ load(dir_labels)
 
 # rename the levels to make them readable in the plots (uses Hb pilot Broad annotations)
 
-# colData(spe)$BayesSpace <- factor(colData(spe)$BayesSpace)
 levels(colData(spe)$BayesSpace) <- c(sort(rownames(cor_broad[[k-1]])))
 levels(colData(spe)$BayesSpace)
 # [1] "Sp02D01 ~ Oligo"      "Sp02D02 ~ Inhib.Thal"
 
 ## we need to double-check if the annotated BayesSpace names/levels do have syntactically valid names
 #  - this avoid error further when computing other process. g.e: 'registration_stats_pairwise'
-
-# Make sure it's a factor
-spe$BayesSpace <- factor(spe$BayesSpace)
-# Clean the levels (not the values)
 levels(spe$BayesSpace) <- gsub("\\s*~\\s*", ".", levels(spe$BayesSpace))  # Replace ~
 levels(spe$BayesSpace) <- gsub("/", "_", levels(spe$BayesSpace))          # Replace /
 levels(spe$BayesSpace) <- gsub("\\*$", "", levels(spe$BayesSpace))        # Remove *
@@ -137,7 +143,7 @@ gene_counts_df
 # 3 Sp03D03.Inhib.Thal               21454
 
 
-## Assign new 'brain-area' based in posterior-anterior locations defined by KDM based on RNAScope
+## Assign new column 'brain-area2' based on `anterior to posterior` regions defined by KDM based on RNAScope
 
 colData(spe)$brain_area2 <- case_when(
   colData(spe)$sample_id == "V13B23-285_A1" ~ "G0",
@@ -187,7 +193,7 @@ saveRDS(
 
 ############################
 
-message("Processing BayesSpace k=", k_nice)
+message("Processing pseudobulk for BayesSpace k=", k_nice)
 
 # Perform pseudobulk across BayesSpace and sample_id
 
@@ -198,6 +204,14 @@ spe_pseudo_k <- scuttle::aggregateAcrossCells(
     reg_sample_id = spe$sample_id
   )
 )
+head(colData(spe_pseudo_k)$BayesSpace)
+head(colData(spe_pseudo_k)$BayesSpace_p)
+
+# make the BayesSpace levels identical
+spe_pseudo_k$BayesSpace_p <- spe_pseudo_k$BayesSpace
+identical(spe_pseudo_k$BayesSpace, spe_pseudo_k$BayesSpace_p)
+levels(spe_pseudo_k$BayesSpace) == levels(spe_pseudo_k$BayesSpace_p)
+# [1] TRUE TRUE TRUE
 
 ## quick inspection: check how many genes expressed by cluster we have after pseudobulk
 
@@ -222,12 +236,6 @@ gene_counts_df
 # 2   Sp03D02.Habenula               26223
 # 3 Sp03D03.Inhib.Thal               21454
 
-
-# make the BayesSpace levels identical
-spe_pseudo_k$BayesSpace_p <- spe_pseudo_k$BayesSpace
-identical(spe_pseudo_k$BayesSpace, spe_pseudo_k$BayesSpace_p)
-levels(spe_pseudo_k$BayesSpace) == levels(spe_pseudo_k$BayesSpace_p)
-# [1] TRUE TRUE TRUE
 
 message("Aggregation completed for k=", k_nice)
 message(
