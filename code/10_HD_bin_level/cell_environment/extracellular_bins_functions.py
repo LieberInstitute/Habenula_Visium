@@ -175,6 +175,7 @@ def export_and_plot(adata, plot_dir, sample_id, mpp, random_state = 0):
             .reset_index(names = 'bin_id')
             .assign(sample_id = sample_id)
     )
+    extracellular_df['cell_id'] = extracellular_df['cell_id'].astype(int)
 
     #---------------------------------------------------------------------------
     #   Visualize cell segmentations and surrounding microenvironment
