@@ -1,11 +1,21 @@
-
-######### Compute Spatial-Registration for both Fine and Broad snRNAseq vs Multiome snRNAseq (CSC) ########
-
+################################################################################
+## Compute Spatial-Registration for both Fine and Broad snRNAseq vs Multiome snRNAseq (CSC)
+##
+## Notes:
+## For 60 to 80k spots: $srun --pty --mem=60GB --x11 bash
+##
+## Authors. CSC
+##
+#################### BayesSpace vs Multiome-snRNAseq ###########################
 
 library("here")
 library("purrr")
 library("spatialLIBD")
+library("ComplexHeatmap")
+library("grid") # need to print the plot, otherwise is clipped by internal function of layer_stat_cor_plot()
 library("sessioninfo")
+
+# spatialLIBD / * 1.21.5 / 2025-05-16 [1] Github (LieberInstitute/spatialLIBD@aff00db)
 
 
 ## Input dir
@@ -22,10 +32,10 @@ dir_plot <- here("plots", "06_spatial_registration_vs_snRNA-seq")
 dir.create(dir_plot, showWarnings = FALSE, recursive = TRUE)
 
 ## specify the number of BayesSpace k to use 
-k=9
-#k <- seq(2,28)
+#k=13
+k <- seq(2,28)
 
-## Load Registration Results 
+## Load Visium Registration Results 
 bayesSpace_registration_fn <-
   map(k, ~ here(
     dir_input,
@@ -107,7 +117,7 @@ cor_broad <- compute_cor("final_Annotations_broad")
 ## Annotate clusters / classify by layer confidence classes (good/poor)
 # annotated_clusters_fine <-
 #     lapply(cor_fine, annotate_registered_clusters, cutoff_merge_ratio = 0.1)
-# annotated_clusters_fine[[5]]
+# annotated_clusters_fine[[2]]
 # cluster layer_confidence     layer_label
 # 1 Sp06D04             good     MHb.2/MHb.1
 # 2 Sp06D02             good            Endo
@@ -166,28 +176,43 @@ save(cor_fine,
 
 ##   Make heatmaps broad res
 
-pdf(here(dir_plot, "cor_top100_visium_snRNAseq_registration_broadRes.pdf"))
+pdf(here(dir_plot, "cor_top100_visium_snRNAseq_registration_broadRes.pdf"), width = 10, height = 10)
+
 for (i in seq_len(length(cor_broad))) {
-  print(
-    layer_stat_cor_plot(
-      cor_broad[[i]], annotation = annotated_clusters_broad[[i]],
-      heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
+    hm <- (layer_stat_cor_plot(
+          cor_broad[[i]], annotation = annotated_clusters_broad[[i]],
+          heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
+          )
+     )
+    # Draw the heatmap with title
+    draw(
+        hm,
+        column_title = "Spatial-Registration: Visium vs snRNA (Broad res)",
+        column_title_gp = gpar(fontsize = 16, fontface = "bold")
     )
-  )
 }
+
 dev.off()
 
 ##   Make heatmaps fine res
 
-pdf(here(dir_plot, "cor_top100_visium_snRNAseq_registration_fineRes.pdf"))
+pdf(here(dir_plot, "cor_top100_visium_snRNAseq_registration_fineRes.pdf"), width = 10, height = 10)
+
 for (i in seq_len(length(cor_fine))) {
-  print(
-    layer_stat_cor_plot(
+  hm <- (layer_stat_cor_plot(
       cor_fine[[i]], annotation = annotated_clusters_fine[[i]],
       heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
     )
   )
+    # Draw the heatmap with title
+    draw(
+        hm,
+        column_title = "Spatial-Registration: Visium vs snRNA (Fine res)",
+        column_title_gp = gpar(fontsize = 16, fontface = "bold")
+    )
+  
 }
+
 dev.off()
 
 # library(slurmjobs)
