@@ -1,9 +1,12 @@
+########################################################################
+## Create Bayes-Space model 
+## Authors
 # copied from https://github.com/LieberInstitute/spatialDLPFC/blob/bd93c980d7653579f81ff1c91c309cea0c7474a6/code/analysis/07_layer_differential_expression/03_model_BayesSpace.R
+## Adapted: CSC
+## Data: XX
+## For 60 to 80k spots: $srun --pty --mem=30GB --x11 bash
+########################################################################
 
-# library(slurmjobs)
-# slurmjobs::job_single('03_model_BayesSpace', create_shell = TRUE, memory = '30G', command = "03_model_BayesSpace.R")
-
-# To submit the job use: sbatch 03_model_BayesSpace.sh
 
 k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
@@ -26,7 +29,7 @@ library("sessioninfo")
 library("spatialLIBD")
 
 # > packageVersion("spatialLIBD")
-# [1] ‘1.21.4’
+# [1] ‘1.21.5’
 
 ## output directory
 dir_rdata <- here("processed-data","05_brain_area_differential_expression")
@@ -44,24 +47,41 @@ sce_pseudo <-
       paste0("sce_pseudo_PCA_brain_area_k", k_nice, ".rds")
     )
   )
+levels(sce_pseudo$BayesSpace)
 
-## rename annotated BayesSpace names/levels to fix error when computing 'registration_stats_pairwise' - we need syntactically valid names
-old_bs_names <- sce_pseudo$BayesSpace
-new_bs_names <- gsub("/", "_",  # substitute cell-type '/' separator
-                     gsub(" ~ ", ".", sce_pseudo$BayesSpace)) # substitute ' ~ '
-new_bs_names <- gsub("\\*$", "",  new_bs_names) # substitute '*' added to significant cell-types
-unique(new_bs_names)
-# [1] "Sp13D01.Oligo"      "Sp13D02.Endo"       "Sp13D03.Endo"
-# [4] "Sp13D04.Astrocyte"  "Sp13D06.Astrocyte"  "Sp13D07.Astrocyte"
-# [7] "Sp13D08.OPC_Astroc" "Sp13D09.Astrocyte_" "Sp13D10.Oligo"
-# [10] "Sp13D11.Habenula"   "Sp13D12.Oligo"      "Sp13D13.Oligo"
-level_map <- setNames(new_bs_names, old_bs_names)
-# Match original BayesSpace labels in sce to new names
-sce_pseudo$BayesSpace <- level_map[as.character(sce_pseudo$BayesSpace)]
+# ## rename annotated BayesSpace names/levels to fix error when computing 'registration_stats_pairwise' - we need syntactically valid names
+# old_bs_names <- sce_pseudo$BayesSpace
+# new_bs_names <- gsub("/", "_",  # substitute cell-type '/' separator
+#                      gsub(" ~ ", ".", sce_pseudo$BayesSpace)) # substitute ' ~ '
+# new_bs_names <- gsub("\\*$", "",  new_bs_names) # substitute '*' added to significant cell-types
+# unique(new_bs_names)
+# # [1] "Sp13D01.Oligo"      "Sp13D02.Endo"       "Sp13D03.Endo"
+# # [4] "Sp13D04.Astrocyte"  "Sp13D06.Astrocyte"  "Sp13D07.Astrocyte"
+# # [7] "Sp13D08.OPC_Astroc" "Sp13D09.Astrocyte_" "Sp13D10.Oligo"
+# # [10] "Sp13D11.Habenula"   "Sp13D12.Oligo"      "Sp13D13.Oligo"
+# 
+# level_map <- setNames(new_bs_names, old_bs_names)
+# # Match original BayesSpace labels in sce to new names
+# sce_pseudo$BayesSpace <- level_map[as.character(sce_pseudo$BayesSpace)]
+# levels(sce_pseudo$BayesSpace)
+# [1] "Sp11D01.Oligo"      "Sp11D02.Microglia"  "Sp11D03.Endo"      
+# [4] "Sp11D04.Astrocyte"  "Sp11D05.Excit.Thal" "Sp11D06.Astrocyte" 
+# [7] "Sp11D07.Astrocyte"  "Sp11D08.Astrocyte"  "Sp11D09.Oligo"     
+# [10] "Sp11D10.Habenula"   "Sp11D11.Oligo"
 
 ## To avoid having to change parameters later on
 sce_pseudo$registration_variable <- sce_pseudo$BayesSpace
 sce_pseudo$registration_sample_id <- sce_pseudo$sample_id
+
+## Drop unused levels
+## - avoid error when some levels may not actually be present in the data, making the model non-identifiable in registration_model
+table(sce_pseudo$registration_variable)
+level_counts <- table(sce_pseudo$registration_variable)
+if (any(level_counts == 0)) {
+    sce_pseudo$registration_variable <- droplevels(sce_pseudo$registration_variable)
+    cat("After dropping unused levels:\n")
+    print(table(sce_pseudo$registration_variable))
+}
 
 ## Set arguments used in spatialLIBD::registration_wrapper()
 # covars <- c("sample_id")   # add sex, age when we have more than 2 classes
@@ -79,15 +99,15 @@ suffix <- "all"
 
 ## Taken from spatialLIBD::registration_wrapper()
 ## https://github.com/LieberInstitute/spatialLIBD/blob/master/R/registration_wrapper.R
-table(sce_pseudo[["brain_id"]])
-
 registration_mod <-
   registration_model(sce_pseudo, covars = covars)
 
-head(registration_mod)
-colnames(registration_mod)
-rownames(registration_mod)
-colData(sce_pseudo)
+# head(registration_mod)
+# colnames(registration_mod)
+# rownames(registration_mod)
+# colData(sce_pseudo)
+
+message("Registration model done!")
 
 block_cor <-
   registration_block_cor(sce_pseudo, registration_model = registration_mod)
