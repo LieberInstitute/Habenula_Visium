@@ -12,8 +12,7 @@
 
 ## Define loops and appropriately subset each variable for the array task ID
 
-#all_selected_BS_k=(13 21 26)
-# all_selected_BS_k=($(seq 2 28))
+# all_selected_BS_k=(13 21 26)
 # BS_k=${all_selected_BS_k[$(( $SLURM_ARRAY_TASK_ID / 1 % 28 ))]}
 # 13 = 1 Hb domain
 # 21 = 2 Hb domains
@@ -44,7 +43,6 @@ module list
 
 ## Edit with your job command
 Rscript 06_model_BayesSpace.R
-#Rscript 06_model_BayesSpace.R --BS_k ${BS_k}
 
 echo "**** Job ends ****"
 date
