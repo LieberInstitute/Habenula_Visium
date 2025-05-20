@@ -91,28 +91,28 @@ spe$BayesSpace <- factor(
 levels(colData(spe)$BayesSpace)
 # [1] "Sp02D01" "Sp02D02"
 
-## load annotated data at 'Broad' level to extract short annotated labels
-
-dir_labels <- here("processed-data",
-                  "06_spatial_registration_vs_snRNA-seq",
-                  "cor_BayesSpace_vs_snRNA-seq_top100_Hb_merged.Rdata")
-load(dir_labels)
-# [3] "cor_broad"               "cor_fine"
-
-# rename the levels to make them readable in the plots (uses Hb pilot Broad annotations)
-
-levels(colData(spe)$BayesSpace) <- c(sort(rownames(cor_broad[[k-1]])))
-levels(colData(spe)$BayesSpace)
-# [1] "Sp02D01 ~ Oligo"      "Sp02D02 ~ Inhib.Thal"
-
-## we need to double-check if the annotated BayesSpace names/levels do have syntactically valid names
-#  - this avoid error further when computing other process. g.e: 'registration_stats_pairwise'
-levels(spe$BayesSpace) <- gsub("\\s*~\\s*", ".", levels(spe$BayesSpace))  # Replace ~
-levels(spe$BayesSpace) <- gsub("/", "_", levels(spe$BayesSpace))          # Replace /
-levels(spe$BayesSpace) <- gsub("\\*$", "", levels(spe$BayesSpace))        # Remove *
-# Check
-levels(spe$BayesSpace)
-head(spe$BayesSpace)
+# ## load annotated data at 'Broad' level to extract short annotated labels -- need to be check (CSC)
+# 
+# dir_labels <- here("processed-data",
+#                   "06_spatial_registration_vs_snRNA-seq",
+#                   "cor_BayesSpace_vs_snRNA-seq_top100.Rdata")
+# load(dir_labels)
+# # [3] "cor_broad"               "cor_fine"
+# 
+# # rename the levels to make them readable in the plots (uses Hb pilot Broad annotations)
+# 
+# levels(colData(spe)$BayesSpace) <- c(sort(rownames(cor_broad[[k-1]])))
+# levels(colData(spe)$BayesSpace)
+# # [1] "Sp02D01 ~ Oligo"      "Sp02D02 ~ Inhib.Thal"
+# 
+# ## we need to double-check if the annotated BayesSpace names/levels do have syntactically valid names
+# #  - this avoid error further when computing other process. g.e: 'registration_stats_pairwise'
+# levels(spe$BayesSpace) <- gsub("\\s*~\\s*", ".", levels(spe$BayesSpace))  # Replace ~
+# levels(spe$BayesSpace) <- gsub("/", "_", levels(spe$BayesSpace))          # Replace /
+# levels(spe$BayesSpace) <- gsub("\\*$", "", levels(spe$BayesSpace))        # Remove *
+# # Check
+# levels(spe$BayesSpace)
+# head(spe$BayesSpace)
 
 
 ## quick inspection: check how many genes expressed by cluster we have before pseudobulk
