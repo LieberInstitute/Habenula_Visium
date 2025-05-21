@@ -1,7 +1,7 @@
 library(here)
 library(tidyverse)
 library(data.table)
-library(SpatialExperiment)
+library(spatialLIBD)
 library(HDF5Array)
 library(sessioninfo)
 
@@ -25,6 +25,10 @@ out_path = here(
         'cell_profiles', 'k_%d.csv.gz'
     ) |>
     sprintf(k)
+plot_path = here(
+    'plots', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'Br9090_WM_k4.png'
+)
 ficture_colnames = c(
     'sample_id', 'barcode', 'factor_K1', 'factor_K2', 'factor_K3', 'factor_P1',
     'factor_P2', 'factor_P3'
@@ -115,9 +119,24 @@ extra_df |>
     ungroup() |>
     print(n = 10)
 
+#   For Br9090 and k = 4, just to verify cell IDs and joining are correct, plot
+#   scores for the white-matter cluster spatially
+if (k == 4) {
+    spe$score_3 = extra_df$score_3
+
+    p = vis_gene(
+        spe, sampleid = 'H1-W369TJK_D1_9090', geneid = 'score_3',
+        is_stitched = TRUE, point_size = 10, spatial = TRUE
+    )
+    
+    png(plot_path, width = 1000, height = 1000)
+    print(p)
+    dev.off()
+}
+
 extra_df |>
     filter(!is.na(score_0)) |>
-    select(-sample_id) |>
+    select(key, num_bins, matches('^score_')) |>
     write_csv(out_path)
 
 session_info()
