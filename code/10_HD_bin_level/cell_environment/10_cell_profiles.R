@@ -34,16 +34,27 @@ dir.create(dirname(out_path), showWarnings = FALSE)
 
 message(Sys.time(), ' | Reading in FICTURE clusters...')
 ficture_df = fread(ficture_path, select = ficture_colnames) |>
-    as_tibble() |>
-    filter(!is.na(factor_K1))
+    as_tibble()
 
-message(Sys.time(), ' | Reading in extracellular bins and joining...')
+message(Sys.time(), ' | Reading in extracellular bins...')
 extra_df = fread(extra_path) |>
     as_tibble() |>
-    dplyr::rename(barcode = bin_id) |>
+    dplyr::rename(barcode = bin_id)
+
+message('Proportion of bins dropped by FICTURE (by sample):')
+extra_df |>
+    inner_join(ficture_df, by = c('sample_id', 'barcode'), multiple = 'any') |>
+    group_by(sample_id) |>
+    summarize(prop_missing = mean(is.na(factor_K1))) |>
+    ungroup() |>
+    print()
+
+message(Sys.time(), ' | Joining and computing cell-level scores...')
+extra_df = extra_df |>
     #   This is much faster than first taking unique combinations of sample_id
     #   and barcode before joining
-    inner_join(ficture_df, by = c('sample_id', 'barcode'), multiple = 'any')
+    inner_join(ficture_df, by = c('sample_id', 'barcode'), multiple = 'any') |>
+    filter(!is.na(factor_K1))
 
 #   Form score columns for each cluster based on adding up posterior
 #   probabilities for the top 3 factors
@@ -91,4 +102,3 @@ extra_df |>
     summarize(prop_missing = mean(is.na(score_0))) |>
     ungroup() |>
     print(n = 10)
-    
