@@ -46,31 +46,40 @@ echo "#########   - snRNAseq vs Multiome RNA.        ###########################
 
 
 ## change directory
-SUBDIR="05_layer_differential_expression"
+SUBDIR="05_brain_area_differential_expression"
 cd ${CODEDIR}/${SUBDIR}
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
-## Need - BayesSpace and model enrichment results
+
+##### Compute pseudobulk and correlation model for Visium BayesSpace k=(2-28)
+## The model statistics are required to compute spatial-registration, if done, jump this chunck ------------
 
 rm -f logs/01_create_pseudobulk_data_*.txt
 rm -f ${PROCESSEDIR}/${SUBDIR}/stats_summary_csv/*_basic_stats.csv
 rm -f ${PROCESSEDIR}/${SUBDIR}/stats_summary_csv/*_SpatialD_info.csv
-rm -f ${PROCESSEDIR}/${SUBDIR}/sce_pseudo_BayesSpace_k*.rds
-
-sbatch 01_create_pseudobulk_data.sh
-
-
-SUBDIR="05_brain_area_differential_expression"
-cd ${CODEDIR}/${SUBDIR}
-echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
-rm -f logs/06_model_BayesSpace_*.txt
 rm -f ${PROCESSEDIR}/${SUBDIR}/sce_pseudo_PCA_brain_area*.rds
-rm -f ${PLOTDIR}/${SUBDIR}/*.pdf
+id1=$(sbatch --parsable 01_create_pseudobulk_data.sh)
+echo "Running array job: ${id1}"
 
-sbatch 06_model_BayesSpace.sh
+# dependency job 
+rm -f logs/06_model_BayesSpace_*.txt
+rm -f ${PROCESSEDIR}/${SUBDIR}/modeling_results_BS/modeling_results_BayesSpace*.Rdata
+#sbatch 06_model_BayesSpace.sh
+id2=$(sbatch --parsable --dependency=afterok:$id1 06_model_BayesSpace.sh)
+echo "Running dependency array job: ${id2}"
 
+#------------------------------------------------------------------------------------------------------------
 
-## Compute Spatial registration for both Fine and Broad (snRNAseq) vs Bayes-Space Visium
+##### EDA: build HISTOGRANS and STACKED BAR PLOTS with Hb and no-Habenula count/proportions by BayesSpace domain
+# Here we compare Hb-Taxomony manual annotations (RNAScope) vs SpD in clustering
+
+rm -f logs/08_manual_ann_vs_bayes_space_*.txt
+rm -f ${PLOTDIR}/${SUBDIR}/08_manual_ann_vs_bayes_space/*.pdf
+sbatch 08_manual_ann_vs_bayes_space.sh
+
+#------------------------------------------------------------------------------------------------------------
+
+#####  Compute Spatial registration for VISIUM Bayes-Space vs both FINE and BROAD (snRNAseq)
 ## x-axis = snRNAseq cell-types
 ## y-axis = spatial Habenula Visium domains
 
@@ -86,7 +95,6 @@ rm -f logs/01_compute_cor.*.err
 rm -f ${PROCESSEDIR}/${SUBDIR}/cor_BayesSpace_vs_snRNA-seq_top100.Rdata
 rm -f ${PLOTDIR}/${SUBDIR}/*_broadRes.pdf
 rm -f ${PLOTDIR}/${SUBDIR}/*_fineRes.pdf
-
 sbatch 01_compute_cor.sh
 
 
@@ -99,6 +107,8 @@ rm -f ${PLOTDIR}/${SUBDIR}/*_broadRes_Hb_merged.pdf
 
 sbatch 02_compute_corr_hb_merged.sh
 
+
+#------------------------------------------------------------------------------------------------------------
 
 echo " Spatial Registrattion scRNAseq human pilot vs multiome-RNA human hb"
 
@@ -120,8 +130,6 @@ rm -f ${PROCESSEDIR}/${SUBDIR}/bayesSpace_cor_top100_*.Rdata
 rm -f ${PLOTDIR}/${SUBDIR}/cor_top100_spatial_registration_snMultiome_v2.pdf
 
 sbatch 02_compute_cor_visium_multiomeRnaseq.sh
-
-
 
 echo "**** Job ends ****"
 date
