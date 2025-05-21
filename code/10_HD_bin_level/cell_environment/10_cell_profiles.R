@@ -1,3 +1,9 @@
+#   For a specific value of k (looped over using an array), gather FICTURE
+#   results to ultimately form cell-level extracellular scores for each cluster,
+#   and export a CSV of these scores. This intermediate step (prior to any
+#   interesting analysis) is decently expensive in runtime and memory, hence
+#   the dedication of a full separate script to this task
+
 library(here)
 library(tidyverse)
 library(data.table)
