@@ -195,23 +195,54 @@ saveRDS(
 
 message("Processing pseudobulk for BayesSpace k=", k_nice)
 
+spe_pseudo_k <-
+    registration_pseudobulk(
+        spe,
+        var_registration = "BayesSpace",
+        var_sample_id = "sample_id",
+        covars = "brain_id",
+        min_ncells = 10
+    )
+dim(spe_pseudo_k)
+
+#colnames(colData(spe_pseudo))
+## list domains created
+rownames(colData(spe_pseudo_k))
+table(spe_pseudo_k$sample_id)
+table(spe_pseudo_k$brain_id)
+
+# droplevels((spe_pseudo)$BayesSpace)
+## drop levels not used
+table(spe_pseudo_k$BayesSpace)
+unique(spe_pseudo_k$BayesSpace)
+levels(spe_pseudo_k$BayesSpace)
+spe_pseudo_k$BayesSpace <- droplevels(spe_pseudo_k$BayesSpace)
+levels(spe_pseudo_k$BayesSpace)
+table(spe_pseudo_k$BayesSpace)
+
+message('Levels unused on pseudobulk `BayesSpace` dropped ')
+
+message('Pseudobulk completed ')
+
+
+
 # Perform pseudobulk across BayesSpace and sample_id
 
-spe_pseudo_k <- scuttle::aggregateAcrossCells(
-  spe,
-  DataFrame(
-    BayesSpace_p = spe[[paste0("BayesSpace_harmony_k", k_nice)]],
-    reg_sample_id = spe$sample_id
-  )
-)
-head(colData(spe_pseudo_k)$BayesSpace)
-head(colData(spe_pseudo_k)$BayesSpace_p)
-
-# make the BayesSpace levels identical
-spe_pseudo_k$BayesSpace_p <- spe_pseudo_k$BayesSpace
-identical(spe_pseudo_k$BayesSpace, spe_pseudo_k$BayesSpace_p)
-levels(spe_pseudo_k$BayesSpace) == levels(spe_pseudo_k$BayesSpace_p)
-# [1] TRUE TRUE TRUE
+# spe_pseudo_k <- scuttle::aggregateAcrossCells(
+#   spe,
+#   DataFrame(
+#     BayesSpace_p = spe[[paste0("BayesSpace_harmony_k", k_nice)]],
+#     reg_sample_id = spe$sample_id
+#   )
+# )
+# head(colData(spe_pseudo_k)$BayesSpace)
+# head(colData(spe_pseudo_k)$BayesSpace_p)
+# 
+# # make the BayesSpace levels identical
+# spe_pseudo_k$BayesSpace_p <- spe_pseudo_k$BayesSpace
+# identical(spe_pseudo_k$BayesSpace, spe_pseudo_k$BayesSpace_p)
+# levels(spe_pseudo_k$BayesSpace) == levels(spe_pseudo_k$BayesSpace_p)
+# # [1] TRUE TRUE TRUE
 
 ## quick inspection: check how many genes expressed by cluster we have after pseudobulk
 
@@ -296,7 +327,7 @@ levels(spe_pseudo_k$brain_area2)
 
 ## Compute the logcounts
 
-message(Sys.time(), " normalize expression")
+message(Sys.time(), " Normalize data and compute PCA")
 
 assays(spe_pseudo_k)
 
@@ -360,7 +391,7 @@ write.csv(
   )
 )
 
-message('Pseudobulk completed ')
+message(' Normalization completed ')
 
 
 ## Simplify the colData()  for the pseudo-bulked data
