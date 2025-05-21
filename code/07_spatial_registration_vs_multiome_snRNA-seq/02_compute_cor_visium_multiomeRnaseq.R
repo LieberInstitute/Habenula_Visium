@@ -1,6 +1,14 @@
 # copied from https://github.com/LieberInstitute/spatialDLPFC/blob/bd93c980d7653579f81ff1c91c309cea0c7474a6/code/analysis/08_spatial_registration/
 
-#################### BayesSpace vs Multiome-snRNAseq ##########################################
+################################################################################
+## Compute Spatial-Registration heatmpas between Visium cell-types and Multiome WNN clusters
+##
+## Notes:
+## For 60 to 80k spots: $srun --pty --mem=60GB --x11 bash
+##
+## Authors. CSC
+##
+#################### BayesSpace vs Multiome-snRNAseq ###########################
 
 library("spatialLIBD")
 library("tidyverse")
@@ -10,14 +18,27 @@ library("here")
 library("sessioninfo")
 
 ## Input dir
-dir_input <- here("processed-data", "05_layer_differential_expression", "modeling_results_BS")
-#dir_input <- here("processed-data", "05_brain_area_differential_expression", "modeling_results_BS")
+dir_input <- here(
+  "processed-data",
+  #"05_layer_differential_expression",
+  "05_brain_area_differential_expression",
+  "modeling_results_BS"
+)
 
 ## Set up plotting
-plot_dir <- here("plots", "07_spatial_registration_vs_multiome_snRNA-seq")
-data_dir <- here("processed-data", "07_spatial_registration_vs_multiome_snRNA-seq")
-if (!dir.exists(plot_dir)) { dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE) }
-if (!dir.exists(data_dir)) { dir.create(data_dir, showWarnings = FALSE, recursive = TRUE) }
+plot_dir <- here("plots", 
+                 "07_spatial_registration_vs_multiome_snRNA-seq"
+)
+data_dir <- here(
+  "processed-data",
+  "07_spatial_registration_vs_multiome_snRNA-seq"
+)
+if (!dir.exists(plot_dir)) {
+  dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
+}
+if (!dir.exists(data_dir)) {
+  dir.create(data_dir, showWarnings = FALSE, recursive = TRUE)
+}
 ## Load data
 # load(here("processed-data", "rdata","spe", "01_build_spe", "spe_filtered_final_with_clusters.Rdata"))
 
