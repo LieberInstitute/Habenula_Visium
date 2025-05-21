@@ -6,6 +6,7 @@
 #SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/10_cell_profiles.txt
 #SBATCH -c 1
 #SBATCH -t 8:00:00
+#SBATCH --array=4-40:2,70,100%10
 
 set -e
 
