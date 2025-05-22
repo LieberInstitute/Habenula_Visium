@@ -30,6 +30,7 @@ plot_dir = here(
 )
 mpp = 0.3
 num_random_cells = 5
+random_state = 0
 
 os.makedirs(stardist_dir, exist_ok=True)
 os.makedirs(plot_dir, exist_ok=True)
@@ -67,5 +68,40 @@ b2c.insert_labels(
 )
 
 sc.write(out_path, adata)
+
+################################################################################
+#   Plot random regions containing cells
+################################################################################
+
+random_cells = (
+    adata.obs
+        .loc[adata.obs['labels_primary'] != 0, :]
+        .drop_duplicates(subset = 'labels_primary')
+        .sample(n = num_random_cells, random_state = random_state)
+        ['labels_primary']
+        .values
+)
+
+for i, random_cell in enumerate(random_cells):
+    small_adata = adata[adata.obs['labels_primary'] == random_cell, :]
+    
+    small_adata = adata[
+        (adata.obs['array_row'] >= small_adata.obs['array_row'].min() - 40) &
+        (adata.obs['array_row'] <= small_adata.obs['array_row'].max() + 40) &
+        (adata.obs['array_col'] >= small_adata.obs['array_col'].min() - 40) &
+        (adata.obs['array_col'] <= small_adata.obs['array_col'].max() + 40) &
+        adata.obs['labels_primary'] != 0,
+        :
+    ]
+    small_adata.obs['labels_primary'] = small_adata.obs['labels_primary'].astype(str)
+    
+    sc.pl.spatial(
+        small_adata, color=[None, "labels_primary"],
+        img_key=f"{mpp}_mpp_150_buffer", basis="spatial_cropped_150_buffer"
+    )
+    plt.savefig(
+        os.path.join(plot_dir, f'{sample_id}_{i}.png')
+    )
+    plt.close('all')
 
 session_info.show()
