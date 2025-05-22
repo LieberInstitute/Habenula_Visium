@@ -17,6 +17,9 @@ stardist_dir = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'refine_segmentations',
     'stardist'
 )
+stardist_orig_dir = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'stardist'
+)
 out_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'refine_segmentations',
     'adata', f'{sample_id}_{prob_tag}.h5ad'
@@ -47,7 +50,7 @@ print(f"{datetime.datetime.now()} | Performing nuclear-based ('primary') segment
 #   Segment nuclei on H&E image
 b2c.stardist(
     image_path=os.path.join(
-        stardist_dir, f'{sample_id}_{prob_tag}.tiff'
+        stardist_orig_dir, f'he_{sample_id}.tiff'
     ),
     labels_npz_path=os.path.join(
         stardist_dir, f'{sample_id}_{prob_tag}.npz'
