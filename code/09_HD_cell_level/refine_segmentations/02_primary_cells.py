@@ -6,7 +6,7 @@ import session_info
 import bin2cell as b2c
 import datetime
 
-prob_tag = "default"
+prob_tag = "prob_0_001"
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
 with open(sample_id_path, 'r') as f:
@@ -52,7 +52,8 @@ b2c.stardist(
     labels_npz_path=os.path.join(
         stardist_dir, f'{sample_id}_{prob_tag}.npz'
     ),
-    stardist_model="2D_versatile_he"
+    stardist_model="2D_versatile_he",
+    prob_thresh=0.001
 )
 
 #   Add segmentations to object
@@ -92,7 +93,7 @@ for i, random_cell in enumerate(random_cells):
         (adata.obs['array_col'] <= small_adata.obs['array_col'].max() + 40) &
         adata.obs['labels_primary'] != 0,
         :
-    ]
+    ].copy()
     small_adata.obs['labels_primary'] = small_adata.obs['labels_primary'].astype(str)
     
     sc.pl.spatial(
