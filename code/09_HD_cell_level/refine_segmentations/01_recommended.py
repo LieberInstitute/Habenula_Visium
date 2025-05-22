@@ -3,8 +3,6 @@ import scanpy as sc
 import os
 from pyhere import here
 import session_info
-import bin2cell as b2c
-import datetime
 
 prob_tag = "recommended"
 
