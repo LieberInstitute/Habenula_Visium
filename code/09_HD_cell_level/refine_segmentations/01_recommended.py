@@ -40,7 +40,7 @@ random_cells = (
 )
 
 for i, random_cell in enumerate(random_cells):
-    small_adata = adata[adata.obs['labels_he'] == random_cell, :]
+    small_adata = adata[adata.obs['labels_he'] == random_cell, :].copy()
     
     small_adata = adata[
         (adata.obs['array_row'] >= small_adata.obs['array_row'].min() - 40) &

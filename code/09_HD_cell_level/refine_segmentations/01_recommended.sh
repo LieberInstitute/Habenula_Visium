@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=8G
+#SBATCH --mem=20G
 #SBATCH --job-name=01_recommended
 #SBATCH -c 1
 #SBATCH -t 1:00:00
