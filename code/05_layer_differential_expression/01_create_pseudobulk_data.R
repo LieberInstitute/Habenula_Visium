@@ -23,6 +23,7 @@ stopifnot(file.exists(dir_rdata)) ## Check that it was created successfully
 ## load spe data
 spe_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony.rds")
 spe <- readRDS(spe_in)
+spe
 
 ## Import BayesSpace clusters
 colnames(colData(spe))
@@ -42,8 +43,9 @@ spe <- cluster_import(
 ## Convert from character to a factor
 
 # Quick inspection
-colData(spe)[grep("BayesSpace_harmony", colnames(colData(spe)))]
-#length(grep("BayesSpace_harmony", colnames(colData(spe))))
+colnames(colData(spe))
+#colData(spe)[grep("BayesSpace_harmony", colnames(colData(spe)))]
+length(grep("BayesSpace_harmony", colnames(colData(spe))))
 
 spe$BayesSpace <- factor(
   paste0(
@@ -56,7 +58,7 @@ spe$BayesSpace <- factor(
     )
   )
 )
-# head(unique(spe$BayesSpace))
+head(unique(spe$BayesSpace))
 
 ## pseudobulk across a given BayesSpace k
 colnames(colData(spe))
@@ -73,11 +75,11 @@ spe_pseudo <-
     spe,
     var_registration = "BayesSpace",
     var_sample_id = "sample_id",
-    covars = "brain_id",
+    # covars = "brain_id", # git show a8a46f718caf8b858926e5192957d1b2d8e1eb40 / does'nt have this covar
     min_ncells = 10
   )
 dim(spe_pseudo)
-#colnames(colData(spe_pseudo))
+colnames(colData(spe_pseudo))
 ## list domains created
 rownames(colData(spe_pseudo))
 table(spe_pseudo$sample_id)
@@ -96,14 +98,14 @@ message('Levels unused on pseudobulk `BayesSpace` dropped ')
 
 message('Pseudobulk completed ')
 
-## Simplify the colData()  for the pseudo-bulked data
+## Simplify the colData()  for the pseudobulk
 
 colData(spe_pseudo) <- colData(spe_pseudo)[, sort(c(
   "age",
   "sample_id",
   "BayesSpace",
   "brain_id", # equivalent to subject / donor / ethnicity
-  # "subject",
+  # "subject", # git show 4befe3e796f0e1c5844e8c1628113366548f999c / subject meta-data was added
   "sex",
   "diagnosis",
   "ncells"
@@ -147,22 +149,25 @@ metadata(spe_pseudo) <- list(
 colnames(pca$x) <- paste0("PC", sprintf("%02d", seq_len(ncol(pca$x))))
 # head(pca$x)
 reducedDims(spe_pseudo) <- list(PCA = pca$x)
-#plotPCA(spe_pseudo, colour_by = "sample_id", n_components, point_size = 1)
+#plotPCA(spe_pseudo, colour_by = "brain_id", n_components, point_size = 1)
 
 ## Compute some reduced dims
 message('/nProcessing MDS and scarter runPCA')
 
 set.seed(20240626)
+
 spe_pseudo <- scater::runMDS(
   spe_pseudo,
   name = "runMDS",
   ncomponents = (n_components - 1)
-) #20
+)
 spe_pseudo <- scater::runPCA(
   spe_pseudo,
   name = "runPCA",
   ncomponents = n_components
 )
+# Warning in (function (A, nv = 5, nu = nv, maxit = 1000, work = nv + 7, reorth = TRUE,  :
+#                           You're computing too large a percentage of total singular values, use a standard svd instead.
 
 ## Double check the BayesSpace meta are factors
 stopifnot(is.factor(spe_pseudo$BayesSpace))
