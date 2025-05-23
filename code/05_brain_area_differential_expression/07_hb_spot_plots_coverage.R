@@ -20,6 +20,12 @@ spe_dir <- here(
     "04_harmony_BayesSpace",
     "spe_harmony_ann.rds"
 )
+# re-address path dir
+spe_dir <- here(
+    "processed-data",
+    "05_layer_differential_expression",
+    "spe_harmony_ann.rds"
+)
 dir_plots <- here(
     "plots",
     "05_brain_area_differential_expression",
@@ -29,21 +35,26 @@ dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 
 spe <- readRDS(spe_dir)
 spe
-
-# current SpDs annotated in pseudobulk spe k13
-colnames(colData(spe))[grep("BayesSpace_harmony_", colnames(colData(spe)))]
+colnames(colData(spe))
+# [1] "age"        "BayesSpace" "brain_id"   "diagnosis"  "ncells"     "sample_id"  "sex"       
 levels(colData(spe)$BayesSpace)
-# [1] "Sp13D01.Oligo"      "Sp13D02.Endo"       "Sp13D03.Endo"
-# [4] "Sp13D04.Astrocyte"  "Sp13D05.Inhib.Thal" "Sp13D06.Astrocyte"
-# [7] "Sp13D07.Astrocyte"  "Sp13D08.OPC_Astroc" "Sp13D09.Astrocyte_"
-# [10] "Sp13D10.Oligo"      "Sp13D11.Habenula"   "Sp13D12.Oligo"
-# [13] "Sp13D13.Oligo"
+colnames(colData(spe))[grep("BayesSpace_harmony_", colnames(colData(spe)))]
 
-# prepare new levels to plot by other BS k of interest
-levels(colData(spe)$BayesSpace_harmony_k11)
-#  [1] "1"  "2"  "3"  "4"  "5"  "6"  "7"  "8"  "9"  "10" "11"
+# first make manual verification to identify missing SpD(s) in samples causing visualization issues
+table(colData(spe)$sample_id, colData(spe)$BayesSpace)
+# 2 samples (V13B23−285_C1, V13B23−285_D1) have a SpD04, but this is missed on the other samples
+# Keep only rows where cluster is NOT SpD04 as this SpD (1) have only a few spots, and (2) tat the edge of the tissue in both samples
+spe <- spe[, colData(spe)$BayesSpace != "SpD04"]
+colData(spe)$BayesSpace <- droplevels(colData(spe)$BayesSpace)
+levels(colData(spe)$BayesSpace)
+table(colData(spe)$sample_id, colData(spe)$BayesSpace)
+colData(spe)$BayesSpace_harmony_k11 <- colData(spe)$BayesSpace
+spe_SR <- spe
+levels(colData(spe_SR)$BayesSpace)
 
-# Set custom levels
+## prepare `spe` with Hb-putative SpD(s) observed in the `Manual Anatomical Annotation` (KDM)
+
+## prepare levels with Hb-putative SpD(s) based on Manual Anatomical Annotation (KDM)
 new_labels <- paste0("SpD", sprintf("%02d", seq(1:11)))
 new_labels <- gsub("SpD06", "Sp06-Putative-Hb", new_labels)
 new_labels <- gsub("SpD07", "Sp07-Putative-Hb", new_labels)
@@ -53,22 +64,52 @@ new_labels
 # convert to factor with levels in the correct order
 colData(spe)$BayesSpace_harmony_k11 <- factor(
     colData(spe)$BayesSpace_harmony_k11,
-    levels = 1:11,
+    levels = levels(colData(spe)$BayesSpace_harmony_k11), 
     labels = new_labels
 )
+colData(spe)$BayesSpace_harmony_k11
 levels(colData(spe)$BayesSpace_harmony_k11)
 # [1] "SpD01"            "SpD02"            "SpD03"            "SpD04"           
 # [5] "SpD05"            "Sp06-Putative-Hb" "Sp07-Putative-Hb" "SpD08"           
 # [9] "SpD09"            "SpD10"            "Sp11-Putative-Hb"
 
-# manual verification to identify missing SpD in many samples causing visualization issues
-table(colData(spe)$sample_id, colData(spe)$BayesSpace_harmony_k11)
-# 2 samples (V13B23−285_C1, V13B23−285_D1) have a SpD04, but this is missed on the other samples
-# Keep only rows where cluster is NOT SpD04 as this SpD (1) have only a few spots, and (2) tat the edge of the tissue in both samples
-spe <- spe[, colData(spe)$BayesSpace_harmony_k11 != "SpD04"]
-colData(spe)$BayesSpace_harmony_k11 <- droplevels(colData(spe)$BayesSpace_harmony_k11)
-levels(colData(spe)$BayesSpace_harmony_k11)
-table(colData(spe)$sample_id, colData(spe)$BayesSpace_harmony_k11)
+
+## =============================================================================
+
+## prepare the `spe_SR` copy with Hb-putative SpD(s) observed in the `SpatialRegistration` Broad - Heatmap
+
+new_labels_SR <- paste0("SpD", sprintf("%02d", seq(1:11)))
+new_labels_SR <- gsub("SpD05", "Sp05-Putative-Hb", new_labels_SR)
+new_labels_SR <- gsub("SpD10", "Sp10-Putative-Hb", new_labels_SR)
+new_labels_SR
+
+# convert to factor with levels in the correct order
+colData(spe_SR)$BayesSpace_harmony_k11 <- factor(
+    colData(spe_SR)$BayesSpace_harmony_k11,
+    levels = levels(colData(spe_SR)$BayesSpace_harmony_k11), 
+    labels = new_labels_SR
+)
+colData(spe_SR)$BayesSpace_harmony_k11
+levels(colData(spe_SR)$BayesSpace_harmony_k11)
+table(colData(spe_SR)$sample_id, colData(spe_SR)$BayesSpace_harmony_k11)
+
+
+## =============================================================================
+
+# Sample_ids to plot to verify consistency between Hb proportions and Hb SpatialRegistration
+sample_ids_to_keep <- c("V13B23-280_A1", "V13B23-285_B1", "V14F07-340_A1")
+# Subset spe to include only the specified sample_ids
+spe_subset <- spe[, colData(spe)$sample_id %in% sample_ids_to_keep]
+table(colData(spe_subset)$sample_id)
+levels(colData(spe_subset)$BayesSpace_harmony_k11)
+
+# Subset spe to include only the specified sample_ids
+spe_subset_SR <- spe_SR[, colData(spe_SR)$sample_id %in% sample_ids_to_keep]
+table(colData(spe_subset_SR)$sample_id)
+levels(colData(spe_subset_SR)$BayesSpace_harmony_k11)
+
+## =============================================================================
+
 
 
 ## Set some initials for manage spot size in the plots
@@ -80,6 +121,7 @@ var_point_size <- 1.5
 set.seed(07112024)
 
 lst_order <- sort(unique(spe$sample_id))
+lst_order
 # [1] "V13B23-280_A1" "V13B23-280_B1" "V13B23-280_C1" "V13B23-280_D1"
 # [5] "V13B23-285_A1" "V13B23-285_B1" "V13B23-285_C1" "V13B23-285_D1"
 # [9] "V14F07-340_A1" "V14F07-340_B1" "V14F07-340_C1" "V14F07-340_D1"
@@ -90,22 +132,39 @@ levels(colData(spe)$BayesSpace_harmony_k11)
 # [5] "Sp06-Putative-Hb" "Sp07-Putative-Hb" "SpD08"            "SpD09"           
 # [9] "SpD10"            "Sp11-Putative-Hb"
 
-
 color_vector <- c("grey", "#b2df8a", "#e41a1c", "#377eb8", "blue",
                   "yellow", "black", "#a65628", "#999999", "purple")
     
-vis_grid_clus(
+pl1 <- vis_grid_clus(
     spe = spe,
     clustervar = "BayesSpace_harmony_k11",
     sample_order = lst_order,
     height = var_height, # 8
     width = var_width, # 9
     point_size = var_point_size,
-    pdf = here(dir_plots, paste0("spe_BayesSpace_k11_annotated_clustergrid.pdf")),
+    #pdf = here(dir_plots, paste0("spe_BayesSpace_k11_annotated_clustergrid.pdf")),
     sort_clust = FALSE,
     guide_point_size = 5,
-    colors = color_vector
+    colors = color_vector,
+    return_plots = TRUE
 )
+class(plt1)
+
+pl2 <- vis_grid_clus(
+    spe = spe_SpatialR,
+    clustervar = "BayesSpace_harmony_k11",
+    sample_order = lst_order,
+    height = var_height, # 8
+    width = var_width, # 9
+    point_size = var_point_size,
+    #pdf = here(dir_plots, paste0("spe_BayesSpace_k11_annotated_clustergrid.pdf")),
+    sort_clust = FALSE,
+    guide_point_size = 5,
+    colors = color_vector,
+    return_plots = TRUE
+)
+
+
 
 ## test: remove color element for SpD04
 color_vector <- c("grey", "grey", "grey", "grey", "blue",
