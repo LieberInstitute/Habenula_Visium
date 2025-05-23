@@ -1,0 +1,316 @@
+**** Job starts ****
+Mon May 12 11:28:50 PM EDT 2025
+**** JHPCE info ****
+User: cliu3
+Job id: 16570849
+Job name: 09_ficture_09_Add_barcode.sh
+Node name: compute-168
+Task id: 32
+Loading LIBD SLURM module for ficture/dev_a455e5c
+Loading LIBD SLURM module for htslib/1.18
+Loading LIBD SLURM module for spatula/f0e9936
+[spatula join-pixel-tsv] -- Join pixel-level output from FICTURE with raw transcript-level TSV files
+
+ Copyright (c) 2022-2024 by Hyun Min Kang
+ Licensed under the Apache License v2.0 http://www.apache.org/licenses/
+
+Available Options
+
+The following parameters are available. Ones with "[]" are in effect:
+               Key Input/Output Options : --mol-tsv [/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_inputs/normalized_input.tsv.gz],
+                                          --pix-prefix-tsv [factor_,/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_outputs/cleany/k_32/analysis/nF32.d_12/nF32.d_12.decode.prj_12.r_4_5.pixel.sorted_by_major_axis.tsv.gz],
+                                          --out-prefix [/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_outputs/cleany/k_32/analysis/nF32.d_12/transcripts_ficture_joined]
+                         Key Parameters : --bin-um [4.00],
+                                          --max-dist-um [2.00],
+                                          --mu-scale [1.00]
+   Expected columns in input and output : --colname-x [X], --colname-y [Y],
+                                          --sort-axis [X], --colnames-include,
+                                          --colnames-exclude, --out-max-k [3],
+                                          --out-max-p [3]
+                   Output File suffixes : --out-suffix-tsv [.tsv.gz],
+                                          --out-suffix-hist [.dist.hist.tsv],
+                                          --out-suffix-summary [.summary.tsv]
+
+Run with --help for more detailed help messages of each argument.
+
+NOTICE [2025/05/12 23:32:47] - Started parsing the input file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_inputs/normalized_input.tsv.gz
+NOTICE [2025/05/12 23:32:50] - Processed 1000000 transcripts and identified 732391 full matches and 0 partial matches
+NOTICE [2025/05/12 23:32:53] - Processed 2000000 transcripts and identified 1723519 full matches and 0 partial matches
+NOTICE [2025/05/12 23:32:56] - Processed 3000000 transcripts and identified 2720907 full matches and 0 partial matches
+NOTICE [2025/05/12 23:32:59] - Processed 4000000 transcripts and identified 3716383 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:02] - Processed 5000000 transcripts and identified 4710653 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:05] - Processed 6000000 transcripts and identified 5707622 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:08] - Processed 7000000 transcripts and identified 6705644 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:11] - Processed 8000000 transcripts and identified 7705186 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:14] - Processed 9000000 transcripts and identified 8704746 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:17] - Processed 10000000 transcripts and identified 9704181 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:19] - Processed 11000000 transcripts and identified 10703939 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:22] - Processed 12000000 transcripts and identified 11703804 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:25] - Processed 13000000 transcripts and identified 12703755 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:28] - Processed 14000000 transcripts and identified 13703687 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:31] - Processed 15000000 transcripts and identified 14703516 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:34] - Processed 16000000 transcripts and identified 15703029 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:37] - Processed 17000000 transcripts and identified 16702603 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:40] - Processed 18000000 transcripts and identified 17702317 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:42] - Processed 19000000 transcripts and identified 18702109 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:45] - Processed 20000000 transcripts and identified 19701887 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:48] - Processed 21000000 transcripts and identified 20701731 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:51] - Processed 22000000 transcripts and identified 21701575 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:54] - Processed 23000000 transcripts and identified 22701404 full matches and 0 partial matches
+NOTICE [2025/05/12 23:33:57] - Processed 24000000 transcripts and identified 23701341 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:00] - Processed 25000000 transcripts and identified 24701205 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:03] - Processed 26000000 transcripts and identified 25701000 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:06] - Processed 27000000 transcripts and identified 26700768 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:09] - Processed 28000000 transcripts and identified 27700606 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:12] - Processed 29000000 transcripts and identified 28700481 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:15] - Processed 30000000 transcripts and identified 29700411 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:18] - Processed 31000000 transcripts and identified 30700333 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:21] - Processed 32000000 transcripts and identified 31700314 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:24] - Processed 33000000 transcripts and identified 32700307 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:27] - Processed 34000000 transcripts and identified 33700291 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:30] - Processed 35000000 transcripts and identified 34699759 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:33] - Processed 36000000 transcripts and identified 35699338 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:36] - Processed 37000000 transcripts and identified 36699244 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:39] - Processed 38000000 transcripts and identified 37699140 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:42] - Processed 39000000 transcripts and identified 38693040 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:45] - Processed 40000000 transcripts and identified 39679120 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:48] - Processed 41000000 transcripts and identified 40636800 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:51] - Processed 42000000 transcripts and identified 41597293 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:54] - Processed 43000000 transcripts and identified 42588013 full matches and 0 partial matches
+NOTICE [2025/05/12 23:34:57] - Processed 44000000 transcripts and identified 43581571 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:00] - Processed 45000000 transcripts and identified 44575654 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:03] - Processed 46000000 transcripts and identified 45572119 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:05] - Processed 47000000 transcripts and identified 46569336 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:08] - Processed 48000000 transcripts and identified 47567167 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:11] - Processed 49000000 transcripts and identified 48565637 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:14] - Processed 50000000 transcripts and identified 49564388 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:17] - Processed 51000000 transcripts and identified 50563407 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:19] - Processed 52000000 transcripts and identified 51563016 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:22] - Processed 53000000 transcripts and identified 52562903 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:25] - Processed 54000000 transcripts and identified 53562891 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:28] - Processed 55000000 transcripts and identified 54562891 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:30] - Processed 56000000 transcripts and identified 55562891 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:33] - Processed 57000000 transcripts and identified 56562891 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:36] - Processed 58000000 transcripts and identified 57562891 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:39] - Processed 59000000 transcripts and identified 58562891 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:41] - Processed 60000000 transcripts and identified 59562891 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:44] - Processed 61000000 transcripts and identified 60562891 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:47] - Processed 62000000 transcripts and identified 61562891 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:50] - Processed 63000000 transcripts and identified 62562891 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:52] - Processed 64000000 transcripts and identified 63562891 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:55] - Processed 65000000 transcripts and identified 64562891 full matches and 0 partial matches
+NOTICE [2025/05/12 23:35:58] - Processed 66000000 transcripts and identified 65562891 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:01] - Processed 67000000 transcripts and identified 66562808 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:04] - Processed 68000000 transcripts and identified 67562613 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:06] - Processed 69000000 transcripts and identified 68562441 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:09] - Processed 70000000 transcripts and identified 69562130 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:12] - Processed 71000000 transcripts and identified 70560385 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:15] - Processed 72000000 transcripts and identified 71560222 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:17] - Processed 73000000 transcripts and identified 72560202 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:20] - Processed 74000000 transcripts and identified 73560202 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:23] - Processed 75000000 transcripts and identified 74560202 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:26] - Processed 76000000 transcripts and identified 75560202 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:29] - Processed 77000000 transcripts and identified 76560202 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:31] - Processed 78000000 transcripts and identified 77560202 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:34] - Processed 79000000 transcripts and identified 78560202 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:37] - Processed 80000000 transcripts and identified 79560202 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:40] - Processed 81000000 transcripts and identified 80560202 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:43] - Processed 82000000 transcripts and identified 81560202 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:46] - Processed 83000000 transcripts and identified 82560202 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:48] - Processed 84000000 transcripts and identified 83560189 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:51] - Processed 85000000 transcripts and identified 84560055 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:54] - Processed 86000000 transcripts and identified 85559847 full matches and 0 partial matches
+NOTICE [2025/05/12 23:36:57] - Processed 87000000 transcripts and identified 86559554 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:00] - Processed 88000000 transcripts and identified 87559554 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:03] - Processed 89000000 transcripts and identified 88559554 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:06] - Processed 90000000 transcripts and identified 89559554 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:08] - Processed 91000000 transcripts and identified 90559554 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:11] - Processed 92000000 transcripts and identified 91559554 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:14] - Processed 93000000 transcripts and identified 92559554 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:17] - Processed 94000000 transcripts and identified 93559554 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:20] - Processed 95000000 transcripts and identified 94559554 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:23] - Processed 96000000 transcripts and identified 95559336 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:26] - Processed 97000000 transcripts and identified 96555317 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:29] - Processed 98000000 transcripts and identified 97549945 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:32] - Processed 99000000 transcripts and identified 98542565 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:35] - Processed 100000000 transcripts and identified 99529974 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:39] - Processed 101000000 transcripts and identified 100494910 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:41] - Processed 102000000 transcripts and identified 101488142 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:43] - Processed 103000000 transcripts and identified 102481101 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:46] - Processed 104000000 transcripts and identified 103474374 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:48] - Processed 105000000 transcripts and identified 104468315 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:51] - Processed 106000000 transcripts and identified 105465039 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:54] - Processed 107000000 transcripts and identified 106462663 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:56] - Processed 108000000 transcripts and identified 107460281 full matches and 0 partial matches
+NOTICE [2025/05/12 23:37:59] - Processed 109000000 transcripts and identified 108457778 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:01] - Processed 110000000 transcripts and identified 109455245 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:04] - Processed 111000000 transcripts and identified 110452939 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:06] - Processed 112000000 transcripts and identified 111450846 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:09] - Processed 113000000 transcripts and identified 112448915 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:11] - Processed 114000000 transcripts and identified 113447244 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:14] - Processed 115000000 transcripts and identified 114445460 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:16] - Processed 116000000 transcripts and identified 115443927 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:19] - Processed 117000000 transcripts and identified 116442282 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:21] - Processed 118000000 transcripts and identified 117440442 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:24] - Processed 119000000 transcripts and identified 118438769 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:27] - Processed 120000000 transcripts and identified 119437019 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:29] - Processed 121000000 transcripts and identified 120435501 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:32] - Processed 122000000 transcripts and identified 121433898 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:34] - Processed 123000000 transcripts and identified 122432362 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:37] - Processed 124000000 transcripts and identified 123430493 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:39] - Processed 125000000 transcripts and identified 124428854 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:42] - Processed 126000000 transcripts and identified 125427206 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:44] - Processed 127000000 transcripts and identified 126425559 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:47] - Processed 128000000 transcripts and identified 127424245 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:50] - Processed 129000000 transcripts and identified 128422325 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:52] - Processed 130000000 transcripts and identified 129420398 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:55] - Processed 131000000 transcripts and identified 130417838 full matches and 0 partial matches
+NOTICE [2025/05/12 23:38:57] - Processed 132000000 transcripts and identified 131412926 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:00] - Processed 133000000 transcripts and identified 132407817 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:03] - Processed 134000000 transcripts and identified 133402121 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:05] - Processed 135000000 transcripts and identified 134391799 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:08] - Processed 136000000 transcripts and identified 135379619 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:11] - Processed 137000000 transcripts and identified 136363550 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:14] - Processed 138000000 transcripts and identified 137340147 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:17] - Processed 139000000 transcripts and identified 138313924 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:19] - Processed 140000000 transcripts and identified 139298957 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:22] - Processed 141000000 transcripts and identified 140286849 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:24] - Processed 142000000 transcripts and identified 141276085 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:27] - Processed 143000000 transcripts and identified 142265849 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:30] - Processed 144000000 transcripts and identified 143256264 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:32] - Processed 145000000 transcripts and identified 144247942 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:35] - Processed 146000000 transcripts and identified 145240587 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:37] - Processed 147000000 transcripts and identified 146233312 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:40] - Processed 148000000 transcripts and identified 147228592 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:42] - Processed 149000000 transcripts and identified 148226306 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:45] - Processed 150000000 transcripts and identified 149224619 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:47] - Processed 151000000 transcripts and identified 150223269 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:50] - Processed 152000000 transcripts and identified 151221774 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:52] - Processed 153000000 transcripts and identified 152220360 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:55] - Processed 154000000 transcripts and identified 153218886 full matches and 0 partial matches
+NOTICE [2025/05/12 23:39:58] - Processed 155000000 transcripts and identified 154217585 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:00] - Processed 156000000 transcripts and identified 155216305 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:03] - Processed 157000000 transcripts and identified 156215010 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:05] - Processed 158000000 transcripts and identified 157213653 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:08] - Processed 159000000 transcripts and identified 158212430 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:11] - Processed 160000000 transcripts and identified 159211127 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:14] - Processed 161000000 transcripts and identified 160209365 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:17] - Processed 162000000 transcripts and identified 161205229 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:20] - Processed 163000000 transcripts and identified 162199130 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:23] - Processed 164000000 transcripts and identified 163188588 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:26] - Processed 165000000 transcripts and identified 164188041 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:30] - Processed 166000000 transcripts and identified 165186862 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:33] - Processed 167000000 transcripts and identified 166186014 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:36] - Processed 168000000 transcripts and identified 167185177 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:39] - Processed 169000000 transcripts and identified 168185074 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:43] - Processed 170000000 transcripts and identified 169184903 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:46] - Processed 171000000 transcripts and identified 170184509 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:49] - Processed 172000000 transcripts and identified 171184237 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:52] - Processed 173000000 transcripts and identified 172183173 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:55] - Processed 174000000 transcripts and identified 173182623 full matches and 0 partial matches
+NOTICE [2025/05/12 23:40:58] - Processed 175000000 transcripts and identified 174182514 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:01] - Processed 176000000 transcripts and identified 175182268 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:05] - Processed 177000000 transcripts and identified 176182177 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:08] - Processed 178000000 transcripts and identified 177182036 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:11] - Processed 179000000 transcripts and identified 178181549 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:14] - Processed 180000000 transcripts and identified 179181106 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:17] - Processed 181000000 transcripts and identified 180180577 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:20] - Processed 182000000 transcripts and identified 181179906 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:23] - Processed 183000000 transcripts and identified 182178767 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:26] - Processed 184000000 transcripts and identified 183177955 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:29] - Processed 185000000 transcripts and identified 184176987 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:32] - Processed 186000000 transcripts and identified 185172966 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:35] - Processed 187000000 transcripts and identified 186167830 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:38] - Processed 188000000 transcripts and identified 187161726 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:41] - Processed 189000000 transcripts and identified 188154961 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:44] - Processed 190000000 transcripts and identified 189146643 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:47] - Processed 191000000 transcripts and identified 190130589 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:50] - Processed 192000000 transcripts and identified 191040153 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:53] - Processed 193000000 transcripts and identified 192011874 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:56] - Processed 194000000 transcripts and identified 192995507 full matches and 0 partial matches
+NOTICE [2025/05/12 23:41:59] - Processed 195000000 transcripts and identified 193984301 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:02] - Processed 196000000 transcripts and identified 194975394 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:05] - Processed 197000000 transcripts and identified 195971098 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:08] - Processed 198000000 transcripts and identified 196969060 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:11] - Processed 199000000 transcripts and identified 197967941 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:14] - Processed 200000000 transcripts and identified 198967254 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:17] - Processed 201000000 transcripts and identified 199966487 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:20] - Processed 202000000 transcripts and identified 200965690 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:23] - Processed 203000000 transcripts and identified 201964854 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:26] - Processed 204000000 transcripts and identified 202964398 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:29] - Processed 205000000 transcripts and identified 203963602 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:32] - Processed 206000000 transcripts and identified 204962742 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:35] - Processed 207000000 transcripts and identified 205962315 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:38] - Processed 208000000 transcripts and identified 206961998 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:41] - Processed 209000000 transcripts and identified 207961492 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:44] - Processed 210000000 transcripts and identified 208961042 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:47] - Processed 211000000 transcripts and identified 209960819 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:50] - Processed 212000000 transcripts and identified 210960565 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:53] - Processed 213000000 transcripts and identified 211960353 full matches and 0 partial matches
+NOTICE [2025/05/12 23:42:57] - Processed 214000000 transcripts and identified 212960140 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:00] - Processed 215000000 transcripts and identified 213959854 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:03] - Processed 216000000 transcripts and identified 214959711 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:06] - Processed 217000000 transcripts and identified 215959545 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:09] - Processed 218000000 transcripts and identified 216959202 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:12] - Processed 219000000 transcripts and identified 217959048 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:15] - Processed 220000000 transcripts and identified 218958946 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:18] - Processed 221000000 transcripts and identified 219958874 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:21] - Processed 222000000 transcripts and identified 220958638 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:24] - Processed 223000000 transcripts and identified 221958271 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:27] - Processed 224000000 transcripts and identified 222958098 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:31] - Processed 225000000 transcripts and identified 223957994 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:34] - Processed 226000000 transcripts and identified 224957569 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:37] - Processed 227000000 transcripts and identified 225956827 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:41] - Processed 228000000 transcripts and identified 226952605 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:45] - Processed 229000000 transcripts and identified 227945733 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:49] - Processed 230000000 transcripts and identified 228942875 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:53] - Processed 231000000 transcripts and identified 229940902 full matches and 0 partial matches
+NOTICE [2025/05/12 23:43:57] - Processed 232000000 transcripts and identified 230939439 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:01] - Processed 233000000 transcripts and identified 231937728 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:04] - Processed 234000000 transcripts and identified 232935973 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:08] - Processed 235000000 transcripts and identified 233932178 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:12] - Processed 236000000 transcripts and identified 234869316 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:15] - Processed 237000000 transcripts and identified 235852187 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:18] - Processed 238000000 transcripts and identified 236851452 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:22] - Processed 239000000 transcripts and identified 237851440 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:25] - Processed 240000000 transcripts and identified 238851356 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:29] - Processed 241000000 transcripts and identified 239851270 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:33] - Processed 242000000 transcripts and identified 240851106 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:36] - Processed 243000000 transcripts and identified 241850613 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:40] - Processed 244000000 transcripts and identified 242849935 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:43] - Processed 245000000 transcripts and identified 243849163 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:47] - Processed 246000000 transcripts and identified 244848353 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:51] - Processed 247000000 transcripts and identified 245846498 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:55] - Processed 248000000 transcripts and identified 246837635 full matches and 0 partial matches
+NOTICE [2025/05/12 23:44:59] - Processed 249000000 transcripts and identified 247829648 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:05] - Processed 250000000 transcripts and identified 248822308 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:09] - Processed 251000000 transcripts and identified 249817126 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:12] - Processed 252000000 transcripts and identified 250813617 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:16] - Processed 253000000 transcripts and identified 251810431 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:19] - Processed 254000000 transcripts and identified 252806893 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:23] - Processed 255000000 transcripts and identified 253804098 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:26] - Processed 256000000 transcripts and identified 254801372 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:29] - Processed 257000000 transcripts and identified 255793991 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:33] - Processed 258000000 transcripts and identified 256748744 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:36] - Processed 259000000 transcripts and identified 257719585 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:39] - Processed 260000000 transcripts and identified 258710404 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:42] - Processed 261000000 transcripts and identified 259706850 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:45] - Processed 262000000 transcripts and identified 260705354 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:48] - Processed 263000000 transcripts and identified 261704302 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:52] - Processed 264000000 transcripts and identified 262703254 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:55] - Processed 265000000 transcripts and identified 263702799 full matches and 0 partial matches
+NOTICE [2025/05/12 23:45:58] - Processed 266000000 transcripts and identified 264702345 full matches and 0 partial matches
+NOTICE [2025/05/12 23:46:02] - Processed 267000000 transcripts and identified 265701489 full matches and 0 partial matches
+NOTICE [2025/05/12 23:46:05] - Processed 268000000 transcripts and identified 266700981 full matches and 0 partial matches
+NOTICE [2025/05/12 23:46:09] - Processed 269000000 transcripts and identified 267700686 full matches and 0 partial matches
+NOTICE [2025/05/12 23:46:12] - Processed 270000000 transcripts and identified 268700462 full matches and 0 partial matches
+NOTICE [2025/05/12 23:46:16] - Processed 271000000 transcripts and identified 269699829 full matches and 0 partial matches
+NOTICE [2025/05/12 23:46:20] - Processed 272000000 transcripts and identified 270699108 full matches and 0 partial matches
+NOTICE [2025/05/12 23:46:24] - Processed 273000000 transcripts and identified 271698193 full matches and 0 partial matches
+NOTICE [2025/05/12 23:46:28] - Processed 274000000 transcripts and identified 272696400 full matches and 0 partial matches
+NOTICE [2025/05/12 23:46:32] - Processed 275000000 transcripts and identified 273693184 full matches and 0 partial matches
+NOTICE [2025/05/12 23:46:36] - Processed 276000000 transcripts and identified 274689241 full matches and 0 partial matches
+NOTICE [2025/05/12 23:46:39] - Processed 276723180 transcripts and identified 275410054 full matches and 0 partial matches
+NOTICE [2025/05/12 23:46:39] - Analysis finished
+**** Job ends ****
+Mon May 12 11:46:39 PM EDT 2025
