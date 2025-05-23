@@ -183,12 +183,12 @@ table(colData(spe)$brain_id)
 # 13241  13133   7035
 
 
-## save new spe object containing clusters with Broad annotations (human-pilot project) + new defined gene-brain regions from anterior to posterior
-
-spe_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony_ann.rds")
-saveRDS(
-  spe, file = file.path(spe_in)
-)
+# ## save new spe object containing clusters with Broad annotations (human-pilot project) + new defined gene-brain regions from anterior to posterior
+# 
+# spe_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony_ann.rds")
+# saveRDS(
+#   spe, file = file.path(spe_in)
+# )
 
 
 ############################
@@ -263,9 +263,9 @@ gene_counts_df <- data.frame(
 message("Number of expressed genes after pseudobulk:  ")
 gene_counts_df
 #               Cluster Num_Expressed_Genes
-# 1      Sp03D01.Oligo               18798
-# 2   Sp03D02.Habenula               26223
-# 3 Sp03D03.Inhib.Thal               21454
+# 1 Sp03D01                8803
+# 2 Sp03D02                8803
+# 3 Sp03D03                8803
 
 
 message("Aggregation completed for k=", k_nice)
@@ -308,13 +308,12 @@ if (!is.null(min_nspots)) {
   spe_pseudo_k <- spe_pseudo_k[, spe_pseudo_k$nspots >= min_nspots]
 }
 
-# Compute mitochondrial expression ratio
+# Compute mitochondrial expression ratio & other meta-data
 
 is_mito <- which(seqnames(spe_pseudo_k) == "chrM")
 spe_pseudo_k$expr_chrM <- colSums(counts(spe_pseudo_k)[is_mito, , drop = FALSE])
 spe_pseudo_k$sum_umi <- colSums(counts(spe_pseudo_k))
 spe_pseudo_k$expr_chrM_ratio <- spe_pseudo_k$expr_chrM / spe_pseudo_k$sum_umi
-
 spe_pseudo_k$age <- as.numeric(spe_pseudo_k$age)
 
 # Convert other relevant variables to factors
