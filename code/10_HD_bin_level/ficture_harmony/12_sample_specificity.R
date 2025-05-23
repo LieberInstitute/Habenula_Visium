@@ -10,6 +10,11 @@ ficture_cluster_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
     'bin_level_clusters.csv.gz'
 )
+ficture_cleany_cluster_path = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'ficture_outputs', 'cleany',
+    'bin_level_clusters.csv.gz'
+)
 banksy_cluster_paths = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', '%s',
     'leiden_res%s.csv'
@@ -42,7 +47,27 @@ ficture_df = fread(ficture_cluster_path) |>
     ungroup() |>
     mutate(
         k = as.integer(sub('^FICTURE_k', '', k)),
-        method = 'ficture'
+        method = 'ficture_normalized'
+    )
+
+ficture_cleany_df = fread(ficture_cleany_cluster_path) |>
+    as_tibble() |>
+    mutate(sample_id = factor(sample_id)) |>
+    pivot_longer(
+        cols = matches('^FICTURE_k'),
+        names_to = 'k', values_to = 'cluster'
+    ) |>
+    filter(!is.na(cluster)) |>
+    group_by(sample_id, k, cluster) |>
+    summarize(num_bins = n()) |>
+    group_by(k, cluster) |>
+    summarize(max_prop = max(num_bins) / sum(num_bins)) |>
+    group_by(k) |>
+    summarize(num_balanced = sum(max_prop <= sample_cutoff)) |>
+    ungroup() |>
+    mutate(
+        k = as.integer(sub('^FICTURE_k', '', k)),
+        method = 'ficture_cleany'
     )
 
 banksy_df_list = list()
@@ -74,13 +99,13 @@ banksy_df = do.call(rbind, banksy_df_list) |>
     select(k, num_balanced, method)
 
 p = ggplot(
-        rbind(ficture_df, banksy_df),
+        rbind(ficture_df, ficture_cleany_df, banksy_df),
         aes(x = k, y = num_balanced, color = method)
     ) +
     geom_line() +
     labs(x = 'k', y = 'Number of Balanced Clusters', color = 'Method') +
     theme_bw(base_size = 20)
-pdf(file.path(plot_dir, 'sample_specificity.pdf'))
+pdf(file.path(plot_dir, 'sample_specificity_new.pdf'))
 print(p)
 dev.off()
 
