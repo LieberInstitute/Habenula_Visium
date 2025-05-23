@@ -6,7 +6,7 @@ import session_info
 import bin2cell as b2c
 import datetime
 
-prob_tag = "mpp_0_2_prob_0_01"
+prob_tag = "mpp_0_5_prob_0_01"
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
 with open(sample_id_path, 'r') as f:
@@ -31,7 +31,7 @@ orig_path = here(
 plot_dir = here(
     'plots', '09_HD_cell_level', 'probe_fix', 'refine_segmentations', prob_tag
 )
-mpp = 0.2
+mpp = 0.5
 num_random_cells = 5
 random_state = 0
 
