@@ -290,6 +290,50 @@ message("Spatial Registration FINE Hb-subset DONE!!!")
 
 
 
+################################################################################
+##  Compute correlation for BROAD cluster annotations
+##  Subset Hb cell-types of interest
+################################################################################
+
+pdf(here(dir_plot, "cor_top100_visium_snRNAseq_registration_broadRes_HbSubset.pdf"), 
+    width = 10, height = 10)
+
+for (i in seq_len(length(cor_fine))) {
+    # testing: i=2
+    
+    ## Prepare matrix 
+    cor_broad_subset <- as.data.frame(cor_broad[[i]])
+    cor_broad_subset <- cor_broad_subset[, grep("LHb|MHb", colnames(cor_broad_subset))]
+    colnames(cor_broad_subset)
+    # check
+    head(cor_broad_subset)
+    # if not annotated:
+    annotated_clusters_broad_subset <- annotated_clusters_broad[[i]]
+    head(annotated_clusters_broad_subset)
+    
+    # prepare heatmap
+    hm <- (layer_stat_cor_plot(
+        as.matrix(cor_broad_subset), 
+        annotation = annotated_clusters_broad_subset,
+        heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
+        column_names_gp = gpar(fontsize = 14),
+        row_names_gp = gpar(fontsize = 14),
+        cluster_rows = FALSE  # <-- turn off row clustering
+    )
+    )
+    draw(
+        hm,
+        column_title = "Spatial-Registration: Hb Visium vs snRNA (Broad res)",
+        column_title_gp = gpar(fontsize = 16, fontface = "bold")
+    )
+    
+}
+
+dev.off()
+
+message("Spatial Registration BROAD Hb-subset DONE!!!")
+
+
 # library(slurmjobs)
 # slurmjobs::job_single('01_compute_cor', create_shell = TRUE, memory = '20G', command = "01_compute_cor.R")
 # 
