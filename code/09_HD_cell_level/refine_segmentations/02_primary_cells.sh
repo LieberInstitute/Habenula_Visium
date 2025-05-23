@@ -4,8 +4,8 @@
 #SBATCH --job-name=02_primary_cells
 #SBATCH -c 1
 #SBATCH -t 8:00:00
-#SBATCH -o ../../../processed-data/09_HD_cell_level/probe_fix/refine_segmentations/logs/02_primary_cells_prob_0_001_%a.txt
-#SBATCH -e ../../../processed-data/09_HD_cell_level/probe_fix/refine_segmentations/logs/02_primary_cells_prob_0_001_%a.txt
+#SBATCH -o ../../../processed-data/09_HD_cell_level/probe_fix/refine_segmentations/logs/02_primary_cells_mpp_0_2_prob_0_01_%a.txt
+#SBATCH -e ../../../processed-data/09_HD_cell_level/probe_fix/refine_segmentations/logs/02_primary_cells_mpp_0_2_prob_0_01_%a.txt
 #SBATCH --array=1-5%5
 
 set -e

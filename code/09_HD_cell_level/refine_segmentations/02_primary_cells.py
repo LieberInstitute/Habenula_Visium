@@ -6,7 +6,7 @@ import session_info
 import bin2cell as b2c
 import datetime
 
-prob_tag = "prob_0_001"
+prob_tag = "mpp_0_2_prob_0_01"
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
 with open(sample_id_path, 'r') as f:
@@ -31,7 +31,7 @@ orig_path = here(
 plot_dir = here(
     'plots', '09_HD_cell_level', 'probe_fix', 'refine_segmentations', prob_tag
 )
-mpp = 0.3
+mpp = 0.2
 num_random_cells = 5
 random_state = 0
 
@@ -45,18 +45,24 @@ os.makedirs(out_path.parent, exist_ok=True)
 
 adata = sc.read(orig_path)
 
+#   Create a scaled H&E image attached to the object (and for segmentation with
+#   stardist)
+b2c.scaled_he_image(
+    adata,
+    mpp = mpp,
+    save_path = os.path.join(stardist_dir, f'{sample_id}_{prob_tag}.tiff')
+)
+
 print(f"{datetime.datetime.now()} | Performing nuclear-based ('primary') segmentation")
 
 #   Segment nuclei on H&E image
 b2c.stardist(
-    image_path=os.path.join(
-        stardist_orig_dir, f'he_{sample_id}.tiff'
-    ),
+    image_path=os.path.join(stardist_dir, f'{sample_id}_{prob_tag}.tiff'),
     labels_npz_path=os.path.join(
         stardist_dir, f'{sample_id}_{prob_tag}.npz'
     ),
     stardist_model="2D_versatile_he",
-    prob_thresh=0.001
+    prob_thresh=0.01
 )
 
 #   Add segmentations to object
