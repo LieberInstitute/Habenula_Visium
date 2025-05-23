@@ -239,6 +239,55 @@ dev.off()
 message("Spatial Registration DONE!!!")
 
 
+################################################################################
+##  Compute correlation for FINE cluster annotations
+##  Subset Hb cell-types of interest
+################################################################################
+
+pdf(here(dir_plot, "cor_top100_visium_snRNAseq_registration_fineRes_HbSubset.pdf"), width = 10, height = 10)
+
+for (i in seq_len(length(cor_fine))) {
+    # testing: i=2
+    
+    ## Prepare matrix 
+    cor_fine_subset <- as.data.frame(cor_fine[[i]])
+    # subset columns that contain "LHb", "MHb", or "Thal"? in the matrix 
+    colnames(cor_fine_subset)
+    rownames(cor_fine_subset)
+    cor_fine_subset <- cor_fine_subset[, grep("LHb|MHb|Thal", colnames(cor_fine_subset))]
+    colnames(cor_fine_subset)
+    # check
+    head(cor_fine_subset)
+    
+    # extract Hb annotations of interest from 'annotated_clusters_fine' if the SpD(s) are annotated
+    # annotated_clusters_fine_subset <- annotated_clusters_fine[[i]][
+    #     grepl("LHb|MHb|Thal", annotated_clusters_fine[[i]]$cluster), ]
+    # if not:
+    annotated_clusters_fine_subset <- annotated_clusters_fine[[i]]
+    head(annotated_clusters_fine_subset)
+    
+    # prepare heatmap
+    hm <- (layer_stat_cor_plot(
+        as.matrix(cor_fine_subset), 
+        annotation = annotated_clusters_fine_subset,
+        heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
+        column_names_gp = gpar(fontsize = 14),
+        row_names_gp = gpar(fontsize = 14),
+        cluster_rows = FALSE  # <-- turn off row clustering
+    )
+    )
+    draw(
+        hm,
+        column_title = "Spatial-Registration: Hb Visium vs snRNA (Fine res)",
+        column_title_gp = gpar(fontsize = 16, fontface = "bold")
+    )
+    
+}
+
+dev.off()
+
+message("Spatial Registration FINE Hb-subset DONE!!!")
+
 
 
 # library(slurmjobs)
