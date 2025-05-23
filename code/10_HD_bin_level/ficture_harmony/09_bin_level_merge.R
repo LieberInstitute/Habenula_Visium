@@ -10,17 +10,19 @@ library(sessioninfo)
 
 ficture_input_paths = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'ficture_outputs', 'normalized', 'k_%d', 'analysis', 'nF%d.d_12',
-    'normalized_joined_input.tsv.gz'
+    'ficture_outputs', 'cleany', 'k_%d', 'analysis', 'nF%d.d_12',
+    'transcripts_ficture_joined.tsv.gz'
 )
 spe_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'spe_raw.rds'
+    'spe','y_clean_spe.rds'
 )
 out_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'ficture_outputs', 'cleany',
     'bin_level_clusters.csv.gz'
 )
+
 ficture_colnames = c('sample_id', 'barcode', 'factor_K1')
 
 #   Read in just the sample IDs and barcodes from the SPE
@@ -32,7 +34,7 @@ col_data = colData(spe) |>
 rm(spe)
 gc()
 
-for (k in 3:40) {
+for (k in c(5:40,70,100)) {
     message(Sys.time(), sprintf(' | Reading in k = %d results...', k))
     ficture_df = sprintf(ficture_input_paths, k, k) |>
         #   Read in quickly but format as a tibble
@@ -47,6 +49,7 @@ for (k in 3:40) {
     col_data = left_join(
         col_data, ficture_df, by = c('sample_id', 'barcode'), multiple = 'any'
     )
+    rm(ficture_df); gc()
 }
 
 message(Sys.time(), ' | Writing to disk')

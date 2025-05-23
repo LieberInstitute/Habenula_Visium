@@ -1,5 +1,5 @@
 #   Run registration_wrapper() on bin-level FICTURE clusters
-
+options(stringsAsFactors = FALSE)
 library(here)
 library(spatialLIBD)
 library(HDF5Array)
@@ -13,10 +13,11 @@ k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 
 spe_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'spe_raw.rds'
+    'spe','y_clean_spe.rds'
 )
 cluster_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'ficture_outputs', 'cleany',
     'bin_level_clusters.csv.gz'
 )
 pseudo_path = here(
@@ -46,7 +47,9 @@ colData(spe) = colData(spe) |>
     ) |>
     dplyr::rename(ficture = sprintf('FICTURE_k%d', k)) |>
     mutate(ficture = factor(ficture, levels = sort(unique(ficture)))) |>
+    #mutate(ficture = factor(as.character(paste0('c',ficture)), levels = sort(unique(paste0('c',ficture))))) |>
     DataFrame()
+
 spe = spe[, !is.na(spe$ficture)]
 
 #   Add in basic rowData, which is missing due to read10xVisiumWrapper() not

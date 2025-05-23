@@ -7,10 +7,11 @@ library(spatialLIBD)
 
 model_paths = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'registration', 'modeling_results', sprintf('%s.rds', 3:40)
+    'registration', 'modeling_results', sprintf('%s.rds', c(5:40,70,100))
 )
 plot_dir = here(
-    'plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony', 'registration'
+    'plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony', 'registration',
+    'cleany'
 )
 
 #   List all paths and names for reference data
@@ -67,6 +68,21 @@ if (grepl('^Visium', ref_name)) {
     )
 }
 
+# message("Checking t_stats[[1]] structure...")
+# print(str(t_stats[[1]]))
+
+# message("Checking results_enrichment$enrichment structure...")
+# print(str(results_enrichment$enrichment))
+
+# message("R options:")
+# print(options("stringsAsFactors"))
+
+# message("R locale:")
+# print(Sys.getlocale())
+
+# message("Package version:")
+# print(packageVersion("spatialLIBD"))
+
 this_cor = lapply(
     t_stats,
     layer_stat_cor,
@@ -78,6 +94,10 @@ this_cor = lapply(
 #  Remove 'X' from cluster names
 for (i in seq_len(length(this_cor))) {
     rownames(this_cor[[i]]) = sub('^X', '', rownames(this_cor[[i]]))
+}
+
+for (i in seq_len(length(this_cor))) {
+    rownames(this_cor[[i]]) = sub('^c', '', rownames(this_cor[[i]]))
 }
 
 #   Annotate clusters
