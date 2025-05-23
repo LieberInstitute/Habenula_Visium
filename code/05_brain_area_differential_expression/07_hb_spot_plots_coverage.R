@@ -214,3 +214,10 @@ dev.off()
 
 message(" Plots DONE!")
 
+# library(slurmjobs)
+# slurmjobs::job_single('07_hb_spot_plots_coverage',
+#                       create_shell = TRUE, 
+#                       memory = '30G',
+#                       command = "07_hb_spot_plots_coverage.R",
+#                       partition = "katun")
+
