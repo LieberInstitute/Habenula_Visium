@@ -6,7 +6,7 @@
 #SBATCH -t 1-00:00:00
 #SBATCH -o logs/07_hb_spot_plots_coverage.txt
 #SBATCH -e logs/07_hb_spot_plots_coverage.txt
-#SBATCH --mail-type=ALL
+# SBATCH --mail-type=ALL
 
 set -e
 
@@ -21,13 +21,13 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.4
+module load conda_R/4.4.x
 
 ## List current modules for reproducibility
 module list
 
 ## Edit with your job command
-07_hb_spot_plots_coverage.R
+Rscript 07_hb_spot_plots_coverage.R
 
 echo "**** Job ends ****"
 date
