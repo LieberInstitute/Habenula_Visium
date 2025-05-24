@@ -20,36 +20,41 @@ dir_plots <- here("plots", "05_brain_area_differential_expression", "08_manual_a
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 
 manual_ann_dir <- here("processed-data", "03_spatialLIBD_app", "Manual_annotations")
-rds_dir <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony.rds")
+rds_dir <- here("processed-data", "05_layer_differential_expression", "spe_harmony_ann.rds")
 
 spe <- readRDS(rds_dir)
-
-## Import BayesSpace clusters
-clusters_BayesSpace_dir <- here(
-    "processed-data",
-    "04_harmony_BayesSpace",
-    "clusters_BayesSpace"
-)
-# head(spe$key[1:5])
-spe <- cluster_import(
-    spe,
-    cluster_dir = clusters_BayesSpace_dir,
-    prefix = "",
-    overwrite = TRUE
-)
-# Overwriting 'spe$key'. Set 'overwrite = FALSE' if you do not want to overwrite it.
+spe
+# ## Import BayesSpace clusters
+# clusters_BayesSpace_dir <- here(
+#     "processed-data",
+#     "04_harmony_BayesSpace",
+#     "clusters_BayesSpace"
+# )
+# # head(spe$key[1:5])
+# spe <- cluster_import(
+#     spe,
+#     cluster_dir = clusters_BayesSpace_dir,
+#     prefix = "",
+#     overwrite = TRUE
+# )
+# # Overwriting 'spe$key'. Set 'overwrite = FALSE' if you do not want to overwrite it.
 
 
 ## quick inspection: check how many genes expressed by cluster we have after pseudobulk
 
-spe
-#colnames(colData(spe))
+colnames(colData(spe))
+# [1] "age"        "BayesSpace" "brain_id"   "diagnosis"  "ncells"     "sample_id"  "sex"       
+levels(colData(spe)$BayesSpace)
+colnames(colData(spe))[grep("BayesSpace_harmony_", colnames(colData(spe)))]
+
+# first make manual verification to identify missing SpD(s) in samples causing visualization issues
+table(colData(spe)$sample_id, colData(spe)$BayesSpace)
 spot_names <- colnames(spe)
 head(spot_names)
 # [1] "AAACAAGTATCTCCCA-1" "AAACACCAATAACTGC-1" "AAACAGCTTTCAGAAG-1"
 # [4] "AAACAGGGTCTATATT-1" "AAACAGTGTTCCTGGG-1" "AAACATGGTGAGAGGA-1"
 
-## prepare manual annotation
+## prepare Hb RNAScope Manual Annotations (KDM)
 
 f_name <- here(manual_ann_dir, "spatialLIBD_ManualAnnotation_2025-02-07_KDM-CSC_RNAScope_merged_spatialLIBD.csv")
 #readLines(f_name)
@@ -179,7 +184,7 @@ for (SpD in all_domains) {
     )
     custom_labels <- ifelse(custom_labels != "", paste0("SpD ", custom_labels), "")
     
-    # Define bar positions based on interaction
+    # Define bar positions based dynamically
     bar_positions <- which(custom_labels != "")-1
 
     plt1 <- ggplot(df_plot, aes(x = x_label, y = count, fill = match_status)) +
@@ -204,8 +209,9 @@ for (SpD in all_domains) {
         
 }
 
-dev.off()    
-message("Plot 1 done!")
+dev.off() 
+
+message("Histogram done!")
 
 
 # Set PDF for combine plot by sample and cluster in x-axis
@@ -272,11 +278,10 @@ for (SpD in all_domains) {
     
 }
 
-dev.off()    
-message("Plot 2 done!")
+dev.off()   
 
+message("StackedPlot done!")
 
-message(' Plots completed!')
 
 
 
