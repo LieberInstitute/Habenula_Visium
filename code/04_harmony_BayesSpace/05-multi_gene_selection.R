@@ -93,7 +93,7 @@ spe_in_path <- here(
   "processed-data",
   "04_harmony_BayesSpace",
   "spe_qcED_spatialLIBD_log.rds"
-)
+) #
 spe <- readRDS(spe_in_path)
 unique(spe$sample_id)
 

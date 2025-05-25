@@ -9,7 +9,7 @@ k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 ## For testing
 if (is.na(k)) {
-  k <- 9
+  k <- 2
 }
 
 
@@ -18,10 +18,10 @@ library("sessioninfo")
 library("spatialLIBD")
 
 ## output directory
-dir_rdata <- here("processed-data","05_brain_area_differential_expression")
+dir_rdata <- here("processed-data","05_layer_differential_expression")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_rdata)) ## Check that it was created successfully
-dir_plots <- here("plots","05_brain_area_differential_expression")
+dir_plots <- here("plots","05_layer_differential_expression")
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_plots))
 
@@ -30,7 +30,7 @@ sce_pseudo <-
   readRDS(
     file.path(
       dir_rdata,
-      paste0("sce_pseudo_PCA_brain_area_k", sprintf("%02d", k), ".rds")
+      paste0("sce_pseudo_BayesSpace_k", sprintf("%02d", k), ".rds")
     )
   )
 
@@ -39,13 +39,8 @@ sce_pseudo$registration_variable <- sce_pseudo$BayesSpace
 sce_pseudo$registration_sample_id <- sce_pseudo$sample_id
 
 ## Set arguments used in spatialLIBD::registration_wrapper()
-# covars <- c("sample_id")   # add sex, age when we have more than 2 classes
-# I set covars = Null to avoid error when running "registration_block_cor", it gets next warming and other error when running "registration_stats_pairwise"
-# Warning message:
-#     In limma::duplicateCorrelation(logcounts(sce_pseudo), registration_model,  :
-#     Block factor already encoded in the design matrix: setting intrablock correlation to zero.
-
-covars <- NULL
+# covars <- c("subject")   # add sex, age when we have more than 2 classes
+covars <- c("sample_id")   # add sex, age when we have more than 2 classes
 gene_ensembl <- "gene_id"
 gene_name <- "gene_name"
 suffix <- "all"
@@ -55,14 +50,8 @@ suffix <- "all"
 ## Taken from spatialLIBD::registration_wrapper()
 ## https://github.com/LieberInstitute/spatialLIBD/blob/master/R/registration_wrapper.R
 table(sce_pseudo[["brain_id"]])
-
 registration_mod <-
   registration_model(sce_pseudo, covars = covars)
-
-head(registration_mod)
-colnames(registration_mod)
-rownames(registration_mod)
-colData(sce_pseudo)
 
 block_cor <-
   registration_block_cor(sce_pseudo, registration_model = registration_mod)
@@ -104,13 +93,13 @@ modeling_results <- list(
 )
 
 ## Save the final results
-dir_rdata <- here("processed-data","05_brain_area_differential_expression", "modeling_results_BS")
+dir_rdata <- here("processed-data","05_layer_differential_expression", "modeling_results_BS")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 save(
   modeling_results,
   file = file.path(
     dir_rdata,
-    paste0("modeling_results_BayesSpace_k", sprintf("%02d", k), ".Rdata")
+    paste0("modeling_results_BayesSpace_k", sprintf("%02d", k), ".Rdata") 
   )
 )
 
@@ -130,8 +119,8 @@ session_info()
 # > Sys.time()
 # [1] "2024-06-28 10:42:40 EDT"
 # > proc.time()
-# user   system  elapsed
-# 49.177    2.336 1223.126
+# user   system  elapsed 
+# 49.177    2.336 1223.126 
 # > options(width = 120)
 # > session_info()
 # [39m CRAN (R 4.3.2)
