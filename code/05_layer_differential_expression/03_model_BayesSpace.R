@@ -18,10 +18,10 @@ library("sessioninfo")
 library("spatialLIBD")
 
 ## output directory
-dir_rdata <- here("processed-data","05_layer_differential_expression")
+dir_rdata <- here("processed-data","05_brain_area_differential_expression")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_rdata)) ## Check that it was created successfully
-dir_plots <- here("plots","05_layer_differential_expression")
+dir_plots <- here("plots","05_brain_area_differential_expression")
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_plots))
 
@@ -30,24 +30,22 @@ sce_pseudo <-
   readRDS(
     file.path(
       dir_rdata,
-      paste0("sce_pseudo_BayesSpace_k", sprintf("%02d", k), ".rds")
+      paste0("sce_pseudo_PCA_brain_area_k", sprintf("%02d", k), ".rds")
     )
   )
-sce_pseudo
-colnames(colData(sce_pseudo))
 
 ## To avoid having to change parameters later on
 sce_pseudo$registration_variable <- sce_pseudo$BayesSpace
 sce_pseudo$registration_sample_id <- sce_pseudo$sample_id
 
 ## Set arguments used in spatialLIBD::registration_wrapper()
-covars <- c("brain_id")   # add sex, age when we have more than 2 classes
+# covars <- c("sample_id")   # add sex, age when we have more than 2 classes
 # I set covars = Null to avoid error when running "registration_block_cor", it gets next warming and other error when running "registration_stats_pairwise"
 # Warning message:
 #     In limma::duplicateCorrelation(logcounts(sce_pseudo), registration_model,  :
 #     Block factor already encoded in the design matrix: setting intrablock correlation to zero.
 
-#covars <- NULL
+covars <- NULL
 gene_ensembl <- "gene_id"
 gene_name <- "gene_name"
 suffix <- "all"
@@ -58,8 +56,6 @@ suffix <- "all"
 ## https://github.com/LieberInstitute/spatialLIBD/blob/master/R/registration_wrapper.R
 table(sce_pseudo[["brain_id"]])
 
-# defines the statistical model that will be used for computing the block correlation as well as pairwise statistics
-# The output of model.matrix() which you can inspect to verify that your sample-level covariates are being properly modeled
 registration_mod <-
   registration_model(sce_pseudo, covars = covars)
 
@@ -68,7 +64,6 @@ colnames(registration_mod)
 rownames(registration_mod)
 colData(sce_pseudo)
 
-# computes the block correlation at sample ID level
 block_cor <-
   registration_block_cor(sce_pseudo, registration_model = registration_mod)
 
@@ -109,7 +104,7 @@ modeling_results <- list(
 )
 
 ## Save the final results
-dir_rdata <- here("processed-data","05_layer_differential_expression", "modeling_results_BS")
+dir_rdata <- here("processed-data","05_brain_area_differential_expression", "modeling_results_BS")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 save(
   modeling_results,
