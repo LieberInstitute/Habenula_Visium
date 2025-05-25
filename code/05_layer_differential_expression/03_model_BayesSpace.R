@@ -8,7 +8,7 @@
 k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 ## For testing
-if (is.na(k)) {
+if (FALSE) {
   k <- 2
 }
 
@@ -25,7 +25,7 @@ dir_plots <- here("plots","05_layer_differential_expression")
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_plots))
 
-## load spe_pseudo data
+## load sce_pseudo data
 sce_pseudo <-
   readRDS(
     file.path(
