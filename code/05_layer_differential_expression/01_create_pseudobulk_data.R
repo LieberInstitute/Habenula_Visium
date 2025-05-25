@@ -44,7 +44,7 @@ spe <- cluster_import(
 
 # Quick inspection
 colnames(colData(spe))
-#colData(spe)[grep("BayesSpace_harmony", colnames(colData(spe)))]
+colData(spe)[grep("BayesSpace_harmony", colnames(colData(spe)))]
 length(grep("BayesSpace_harmony", colnames(colData(spe))))
 
 spe$BayesSpace <- factor(
@@ -68,6 +68,14 @@ levels(spe$brain_id)
 # 13241  13133   7035
 table(spe$sample_id)
 levels(spe$sample_id)
+
+## save new spe object containing clusters with Broad annotations (human-pilot project) + new defined gene-brain regions from anterior to posterior
+
+spe_out <- here("processed-data", "05_layer_differential_expression", "spe_harmony_ann.rds")
+saveRDS(
+    spe, file = file.path(spe_out)
+)
+
 
 ## Pseudo-bulk the gene expression, filter lowly-expressed genes, and normalize. This is the first step for spatial registration and for statistical modeling.
 spe_pseudo <-
