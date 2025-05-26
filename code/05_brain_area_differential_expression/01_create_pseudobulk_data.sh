@@ -9,8 +9,8 @@
 # SBATCH --mail-type=ALL
 #SBATCH --array=2-28%20
 
-
 ## Explicitly pipe script output to a log
+# mkdir -p logs
 log_path=logs/01_create_pseudobulk_data_${SLURM_ARRAY_TASK_ID}.txt
 
 {
@@ -34,9 +34,12 @@ module list
 
 ## Edit with your job command
 Rscript 01_create_pseudobulk_data.R
+ret=$?
 
 echo "**** Job ends ****"
 date
+echo "Exit code: $ret"
+exit $ret
 
 } > $log_path 2>&1
 
