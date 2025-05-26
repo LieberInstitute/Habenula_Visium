@@ -43,10 +43,12 @@ module list
 
 ## Edit with your job command
 Rscript 06_model_BayesSpace.R
+ret=$?
 
 echo "**** Job ends ****"
 date
-
+echo "Exit code: $ret"
+exit $ret
 
 } > $log_path 2>&1
 
