@@ -1,6 +1,6 @@
 ########################################################################
-## Create pseudobulk 
-## Authors. CSC
+## copied from https://github.com/LieberInstitute/Visium_SPG_AD/blob/6ef1a1225d3dcd115f6272711ab684d050711378/code/11_grey_matter_only/01_create_pseudobulk_data.R
+## Implementation: CSC
 ## Data: XX
 ## For 60 to 80k spots: $srun --pty --mem=30GB --x11 bash
 ########################################################################
@@ -15,9 +15,7 @@ library("sessioninfo")
 library("scater")
 library("BiocSingular") # Force svd method on pca
 library("compositions")
-#install.packages("compositions")
 
-## copied from https://github.com/LieberInstitute/Visium_SPG_AD/blob/6ef1a1225d3dcd115f6272711ab684d050711378/code/11_grey_matter_only/01_create_pseudobulk_data.R
 
 k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
@@ -183,12 +181,12 @@ table(colData(spe)$brain_id)
 # 13241  13133   7035
 
 
-# ## save new spe object containing clusters with Broad annotations (human-pilot project) + new defined gene-brain regions from anterior to posterior
-# 
-# spe_in <- here("processed-data", "04_harmony_BayesSpace", "spe_harmony_ann.rds")
-# saveRDS(
-#   spe, file = file.path(spe_in)
-# )
+## save new spe object with BayesSpace clusters
+
+spe_in <- here("processed-data", "05_brain_area_differential_expression", "spe_harmony_ann.rds")
+saveRDS(
+  spe, file = file.path(spe_in)
+)
 
 
 ############################
@@ -205,13 +203,12 @@ spe_pseudo_k <-
     )
 dim(spe_pseudo_k)
 
-#colnames(colData(spe_pseudo))
+#colnames(colData(spe_pseudo_k))
 ## list domains created
 rownames(colData(spe_pseudo_k))
 table(spe_pseudo_k$sample_id)
 table(spe_pseudo_k$brain_id)
 
-# droplevels((spe_pseudo)$BayesSpace)
 ## drop levels not used
 table(spe_pseudo_k$BayesSpace)
 unique(spe_pseudo_k$BayesSpace)
@@ -223,26 +220,6 @@ table(spe_pseudo_k$BayesSpace)
 message('Levels unused on pseudobulk `BayesSpace` dropped ')
 
 message('Pseudobulk completed ')
-
-
-
-# Perform pseudobulk across BayesSpace and sample_id
-
-# spe_pseudo_k <- scuttle::aggregateAcrossCells(
-#   spe,
-#   DataFrame(
-#     BayesSpace_p = spe[[paste0("BayesSpace_harmony_k", k_nice)]],
-#     reg_sample_id = spe$sample_id
-#   )
-# )
-# head(colData(spe_pseudo_k)$BayesSpace)
-# head(colData(spe_pseudo_k)$BayesSpace_p)
-# 
-# # make the BayesSpace levels identical
-# spe_pseudo_k$BayesSpace_p <- spe_pseudo_k$BayesSpace
-# identical(spe_pseudo_k$BayesSpace, spe_pseudo_k$BayesSpace_p)
-# levels(spe_pseudo_k$BayesSpace) == levels(spe_pseudo_k$BayesSpace_p)
-# # [1] TRUE TRUE TRUE
 
 ## quick inspection: check how many genes expressed by cluster we have after pseudobulk
 
@@ -268,7 +245,7 @@ gene_counts_df
 # 3 Sp03D03                8803
 
 
-message("Aggregation completed for k=", k_nice)
+message('Pseudobulk completed ', k_nice)
 message(
   "Dimensions of summed data: ",
   paste(dim(spe_pseudo_k), collapse = " x ")
@@ -282,31 +259,31 @@ colData(spe_pseudo_k)$ncells <- NULL # Remove the old column
 colnames(spe_pseudo_k) <- spe_pseudo_k$sample_id
 
 
-# Exploring nspots
-
-min_nspots <- 10
-message("Total nspots: ", sum(spe_pseudo_k$nspots))
-message(
-  "Number of groups with nspots < ",
-  min_nspots,
-  ": ",
-  sum(spe_pseudo_k$nspots < min_nspots)
-)
-message("Summary of nspots:")
-print(summary(spe_pseudo_k$nspots))
-
-## Adapted from https://github.com/LieberInstitute/spatialLIBD/blob/devel/R/registration_pseudobulk.R#L137-L154
-## Drop pseudo-bulked samples that had low initial contribution of raw-samples.
-## That is, pseudo-bulked samples that are not benefiting from the pseudo-bulking process to obtain higher counts.
-if (!is.null(min_nspots)) {
-  message(
-    Sys.time(),
-    " dropping ",
-    sum(spe_pseudo_k$nspots < min_nspots),
-    " pseudo-bulked samples that are below 'min_nspots'."
-  )
-  spe_pseudo_k <- spe_pseudo_k[, spe_pseudo_k$nspots >= min_nspots]
-}
+# # Exploring nspots
+# 
+# min_nspots <- 10
+# message("Total nspots: ", sum(spe_pseudo_k$nspots))
+# message(
+#   "Number of groups with nspots < ",
+#   min_nspots,
+#   ": ",
+#   sum(spe_pseudo_k$nspots < min_nspots)
+# )
+# message("Summary of nspots:")
+# print(summary(spe_pseudo_k$nspots))
+# 
+# ## Adapted from https://github.com/LieberInstitute/spatialLIBD/blob/devel/R/registration_pseudobulk.R#L137-L154
+# ## Drop pseudo-bulked samples that had low initial contribution of raw-samples.
+# ## That is, pseudo-bulked samples that are not benefiting from the pseudo-bulking process to obtain higher counts.
+# if (!is.null(min_nspots)) {
+#   message(
+#     Sys.time(),
+#     " dropping ",
+#     sum(spe_pseudo_k$nspots < min_nspots),
+#     " pseudo-bulked samples that are below 'min_nspots'."
+#   )
+#   spe_pseudo_k <- spe_pseudo_k[, spe_pseudo_k$nspots >= min_nspots]
+# }
 
 # Compute mitochondrial expression ratio & other meta-data
 
@@ -332,13 +309,10 @@ assays(spe_pseudo_k)
 
 logcounts(spe_pseudo_k) <-
   edgeR::cpm(edgeR::calcNormFactors(spe_pseudo_k), log = TRUE, prior.count = 1)
-# rownames(assays(spe_pseudo_k)$logcounts)
-# colnames(assays(spe_pseudo_k)$logcounts)
-dim(reducedDim(spe_pseudo_k))
-# [1] 24 10
 
-# # calculate the number of cells per (sample_id + BayesSpace cluster)
-# Adapted from: https://github.com/LieberInstitute/dlpfc_asd/blob/2b83eeb9572bd7d37505e8db6e20bb3ded09c2c1/code/06_differential_expression/01_create_pseudobulk_data.R#L129
+dim(reducedDim(spe_pseudo_k))
+
+## prepare table of cell counts per sample_id and cluster
 
 message("-------------------------------------------------------------")
 # Get BayesSpace cluster assignments for the current k
@@ -434,16 +408,14 @@ message('Processing PCA')
 
 set.seed(01042025)
 
-spe_pseudo <- spe_pseudo_k
-
 ## Compute some reduced dims
 message('Processing MDS and scarter runPCA')
 
 # keep ncomponents below the number of cells
-ncomponents = min(50, ncol(spe_pseudo) - 1, nrow(spe_pseudo) - 1)
+ncomponents = min(50, ncol(spe_pseudo_k) - 1, nrow(spe_pseudo_k) - 1)
 
-spe_pseudo <- scater::runMDS(
-  spe_pseudo,
+spe_pseudo_k <- scater::runMDS(
+  spe_pseudo_k,
   name = "runMDS",
   ncomponents = ncomponents
 )
@@ -452,23 +424,23 @@ spe_pseudo <- scater::runMDS(
 # Fix error when computing runPCA with irlba  - scater default -  too many components relative to the number of features
 # -- force exact SVD passing a BiocSingularParam object
 
-spe_pseudo <- scater::runPCA(
-  spe_pseudo,
+spe_pseudo_k <- scater::runPCA(
+  spe_pseudo_k,
   ncomponents = ncomponents,
   BSPARAM = ExactParam()
 )
 
-dim(reducedDim(spe_pseudo, "PCA"))
+dim(reducedDim(spe_pseudo_k, "PCA"))
 # [1] 24 23
 
 
 ## For the spatialLIBD shiny app
 
-rowData(spe_pseudo)$gene_search <-
+rowData(spe_pseudo_k)$gene_search <-
   paste0(
-    rowData(spe_pseudo)$gene_name,
+    rowData(spe_pseudo_k)$gene_name,
     "; ",
-    rowData(spe_pseudo)$gene_id
+    rowData(spe_pseudo_k)$gene_id
   )
 
 message(
@@ -479,7 +451,7 @@ message(
 
 ## save RDS file
 saveRDS(
-  spe_pseudo,
+  spe_pseudo_k,
   file = file.path(
     dir_rdata,
     paste0("sce_pseudo_PCA_brain_area_k", k_nice, ".rds")
