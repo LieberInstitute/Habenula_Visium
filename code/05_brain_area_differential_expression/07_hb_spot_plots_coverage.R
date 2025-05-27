@@ -259,7 +259,7 @@ all_plots <- grid.arrange(
     gridExtra::arrangeGrob(grobs = p4_lst, ncol = 3, top = textGrob("SpD(s) identified: SpatialRegistration Correlations", 
                                                                     gp = gpar(fontsize = 24, fontface = "bold"))),
     nrow = 3,
-    top = textGrob(paste("Overall SpD(s) for k=/n", k_nice), gp = gpar(fontsize = 28))
+    top = textGrob(paste("Overall SpD(s) for k=", k_nice, "\n"), gp = gpar(fontsize = 28, fontface = "bold"))
 )
 
 # all_plots <- c(p1_lst, p3_lst, p4_lst)
