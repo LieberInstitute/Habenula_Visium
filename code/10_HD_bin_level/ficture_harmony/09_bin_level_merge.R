@@ -10,18 +10,18 @@ library(sessioninfo)
 
 ficture_input_paths = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'ficture_outputs', 'cleany', 'k_%d', 'analysis', 'nF%d.d_12',
-    'transcripts_ficture_joined.tsv.gz'
+    'ficture_outputs', 'normalized', 'k_%d', 'analysis', 'nF%d.d_12',
+    'normalized_joined_input.tsv.gz'
 )
 spe_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'spe','y_clean_spe.rds'
+    'spe_raw.rds'
 )
 out_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'ficture_outputs', 'cleany',
     'bin_level_clusters.csv.gz'
 )
+k_values = c(seq(4, 40, 2), 70, 100)
 
 ficture_colnames = c('sample_id', 'barcode', 'factor_K1')
 
@@ -34,7 +34,7 @@ col_data = colData(spe) |>
 rm(spe)
 gc()
 
-for (k in c(5:40,70,100)) {
+for (k in k_values) {
     message(Sys.time(), sprintf(' | Reading in k = %d results...', k))
     ficture_df = sprintf(ficture_input_paths, k, k) |>
         #   Read in quickly but format as a tibble
