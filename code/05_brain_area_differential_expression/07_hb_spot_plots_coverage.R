@@ -16,13 +16,6 @@ library("sessioninfo")
 
 
 ## set in/out directories
-
-# spe_dir <- here(
-#     "processed-data",
-#     "04_harmony_BayesSpace",
-#     "spe_harmony_ann.rds"
-# )
-# re-address path dir
 # this spe object is was prepared before to pseudobulk the data to have all the BS meta-data available 
 spe_dir <- here(
     "processed-data",
@@ -48,14 +41,16 @@ levels(colData(spe)$BayesSpace)
 ## set levels to desired 'BayesSpace_harmony_k', and format as desired 
 # BayesSpace clustering 
 k=11
+
 k_nice <- sprintf("%02d", k)
+BayesSpace_harmony_k <- paste0("BayesSpace_harmony_k", k_nice)
 
 message("Processing spotPlots for BS k=", k_nice)
 
-# Set the levels of colData(spe)$BayesSpace to be the levels of BayesSpace_harmony_k11
-colData(spe)$BayesSpace <- colData(spe)$BayesSpace_harmony_k11
+# Set the levels of colData(spe)$BayesSpace to be the levels of BayesSpace_harmony_k
+colData(spe)$BayesSpace <- colData(spe)[[BayesSpace_harmony_k]]
 # check levels of both
-unique(colData(spe)$BayesSpace_harmony_k11)
+unique(colData(spe)[[BayesSpace_harmony_k]])
 unique(colData(spe)$BayesSpace)
 levels(colData(spe)$BayesSpace)
 # NULL
@@ -79,23 +74,15 @@ bayes_space_counts
 # Identify levels with less than 20 counts
 levels_to_remove <- names(bayes_space_counts[bayes_space_counts < 20])
 message("Spatial Domains with less than 20 counts: ", paste(levels_to_remove, collapse = ", "))
-
 # Remove those levels from BayesSpace by excluding them
-colData(spe)$BayesSpace <- factor(colData(spe)$BayesSpace, 
-                                  levels = setdiff(levels(colData(spe)$BayesSpace), levels_to_remove))
+if (length(levels_to_remove) > 0) {
+    colData(spe)$BayesSpace <- factor(colData(spe)$BayesSpace, 
+                                      levels = setdiff(levels(colData(spe)$BayesSpace), levels_to_remove))
+}
 # Check the new levels of BayesSpace
 levels(colData(spe)$BayesSpace)
 # [1] "Sp11D01" "Sp11D02" "Sp11D03" "Sp11D05" "Sp11D06" "Sp11D07" "Sp11D08"
 # [8] "Sp11D09" "Sp11D10" "Sp11D11"
-
-## avoid manual evaluation
-# # 2 samples (V13B23−285_C1, V13B23−285_D1) have a SpD04, but this is missed on the other samples
-# # Keep only rows where cluster is NOT SpD04 as this SpD (1) have only a few spots, and (2) tat the edge of the tissue in both samples
-# spe <- spe[, colData(spe)$BayesSpace != "Sp11D04"]
-# colData(spe)$BayesSpace <- droplevels(colData(spe)$BayesSpace)
-# levels(colData(spe)$BayesSpace)
-# table(colData(spe)$sample_id, colData(spe)$BayesSpace)
-# colData(spe)$BayesSpace_harmony_k11 <- colData(spe)$BayesSpace
 
 # make a spe copy to plot SpatialRegistration data vs Hb RNScope taxonomy (KDM)
 spe_SR <- spe
@@ -119,6 +106,25 @@ levels(colData(spe_subset_SR)$BayesSpace)
 
 ## =============================================================================
 
+## Make color vector for BS k of interest
+
+## Create color vectors based on condition
+color_list <- 
+    list(
+        k03 = c("gold", "#b2df8a", "#e41a1c"),
+        k11 = c("grey", "#b2df8a", "#e41a1c",   "gold", "darkblue", "yellow", "black", "#a65628", "violet", "darkgreen", "blue"),
+        ## RNAScope Ann
+        RNAScope_k03 = c("grey", "grey", "#e41a1c"),
+        RNAScope_k11 = c("grey", "grey", "grey", "grey", "blue", "yellow", "grey", "grey", "grey", "darkgreen", "blue"),
+        ## Spatial-Registration Corr
+        SReg_k03 = c("grey", "grey", "#e41a1c"),
+        SReg_k11 = c("grey", "grey", "grey", "grey", "blue", "grey", "grey", "grey", "grey", "darkgreen", "blue"),
+    )
+#color_list
+
+
+## =============================================================================
+
 ## Set some initials for manage spot size in the plots
 
 var_height <- 24 # 24/3=8
@@ -137,8 +143,10 @@ set.seed(07112024)
 
 ## plot SpD(s) with RNAScope Ann
 levels(colData(spe)$BayesSpace)
-color_vector <- c("grey", "#b2df8a", "#e41a1c", "darkgreen", "blue",
-                  "yellow", "black", "#a65628", "violet", "gold")
+## set color_vector as correspond 
+BSk_temp <- paste0("k", k_nice)
+color_vector <- color_list[[BSk_temp]]
+color_vector
 
 p1_lst <- vis_grid_clus(
     spe = spe_subset, #spe,
@@ -153,20 +161,6 @@ p1_lst <- vis_grid_clus(
     return_plots = TRUE
 )
 
-# ## plot SpD(s) with SpatialReg Ann
-# p2_lst <- vis_grid_clus(
-#     spe = spe_subset_SR,
-#     clustervar = "BayesSpace",
-#     #sample_order = lst_order,
-#     height = var_height, # 8
-#     width = var_width, # 9
-#     point_size = var_point_size,
-#     sort_clust = FALSE,
-#     guide_point_size = 5,
-#     colors = color_vector,
-#     return_plots = TRUE
-# )
-
 
 ## =============================================================================
 
@@ -174,9 +168,13 @@ p1_lst <- vis_grid_clus(
 
 ## prepare levels with Hb-putative SpD(s) based on Manual Anatomical Annotation (KDM)
 new_labels <- levels(colData(spe_subset)$BayesSpace)
-new_labels <- gsub("Sp11D06", "Sp06-HbRNAScope", new_labels)
-new_labels <- gsub("Sp11D07", "Sp07-HbRNAScope", new_labels)
-new_labels <- gsub("Sp11D11", "Sp11-HbRNAScope", new_labels)
+if (k_nice=="11") {
+    new_labels <- gsub("Sp11D06", "Sp06-HbRNAScope", new_labels)
+    new_labels <- gsub("Sp11D07", "Sp07-HbRNAScope", new_labels)
+    new_labels <- gsub("Sp11D11", "Sp11-HbRNAScope", new_labels)
+} else if (k_nice=="03") {
+    new_labels <- gsub("Sp03D03", "Sp03-HbRNAScope", new_labels)
+}
 new_labels
 
 ## convert to factor with levels in the correct order
@@ -195,8 +193,12 @@ levels(colData(spe_subset)$BayesSpace)
 ## prepare the `spe_SR` copy with Hb-putative SpD(s) observed in the `SpatialRegistration` Broad - Heatmap
 
 new_labels_SR <- levels(colData(spe_subset_SR)$BayesSpace)
-new_labels_SR <- gsub("Sp11D06", "Sp06-HbSpatialR", new_labels_SR)
-new_labels_SR <- gsub("Sp11D11", "Sp11-HbSpatialR", new_labels_SR)
+if (k_nice=="11") {
+    new_labels_SR <- gsub("Sp11D06", "Sp06-HbSpatialR", new_labels_SR)
+    new_labels_SR <- gsub("Sp11D11", "Sp11-HbSpatialR", new_labels_SR)
+} else if (k_nice=="03") {
+    new_labels_SR <- gsub("Sp03D03", "Sp03-HbSpatialR", new_labels)
+}
 new_labels_SR
 
 ## convert to factor with levels in the correct order
@@ -210,8 +212,13 @@ levels(colData(spe_subset_SR)$BayesSpace)
 ## =============================================================================
 
 ## plot SpD(s) with HABENULA - RNAScope Ann
-color_vector <- c("grey", "grey", "grey", "gray", "blue",
-                  "yellow", "gray", "grey", "grey","gold")
+
+## Set colors
+levels(colData(spe)$BayesSpace)
+## set color_vector as correspond 
+BSk_temp <- paste0("RNAScope_k", k_nice)
+color_vector <- color_list[[BSk_temp]]
+color_vector
 
 p3_lst <- vis_grid_clus(
     spe = spe_subset,
@@ -228,8 +235,14 @@ p3_lst <- vis_grid_clus(
 )
 
 ## plot SpD(s) with HABENULA - SpatialRegistration Ann
-color_vector <- c("grey", "grey", "grey", "gray", "blue",
-                  "gray", "gray", "grey", "gray","gold")
+
+## Set colors
+levels(colData(spe)$BayesSpace)
+## set color_vector as correspond 
+BSk_temp <- paste0("SReg_k", k_nice)
+color_vector <- color_list[[BSk_temp]]
+color_vector
+
 p4_lst <- vis_grid_clus(
     spe = spe_subset_SR,
     clustervar = "BayesSpace",
