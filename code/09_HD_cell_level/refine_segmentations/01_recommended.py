@@ -3,7 +3,6 @@ import scanpy as sc
 import os
 from pyhere import here
 import session_info
-import bin2cell as b2c
 
 prob_tag = "recommended"
 
@@ -18,9 +17,6 @@ orig_path = here(
 )
 plot_dir = here(
     'plots', '09_HD_cell_level', 'probe_fix', 'refine_segmentations', prob_tag
-)
-stardist_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'stardist'
 )
 mpp = 0.3
 num_random_cells = 5
@@ -44,16 +40,16 @@ random_cells = (
 )
 
 for i, random_cell in enumerate(random_cells):
-    small_adata = adata[adata.obs['labels_he'] == random_cell, :].copy()
+    small_adata = adata[adata.obs['labels_he'] == random_cell, :]
 
     mask = (
         (adata.obs['array_row'] >= small_adata.obs['array_row'].min() - 40) &
         (adata.obs['array_row'] <= small_adata.obs['array_row'].max() + 40) &
         (adata.obs['array_col'] >= small_adata.obs['array_col'].min() - 40) &
         (adata.obs['array_col'] <= small_adata.obs['array_col'].max() + 40) &
-        adata.obs['labels_he'] != 0
+        (adata.obs['labels_he'] != 0)
     )
-    small_adata = adata[mask, :]
+    small_adata = adata[mask, :].copy()
     small_adata.obs['labels_he'] = small_adata.obs['labels_he'].astype(str)
 
     #   Plot the primary-cell labels
@@ -64,24 +60,6 @@ for i, random_cell in enumerate(random_cells):
     plt.savefig(
         os.path.join(plot_dir, f'{sample_id}_{i}.png')
     )
-    plt.close('all')
-
-    crop = b2c.get_crop(
-        adata[mask], basis="spatial", spatial_key="spatial_cropped_150_buffer",
-        mpp=mpp
-    )
-    rendered = b2c.view_labels(
-        image_path = os.path.join(
-            stardist_dir, f'he_{sample_id}.tiff'
-        ),
-        labels_npz_path = os.path.join(
-            stardist_dir, f'he_{sample_id}.npz'
-        ),  
-        crop = crop
-    )
-    #   Plot the primary segmentations
-    plt.imshow(rendered)
-    plt.savefig(os.path.join(plot_dir, f'{sample_id}_seg{i}.png'))
     plt.close('all')
 
 session_info.show()
