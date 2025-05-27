@@ -10,6 +10,7 @@
 library("here")
 library("spatialLIBD") #[1] ‘1.21.5’
 library("purrr")
+library("grid")
 library("gridExtra")
 library("sessioninfo")
 
@@ -77,7 +78,7 @@ bayes_space_counts <- colSums(spots_by_domain_table)
 bayes_space_counts
 # Identify levels with less than 20 counts
 levels_to_remove <- names(bayes_space_counts[bayes_space_counts < 20])
-levels_to_remove
+message("Spatial Domains with less than 20 counts: ", paste(levels_to_remove, collapse = ", "))
 
 # Remove those levels from BayesSpace by excluding them
 colData(spe)$BayesSpace <- factor(colData(spe)$BayesSpace, 
@@ -95,52 +96,16 @@ levels(colData(spe)$BayesSpace)
 # levels(colData(spe)$BayesSpace)
 # table(colData(spe)$sample_id, colData(spe)$BayesSpace)
 # colData(spe)$BayesSpace_harmony_k11 <- colData(spe)$BayesSpace
-# make a spe copy to plot SpatialRegistration data
+
+# make a spe copy to plot SpatialRegistration data vs Hb RNScope taxonomy (KDM)
 spe_SR <- spe
-len_levels <- length(levels(colData(spe_SR)$BayesSpace))
+spe_SR
+len_levels <- length(levels(colData(spe_SR)$BayesSpace)) # sould be NULL to add the SR SpD
+message("Spatial Domains after removing SpD(s) with less than 20 counts: ", len_levels)
 
 ## =============================================================================
+## subset 1 sample by donor for reference
 
-## prepare `spe` with Hb-putative SpD(s) observed in the `Manual Anatomical Annotation` (KDM)
-
-## prepare levels with Hb-putative SpD(s) based on Manual Anatomical Annotation (KDM)
-new_labels <- levels(colData(spe_SR)$BayesSpace)
-new_labels <- gsub("Sp11D06", "Sp06-HbRNAScope", new_labels)
-new_labels <- gsub("Sp11D07", "Sp07-HbRNAScope", new_labels)
-new_labels <- gsub("Sp11D11", "Sp11-HbRNAScope", new_labels)
-new_labels
-
-## convert to factor with levels in the correct order
-colData(spe)$BayesSpace <- factor(
-    colData(spe)$BayesSpace,
-    levels = levels(colData(spe)$BayesSpace),
-    labels = new_labels
-)
-levels(colData(spe)$BayesSpace)
-# [1] "Sp11D01"         "Sp11D02"         "Sp11D03"         "Sp11D05"        
-# [5] "Sp06-HbRNAScope" "Sp07-HbRNAScope" "Sp11D08"         "Sp11D09"        
-# [9] "Sp11D10"         "Sp11-HbRNAScope"
-
-## =============================================================================
-
-## prepare the `spe_SR` copy with Hb-putative SpD(s) observed in the `SpatialRegistration` Broad - Heatmap
-
-new_labels_SR <- levels(colData(spe_SR)$BayesSpace)
-new_labels_SR <- gsub("Sp11D06", "Sp06-HbSpatialR", new_labels_SR)
-new_labels_SR <- gsub("Sp11D11", "Sp11-HbSpatialR", new_labels_SR)
-new_labels_SR
-
-## convert to factor with levels in the correct order
-colData(spe_SR)$BayesSpace <- factor(
-    colData(spe_SR)$BayesSpace,
-    levels = levels(colData(spe_SR)$BayesSpace),
-    labels = new_labels_SR
-)
-levels(colData(spe_SR)$BayesSpace)
-
-## =============================================================================
-
-# subset 1 sample by donor for reference - RNAScope Annot
 sample_ids_to_keep <- c("V13B23-280_A1", "V13B23-285_B1", "V14F07-340_A1")
 # Subset spe to include only the specified sample_ids
 spe_subset <- spe[, colData(spe)$sample_id %in% sample_ids_to_keep]
@@ -168,12 +133,12 @@ set.seed(07112024)
 # # [5] "V13B23-285_A1" "V13B23-285_B1" "V13B23-285_C1" "V13B23-285_D1"
 # # [9] "V14F07-340_A1" "V14F07-340_B1" "V14F07-340_C1" "V14F07-340_D1"
 
-## For Kristen talk we pick up BS k=11 given the Hb (manually ann spots) proportion on the samples
+## Plot ALL domains for reference
 
 ## plot SpD(s) with RNAScope Ann
 levels(colData(spe)$BayesSpace)
 color_vector <- c("grey", "#b2df8a", "#e41a1c", "darkgreen", "blue",
-                  "yellow", "black", "#a65628", "violet", "purple")
+                  "yellow", "black", "#a65628", "violet", "gold")
 
 p1_lst <- vis_grid_clus(
     spe = spe_subset, #spe,
@@ -188,25 +153,65 @@ p1_lst <- vis_grid_clus(
     return_plots = TRUE
 )
 
-## plot SpD(s) with SpatialReg Ann
-p2_lst <- vis_grid_clus(
-    spe = spe_subset_SR,
-    clustervar = "BayesSpace",
-    #sample_order = lst_order,
-    height = var_height, # 8
-    width = var_width, # 9
-    point_size = var_point_size,
-    sort_clust = FALSE,
-    guide_point_size = 5,
-    colors = color_vector,
-    return_plots = TRUE
+# ## plot SpD(s) with SpatialReg Ann
+# p2_lst <- vis_grid_clus(
+#     spe = spe_subset_SR,
+#     clustervar = "BayesSpace",
+#     #sample_order = lst_order,
+#     height = var_height, # 8
+#     width = var_width, # 9
+#     point_size = var_point_size,
+#     sort_clust = FALSE,
+#     guide_point_size = 5,
+#     colors = color_vector,
+#     return_plots = TRUE
+# )
+
+
+## =============================================================================
+
+## prepare `spe` with Hb-putative SpD(s) observed in the `Manual Anatomical Annotation` (KDM)
+
+## prepare levels with Hb-putative SpD(s) based on Manual Anatomical Annotation (KDM)
+new_labels <- levels(colData(spe_subset)$BayesSpace)
+new_labels <- gsub("Sp11D06", "Sp06-HbRNAScope", new_labels)
+new_labels <- gsub("Sp11D07", "Sp07-HbRNAScope", new_labels)
+new_labels <- gsub("Sp11D11", "Sp11-HbRNAScope", new_labels)
+new_labels
+
+## convert to factor with levels in the correct order
+colData(spe_subset)$BayesSpace <- factor(
+    colData(spe_subset)$BayesSpace,
+    levels = levels(colData(spe_subset)$BayesSpace),
+    labels = new_labels
 )
+levels(colData(spe_subset)$BayesSpace)
+# [1] "Sp11D01"         "Sp11D02"         "Sp11D03"         "Sp11D05"        
+# [5] "Sp06-HbRNAScope" "Sp07-HbRNAScope" "Sp11D08"         "Sp11D09"        
+# [9] "Sp11D10"         "Sp11-HbRNAScope"
 
+## =============================================================================
 
+## prepare the `spe_SR` copy with Hb-putative SpD(s) observed in the `SpatialRegistration` Broad - Heatmap
+
+new_labels_SR <- levels(colData(spe_subset_SR)$BayesSpace)
+new_labels_SR <- gsub("Sp11D06", "Sp06-HbSpatialR", new_labels_SR)
+new_labels_SR <- gsub("Sp11D11", "Sp11-HbSpatialR", new_labels_SR)
+new_labels_SR
+
+## convert to factor with levels in the correct order
+colData(spe_subset_SR)$BayesSpace <- factor(
+    colData(spe_subset_SR)$BayesSpace,
+    levels = levels(colData(spe_subset_SR)$BayesSpace),
+    labels = new_labels_SR
+)
+levels(colData(spe_subset_SR)$BayesSpace)
+
+## =============================================================================
 
 ## plot SpD(s) with HABENULA - RNAScope Ann
 color_vector <- c("grey", "grey", "grey", "gray", "blue",
-                  "yellow", "gray", "grey", "grey","purple")
+                  "yellow", "gray", "grey", "grey","gold")
 
 p3_lst <- vis_grid_clus(
     spe = spe_subset,
@@ -222,9 +227,9 @@ p3_lst <- vis_grid_clus(
     return_plots = TRUE
 )
 
-## plot SpD(s) with HABENULA - RNAScope Ann
+## plot SpD(s) with HABENULA - SpatialRegistration Ann
 color_vector <- c("grey", "grey", "grey", "gray", "blue",
-                  "gray", "gray", "grey", "gray","purple")
+                  "gray", "gray", "grey", "gray","gold")
 p4_lst <- vis_grid_clus(
     spe = spe_subset_SR,
     clustervar = "BayesSpace",
@@ -239,16 +244,30 @@ p4_lst <- vis_grid_clus(
     return_plots = TRUE
 )
 
-message("Integrating plots")
 
-all_plots <- c(p1_lst, p2_lst, p3_lst, p4_lst)
-length(all_plots)
+message("Integrating plots")
 
 # Create the PDF
 fn <- here(dir_plots, paste0("BayesSpace_k", k_nice, "_Hb_clustergrid.pdf"))
+
+# Combine the lists and add titles to each group
+all_plots <- grid.arrange(
+    gridExtra::arrangeGrob(grobs = p1_lst, ncol = 3, top = textGrob("All SpD(s) for one sample by donor", 
+                                                                    gp = gpar(fontsize = 24, fontface = "bold"))),
+    gridExtra::arrangeGrob(grobs = p3_lst, ncol = 3, top = textGrob("SpD(s) identified: Hb Annatomical RNAScope Annotations", 
+                                                                    gp = gpar(fontsize = 24, fontface = "bold"))),
+    gridExtra::arrangeGrob(grobs = p4_lst, ncol = 3, top = textGrob("SpD(s) identified: SpatialRegistration Correlations", 
+                                                                    gp = gpar(fontsize = 24, fontface = "bold"))),
+    nrow = 3,
+    top = textGrob(paste("Overall SpD(s) for k=/n", k_nice), gp = gpar(fontsize = 28))
+)
+
+# all_plots <- c(p1_lst, p3_lst, p4_lst)
+# length(all_plots)
+
 pdf(fn, height = var_height, width = var_width)
 
-grid.arrange(grobs = all_plots, ncol = 3)
+grid.draw(all_plots)
 
 dev.off()
 
