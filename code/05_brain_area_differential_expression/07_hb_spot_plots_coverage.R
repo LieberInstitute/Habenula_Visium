@@ -14,6 +14,12 @@ library("grid")
 library("gridExtra")
 library("sessioninfo")
 
+args = commandArgs(trailingOnly = TRUE)
+k <- as.integer(args[2])
+
+if (is.na(k)) {
+    k <- 11
+}
 
 ## set in/out directories
 # this spe object is was prepared before to pseudobulk the data to have all the BS meta-data available 
@@ -39,9 +45,6 @@ colnames(colData(spe))[grep("BayesSpace_harmony_", colnames(colData(spe)))]
 levels(colData(spe)$BayesSpace)
 
 ## set levels to desired 'BayesSpace_harmony_k', and format as desired 
-# BayesSpace clustering 
-k=11
-
 k_nice <- sprintf("%02d", k)
 BayesSpace_harmony_k <- paste0("BayesSpace_harmony_k", k_nice)
 
@@ -68,6 +71,7 @@ levels(colData(spe)$BayesSpace)
 ## make manual verification to identify missing SpD(s) in samples causing visualization issues
 spots_by_domain_table <- table(colData(spe)$sample_id, colData(spe)$BayesSpace)
 spots_by_domain_table
+
 # Get the table of counts for each level in colData(spe)$BayesSpace
 bayes_space_counts <- colSums(spots_by_domain_table)
 bayes_space_counts
@@ -87,7 +91,7 @@ levels(colData(spe)$BayesSpace)
 # make a spe copy to plot SpatialRegistration data vs Hb RNScope taxonomy (KDM)
 spe_SR <- spe
 spe_SR
-len_levels <- length(levels(colData(spe_SR)$BayesSpace)) # sould be NULL to add the SR SpD
+len_levels <- length(levels(colData(spe_SR)$BayesSpace)) # should be NULL to add the SR SpD
 message("Spatial Domains after removing SpD(s) with less than 20 counts: ", len_levels)
 
 ## =============================================================================
@@ -100,26 +104,26 @@ table(colData(spe_subset)$sample_id)
 levels(colData(spe_subset)$BayesSpace)
 
 # subset 1 sample by donor for reference - SpatialRegistration Annots
-spe_subset_SR <- spe_SR[, colData(spe_SR)$sample_id %in% sample_ids_to_keep]
-table(colData(spe_subset_SR)$sample_id)
-levels(colData(spe_subset_SR)$BayesSpace)
+spe_subset_SR <- spe_subset
+# spe_subset_SR <- spe_SR[, colData(spe_SR)$sample_id %in% sample_ids_to_keep]
+# table(colData(spe_subset_SR)$sample_id)
+# levels(colData(spe_subset_SR)$BayesSpace)
 
 ## =============================================================================
 
 ## Make color vector for BS k of interest
 
 ## Create color vectors based on condition
-color_list <- 
-    list(
-        k03 = c("gold", "#b2df8a", "#e41a1c"),
-        k11 = c("grey", "#b2df8a", "#e41a1c",   "gold", "darkblue", "yellow", "black", "#a65628", "violet", "darkgreen", "blue"),
-        ## RNAScope Ann
-        RNAScope_k03 = c("grey", "grey", "#e41a1c"),
-        RNAScope_k11 = c("grey", "grey", "grey", "grey", "blue", "yellow", "grey", "grey", "grey", "darkgreen", "blue"),
-        ## Spatial-Registration Corr
-        SReg_k03 = c("grey", "grey", "#e41a1c"),
-        SReg_k11 = c("grey", "grey", "grey", "grey", "blue", "grey", "grey", "grey", "grey", "darkgreen", "blue"),
-    )
+color_list <- list(
+    k03 = c("gold", "#b2df8a", "#e41a1c"),
+    k11 = c("grey", "#b2df8a", "#e41a1c", "gold", "darkblue", "yellow", "black", "#a65628", "violet", "darkgreen", "blue"),
+    ## RNAScope Ann
+    RNAScope_k03 = c("grey", "grey", "#e41a1c"),
+    RNAScope_k11 = c("grey", "grey", "grey", "grey", "darkblue", "yellow", "grey", "grey", "grey", "darkgreen", "blue"),
+    ## Spatial-Registration Corr
+    SReg_k03 = c("grey", "grey", "#e41a1c"),
+    SReg_k11 = c("grey", "grey", "grey", "grey", "darkblue", "grey", "grey", "grey", "grey", "darkgreen", "blue")
+)
 #color_list
 
 
@@ -129,7 +133,7 @@ color_list <-
 
 var_height <- 24 # 24/3=8
 var_width <- 26 # 36/4=9
-var_point_size <- 1.5
+var_point_size <- 2
 
 set.seed(07112024)
 
@@ -197,7 +201,7 @@ if (k_nice=="11") {
     new_labels_SR <- gsub("Sp11D06", "Sp06-HbSpatialR", new_labels_SR)
     new_labels_SR <- gsub("Sp11D11", "Sp11-HbSpatialR", new_labels_SR)
 } else if (k_nice=="03") {
-    new_labels_SR <- gsub("Sp03D03", "Sp03-HbSpatialR", new_labels)
+    new_labels_SR <- gsub("Sp03D03", "Sp03-HbSpatialR", new_labels_SR)
 }
 new_labels_SR
 
