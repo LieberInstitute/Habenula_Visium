@@ -1,0 +1,49 @@
+**** Job starts ****
+Fri May 23 01:30:13 PM EDT 2025
+**** JHPCE info ****
+User: neagles
+Job id: 16714986
+Job name: 02_primary_cells
+Node name: compute-169
+Task id: 1
+Loading LIBD SLURM module for visium_hd/1.0
+Loading LIBD SLURM module for htslib/1.18
+
+Currently Loaded Modules:
+  1) JHPCE_ROCKY9_DEFAULT_ENV   3) conda/3-24.3.0   5) visium_hd/1.0
+  2) JHPCE_tools/3.0            4) htslib/1.18
+
+ 
+
+2025-05-23 13:34:11.305566: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-05-23 13:34:11.319283: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:485] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2025-05-23 13:34:11.333523: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:8454] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2025-05-23 13:34:11.337303: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1452] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2025-05-23 13:34:11.348613: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI AVX512_BF16 AVX512_FP16 AVX_VNNI AMX_TILE AMX_INT8 AMX_BF16 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2025-05-23 13:34:12.223748: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+Cropped spatial coordinates key: spatial_cropped_150_buffer
+Image key: 0.5_mpp_150_buffer
+2025-05-23 13:34:11.083002 | Performing nuclear-based ('primary') segmentation
+Found model '2D_versatile_he' for 'StarDist2D'.
+Loading network weights from 'weights_best.h5'.
+Loading thresholds from 'thresholds.json'.
+Using default values: prob_thresh=0.692478, nms_thresh=0.3.
+effective: block_size=(4096, 4096, 3), min_overlap=(128, 128, 0), context=(128, 128, 0)
+functional.py (225): The structure of `inputs` doesn't match the expected structure: ['input']. Received: the structure of inputs=*
+  0%|          | 0/12 [00:00<?, ?it/s]  8%|▊         | 1/12 [00:14<02:40, 14.63s/it] 17%|█▋        | 2/12 [00:29<02:24, 14.50s/it] 25%|██▌       | 3/12 [00:43<02:08, 14.27s/it] 33%|███▎      | 4/12 [00:58<01:56, 14.61s/it] 42%|████▏     | 5/12 [01:13<01:44, 14.88s/it] 50%|█████     | 6/12 [01:28<01:29, 14.85s/it] 58%|█████▊    | 7/12 [01:43<01:14, 14.97s/it] 67%|██████▋   | 8/12 [01:58<01:00, 15.10s/it] 75%|███████▌  | 9/12 [02:14<00:45, 15.21s/it] 83%|████████▎ | 10/12 [02:28<00:29, 14.90s/it] 92%|█████████▏| 11/12 [02:43<00:14, 14.83s/it]100%|██████████| 12/12 [02:58<00:00, 14.94s/it]100%|██████████| 12/12 [02:58<00:00, 14.87s/it]
+Found 48846 objects
+-----
+anndata             0.10.8
+bin2cell            0.3.3
+matplotlib          3.9.2
+pyhere              1.0.3
+scanpy              1.10.2
+session_info        1.0.0
+-----
+Python 3.9.20 | packaged by conda-forge | (main, Sep 30 2024, 17:49:10) [GCC 13.3.0]
+Linux-5.14.0-427.13.1.el9_4.x86_64-x86_64-with-glibc2.34
+-----
+Session information updated at 2025-05-23 13:39
+**** Job ends ****
+Fri May 23 01:39:21 PM EDT 2025
