@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=32G
+#SBATCH --mem=40G
 #SBATCH --job-name=10_cell_profiles
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/10_cell_profiles.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/10_cell_profiles.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/10_cell_profiles_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/10_cell_profiles_%a.txt
 #SBATCH -c 1
 #SBATCH -t 8:00:00
-#SBATCH --array=4-40:2,70,100%10
+#SBATCH --array=4-40:2%10
 
 set -e
 

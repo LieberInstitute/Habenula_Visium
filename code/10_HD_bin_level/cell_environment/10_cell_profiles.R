@@ -99,7 +99,7 @@ extra_df = extra_df |>
         key = paste(cell_id, sample_id, sep = '_')
     ) |>
     mutate(across(matches('^score_'), function(x) x / temp_sum)) |>
-    select(key, sample_id, num_bins, matches('^score_'))
+    select(key, num_bins, matches('^score_'))
 
 ################################################################################
 #   Join scores with SPE and export a minimal tibble
@@ -108,7 +108,10 @@ extra_df = extra_df |>
 message(Sys.time(), ' | Loading cell-level SPE...')
 spe = loadHDF5SummarizedExperiment(spe_dir)
 
-extra_df = tibble(key = spe$key, cell_category = spe$labels_joint_source) |>
+extra_df = tibble(
+        key = spe$key, sample_id = spe$sample_id,
+        cell_category = spe$labels_joint_source
+    ) |>
     left_join(extra_df, by = 'key')
 
 message('Proportion of cells missing extracellular clustered bins (overall):')
