@@ -31,10 +31,7 @@ out_path = here(
         'cell_profiles', 'k_%d.csv.gz'
     ) |>
     sprintf(k)
-plot_path = here(
-    'plots', '10_HD_bin_level', 'probe_fix', 'cell_environment',
-    'Br9090_WM_k4.png'
-)
+plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'cell_environment')
 ficture_colnames = c(
     'sample_id', 'barcode', 'factor_K1', 'factor_K2', 'factor_K3', 'factor_P1',
     'factor_P2', 'factor_P3'
@@ -128,9 +125,9 @@ extra_df |>
     ungroup() |>
     print(n = 10)
 
-#   For Br9090 and k = 4, just to verify cell IDs and joining are correct, plot
-#   scores for the white-matter cluster spatially
 if (k == 4) {
+    #   Just to verify cell IDs and joining are correct, plot scores for the
+    #   white-matter cluster spatially on Br9090
     spe$score_3 = extra_df$score_3
 
     p = vis_gene(
@@ -138,7 +135,31 @@ if (k == 4) {
         is_stitched = TRUE, point_size = 10, spatial = TRUE
     )
     
-    png(plot_path, width = 1000, height = 1000)
+    png(file.path(plot_dir, 'Br9090_WM_k4.png'), width = 1000, height = 1000)
+    print(p)
+    dev.off()
+
+    #   Demonstrate the sample-specific effect induced by the poor-quality H&E
+    #   images in the last 2 samples: "cells" are so dense that many have no
+    #   extracellular bins
+    p = extra_df |>
+        group_by(sample_id, cell_category) |>
+        summarize(prop_remain = mean(!is.na(score_0))) |>
+        ungroup() |>
+        mutate(
+            sample_id = factor(
+                str_replace(sample_id, '.*_', 'Br'),
+                levels = c('Br9090', 'Br8433', 'Br8667', 'Br8518', 'Br9037')
+            )
+        ) |>
+        ggplot(aes(x = sample_id, y = prop_remain, fill = sample_id)) +
+            geom_col() +
+            facet_wrap(~cell_category) +
+            theme_bw(base_size = 20) +
+            theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+            labs(x = 'Sample ID', y = 'Prop. Cells with Surrounding Bins') +
+            guides(fill = 'none')
+    pdf(file.path(plot_dir, 'missing_cells.pdf'))
     print(p)
     dev.off()
 }
