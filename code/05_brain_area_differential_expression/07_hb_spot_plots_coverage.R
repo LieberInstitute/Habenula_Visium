@@ -11,6 +11,8 @@ library("here")
 library("spatialLIBD") #[1] ‘1.21.5’
 library("purrr")
 library("grid")
+library("viridis")
+library("RColorBrewer")
 library("gridExtra")
 library("sessioninfo")
 
@@ -112,19 +114,65 @@ spe_subset_SR <- spe_subset
 ## =============================================================================
 
 ## Make color vector for BS k of interest
+# Define the function to generate the color lists with additional custom position inputs
+generate_color_lists <- function(num_colors, custom_RNAScope_SpD, custom_SpatialReg_SpD) {
+    #library(RColorBrewer)
+    # Generate a vector of colors from the viridis palette based on the input number
+    #random_colors <- viridis(num_colors)
+    random_colors <- c(
+        "red", "blue", "green", "yellow", "orange", 
+        "purple", "brown", "pink", "cyan", "magenta", 
+        "black", "white", "darkblue", "darkgreen", "lightblue", 
+        "darkorange", "violet", "gold", "darkred", "indianred"
+    )
+    random_colors_SR <- random_colors
+    
+    # Create gray vector for RNAScope
+    grey_colors_RNAScope <- rep("grey", num_colors)
+    grey_colors_SpatialReg <- grey_colors_RNAScope
+    
+    # Adjust grey vector colors based on custom_RNAScope_SpD input (position adjustment by -1)
+    grey_colors_RNAScope[custom_RNAScope_SpD] <- random_colors[custom_RNAScope_SpD]
+    
+    # Adjust grey vector for SpatialReg based on custom_SpatialReg_SpD input (position adjustment by -1)
+    grey_colors_SpatialReg[custom_SpatialReg_SpD] <- random_colors_SR[custom_SpatialReg_SpD]
+    
+    # Return the four lists
+    return(list(
+        random_colors = random_colors,
+        #random_colors_SR = random_colors_SR,
+        grey_colors_RNAScope = grey_colors_RNAScope,
+        grey_colors_SpatialReg = grey_colors_SpatialReg
+    ))
+}
 
-## Create color vectors based on condition
-color_list <- list(
-    k03 = c("gold", "#b2df8a", "#e41a1c"),
-    k11 = c("grey", "#b2df8a", "#e41a1c", "gold", "darkblue", "yellow", "black", "#a65628", "violet", "darkgreen", "blue"),
-    ## RNAScope Ann
-    RNAScope_k03 = c("grey", "grey", "#e41a1c"),
-    RNAScope_k11 = c("grey", "grey", "grey", "grey", "darkblue", "yellow", "grey", "grey", "grey", "darkgreen", "blue"),
-    ## Spatial-Registration Corr
-    SReg_k03 = c("grey", "grey", "#e41a1c"),
-    SReg_k11 = c("grey", "grey", "grey", "grey", "darkblue", "grey", "grey", "grey", "grey", "darkgreen", "blue")
-)
-#color_list
+
+# create palette of colors for ALL, RNAScope and SpatialReg spotPlots
+# Note (-1) is set to move back the color vector for grey(s) where an SpD was removed due low counts (>20)
+if (k_nice=="11") {
+    custom_RNAScope_SpD <- c(6, 7, 11)-1 
+    custom_SpatialReg_SpD <- c(6, 11)-1  # Custom vector of positions for SpatialReg
+} else if (k_nice=="03") {
+    custom_RNAScope_SpD <- 3
+    custom_SpatialReg_SpD <- 3
+} else if (k_nice=="15") {
+    custom_RNAScope_SpD <- c(6, 8, 10, 14)-1
+    custom_SpatialReg_SpD <- c(6, 10, 14)-1
+} else if (k_nice=="20") {
+    custom_RNAScope_SpD <- c(6, 7, 8, 15, 16, 17, 19)-1
+    custom_SpatialReg_SpD <- c(6, 8, 16, 19)-1
+}    
+
+
+# Call the function with the new pallete of colors
+n_colors <- length(levels(colData(spe_subset)$BayesSpace))
+color_lists <- generate_color_lists(n_colors, custom_RNAScope_SpD, custom_SpatialReg_SpD)
+
+# verification
+print(color_lists$random_colors)
+#print(color_lists$random_colors_SR)
+print(color_lists$grey_colors_RNAScope)
+print(color_lists$grey_colors_SpatialReg)
 
 
 ## =============================================================================
@@ -147,10 +195,8 @@ set.seed(07112024)
 
 ## plot SpD(s) with RNAScope Ann
 levels(colData(spe)$BayesSpace)
-## set color_vector as correspond 
-BSk_temp <- paste0("k", k_nice)
-color_vector <- color_list[[BSk_temp]]
-color_vector
+## set color_vector as corresponds 
+color_vector <- color_lists$random_colors
 
 p1_lst <- vis_grid_clus(
     spe = spe_subset, #spe,
@@ -161,7 +207,7 @@ p1_lst <- vis_grid_clus(
     point_size = var_point_size,
     sort_clust = FALSE,
     guide_point_size = 5,
-    colors = color_vector,
+    colors = color_lists$random_colors,
     return_plots = TRUE
 )
 
@@ -170,14 +216,40 @@ p1_lst <- vis_grid_clus(
 
 ## prepare `spe` with Hb-putative SpD(s) observed in the `Manual Anatomical Annotation` (KDM)
 
-## prepare levels with Hb-putative SpD(s) based on Manual Anatomical Annotation (KDM)
-new_labels <- levels(colData(spe_subset)$BayesSpace)
+# rename_labels <- function(new_labels, SpD, sufix) {
+#     # Assign SpD to sp_labels
+#     # SpD=custom_RNAScope_SpD
+#     old_labels <- unlist(map(SpD, ~ paste0("Sp", k_nice, "D", .x)))
+#     for (i in SpD) {
+#         # i=2
+#         new_labels <- gsub(old_labels[i], paste0(old_labels[i], "-HbRNAScope"), new_labels)
+#     }
+#     return(new_labels)
+# }
+
 if (k_nice=="11") {
-    new_labels <- gsub("Sp11D06", "Sp06-HbRNAScope", new_labels)
-    new_labels <- gsub("Sp11D07", "Sp07-HbRNAScope", new_labels)
-    new_labels <- gsub("Sp11D11", "Sp11-HbRNAScope", new_labels)
+    custom_RNAScope_SpD <- c(6, 7, 11) #-1 
+    custom_SpatialReg_SpD <- c(6, 11) #-1
 } else if (k_nice=="03") {
-    new_labels <- gsub("Sp03D03", "Sp03-HbRNAScope", new_labels)
+    custom_RNAScope_SpD <- 3
+    custom_SpatialReg_SpD <- custom_RNAScope_SpD
+} else if (k_nice=="15") {
+    custom_RNAScope_SpD <- c(6, 8, 10, 14) #-1
+    custom_SpatialReg_SpD <- c(6, 10, 14)
+} else if (k_nice=="20") {
+    custom_RNAScope_SpD <- c(6, 7, 8, 15, 19) # c(1, c(6, 8, 16, 19)-1)
+    custom_SpatialReg_SpD <- c(6, 8, 16, 19)
+} 
+
+new_labels <- levels(colData(spe_subset)$BayesSpace)
+new_labels_SR <- new_labels
+custom_RNAScope_SpD <- sprintf("%02d", custom_RNAScope_SpD)
+old_labels <- unlist(map(custom_RNAScope_SpD, ~ paste0("Sp", k_nice, "D", .x)))
+
+#new_labels <- rename_labels(new_labels, custom_RNAScope_SpD, "-HbRNAScope")
+for (i in seq_along(custom_RNAScope_SpD)) {
+    print(i)
+    new_labels <- gsub(old_labels[i], paste0(old_labels[i], "-HbRNAScope"), new_labels)
 }
 new_labels
 
@@ -188,20 +260,30 @@ colData(spe_subset)$BayesSpace <- factor(
     labels = new_labels
 )
 levels(colData(spe_subset)$BayesSpace)
-# [1] "Sp11D01"         "Sp11D02"         "Sp11D03"         "Sp11D05"        
-# [5] "Sp06-HbRNAScope" "Sp07-HbRNAScope" "Sp11D08"         "Sp11D09"        
-# [9] "Sp11D10"         "Sp11-HbRNAScope"
+
 
 ## =============================================================================
 
 ## prepare the `spe_SR` copy with Hb-putative SpD(s) observed in the `SpatialRegistration` Broad - Heatmap
 
-new_labels_SR <- levels(colData(spe_subset_SR)$BayesSpace)
-if (k_nice=="11") {
-    new_labels_SR <- gsub("Sp11D06", "Sp06-HbSpatialR", new_labels_SR)
-    new_labels_SR <- gsub("Sp11D11", "Sp11-HbSpatialR", new_labels_SR)
-} else if (k_nice=="03") {
-    new_labels_SR <- gsub("Sp03D03", "Sp03-HbSpatialR", new_labels_SR)
+# if (k_nice=="11") {
+#     new_labels_SR <- gsub("Sp11D06", "Sp06-HbSpatialR", new_labels_SR)
+#     new_labels_SR <- gsub("Sp11D11", "Sp11-HbSpatialR", new_labels_SR)
+# } else if (k_nice=="03") {
+#     new_labels_SR <- gsub("Sp03D03", "Sp03-HbSpatialR", new_labels_SR)
+# } else if (k_nice=="15") {
+#     new_labels_SR <- gsub("Sp15D05", "Sp05-HbSpatialR", new_labels_SR)
+#     new_labels_SR <- gsub("Sp15D09", "Sp09-HbSpatialR", new_labels_SR)
+#     new_labels_SR <- gsub("Sp15D13", "Sp13-HbSpatialR", new_labels_SR)
+# }
+   
+#new_labels_SR <- rename_labels(new_labels_SR, custom_SpatialReg_SpD, "-HbSpatialR")
+new_labels_SR #<- levels(colData(spe)$BayesSpace)
+custom_SpatialReg_SpD <- sprintf("%02d", custom_SpatialReg_SpD)
+old_labels <- unlist(map(custom_SpatialReg_SpD, ~ paste0("Sp", k_nice, "D", .x)))
+for (i in seq_along(custom_SpatialReg_SpD)) {
+    print(i)
+    new_labels_SR <- gsub(old_labels[i], paste0(old_labels[i], "-HbSpatialR"), new_labels_SR)
 }
 new_labels_SR
 
@@ -217,12 +299,8 @@ levels(colData(spe_subset_SR)$BayesSpace)
 
 ## plot SpD(s) with HABENULA - RNAScope Ann
 
-## Set colors
-levels(colData(spe)$BayesSpace)
 ## set color_vector as correspond 
-BSk_temp <- paste0("RNAScope_k", k_nice)
-color_vector <- color_list[[BSk_temp]]
-color_vector
+color_vector <- color_lists$grey_colors_RNAScope
 
 p3_lst <- vis_grid_clus(
     spe = spe_subset,
@@ -234,18 +312,14 @@ p3_lst <- vis_grid_clus(
     #pdf = here(dir_plots, paste0("spe_BayesSpace_k11_annotated_Hb_clustergrid.pdf")),
     sort_clust = FALSE,
     guide_point_size = 5,
-    colors = color_vector,
+    colors = color_lists$grey_colors_RNAScope,
     return_plots = TRUE
 )
 
 ## plot SpD(s) with HABENULA - SpatialRegistration Ann
 
-## Set colors
-levels(colData(spe)$BayesSpace)
 ## set color_vector as correspond 
-BSk_temp <- paste0("SReg_k", k_nice)
-color_vector <- color_list[[BSk_temp]]
-color_vector
+color_vector <- color_lists$grey_colors_SpatialReg
 
 p4_lst <- vis_grid_clus(
     spe = spe_subset_SR,
@@ -257,7 +331,7 @@ p4_lst <- vis_grid_clus(
     #pdf = here(dir_plots, paste0("spe_BayesSpace_k11_annotated_Hb_clustergrid.pdf")),
     sort_clust = FALSE,
     guide_point_size = 5,
-    colors = color_vector,
+    colors = color_lists$grey_colors_SpatialReg,
     return_plots = TRUE
 )
 
@@ -265,7 +339,7 @@ p4_lst <- vis_grid_clus(
 message("Integrating plots")
 
 # Create the PDF
-fn <- here(dir_plots, paste0("BayesSpace_k", k_nice, "_Hb_clustergrid.pdf"))
+fn <- here(dir_plots, paste0("BayesSpace_k", k_nice, "_Hb_clustergrid_RNAScope_vs_AnatomicalAnn.pdf"))
 
 # Combine the lists and add titles to each group
 all_plots <- grid.arrange(
