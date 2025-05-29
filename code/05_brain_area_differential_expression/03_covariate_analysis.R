@@ -23,7 +23,8 @@ if (!dir.exists(plot_dir)) dir.create(plot_dir, recursive = TRUE)
 
 # Define k values to iterate over
 # k_values <- c(3, 9, 17)
-k_values <- c(3, 13, 21, 26)
+# k_values <- c(3, 13, 21, 26)
+k_values <- c(3, 11, 15, 20, 28)
 
 for (k in k_values) {
   # k = 9
@@ -37,24 +38,24 @@ for (k in k_values) {
 
   if (file.exists(data_file)) {
     # Load the RDS file and extract relevant data
-    data <- readRDS(data_file)
+    spe_pseudo <- readRDS(data_file)
 
-    # Remove level "G0" from the data, as we only have one sample here
-    levels(data$brain_area2)
-    table(data$brain_area2, data$brain_id)
+    # Remove level "G0" from the spe_pseudo, as we only have one sample here
+    levels(spe_pseudo$brain_area2)
+    table(spe_pseudo$brain_area2, spe_pseudo$brain_id)
     # Br8518 Br9037 Br9090
     # G0      8      0      0
     # G1      8      8      8
     # G2      8      8      8
     # G3      8      8      7
     # G4      0      8      8
-    coldata_tbl <- as_tibble(colData(data))
+    coldata_tbl <- as_tibble(colData(spe_pseudo))
     filtered_coldata <- coldata_tbl |>
       filter(brain_area2 != "G0")
     # Get the matching sample names (assuming there's a column with sample/barcode IDs)
     keep_samples <- filtered_coldata$sample_id # <- replace with your actual column name
     # Subset the SpatialExperiment object
-    spe_filtered <- data[, colnames(data) %in% keep_samples]
+    spe_filtered <- spe_pseudo[, colnames(spe_pseudo) %in% keep_samples]
     # drop unused levels
     colData(spe_filtered)$brain_area2 <- droplevels(
       colData(spe_filtered)$brain_area2
@@ -81,16 +82,34 @@ for (k in k_values) {
         age
       )
     
+    ## =============================================================================
+    # custom label for SpD(s) of interest in BayesSpace k=28 -- for visualization purposes
+    if (k==28) {
+        
+        # Define a named vector with old and new values
+        old_BayesSpace = c("Sp28D05", "Sp28D10", "Sp28D11", "Sp28D20", "Sp28D27")
+        new_BayesSpace = paste0(old_BayesSpace, "-Habenula")
+        # Create a named vector for replacements
+        replacements <- setNames(new_BayesSpace, old_BayesSpace)
+        # Replace values in the 'BayesSpace' column
+        plot_data$BayesSpace <- sapply(plot_data$BayesSpace, function(x) ifelse(x %in% names(replacements), replacements[x], x))
+    
+        message("Updated Data Frame with Multiple Replacements for BS k:", k_nice)
+        #print(plot_data)
+        
+    }    
+    ## =============================================================================
+    
   } else {
     
     message("*****************************************************************")
-    warning(paste("Data file not found for k =", k_nice, ". Skipping this k."))
+    warning(paste("spe_pseudo file not found for k =", k_nice, ". Skipping this k."))
     message("*****************************************************************")
     next # Skip this k if the file is not found
     
   }
 
-  # Generate nspots boxplots for each BayesSpace domain
+  ## Generate nspots boxplots for each BayesSpace domain
   
   plot_name <- paste0("nspots_by_bayesspace_k", k_nice, ".pdf")
   pdf(here(plot_dir, plot_name), width = 8, height = 6)
@@ -98,7 +117,7 @@ for (k in k_values) {
   for (domain in unique(plot_data$BayesSpace)) {
     # test: domain <- "Sp09D08 ~ Hb"
     # test2: domain <- "Sp03D02 ~ Hb"
-
+      
     y_max_nspots <- max(plot_data$nspots) + 20
     domain_data <- plot_data |> filter(BayesSpace == domain)
     
@@ -148,6 +167,7 @@ for (k in k_values) {
   ) # method = "t.test"
   p_values_nspots$fdr <- p.adjust(p_values_nspots$p, method = "fdr")
   y_max_nspots <- max(plot_data$nspots) + 50
+  
   plot <- ggboxplot(
     plot_data,
     x = "BayesSpace",
