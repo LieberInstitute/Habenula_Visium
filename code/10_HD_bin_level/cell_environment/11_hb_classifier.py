@@ -7,6 +7,7 @@ import session_info
 import pandas as pd
 import numpy as np
 from sklearn import tree, svm
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.preprocessing import StandardScaler
@@ -83,7 +84,7 @@ x_train_small, x_test_small, y_train_small, y_test_small = train_test_split(
 #   results (rather than using an optimal model for classification)
 
 model = tree.DecisionTreeClassifier(
-    max_depth = 2 * k, min_samples_leaf = 0.05, random_state = random_seed,
+    max_depth = 2, min_samples_leaf = 0.05, random_state = random_seed,
     ccp_alpha = 0.001
 )
 model.fit(x_train, y_train)
@@ -139,6 +140,24 @@ print(
     classification_report(
         y_test_small_int, grid.best_estimator_.predict(x_test_small)
     )
+)
+
+################################################################################
+#   Random forest
+################################################################################
+
+#   For completeness, try a random forest as well
+model = RandomForestClassifier(random_state = random_seed, max_depth = 3)
+model.fit(x_train_small, y_train_small_int)
+
+print('---- Trying random forest...')
+print(
+    'Training report:\n',
+    classification_report(y_train_small_int, model.predict(x_train_small))
+)
+print(
+    'Test report:\n',
+    classification_report(y_test_small_int, model.predict(x_test_small))
 )
 
 session_info.show()
