@@ -31,9 +31,12 @@ module list
 
 ## Edit with your job command
 Rscript 03_covariate_analysis.R
+ret=$?
 
 echo "**** Job ends ****"
 date
+echo "Exit code: $ret"
+exit $ret
 
 } > $log_path 2>&1
 
