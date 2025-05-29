@@ -2,9 +2,12 @@ import os
 from pyhere import here
 import session_info
 import pandas as pd
-from sklearn import tree
-from sklearn.model_selection import train_test_split
+import numpy as np
+from sklearn import tree, svm
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 import matplotlib.pyplot as plt
 
 k = int(os.getenv('SLURM_ARRAY_TASK_ID'))
@@ -54,12 +57,21 @@ x_train, x_test, y_train, y_test = train_test_split(
     test_size = test_prop, random_state = random_seed,
     stratify = extra_df['sample_id']
 )
+
+################################################################################
+#   Decision tree
+################################################################################
+
+#   A single decision tree, to see if we can get straightforward-to-interpret
+#   results (rather than using an optimal model for classification)
+
 model = tree.DecisionTreeClassifier(
-    max_depth = k, min_samples_leaf = 0.05, random_state = random_seed,
+    max_depth = 2 * k, min_samples_leaf = 0.05, random_state = random_seed,
     ccp_alpha = 0.001
 )
 model.fit(x_train, y_train)
 
+print('---- Trying decision tree...')
 print('Training report:\n', classification_report(y_train, model.predict(x_train)))
 print('Test report:\n', classification_report(y_test, model.predict(x_test)))
 
@@ -70,5 +82,32 @@ tree.plot_tree(
 )
 plt.savefig(plot_path)
 plt.close('all')
+
+################################################################################
+#   SVM
+################################################################################
+
+#   Here we're trying to use a more powerful model to see what the best F1-score
+#   we can get is (the idea being that the model performance puts an upper bound
+#   on how well we can even predict habenula vs. not habenula from extracellular
+#   environment)
+tuned_parameters = [
+    {
+        'svc__kernel': ['rbf', 'poly'],
+        'svc__C': np.logspace(-2, 2, 5)
+    }
+]
+
+pipe = make_pipeline(
+    StandardScaler(),
+    svm.SVC(random_state = random_seed)
+)
+
+grid = GridSearchCV(pipe, tuned_parameters, cv = 5, scoring = 'f1')
+grid.fit(x_train, y_train)
+
+print('---- Trying SVM...')
+print('Training report:\n', classification_report(y_train, grid.best_estimator_.predict(x_train)))
+print('Test report:\n', classification_report(y_test, grid.best_estimator_.predict(x_test)))
 
 session_info.show()
