@@ -29,6 +29,7 @@ good_samples = [
 test_prop = 0.2
 hb_clusters = [2, 11]
 random_seed = 0
+downsample_size = 5000
 
 extra_df = pd.read_csv(extra_path, index_col = 'key')
 banksy_df = pd.read_csv(banksy_path, index_col = 'key')
@@ -55,7 +56,7 @@ extra_df['sample_id'] = pd.Series(
 x_train, x_test, y_train, y_test = train_test_split(
     extra_df.filter(regex='^score_', axis = 1), extra_df[['is_hb']],
     test_size = test_prop, random_state = random_seed,
-    stratify = extra_df['sample_id']
+    stratify = (extra_df['sample_id'].astype(str) + extra_df['is_hb']).astype('category'),
 )
 
 ################################################################################
