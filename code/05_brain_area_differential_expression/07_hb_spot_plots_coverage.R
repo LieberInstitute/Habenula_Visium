@@ -309,20 +309,12 @@ RNAScope_SpD <- sprintf("%02d", RNAScope_SpD)
 old_labels <- unlist(map(RNAScope_SpD, ~ paste0("Sp", k_nice, "D", .x)))
 
 for (i in seq_along(RNAScope_SpD)) {
-    print(i)
-    new_labels <- gsub(old_labels[i], paste0(old_labels[i], "-HbRNAScope"), new_labels)
+    #new_labels <- gsub(old_labels[i], paste0(old_labels[i], "-HbRNAScope"), new_labels)
+    # Shorter legend labels for visualization purposes. Extract the substring starting from the second "D"
+    substring_after_second_D <- sub(".*D(.*)", "D\\1", old_labels[i])
+    new_labels <- gsub(old_labels[i], paste0(substring_after_second_D, "-HbRNAScope"), new_labels)
 }
      
-# new_labels <- levels(colData(spe_subset)$BayesSpace)
-# new_labels_SR <- new_labels
-# custom_RNAScope_SpD <- sprintf("%02d", custom_RNAScope_SpD)
-# old_labels <- unlist(map(custom_RNAScope_SpD, ~ paste0("Sp", k_nice, "D", .x)))
-# 
-# #new_labels <- rename_labels(new_labels, custom_RNAScope_SpD, "-HbRNAScope")
-# for (i in seq_along(custom_RNAScope_SpD)) {
-#     print(i)
-#     new_labels <- gsub(old_labels[i], paste0(old_labels[i], "-HbRNAScope"), new_labels)
-# }
 new_labels
 
 ## convert to factor with levels in the correct order
@@ -341,9 +333,12 @@ levels(colData(spe_subset)$BayesSpace)
 new_labels_SR #<- levels(colData(spe)$BayesSpace)
 SpatialReg_SpD <- sprintf("%02d", SpatialReg_SpD)
 old_labels <- unlist(map(SpatialReg_SpD, ~ paste0("Sp", k_nice, "D", .x)))
+
 for (i in seq_along(SpatialReg_SpD)) {
-    print(i)
-    new_labels_SR <- gsub(old_labels[i], paste0(old_labels[i], "-HbSpatialR"), new_labels_SR)
+    #new_labels_SR <- gsub(old_labels[i], paste0(old_labels[i], "-HbSpatialR"), new_labels_SR)
+    # Shorter legend labels for visualization purposes. Extract the substring starting from the second "D"
+    substring_after_second_D <- sub(".*D(.*)", "D\\1", old_labels[i])
+    new_labels_SR <- gsub(old_labels[i], paste0(substring_after_second_D, "-HbSpatialR"), new_labels_SR)
 }
 new_labels_SR
 
@@ -355,22 +350,6 @@ colData(spe_subset_SR)$BayesSpace <- factor(
 )
 levels(colData(spe_subset_SR)$BayesSpace)
 
-# new_labels_SR #<- levels(colData(spe)$BayesSpace)
-# custom_SpatialReg_SpD <- sprintf("%02d", custom_SpatialReg_SpD)
-# old_labels <- unlist(map(custom_SpatialReg_SpD, ~ paste0("Sp", k_nice, "D", .x)))
-# for (i in seq_along(custom_SpatialReg_SpD)) {
-#     print(i)
-#     new_labels_SR <- gsub(old_labels[i], paste0(old_labels[i], "-HbSpatialR"), new_labels_SR)
-# }
-# new_labels_SR
-# 
-# ## convert to factor with levels in the correct order
-# colData(spe_subset_SR)$BayesSpace <- factor(
-#     colData(spe_subset_SR)$BayesSpace,
-#     levels = levels(colData(spe_subset_SR)$BayesSpace),
-#     labels = new_labels_SR
-# )
-# levels(colData(spe_subset_SR)$BayesSpace)
 
 ## =============================================================================
 
