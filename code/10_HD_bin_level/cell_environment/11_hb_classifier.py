@@ -1,3 +1,6 @@
+#   Can we determine whether a cell is in the habenula or not based on its
+#   extracellular FICTURE cluster distribution?
+
 import os
 from pyhere import here
 import session_info
