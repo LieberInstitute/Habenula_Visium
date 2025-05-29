@@ -7,14 +7,16 @@
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
 # SBATCH --mail-type=ALL
-#SBATCH --array=1-4%4
+#SBATCH --array=1-5%5
 
 ## Define BayesSpace k of interest
 #BS_k=(3 9 17)
-BS_k=(3 13 21 26)
-BS_k=${BS_k[$(( $SLURM_ARRAY_TASK_ID / 1 % 4 ))]}
+#BS_k=(3 13 21 26)
+BS_k_list=(3 11 15 20 28)
+BS_k=${BS_k_list[$((SLURM_ARRAY_TASK_ID - 1))]}
 
 ## Explicitly pipe script output to a log
+mkdir -p logs
 log_path=logs/02_explore_expr_variability_BS${BS_k}.txt
 
 {
@@ -38,10 +40,12 @@ module list
 
 ## Edit with your job command
 Rscript 02_explore_expr_variability.R --BS_k ${BS_k}
+ret=$?
 
 echo "**** Job ends ****"
 date
-
+echo "Exit code: $ret"
+exit $ret
   
 } > $log_path 2>&1
 
