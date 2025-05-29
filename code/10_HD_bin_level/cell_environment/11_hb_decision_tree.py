@@ -44,19 +44,32 @@ extra_df = extra_df.loc[mask, :]
 extra_df['banksy'] = banksy_df['banksy_lambda0_2']
 assert extra_df.isna().any().sum() == 0
 
-extra_df['is_hb'] = [
-    'habenula' if x else 'not_habenula'
-    for x in extra_df['banksy'].isin(hb_clusters)
-]
+extra_df['is_hb'] = pd.Series(
+    [
+        'habenula' if x else 'not_habenula'
+        for x in extra_df['banksy'].isin(hb_clusters)
+    ],
+    dtype = 'category', index = extra_df.index
+)
 extra_df['sample_id'] = pd.Series(
     ['_'.join(x.split('_')[1:]) for x in extra_df.index], dtype = 'category',
     index = extra_df.index
 )
 
 x_train, x_test, y_train, y_test = train_test_split(
-    extra_df.filter(regex='^score_', axis = 1), extra_df[['is_hb']],
+    extra_df.filter(regex='^score_', axis = 1), extra_df['is_hb'],
     test_size = test_prop, random_state = random_seed,
-    stratify = (extra_df['sample_id'].astype(str) + extra_df['is_hb']).astype('category'),
+    stratify = (extra_df['sample_id'].astype(str) + extra_df['is_hb'].astype(str)).astype('category')
+)
+
+#   Also downsample to make models train in a reasonable time
+small_extra_df = extra_df.sample(
+    n = int(downsample_size / (1 - test_prop)), random_state = random_seed
+)
+x_train_small, x_test_small, y_train_small, y_test_small = train_test_split(
+    small_extra_df.filter(regex='^score_', axis = 1), small_extra_df['is_hb'],
+    test_size = test_prop, random_state = random_seed,
+    stratify = (small_extra_df['sample_id'].astype(str) + small_extra_df['is_hb'].astype(str)).astype('category')
 )
 
 ################################################################################
@@ -101,14 +114,28 @@ tuned_parameters = [
 
 pipe = make_pipeline(
     StandardScaler(),
-    svm.SVC(random_state = random_seed)
+    svm.SVC(class_weight = 'balanced', random_state = random_seed)
 )
 
+#   Outputs should be integers
+y_train_small_int = (y_train_small == 'habenula').astype('int')
+y_test_small_int = (y_test_small == 'habenula').astype('int')
+
 grid = GridSearchCV(pipe, tuned_parameters, cv = 5, scoring = 'f1')
-grid.fit(x_train, y_train)
+grid.fit(x_train_small, y_train_small_int)
 
 print('---- Trying SVM...')
-print('Training report:\n', classification_report(y_train, grid.best_estimator_.predict(x_train)))
-print('Test report:\n', classification_report(y_test, grid.best_estimator_.predict(x_test)))
+print(
+    'Training report:\n',
+    classification_report(
+        y_train_small_int, grid.best_estimator_.predict(x_train_small)
+    )
+)
+print(
+    'Test report:\n',
+    classification_report(
+        y_test_small_int, grid.best_estimator_.predict(x_test_small)
+    )
+)
 
 session_info.show()
