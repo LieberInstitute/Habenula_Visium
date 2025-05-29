@@ -27,7 +27,7 @@ dir_rdata <- here("processed-data", "05_brain_area_differential_expression")
 dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_rdata)) ## Check that it was created successfully
 
-dir_plots <- here("plots", "05_brain_area_differential_expression")
+dir_plots <- here("plots", "05_brain_area_differential_expression", "02_explore_expr_variability")
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 stopifnot(file.exists(dir_plots))
 
@@ -49,7 +49,7 @@ table(spe_pseudo$BayesSpace)
 table(spe_pseudo$brain_area2)
 
 
-# Plot some PCs after log-transformation; retrieve the PC results
+# Plot PCs log-transformation; retrieve the PC results
 
 pca_results <- reducedDim(spe_pseudo, "PCA")
 head(pca_results)
@@ -65,8 +65,8 @@ pdf(file = file.path(dir_plots, paste0("sce_pseudo_PC1_k", sprintf("%02d", k), "
 plotPCA(spe_pseudo, colour_by = "sample_id")
 dev.off()
 
-pdf(file = file.path(dir_plots, paste0("sce_pseudo_PC1_k", sprintf("%02d", k), "_sample_donor.pdf")), width = 5, height = 5)
-plotPCA(spe_pseudo, colour_by = "sample_id", shape_by = "donor")
+pdf(file = file.path(dir_plots, paste0("sce_pseudo_PC1_k", sprintf("%02d", k), "_donor.pdf")), width = 5, height = 5)
+plotPCA(spe_pseudo, colour_by = "donor") # , shape_by = "donor"
 dev.off()
 
 
