@@ -1,6 +1,9 @@
 ########################################################################
 ## Make spot plots using the SpatialLIBD app
 ## Input: spe object with BayesSpace clusters
+## Output: some stats in logs and spotPlot with both 
+##.        - (A) SpD(s) selected based on Hb-Anatomical annotations
+##.        - (B) SpD(s) selected based on Spatial-Registration annotations
 ##
 ## Authors. CSC
 ## Data: XXX
@@ -139,7 +142,11 @@ spe_subset_SR <- spe_subset
 ## =============================================================================
 
 ## Make color vector for BS k of interest
-# Define the function to generate the color lists with additional custom position inputs
+
+## Define the function to generate the color lists with additional custom position inputs
+# - creates 4 vectors of colors for handle custom palettes on the spot Plots
+# - Includes: colors for ALL the clusters, for the RNAScope custom clusters and for the SpatialReg custom clusters
+
 generate_color_lists <- function(num_colors, custom_RNAScope_SpD, custom_SpatialReg_SpD) {
     #library(RColorBrewer)
     # Generate a vector of colors from the viridis palette based on the input number
@@ -183,11 +190,8 @@ generate_color_lists <- function(num_colors, custom_RNAScope_SpD, custom_Spatial
 }
 
 
-# create palette of colors for ALL, RNAScope and SpatialReg spotPlots &
-# create custom levels for both RNAScope SpD(s) and SpatialRegistration SpD(s)
-
-# Note SpD(s) removed break the continuous of the color palette driving to color issues when rendering the spotPlot visualization
-# depending on the number of levels removed, these are handle manually 
+# Note: SpD(s) removed break the continuous of the color palette driving to color issues when rendering the spotPlot visualization
+# depending on the location of levels removed, these are handled manually 
 # g.e. if SpD5 is removed, I move back the color vector for grey(s) after the SpD5 position
     
 if (k_nice=="03") {
@@ -252,6 +256,8 @@ print(color_lists$grey_colors_SpatialReg)
 var_height <- 24 # 24/3=8
 var_width <- 26 # 36/4=9
 var_point_size <- 2
+var_guide_point_size = 5
+if (k > 15) { var_guide_point_size = 3 }
 
 set.seed(07112024)
 
@@ -269,14 +275,14 @@ levels(colData(spe)$BayesSpace)
 color_vector <- color_lists$random_colors
 
 p1_lst <- vis_grid_clus(
-    spe = spe_subset, #spe,
+    spe = spe_subset,
     clustervar = "BayesSpace",
     #sample_order = lst_order,
     height = var_height, # 8
     width = var_width, # 9
     point_size = var_point_size,
     sort_clust = FALSE,
-    guide_point_size = 5,
+    guide_point_size = var_guide_point_size,
     colors = color_lists$random_colors,
     return_plots = TRUE
 )
@@ -285,23 +291,6 @@ p1_lst <- vis_grid_clus(
 ## =============================================================================
 
 ## prepare `spe` with Hb-putative SpD(s) observed in the `Manual Anatomical Annotation` (KDM)
-
-# if (k_nice=="11") {
-#     custom_RNAScope_SpD <- c(6, 7, 11)
-#     custom_SpatialReg_SpD <- c(6, 11)
-# } else if (k_nice=="03") {
-#     custom_RNAScope_SpD <- 3
-#     custom_SpatialReg_SpD <- custom_RNAScope_SpD
-# } else if (k_nice=="15") {
-#     custom_RNAScope_SpD <- c(6, 8, 10, 14)
-#     custom_SpatialReg_SpD <- c(6, 10, 14)
-# } else if (k_nice=="20") {
-#     custom_RNAScope_SpD <- c(6, 7, 8, 15, 19)
-#     custom_SpatialReg_SpD <- c(6, 8, 16, 19)
-# } else if (k_nice=="28") {
-#     custom_RNAScope_SpD <- RNAScope_SpD
-#     custom_SpatialReg_SpD <- SpatialReg_SpD
-# } 
 
 new_labels <- levels(colData(spe_subset)$BayesSpace)
 new_labels_SR <- new_labels
@@ -367,7 +356,7 @@ p3_lst <- vis_grid_clus(
     point_size = var_point_size,
     #pdf = here(dir_plots, paste0("spe_BayesSpace_k11_annotated_Hb_clustergrid.pdf")),
     sort_clust = FALSE,
-    guide_point_size = 5,
+    guide_point_size = var_guide_point_size,
     colors = color_lists$grey_colors_RNAScope,
     return_plots = TRUE
 )
@@ -386,7 +375,7 @@ p4_lst <- vis_grid_clus(
     point_size = var_point_size,
     #pdf = here(dir_plots, paste0("spe_BayesSpace_k11_annotated_Hb_clustergrid.pdf")),
     sort_clust = FALSE,
-    guide_point_size = 5,
+    guide_point_size = var_guide_point_size,
     colors = color_lists$grey_colors_SpatialReg,
     return_plots = TRUE
 )
