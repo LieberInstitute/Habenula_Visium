@@ -77,11 +77,36 @@ spots_by_domain_table
 # Get the table of counts for each level in colData(spe)$BayesSpace
 bayes_space_counts <- colSums(spots_by_domain_table)
 bayes_space_counts
+
+
+## =============================================================================
+## this is our BS k of interest
+
+if (k==28) { 
+    message("Hb Spatial Domians in k", k_nice)
+    domains_of_interest <- c("Sp28D05", "Sp28D10", "Sp28D11", "Sp28D20", "Sp28D27")
+    bayes_space_counts <- colSums(spots_by_domain_table)[domains_of_interest] 
+    percentage <- round((bayes_space_counts * 100) / sum(spots_by_domain_table), 2)
+    result_table <- data.frame(
+        Domain = domains_of_interest,
+        Count = bayes_space_counts,
+        Percentage = paste(percentage, "%")
+    )
+    rownames(result_table) <- NULL
+    # Calculate the total percentage and add it as a row at the end of the table
+    total_percentage <- round(sum(percentage), 2)
+    result_table <- rbind(result_table, data.frame(Domain = "Total", Count = sum(bayes_space_counts), Percentage = paste(total_percentage, "%")))
+    print(result_table, row.names = FALSE)
+}
+
+## =============================================================================
+
 # Identify levels with less than 20 counts
 levels_to_remove <- names(bayes_space_counts[bayes_space_counts < 20])
-message("Spatial Domains with less than 20 counts: ", paste(levels_to_remove, collapse = ", "))
+
 # Remove those levels from BayesSpace by excluding them
 if (length(levels_to_remove) > 0) {
+    message("Spatial Domains with less than 20 counts: ", paste(levels_to_remove, collapse = ", "))
     colData(spe)$BayesSpace <- factor(colData(spe)$BayesSpace, 
                                       levels = setdiff(levels(colData(spe)$BayesSpace), levels_to_remove))
 }
@@ -122,9 +147,20 @@ generate_color_lists <- function(num_colors, custom_RNAScope_SpD, custom_Spatial
     random_colors <- c(
         "red", "blue", "green", "yellow", "orange", 
         "purple", "brown", "pink", "cyan", "magenta", 
-        "black", "white", "darkblue", "darkgreen", "lightblue", 
+        "black", "#24FF24", "darkblue", "darkgreen", "lightblue", 
         "darkorange", "violet", "gold", "darkred", "indianred"
     )
+    if (num_colors>20) {
+        # Additional 20 colors to be added to the vector for k(s)>20
+        additional_colors <- c(
+            "lightgreen", "darkgray", "lightgray", "#290AD8", "#1E8E99", 
+            "maroon", "midnightblue", "darkviolet", "steelblue", "slateblue", 
+            "#A50021", "#FFFF6D", "peachpuff", "plum", "yellowgreen", 
+            "turquoise", "chocolate", "firebrick", "salmon", "#490092"
+        )
+        random_colors <- c(random_colors, additional_colors)
+    }
+    
     random_colors_SR <- random_colors
     
     # Create gray vector for RNAScope
@@ -147,20 +183,54 @@ generate_color_lists <- function(num_colors, custom_RNAScope_SpD, custom_Spatial
 }
 
 
-# create palette of colors for ALL, RNAScope and SpatialReg spotPlots
-# Note (-1) is set to move back the color vector for grey(s) where an SpD was removed due low counts (>20)
-if (k_nice=="11") {
-    custom_RNAScope_SpD <- c(6, 7, 11)-1 
-    custom_SpatialReg_SpD <- c(6, 11)-1  # Custom vector of positions for SpatialReg
-} else if (k_nice=="03") {
+# create palette of colors for ALL, RNAScope and SpatialReg spotPlots &
+# create custom levels for both RNAScope SpD(s) and SpatialRegistration SpD(s)
+
+# Note SpD(s) removed break the continuous of the color palette driving to color issues when rendering the spotPlot visualization
+# depending on the number of levels removed, these are handle manually 
+# g.e. if SpD5 is removed, I move back the color vector for grey(s) after the SpD5 position
+    
+if (k_nice=="03") {
+    # for handle palette of colors
     custom_RNAScope_SpD <- 3
     custom_SpatialReg_SpD <- 3
+    # for handle legends labels
+    RNAScope_SpD <- 3
+    SpatialReg_SpD <- 3
+    
+} else if (k_nice=="11") {
+    # for handle palette of colors
+    custom_RNAScope_SpD <- c(6, 7, 11) - length(levels_to_remove) 
+    custom_SpatialReg_SpD <- c(6, 11) - length(levels_to_remove)
+    # for handle legends labels
+    RNAScope_SpD <- c(6, 7, 11)
+    SpatialReg_SpD <- c(6, 11)
+    
 } else if (k_nice=="15") {
-    custom_RNAScope_SpD <- c(6, 8, 10, 14)-1
-    custom_SpatialReg_SpD <- c(6, 10, 14)-1
+    # for handle palette of colors
+    custom_RNAScope_SpD <- c(6, 8, 10, 14) - length(levels_to_remove)
+    custom_SpatialReg_SpD <- c(6, 10, 14) - length(levels_to_remove)
+    # for handle legends labels
+    RNAScope_SpD <- c(6, 8, 10, 14)
+    SpatialReg_SpD <- c(6, 10, 14)
+    
 } else if (k_nice=="20") {
-    custom_RNAScope_SpD <- c(6, 7, 8, 15, 16, 17, 19)-1
-    custom_SpatialReg_SpD <- c(6, 8, 16, 19)-1
+    # for handle palette of colors
+    custom_RNAScope_SpD <- c(6, 7, 8, 15, 16, 17, 19) - length(levels_to_remove)
+    custom_SpatialReg_SpD <- c(6, 8, 16, 19)  - length(levels_to_remove)
+    # for handle legends labels
+    RNAScope_SpD <- c(6, 7, 8, 15, 16, 17, 19)
+    SpatialReg_SpD <- c(6, 8, 16, 19)
+    
+} else if (k_nice=="28") {
+    #levels_to_remove # [1] "Sp28D18" "Sp28D26"
+    # for handle palette of colors
+    custom_RNAScope_SpD <- c(5, 10, 11, 16, c(20) - 1, c(27, 28) - 2) # - length(levels_to_remove); this do not apply because of SpD removed aren't continuous
+    custom_SpatialReg_SpD <- c(5, 10, 11, c(20) - 1, c(27) - 2)
+    # for handle legends labels
+    RNAScope_SpD <- c(5, 10, 11, 16, 20, 27, 28)
+    SpatialReg_SpD <- c(5, 10, 11, 20, 27)
+    
 }    
 
 
@@ -216,41 +286,43 @@ p1_lst <- vis_grid_clus(
 
 ## prepare `spe` with Hb-putative SpD(s) observed in the `Manual Anatomical Annotation` (KDM)
 
-# rename_labels <- function(new_labels, SpD, sufix) {
-#     # Assign SpD to sp_labels
-#     # SpD=custom_RNAScope_SpD
-#     old_labels <- unlist(map(SpD, ~ paste0("Sp", k_nice, "D", .x)))
-#     for (i in SpD) {
-#         # i=2
-#         new_labels <- gsub(old_labels[i], paste0(old_labels[i], "-HbRNAScope"), new_labels)
-#     }
-#     return(new_labels)
-# }
-
-if (k_nice=="11") {
-    custom_RNAScope_SpD <- c(6, 7, 11) #-1 
-    custom_SpatialReg_SpD <- c(6, 11) #-1
-} else if (k_nice=="03") {
-    custom_RNAScope_SpD <- 3
-    custom_SpatialReg_SpD <- custom_RNAScope_SpD
-} else if (k_nice=="15") {
-    custom_RNAScope_SpD <- c(6, 8, 10, 14) #-1
-    custom_SpatialReg_SpD <- c(6, 10, 14)
-} else if (k_nice=="20") {
-    custom_RNAScope_SpD <- c(6, 7, 8, 15, 19) # c(1, c(6, 8, 16, 19)-1)
-    custom_SpatialReg_SpD <- c(6, 8, 16, 19)
-} 
+# if (k_nice=="11") {
+#     custom_RNAScope_SpD <- c(6, 7, 11)
+#     custom_SpatialReg_SpD <- c(6, 11)
+# } else if (k_nice=="03") {
+#     custom_RNAScope_SpD <- 3
+#     custom_SpatialReg_SpD <- custom_RNAScope_SpD
+# } else if (k_nice=="15") {
+#     custom_RNAScope_SpD <- c(6, 8, 10, 14)
+#     custom_SpatialReg_SpD <- c(6, 10, 14)
+# } else if (k_nice=="20") {
+#     custom_RNAScope_SpD <- c(6, 7, 8, 15, 19)
+#     custom_SpatialReg_SpD <- c(6, 8, 16, 19)
+# } else if (k_nice=="28") {
+#     custom_RNAScope_SpD <- RNAScope_SpD
+#     custom_SpatialReg_SpD <- SpatialReg_SpD
+# } 
 
 new_labels <- levels(colData(spe_subset)$BayesSpace)
 new_labels_SR <- new_labels
-custom_RNAScope_SpD <- sprintf("%02d", custom_RNAScope_SpD)
-old_labels <- unlist(map(custom_RNAScope_SpD, ~ paste0("Sp", k_nice, "D", .x)))
+RNAScope_SpD <- sprintf("%02d", RNAScope_SpD)
+old_labels <- unlist(map(RNAScope_SpD, ~ paste0("Sp", k_nice, "D", .x)))
 
-#new_labels <- rename_labels(new_labels, custom_RNAScope_SpD, "-HbRNAScope")
-for (i in seq_along(custom_RNAScope_SpD)) {
+for (i in seq_along(RNAScope_SpD)) {
     print(i)
     new_labels <- gsub(old_labels[i], paste0(old_labels[i], "-HbRNAScope"), new_labels)
 }
+     
+# new_labels <- levels(colData(spe_subset)$BayesSpace)
+# new_labels_SR <- new_labels
+# custom_RNAScope_SpD <- sprintf("%02d", custom_RNAScope_SpD)
+# old_labels <- unlist(map(custom_RNAScope_SpD, ~ paste0("Sp", k_nice, "D", .x)))
+# 
+# #new_labels <- rename_labels(new_labels, custom_RNAScope_SpD, "-HbRNAScope")
+# for (i in seq_along(custom_RNAScope_SpD)) {
+#     print(i)
+#     new_labels <- gsub(old_labels[i], paste0(old_labels[i], "-HbRNAScope"), new_labels)
+# }
 new_labels
 
 ## convert to factor with levels in the correct order
@@ -265,23 +337,11 @@ levels(colData(spe_subset)$BayesSpace)
 ## =============================================================================
 
 ## prepare the `spe_SR` copy with Hb-putative SpD(s) observed in the `SpatialRegistration` Broad - Heatmap
-
-# if (k_nice=="11") {
-#     new_labels_SR <- gsub("Sp11D06", "Sp06-HbSpatialR", new_labels_SR)
-#     new_labels_SR <- gsub("Sp11D11", "Sp11-HbSpatialR", new_labels_SR)
-# } else if (k_nice=="03") {
-#     new_labels_SR <- gsub("Sp03D03", "Sp03-HbSpatialR", new_labels_SR)
-# } else if (k_nice=="15") {
-#     new_labels_SR <- gsub("Sp15D05", "Sp05-HbSpatialR", new_labels_SR)
-#     new_labels_SR <- gsub("Sp15D09", "Sp09-HbSpatialR", new_labels_SR)
-#     new_labels_SR <- gsub("Sp15D13", "Sp13-HbSpatialR", new_labels_SR)
-# }
    
-#new_labels_SR <- rename_labels(new_labels_SR, custom_SpatialReg_SpD, "-HbSpatialR")
 new_labels_SR #<- levels(colData(spe)$BayesSpace)
-custom_SpatialReg_SpD <- sprintf("%02d", custom_SpatialReg_SpD)
-old_labels <- unlist(map(custom_SpatialReg_SpD, ~ paste0("Sp", k_nice, "D", .x)))
-for (i in seq_along(custom_SpatialReg_SpD)) {
+SpatialReg_SpD <- sprintf("%02d", SpatialReg_SpD)
+old_labels <- unlist(map(SpatialReg_SpD, ~ paste0("Sp", k_nice, "D", .x)))
+for (i in seq_along(SpatialReg_SpD)) {
     print(i)
     new_labels_SR <- gsub(old_labels[i], paste0(old_labels[i], "-HbSpatialR"), new_labels_SR)
 }
@@ -294,6 +354,23 @@ colData(spe_subset_SR)$BayesSpace <- factor(
     labels = new_labels_SR
 )
 levels(colData(spe_subset_SR)$BayesSpace)
+
+# new_labels_SR #<- levels(colData(spe)$BayesSpace)
+# custom_SpatialReg_SpD <- sprintf("%02d", custom_SpatialReg_SpD)
+# old_labels <- unlist(map(custom_SpatialReg_SpD, ~ paste0("Sp", k_nice, "D", .x)))
+# for (i in seq_along(custom_SpatialReg_SpD)) {
+#     print(i)
+#     new_labels_SR <- gsub(old_labels[i], paste0(old_labels[i], "-HbSpatialR"), new_labels_SR)
+# }
+# new_labels_SR
+# 
+# ## convert to factor with levels in the correct order
+# colData(spe_subset_SR)$BayesSpace <- factor(
+#     colData(spe_subset_SR)$BayesSpace,
+#     levels = levels(colData(spe_subset_SR)$BayesSpace),
+#     labels = new_labels_SR
+# )
+# levels(colData(spe_subset_SR)$BayesSpace)
 
 ## =============================================================================
 
