@@ -35,6 +35,26 @@ hb_clusters = [2, 11]
 random_seed = 0
 downsample_size = 5000
 
+################################################################################
+#   Functions
+################################################################################
+
+#   Print summary info about model performance
+def generate_report(model, model_name, x_train, x_test, y_train, y_test):
+    print(f'---- Trying {model_name}...')
+    print(
+        'Training report:\n',
+        classification_report(y_train, model.predict(x_train))
+    )
+    print(
+        'Test report:\n',
+        classification_report(y_test, model.predict(x_test))
+    )
+
+################################################################################
+#   Main
+################################################################################
+
 extra_df = pd.read_csv(extra_path, index_col = 'key')
 banksy_df = pd.read_csv(banksy_path, index_col = 'key')
 
@@ -76,9 +96,9 @@ x_train_small, x_test_small, y_train_small, y_test_small = train_test_split(
     stratify = (small_extra_df['sample_id'].astype(str) + small_extra_df['is_hb'].astype(str)).astype('category')
 )
 
-################################################################################
+#-------------------------------------------------------------------------------
 #   Decision tree
-################################################################################
+#-------------------------------------------------------------------------------
 
 #   A single decision tree, to see if we can get straightforward-to-interpret
 #   results (rather than using an optimal model for classification)
@@ -89,9 +109,7 @@ model = tree.DecisionTreeClassifier(
 )
 model.fit(x_train, y_train)
 
-print('---- Trying decision tree...')
-print('Training report:\n', classification_report(y_train, model.predict(x_train)))
-print('Test report:\n', classification_report(y_test, model.predict(x_test)))
+generate_report(model, 'decision tree', x_train, x_test, y_train, y_test)
 
 plt.figure(figsize=(10, 5))
 tree.plot_tree(
@@ -101,9 +119,9 @@ tree.plot_tree(
 plt.savefig(plot_path)
 plt.close('all')
 
-################################################################################
+#-------------------------------------------------------------------------------
 #   SVM
-################################################################################
+#-------------------------------------------------------------------------------
 
 #   Here we're trying to use a more powerful model to see what the best F1-score
 #   we can get is (the idea being that the model performance puts an upper bound
@@ -128,36 +146,22 @@ y_test_small_int = (y_test_small == 'habenula').astype('int')
 grid = GridSearchCV(pipe, tuned_parameters, cv = 5, scoring = 'f1')
 grid.fit(x_train_small, y_train_small_int)
 
-print('---- Trying SVM...')
-print(
-    'Training report:\n',
-    classification_report(
-        y_train_small_int, grid.best_estimator_.predict(x_train_small)
-    )
-)
-print(
-    'Test report:\n',
-    classification_report(
-        y_test_small_int, grid.best_estimator_.predict(x_test_small)
-    )
+generate_report(
+    grid.best_estimator_, 'SVM', x_train_small, x_test_small,
+    y_train_small_int, y_test_small_int
 )
 
-################################################################################
+#-------------------------------------------------------------------------------
 #   Random forest
-################################################################################
+#-------------------------------------------------------------------------------
 
 #   For completeness, try a random forest as well
 model = RandomForestClassifier(random_state = random_seed, max_depth = 3)
 model.fit(x_train_small, y_train_small_int)
 
-print('---- Trying random forest...')
-print(
-    'Training report:\n',
-    classification_report(y_train_small_int, model.predict(x_train_small))
-)
-print(
-    'Test report:\n',
-    classification_report(y_test_small_int, model.predict(x_test_small))
+generate_report(
+    model, 'random forest', x_train_small, x_test_small,
+    y_train_small_int, y_test_small_int
 )
 
 session_info.show()
