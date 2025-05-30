@@ -20,30 +20,14 @@ dir_plots <- here("plots", "05_brain_area_differential_expression", "08_manual_a
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 
 manual_ann_dir <- here("processed-data", "03_spatialLIBD_app", "Manual_annotations")
-rds_dir <- here("processed-data", "05_layer_differential_expression", "spe_harmony_ann.rds")
+rds_dir <- here("processed-data", "05_brain_area_differential_expression", "spe_harmony_ann.rds")
 
 spe <- readRDS(rds_dir)
 spe
-# ## Import BayesSpace clusters
-# clusters_BayesSpace_dir <- here(
-#     "processed-data",
-#     "04_harmony_BayesSpace",
-#     "clusters_BayesSpace"
-# )
-# # head(spe$key[1:5])
-# spe <- cluster_import(
-#     spe,
-#     cluster_dir = clusters_BayesSpace_dir,
-#     prefix = "",
-#     overwrite = TRUE
-# )
-# # Overwriting 'spe$key'. Set 'overwrite = FALSE' if you do not want to overwrite it.
-
 
 ## quick inspection: check how many genes expressed by cluster we have after pseudobulk
 
 colnames(colData(spe))
-# [1] "age"        "BayesSpace" "brain_id"   "diagnosis"  "ncells"     "sample_id"  "sex"       
 levels(colData(spe)$BayesSpace)
 colnames(colData(spe))[grep("BayesSpace_harmony_", colnames(colData(spe)))]
 
@@ -70,7 +54,7 @@ unique(df_manual_annotations$sample_id)
 df_manual_annotations$spot_name2 <- paste0(df_manual_annotations$sample_id, "-", df_manual_annotations$spot_name)
 length(df_manual_annotations$ManualAnnotation)
 message("Spots manually annotated: ", length(df_manual_annotations$ManualAnnotation))
-# Spots manually annotated: 1190 / 2089
+# Spots manually annotated: 1190
 
 #head(df_manual_annotations)                                                                                      
 
@@ -283,6 +267,112 @@ dev.off()
 message("StackedPlot done!")
 
 
+## =============================================================================
+## Additional analysis for BS k=28
+
+k=28
+
+## select BayesSpace_harmony of interest
+df_domains_k <- df_domains[, c("sample_id", "brain_id", "spot_name_ann", "BayesSpace_harmony_k28")]
+#df_domains_k
+# Remove rows where BayesSpace_harmony_k28 is in the vector c(5, 10, 20, 27)
+unique(df_domains_k$BayesSpace_harmony_k28)
+df_domain_filtered <- subset(df_domains_k, (BayesSpace_harmony_k28 %in% c(5, 10, 11, 20, 27)))
+unique(df_domain_filtered$BayesSpace_harmony_k28)
+    
+# add a unique column to match barcodes
+df_domain_filtered$spot_name_ann2 <- paste0(df_domain_filtered$sample_id, "-", df_domain_filtered$spot_name_ann)
+head(df_domain_filtered, n=3)
+
+# remove samples not manually annotated - to match with the samples annotated
+if (!length(unique(df_domain_filtered$sample_id)) == length(unique(df_manual_annotations$sample_id))) {
+    df_domain_filtered <- df_domain_filtered |>
+        filter(sample_id %in% unique(df_manual_annotations$sample_id))
+}    
+unique(df_domain_filtered$sample_id)
+unique(df_manual_annotations$sample_id)
+message("Total spots: ", length(df_domain_filtered$spot_name_ann))
+
+# Mark Matches and Non-Matches by sample
+anyDuplicated(df_domain_filtered$spot_name_ann2)         # should be 0
+anyDuplicated(df_manual_annotations$spot_name2) # should be 0
+
+df_domain_labeled <- df_domain_filtered |>
+    mutate(match_status = ifelse(spot_name_ann2 %in% df_manual_annotations$spot_name2, "Habenula", "No-Habenula")) |>
+    left_join(
+        df_manual_annotations[, "spot_name2", drop = FALSE],
+        by = c("spot_name_ann2" = "spot_name2")
+    )
+#names(df_domain_labeled)
+#head(df_domain_labeled)
+#table(df_domain_labeled$match_status, df_domain_labeled$sample_id)
+
+# count of how many spots per ManualAnnotation are Habenula or No-Habenula
+df_plot <- df_domain_labeled |>
+    group_by(brain_id, sample_id, !!sym(SpD), match_status) |>
+    summarise(count = n(), .groups = "drop") # plot absolute counts
+#head(df_plot)
+
+# Combine sample and cluster in x-axis
+df_plot <- df_plot |>
+    mutate(x_label = interaction(sample_id, !!sym(SpD)))
+
+# Extract cluster values (e.g., 1–13) from the SpD column
+cluster_vals <- df_plot[[SpD]]
+x_labels <- levels(df_plot$x_label)
+
+# Build label vector: show cluster value every k bars
+custom_labels <- ifelse(seq_along(x_labels) %% k == 1, as.character(cluster_vals), "")
+
+# Get cluster values in the same order as x_label levels
+cluster_by_x <- df_plot |>
+    distinct(x_label, .keep_all = TRUE) |>
+    arrange(factor(x_label, levels = levels(df_plot$x_label))) |>
+    pull(!!sym(SpD))
+
+# prepare customized x-axis labels and add vertical lines to separate clusters
+# Keep the first occurrence of each new cluster, blank for repeated values
+custom_labels <- ifelse(
+    c(TRUE, diff(cluster_by_x) != 0),  # first is always TRUE
+    as.character(cluster_by_x),
+    ""
+)
+custom_labels <- ifelse(custom_labels != "", paste0("SpD ", custom_labels), "")
+
+# Include sample_id in the x_label labels for the plot
+
+custom_labels <- paste0(custom_labels, " (", gsub(":.*", "", sub("\\..*", "", x_labels)), ")")
+
+# Define bar positions based dynamically
+bar_positions <- which(custom_labels != "")-1
+
+plt1 <- ggplot(df_plot, aes(x = x_label, y = count, fill = match_status)) +
+    geom_bar(stat = "identity") +
+    geom_vline(xintercept = bar_positions + 0.5, linetype = "solid", color = "darkgray") +
+    scale_x_discrete(labels = custom_labels) +
+    labs(
+        title = paste0("Habenula vs No-Habenula: ", SpD),
+        x = paste0("Spatial-Domains"),
+        y = "Number of Spots",
+        fill = "Match Status"
+    ) +
+    theme_minimal() +
+    theme(
+        axis.text.x = element_text(angle = 45, size=8, hjust = 1),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        legend.position = "top"
+    )
+
+# Set PDF for combine plot by sample and cluster in x-axis
+pdf(file = file.path(dir_plots, paste0("Habenula_BS_k28_histogram_bar_manual-vs-BS_by_clusters-sample.pdf")))
+print(plt1)
+dev.off() 
+
+message("Habenula Histogram for BS k=28 done!")
+
+
+## =============================================================================
 
 
 
