@@ -83,11 +83,18 @@ bayes_space_counts
 
 
 ## =============================================================================
-## this is our BS k of interest
+## Additional analysis
+## Get count and percentages for BS k of interest
 
-if (k==28) { 
+if (k==11 || k==15 || k==20 || k==28) {
+    
+    if (k==11) { domains_of_interest <- c("Sp11D06", "Sp11D11") }
+    if (k==15) { domains_of_interest <- c("Sp15D06", "Sp15D10", "Sp15D14") }
+    if (k==20) { domains_of_interest <- c("Sp20D06", "Sp20D08", "Sp20D16", "Sp20D20") }
+    if (k==28) { domains_of_interest <- c("Sp28D05", "Sp28D10", "Sp28D11", "Sp28D20", "Sp28D27") }
+    
     message("Hb Spatial Domians in k", k_nice)
-    domains_of_interest <- c("Sp28D05", "Sp28D10", "Sp28D11", "Sp28D20", "Sp28D27")
+    #domains_of_interest <- c("Sp28D05", "Sp28D10", "Sp28D11", "Sp28D20", "Sp28D27")
     bayes_space_counts <- colSums(spots_by_domain_table)[domains_of_interest] 
     percentage <- round((bayes_space_counts * 100) / sum(spots_by_domain_table), 2)
     result_table <- data.frame(
@@ -99,7 +106,15 @@ if (k==28) {
     # Calculate the total percentage and add it as a row at the end of the table
     total_percentage <- round(sum(percentage), 2)
     result_table <- rbind(result_table, data.frame(Domain = "Total", Count = sum(bayes_space_counts), Percentage = paste(total_percentage, "%")))
+    message("Counts and percents for BayesSpace k", k_nice)
     print(result_table, row.names = FALSE)
+    # Domain Count Percentage
+    # Sp28D05   501      1.5 %
+    # Sp28D10   519     1.55 %
+    # Sp28D11   472     1.41 %
+    # Sp28D20   410     1.23 %
+    # Sp28D27   350     1.05 %
+    # Total  2252     6.74 %
 }
 
 ## =============================================================================
@@ -415,5 +430,4 @@ message(" Plots DONE!")
 #                       create_shell = TRUE, 
 #                       memory = '30G',
 #                       command = "07_hb_spot_plots_coverage.R",
-#                       partition = "katun")
-
+#      
