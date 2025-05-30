@@ -430,4 +430,5 @@ message(" Plots DONE!")
 #                       create_shell = TRUE, 
 #                       memory = '30G',
 #                       command = "07_hb_spot_plots_coverage.R",
-#      
+#                       partition = "katun")
+
