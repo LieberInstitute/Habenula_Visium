@@ -50,7 +50,7 @@ for (k in k_values) {
         new_labels <- levels(colData(spe_pseudo)$BayesSpace)
         
         for (i in seq_along(RNAScope_SpD)) {
-            new_labels <- gsub(RNAScope_SpD[i], paste0(RNAScope_SpD[i], "-Hab"), new_labels)
+            new_labels <- gsub(RNAScope_SpD[i], paste0(RNAScope_SpD[i], "-Habenula"), new_labels)
         }
         new_labels
         ## convert to factor with levels in the correct order
@@ -62,6 +62,11 @@ for (k in k_values) {
         
         message("Updated levels for BS k:", k_nice)
         levels(colData(spe_pseudo)$BayesSpace)
+        
+        ## make Hb subset to clean plots
+        # Subset the levels containing "Hab"
+        hab_levels <- grep("Hab", levels(colData(spe_pseudo)$BayesSpace), value = TRUE)
+        spe_subset <- spe_pseudo[, colData(spe_pseudo)$BayesSpace %in% hab_levels]
         
     }    
     ## =============================================================================
@@ -355,7 +360,78 @@ for (k in k_values) {
 
 ###### Additional analysis #############
 
-# k_nice <- "9"
+## =============================================================================
+# plot only Hb SpD(s) on BS k=28
+# nspots boxplots with all spatial domains in 1 plot
+if (k==28) {
+    plot_k <- as.data.frame(colData(spe_subset)) |>
+        select(
+            sample_id,
+            brain_area2,
+            BayesSpace,
+            nspots
+        )
+    
+    ## control width.plot.size to avoid overlaping labels
+    width.plot.size <- if (as.integer(k_nice) < 15) 12 else if (as.integer(k_nice) < 21) 14 else 16
+    
+    p_values_nspots <- compare_means(
+        nspots ~ brain_area2,
+        data = plot_k,
+        group.by = "BayesSpace"
+    ) # method = "t.test"
+    p_values_nspots$fdr <- p.adjust(p_values_nspots$p, method = "fdr")
+    y_max_nspots <- max(plot_k$nspots) + 50
+    
+    plot <- ggboxplot(
+        plot_k,
+        x = "BayesSpace",
+        y = "nspots",
+        color = "brain_area2",
+        palette = c("blue", "red", "black", "purple"),
+        add = "jitter",
+        shape = 19,
+        #xlab = "Habenula BayesSpace Domain",
+        ylab = "Number of Spots"
+    ) +
+        geom_text(
+            aes(label = sample_id, color = brain_area2),
+            position = position_jitter(width = 0.1, height = 0.2),
+            size = 1.75,
+            hjust = 0.5,
+            vjust = 1
+        ) +
+        theme_bw() +
+        scale_x_discrete(labels = scales::label_wrap(10)) + # Wrap labels every 10 characters
+        theme(axis.text.x = element_text(angle = 45, hjust = 1)) + # Rotate and justify
+        theme(legend.position = "bottom") +
+        stat_compare_means(
+            aes(group = brain_area2),
+            label = "p.format",
+            label.y = y_max_nspots,
+            size = 3 
+        ) +
+        geom_text(
+            data = p_values_nspots,
+            aes(
+                x = BayesSpace,
+                y = y_max_nspots - 20,
+                label = paste0("FDR = ", signif(fdr, 3))
+            ),
+            size = 3,
+            color = "black"
+        )
+    
+    plot_name <- paste0("Habenula_nspots_boxplot_k", k_nice, ".png")
+    ggsave(
+        filename = here(plot_dir, plot_name),
+        plot = plot,
+        width = width.plot.size,
+        height = 8
+    )
+    
+}
+## =============================================================================
 
 data_file <- file.path(
   data_dir,
