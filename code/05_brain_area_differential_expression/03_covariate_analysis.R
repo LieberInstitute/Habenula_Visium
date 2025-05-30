@@ -39,6 +39,32 @@ for (k in k_values) {
   if (file.exists(data_file)) {
     # Load the RDS file and extract relevant data
     spe_pseudo <- readRDS(data_file)
+    
+    ## =============================================================================
+    # custom label for SpD(s) of interest in BayesSpace k=28 -- for visualization purposes
+    levels(colData(spe_pseudo)$BayesSpace)
+    if (k==28) {
+        
+        # vector with SpD(s) to rename
+        RNAScope_SpD = c("Sp28D05", "Sp28D10", "Sp28D11", "Sp28D20", "Sp28D27")
+        new_labels <- levels(colData(spe_pseudo)$BayesSpace)
+        
+        for (i in seq_along(RNAScope_SpD)) {
+            new_labels <- gsub(RNAScope_SpD[i], paste0(RNAScope_SpD[i], "-Hab"), new_labels)
+        }
+        new_labels
+        ## convert to factor with levels in the correct order
+        colData(spe_pseudo)$BayesSpace <- factor(
+            colData(spe_pseudo)$BayesSpace,
+            levels = levels(colData(spe_pseudo)$BayesSpace),
+            labels = new_labels
+        )
+        
+        message("Updated levels for BS k:", k_nice)
+        levels(colData(spe_pseudo)$BayesSpace)
+        
+    }    
+    ## =============================================================================
 
     # Remove level "G0" from the spe_pseudo, as we only have one sample here
     levels(spe_pseudo$brain_area2)
@@ -81,24 +107,6 @@ for (k in k_values) {
         pmi,
         age
       )
-    
-    ## =============================================================================
-    # custom label for SpD(s) of interest in BayesSpace k=28 -- for visualization purposes
-    if (k==28) {
-        
-        # Define a named vector with old and new values
-        old_BayesSpace = c("Sp28D05", "Sp28D10", "Sp28D11", "Sp28D20", "Sp28D27")
-        new_BayesSpace = paste0(old_BayesSpace, "-Habenula")
-        # Create a named vector for replacements
-        replacements <- setNames(new_BayesSpace, old_BayesSpace)
-        # Replace values in the 'BayesSpace' column
-        plot_data$BayesSpace <- sapply(plot_data$BayesSpace, function(x) ifelse(x %in% names(replacements), replacements[x], x))
-    
-        message("Updated Data Frame with Multiple Replacements for BS k:", k_nice)
-        #print(plot_data)
-        
-    }    
-    ## =============================================================================
     
   } else {
     
