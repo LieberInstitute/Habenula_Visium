@@ -25,7 +25,8 @@ banksy_path = here(
     'leiden_res1_4.csv'
 )
 plot_dir = here(
-    'plots', '10_HD_bin_level', 'probe_fix', 'cell_environment', 'hb_classifier'
+    'plots', '10_HD_bin_level', 'probe_fix', 'cell_environment', 'hb_classifier',
+    f'k_{k}'
 )
 good_samples = [
     'H1-W369TJK_D1_9090', 'H1-MVPY9BW_A1_8433', 'H1-MVPY9BW_D1_8667'
@@ -44,7 +45,7 @@ os.makedirs(plot_dir, exist_ok=True)
 #   Print summary info about model performance
 def generate_report(model, model_name, x_train, x_test, y_train, y_test):
     y_test_pred = model.predict(x_test)
-    #
+    
     #   Classification report
     print(f'---- Trying {model_name}...')
     print(
@@ -55,7 +56,7 @@ def generate_report(model, model_name, x_train, x_test, y_train, y_test):
         'Test report:\n',
         classification_report(y_test, y_test_pred)
     )
-    #
+    
     #   Confusion matrix
     cm = confusion_matrix(y_test, y_test_pred, labels = model.classes_)
     disp = ConfusionMatrixDisplay(
@@ -121,7 +122,7 @@ x_train_small, x_test_small, y_train_small, y_test_small = train_test_split(
 #   results (rather than using an optimal model for classification)
 
 model = tree.DecisionTreeClassifier(
-    max_depth = 2, min_samples_leaf = 0.05, random_state = random_seed,
+    max_depth = 4, min_samples_leaf = 0.05, random_state = random_seed,
     ccp_alpha = 0.001
 )
 model.fit(x_train, y_train)
