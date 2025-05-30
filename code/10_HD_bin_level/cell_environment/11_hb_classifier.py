@@ -9,7 +9,7 @@ import numpy as np
 from sklearn import tree, svm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 import matplotlib.pyplot as plt
@@ -24,8 +24,8 @@ banksy_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
     'leiden_res1_4.csv'
 )
-plot_path = here(
-    'plots', '10_HD_bin_level', 'probe_fix', 'cell_environment', 'hb_tree.pdf'
+plot_dir = here(
+    'plots', '10_HD_bin_level', 'probe_fix', 'cell_environment', 'hb_classifier'
 )
 good_samples = [
     'H1-W369TJK_D1_9090', 'H1-MVPY9BW_A1_8433', 'H1-MVPY9BW_D1_8667'
@@ -35,12 +35,17 @@ hb_clusters = [2, 11]
 random_seed = 0
 downsample_size = 5000
 
+os.makedirs(plot_dir, exist_ok=True)
+
 ################################################################################
 #   Functions
 ################################################################################
 
 #   Print summary info about model performance
 def generate_report(model, model_name, x_train, x_test, y_train, y_test):
+    y_test_pred = model.predict(x_test)
+    #
+    #   Classification report
     print(f'---- Trying {model_name}...')
     print(
         'Training report:\n',
@@ -48,8 +53,20 @@ def generate_report(model, model_name, x_train, x_test, y_train, y_test):
     )
     print(
         'Test report:\n',
-        classification_report(y_test, model.predict(x_test))
+        classification_report(y_test, y_test_pred)
     )
+    #
+    #   Confusion matrix
+    cm = confusion_matrix(y_test, y_test_pred, labels = model.classes_)
+    disp = ConfusionMatrixDisplay(
+        confusion_matrix = cm, display_labels = model.classes_
+    )
+    disp.plot()
+    plt.savefig(
+        os.path.join(plot_dir, f'{model_name.replace(" ", "_")}_confusion.pdf')
+    )
+    plt.close('all')
+
 
 ################################################################################
 #   Main
@@ -116,7 +133,7 @@ tree.plot_tree(
     model, class_names = model.classes_, feature_names = x_train.columns,
     filled = True, rounded = True, fontsize = 5
 )
-plt.savefig(plot_path)
+plt.savefig(os.path.join(plot_dir, 'decision_tree.pdf'))
 plt.close('all')
 
 #-------------------------------------------------------------------------------
