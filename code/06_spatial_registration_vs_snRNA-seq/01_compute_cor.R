@@ -4,7 +4,7 @@
 ## Notes:
 ## For 60 to 80k spots: $srun --pty --mem=60GB --x11 bash
 ##
-## Authors. CSC
+## Authors. Implementation CSC
 ##
 #################### BayesSpace vs Multiome-snRNAseq ###########################
 
@@ -19,9 +19,11 @@ library("sessioninfo")
 
 
 ## Input dir
-# Old version: 
-dir_input <- here("processed-data", "05_layer_differential_expression", "modeling_results_BS_old")
+# Test done for debug code: 
+#dir_input <- here("processed-data", "05_layer_differential_expression", "modeling_results_BS_old")
 #dir_input <- here("processed-data", "05_layer_differential_expression", "modeling_results_BS")
+dir_input <- here("processed-data", "05_brain_area_differential_expression", "modeling_results_BS")
+
 
 
 ## Create output directories
@@ -63,7 +65,7 @@ registration_t_stats <-
     return(t_stats)
   })
 stopifnot(is.list(registration_t_stats))
-# Testing reproducibility - OLD results:
+# Testing reproducibility with k=3 - OLD results before remove Br.6522:
 head(registration_t_stats[[1]])
 #                   Sp03D01    Sp03D02    Sp03D03
 # ENSG00000228794 -1.6049998  0.3178627  1.2189367
@@ -73,14 +75,14 @@ head(registration_t_stats[[1]])
 # ENSG00000187961 -2.6701112  1.4897980  0.8193468
 # ENSG00000272512 -0.1668633 -0.9080208  1.0890365
 
-# Testing reproducibility - ReRun results:
-#                   Sp03D01    Sp03D02    Sp03D03
-# ENSG00000187634 -3.772719 -0.0582146  3.9975042
-# ENSG00000188976 -2.853437  0.9240683  1.7720477
-# ENSG00000188290 -3.035521  0.5067032  2.4564039
-# ENSG00000187608 -1.277774  1.6266120 -0.3385263
-# ENSG00000188157 -1.891043  1.1974406  0.6448430
-# ENSG00000078808  3.130198 -0.0788782 -3.1740205
+# current results after removing Br.6522:
+#                   Sp03D01     Sp03D02    Sp03D03
+# ENSG00000187634 -3.633848 -0.07005073  3.8709752
+# ENSG00000188976 -2.656709  0.86672109  1.6543627
+# ENSG00000188290 -3.408015  0.53459515  2.7546149
+# ENSG00000187608 -1.215121  1.63777544 -0.4070374
+# ENSG00000188157 -1.953529  1.22393635  0.6704573
+# ENSG00000078808  3.201552 -0.08369606 -3.2462649
 
 registration_vars <-
     c("final_Annotations", "final_Annotations_broad")
@@ -115,15 +117,6 @@ cor_broad <- compute_cor("final_Annotations_broad")
 head(cor_broad[[1]])
 
 ## Annotate clusters / classify by layer confidence classes (good/poor)
-# annotated_clusters_fine <-
-#     lapply(cor_fine, annotate_registered_clusters, cutoff_merge_ratio = 0.1)
-# annotated_clusters_fine[[2]]
-
-# ## relaxed merging threshold 0.1 
-# annotated_clusters_broad <-
-#     lapply(cor_broad, annotate_registered_clusters, cutoff_merge_ratio = 0.1)
-# # head(annotated_clusters_broad)
-
 annotated_clusters_broad <-
   lapply(cor_broad, annotate_registered_clusters, confidence_threshold = 0.25, cutoff_merge_ratio = 0.1)
 # git show c8a68c62df15af418ff3a78dc29bfd7fbedc31a0
@@ -131,52 +124,38 @@ annotated_clusters_broad <-
 #     lapply(cor_broad, annotate_registered_clusters, cutoff_merge_ratio = 0.1)
 annotated_clusters_broad[[1]]
 
-# Testing OLD results:
-#   cluster layer_confidence layer_label
-# 1 Sp03D03             good  Inhib.Thal
-# 2 Sp03D01             good       Oligo
-# 3 Sp03D02             good         MHb
-
-# Testing reproducibility - ReRun results:
-# cluster layer_confidence layer_label
-# 1 Sp03D03             good         MHb
-# 2 Sp03D01             good       Oligo
-# 3 Sp03D02             good   Astrocyte
-
 ## With default confidence and cutoff_merge_ratio 
 annotated_clusters_fine <-
   lapply(cor_fine, annotate_registered_clusters, confidence_threshold = 0.25, cutoff_merge_ratio = 0.25)
 annotated_clusters_fine[[1]]
 
-# Testing OLD results:
-#   cluster layer_confidence       layer_label
-# 1 Sp03D03             good        Inhib.Thal
-# 2 Sp03D01             good             Oligo
-# 3 Sp03D02             good MHb.1/MHb.2/LHb.6
-
-# Testing reproducibility - ReRun results:
-#   cluster layer_confidence             layer_label
-# 1 Sp03D03             good MHb.2/MHb.1/LHb.6/LHb.2
-# 2 Sp03D01             good                   Oligo
-# 3 Sp03D02             good               Astrocyte
-
-# ## Use annotation labels on the correlation matrices
+## Use annotation labels on the correlation matrices
 # cor_fine <- mapply(function(cor, label_data) {
-#     rownames(cor) <-
-#         paste0(rownames(cor), " ~ ", label_data$layer_label[match(rownames(cor), label_data$cluster)])
+#     rownames(cor) <- paste0(rownames(cor), " ~ ", label_data$layer_label[match(rownames(cor), label_data$cluster)])
 #     return(cor)
-# }, cor_fine, annotated_clusters_fine)
-# 
-# cor_broad <- mapply(function(cor, label_data) {
-#     rownames(cor) <-
-#         paste0(rownames(cor), " ~ ", label_data$layer_label[match(rownames(cor), label_data$cluster)])
-#     return(cor)
-# }, cor_broad, annotated_clusters_broad)
-
+# }, cor_fine, annotated_clusters_fine, SIMPLIFY = FALSE)
 stopifnot(is.list(cor_fine))
 head(cor_fine[[1]])
+# Check if the row names and the cluster names match
+data.frame(
+    "broad-corr" = sort(rownames(cor_fine[[1]])),
+    "broad-ann" = sort(annotated_clusters_fine[[1]]$cluster)
+)
+
+# cor_broad <- mapply(function(cor, label_data) {
+#     rownames(cor) <- paste0(rownames(cor), " ~ ", label_data$layer_label[match(rownames(cor), label_data$cluster)])
+#     return(cor)
+# }, cor_broad, annotated_clusters_broad, SIMPLIFY = FALSE)
 stopifnot(is.list(cor_broad))
 head(cor_broad[[1]])
+## Verify if levels match
+data.frame(
+    "broad-corr" = sort(rownames(
+        cor_broad[[1]]
+    )),
+    "broad-ann" = sort((annotated_clusters_broad[[1]]$cluster))
+)
+
 
 # ## Confidence marks "x" need to be re-loaded ?
 # annotated_clusters_broad <-
@@ -196,53 +175,58 @@ save(cor_fine,
     file = file.path(dir_rdata, "cor_BayesSpace_vs_snRNA-seq_top100.Rdata")
 )
 
-##   Make heatmaps broad res
+message("Make heatmaps broad res")
 
 pdf(here(dir_plot, "cor_top100_visium_snRNAseq_registration_broadRes.pdf"), 
     width = 10, height = 10)
 
 for (i in seq_len(length(cor_broad))) {
     hm <- (layer_stat_cor_plot(
-          cor_broad[[i]], annotation = annotated_clusters_broad[[i]],
-          heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
-          )
+          cor_broad[[i]], 
+          annotation = annotated_clusters_broad[[i]],
+          heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
+          column_names_gp = gpar(fontsize = 16),
+          row_names_gp = gpar(fontsize = 16),
+          cluster_rows = FALSE)
      )
     draw(
         hm,
         column_title = "Spatial-Registration: Visium vs snRNA (Broad res)",
-        column_title_gp = gpar(fontsize = 16, fontface = "bold")
+        column_title_gp = gpar(fontsize = 20, fontface = "bold")
     )
 }
 
 dev.off()
 
-##   Make heatmaps fine res
+message("Make heatmaps fine res")
 
 pdf(here(dir_plot, "cor_top100_visium_snRNAseq_registration_fineRes.pdf"), width = 10, height = 10)
 
 for (i in seq_len(length(cor_fine))) {
   hm <- (layer_stat_cor_plot(
-      cor_fine[[i]], annotation = annotated_clusters_fine[[i]],
-      heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
-    )
+      cor_fine[[i]], 
+      annotation = annotated_clusters_fine[[i]],
+      heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
+      column_names_gp = gpar(fontsize = 16),
+      row_names_gp = gpar(fontsize = 16),
+      cluster_rows = FALSE)
   )
     draw(
         hm,
         column_title = "Spatial-Registration: Visium vs snRNA (Fine res)",
-        column_title_gp = gpar(fontsize = 16, fontface = "bold")
+        column_title_gp = gpar(fontsize = 20, fontface = "bold")
     )
-  
 }
 
 dev.off()
-
-message("Spatial Registration DONE!!!")
 
 
 ################################################################################
 ##  Compute correlation for FINE cluster annotations
 ##  Subset Hb cell-types of interest
 ################################################################################
+
+message("Make heatmaps fine res for Hb-subset")
 
 pdf(here(dir_plot, "cor_top100_visium_snRNAseq_registration_fineRes_HbSubset.pdf"), width = 10, height = 10)
 
@@ -286,14 +270,13 @@ for (i in seq_len(length(cor_fine))) {
 
 dev.off()
 
-message("Spatial Registration FINE Hb-subset DONE!!!")
-
-
 
 ################################################################################
 ##  Compute correlation for BROAD cluster annotations
 ##  Subset Hb cell-types of interest
 ################################################################################
+
+message("Make heatmaps broad res for Hb-subset")
 
 pdf(here(dir_plot, "cor_top100_visium_snRNAseq_registration_broadRes_HbSubset.pdf"), 
     width = 10, height = 10)
@@ -331,14 +314,13 @@ for (i in seq_len(length(cor_fine))) {
 
 dev.off()
 
-message("Spatial Registration BROAD Hb-subset DONE!!!")
-
-
 
 ################################################################################
 ##  Compute correlation for BROAD Hb MERGE cluster annotations
 ##  Subset Hb cell-types of interest
 ################################################################################
+
+message("Make heatmaps broad res for Hb-subset merged")
 
 pdf(here(dir_plot, "cor_top100_visium_snRNAseq_registration_broadRes_HbSubset_merge.pdf"), 
     width = 10, height = 10)
@@ -378,7 +360,7 @@ for (i in seq_len(length(cor_fine))) {
 
 dev.off()
 
-message("Spatial Registration BROAD Hb-subset merge DONE!!!")
+message("Spatial Registration DONE!!!")
 
 
 
@@ -389,8 +371,156 @@ message("Spatial Registration BROAD Hb-subset merge DONE!!!")
 
 
 ## Reproducibility information
-print("Reproducibility information:")
-Sys.time()
-proc.time()
-options(width = 120)
-session_info()
+# print("Reproducibility information:")
+# Sys.time()
+# proc.time()
+# options(width = 120)
+# session_info()
+# 
+# > Sys.time()
+# [1] "2025-05-26 14:17:23 EDT"
+# > proc.time()
+# user   system  elapsed 
+# 20.314    2.126 7554.341 
+# > options(width = 120)
+# > session_info()
+# warm               0.4.0     2021-06-01 [2] CRAN (R 4.4.0)
+# benchmarkme            1.0.8     2022-06-12 [2] CRAN (R 4.4.0)
+# benchmarkmeData        1.0.4     2020-04-23 [2] CRAN (R 4.4.0)
+# Biobase              * 2.66.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# BiocFileCache          2.14.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# BiocGenerics         * 0.52.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# BiocIO                 1.16.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# BiocManager            1.30.25   2024-08-28 [2] CRAN (R 4.4.1)
+# BiocNeighbors          2.0.1     2024-11-28 [2] Bioconductor 3.20 (R 4.4.2)
+# BiocParallel           1.40.2    2025-04-10 [2] Bioconductor
+# BiocSingular           1.22.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# BiocVersion            3.20.0    2024-05-01 [2] Bioconductor 3.20 (R 4.4.0)
+# Biostrings             2.74.1    2024-12-16 [2] Bioconductor 3.20 (R 4.4.2)
+# bit                    4.6.0     2025-03-06 [2] CRAN (R 4.4.3)
+# bit64                  4.6.0-1   2025-01-16 [2] CRAN (R 4.4.2)
+# bitops                 1.0-9     2024-10-03 [2] CRAN (R 4.4.1)
+# blob                   1.2.4     2023-03-17 [2] CRAN (R 4.4.0)
+# bslib                  0.9.0     2025-01-30 [2] CRAN (R 4.4.2)
+# cachem                 1.1.0     2024-05-16 [2] CRAN (R 4.4.0)
+# Cairo                  1.6-2     2023-11-28 [2] CRAN (R 4.4.0)
+# circlize               0.4.16    2024-02-20 [2] CRAN (R 4.4.0)
+# cli                    3.6.5     2025-04-23 [2] CRAN (R 4.4.3)
+# clue                   0.3-66    2024-11-13 [2] CRAN (R 4.4.2)
+# cluster                2.1.8     2024-12-11 [3] CRAN (R 4.4.3)
+# codetools              0.2-20    2024-03-31 [3] CRAN (R 4.4.3)
+# colorspace             2.1-1     2024-07-26 [2] CRAN (R 4.4.1)
+# ComplexHeatmap       * 2.22.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# config                 0.3.2     2023-08-30 [2] CRAN (R 4.4.0)
+# cowplot                1.1.3     2024-01-22 [2] CRAN (R 4.4.0)
+# crayon                 1.5.3     2024-06-20 [2] CRAN (R 4.4.1)
+# curl                   6.2.2     2025-03-24 [2] CRAN (R 4.4.3)
+# data.table             1.17.2    2025-05-12 [2] CRAN (R 4.4.3)
+# DBI                    1.2.3     2024-06-02 [2] CRAN (R 4.4.0)
+# dbplyr                 2.5.0     2024-03-19 [2] CRAN (R 4.4.0)
+# DelayedArray           0.32.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# dichromat              2.0-0.1   2022-05-02 [2] CRAN (R 4.4.0)
+# digest                 0.6.37    2024-08-19 [2] CRAN (R 4.4.1)
+# doParallel             1.0.17    2022-02-07 [2] CRAN (R 4.4.0)
+# dplyr                  1.1.4     2023-11-17 [2] CRAN (R 4.4.0)
+# DT                     0.33      2024-04-04 [2] CRAN (R 4.4.0)
+# edgeR                  4.4.2     2025-01-27 [2] Bioconductor 3.20 (R 4.4.2)
+# ExperimentHub          2.14.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# farver                 2.1.2     2024-05-13 [2] CRAN (R 4.4.0)
+# fastmap                1.2.0     2024-05-15 [2] CRAN (R 4.4.0)
+# filelock               1.0.3     2023-12-11 [2] CRAN (R 4.4.0)
+# foreach                1.5.2     2022-02-02 [2] CRAN (R 4.4.0)
+# generics               0.1.4     2025-05-09 [2] CRAN (R 4.4.3)
+# GenomeInfoDb         * 1.42.3    2025-01-27 [2] Bioconductor 3.20 (R 4.4.2)
+# GenomeInfoDbData       1.2.13    2024-10-01 [2] Bioconductor
+# GenomicAlignments      1.42.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# GenomicRanges        * 1.58.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# GetoptLong             1.0.5     2020-12-15 [2] CRAN (R 4.4.0)
+# ggbeeswarm             0.7.2     2023-04-29 [2] CRAN (R 4.4.0)
+# ggplot2                3.5.2     2025-04-09 [2] CRAN (R 4.4.3)
+# ggrepel                0.9.6     2024-09-07 [2] CRAN (R 4.4.1)
+# GlobalOptions          0.1.2     2020-06-10 [2] CRAN (R 4.4.0)
+# glue                   1.8.0     2024-09-30 [2] CRAN (R 4.4.1)
+# golem                  0.5.1     2024-08-27 [2] CRAN (R 4.4.1)
+# gridExtra              2.3       2017-09-09 [2] CRAN (R 4.4.0)
+# gtable                 0.3.6     2024-10-25 [2] CRAN (R 4.4.2)
+# here                 * 1.0.1     2020-12-13 [2] CRAN (R 4.4.0)
+# htmltools              0.5.8.1   2024-04-04 [2] CRAN (R 4.4.0)
+# htmlwidgets            1.6.4     2023-12-06 [2] CRAN (R 4.4.0)
+# httpuv                 1.6.16    2025-04-16 [2] CRAN (R 4.4.3)
+# httr                   1.4.7     2023-08-15 [2] CRAN (R 4.4.0)
+# IRanges              * 2.40.1    2024-12-05 [2] Bioconductor 3.20 (R 4.4.2)
+# irlba                  2.3.5.1   2022-10-03 [2] CRAN (R 4.4.0)
+# iterators              1.0.14    2022-02-05 [2] CRAN (R 4.4.0)
+# jquerylib              0.1.4     2021-04-26 [2] CRAN (R 4.4.0)
+# jsonlite               2.0.0     2025-03-27 [2] CRAN (R 4.4.3)
+# KEGGREST               1.46.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# later                  1.4.2     2025-04-08 [2] CRAN (R 4.4.3)
+# lattice                0.22-6    2024-03-20 [3] CRAN (R 4.4.3)
+# lazyeval               0.2.2     2019-03-15 [2] CRAN (R 4.4.0)
+# lifecycle              1.0.4     2023-11-07 [2] CRAN (R 4.4.0)
+# limma                  3.62.2    2025-01-09 [2] Bioconductor 3.20 (R 4.4.2)
+# locfit                 1.5-9.12  2025-03-05 [2] CRAN (R 4.4.3)
+# magick                 2.8.6     2025-03-23 [2] CRAN (R 4.4.3)
+# magrittr               2.0.3     2022-03-30 [2] CRAN (R 4.4.0)
+# Matrix                 1.7-2     2025-01-23 [3] CRAN (R 4.4.3)
+# MatrixGenerics       * 1.18.1    2025-01-09 [2] Bioconductor 3.20 (R 4.4.2)
+# matrixStats          * 1.5.0     2025-01-07 [2] CRAN (R 4.4.2)
+# memoise                2.0.1     2021-11-26 [2] CRAN (R 4.4.0)
+# mime                   0.13      2025-03-17 [2] CRAN (R 4.4.3)
+# paletteer              1.6.0     2024-01-21 [2] CRAN (R 4.4.0)
+# pillar                 1.10.2    2025-04-05 [2] CRAN (R 4.4.3)
+# pkgconfig              2.0.3     2019-09-22 [2] CRAN (R 4.4.0)
+# plotly                 4.10.4    2024-01-13 [2] CRAN (R 4.4.0)
+# png                    0.1-8     2022-11-29 [2] CRAN (R 4.4.0)
+# promises               1.3.2     2024-11-28 [2] CRAN (R 4.4.2)
+# purrr                * 1.0.4     2025-02-05 [2] CRAN (R 4.4.2)
+# R6                     2.6.1     2025-02-15 [2] CRAN (R 4.4.2)
+# rappdirs               0.3.3     2021-01-31 [2] CRAN (R 4.4.0)
+# RColorBrewer           1.1-3     2022-04-03 [2] CRAN (R 4.4.0)
+# Rcpp                   1.0.14    2025-01-12 [2] CRAN (R 4.4.2)
+# RCurl                  1.98-1.17 2025-03-22 [2] CRAN (R 4.4.3)
+# rematch2               2.1.2     2020-05-01 [2] CRAN (R 4.4.0)
+# restfulr               0.0.15    2022-06-16 [2] CRAN (R 4.4.0)
+# rjson                  0.2.23    2024-09-16 [2] CRAN (R 4.4.1)
+# rlang                  1.1.6     2025-04-11 [2] CRAN (R 4.4.3)
+# rprojroot              2.0.4     2023-11-05 [2] CRAN (R 4.4.0)
+# Rsamtools              2.22.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# RSQLite                2.3.11    2025-05-04 [2] CRAN (R 4.4.3)
+# rstudioapi             0.17.1    2024-10-22 [2] CRAN (R 4.4.2)
+# rsvd                   1.0.5     2021-04-16 [2] CRAN (R 4.4.0)
+# rtracklayer            1.66.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# S4Arrays               1.6.0     2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# S4Vectors            * 0.44.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# sass                   0.4.10    2025-04-11 [2] CRAN (R 4.4.3)
+# ScaledMatrix           1.14.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# scales                 1.4.0     2025-04-24 [2] CRAN (R 4.4.3)
+# scater                 1.34.1    2025-03-03 [2] Bioconductor 3.20 (R 4.4.3)
+# scuttle                1.16.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# sessioninfo          * 1.2.3     2025-02-05 [2] CRAN (R 4.4.2)
+# shape                  1.4.6.1   2024-02-23 [2] CRAN (R 4.4.0)
+# shiny                  1.10.0    2024-12-14 [2] CRAN (R 4.4.2)
+# shinyWidgets           0.9.0     2025-02-21 [2] CRAN (R 4.4.3)
+# SingleCellExperiment * 1.28.1    2024-11-10 [2] Bioconductor 3.20 (R 4.4.2)
+# SparseArray            1.6.2     2025-02-20 [2] Bioconductor 3.20 (R 4.4.3)
+# SpatialExperiment    * 1.16.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# spatialLIBD          * 1.21.5    2025-05-16 [1] Github (LieberInstitute/spatialLIBD@aff00db)
+# statmod                1.5.0     2023-01-06 [2] CRAN (R 4.4.0)
+# SummarizedExperiment * 1.36.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# tibble                 3.2.1     2023-03-20 [2] CRAN (R 4.4.0)
+# tidyr                  1.3.1     2024-01-24 [2] CRAN (R 4.4.0)
+# tidyselect             1.2.1     2024-03-11 [2] CRAN (R 4.4.0)
+# UCSC.utils             1.2.0     2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# vctrs                  0.6.5     2023-12-01 [2] CRAN (R 4.4.0)
+# vipor                  0.4.7     2023-12-18 [2] CRAN (R 4.4.0)
+# viridis                0.6.5     2024-01-29 [2] CRAN (R 4.4.0)
+# viridisLite            0.4.2     2023-05-02 [2] CRAN (R 4.4.0)
+# XML                    3.99-0.18 2025-01-01 [2] CRAN (R 4.4.2)
+# xtable                 1.8-4     2019-04-21 [2] CRAN (R 4.4.0)
+# XVector                0.46.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# yaml                   2.3.10    2024-07-26 [2] CRAN (R 4.4.1)
+# zlibbioc               1.52.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+# 
+# [1] /users/csoto/R/4.4.x
+# [2] /jhpce/shared/community/core/conda_R/4.4.x/R/lib64/R/site-library
+# [3] /jhpce/shared/community/core/conda_R/4.4.x/R/lib64/R/library
