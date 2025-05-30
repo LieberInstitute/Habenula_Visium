@@ -1,0 +1,703 @@
+## copied from https://github.com/LieberInstitute/Visium_SPG_ |	#############################################################
+							      >	## Create pseudobulk 
+							      >	## Authors. CSC
+							      >	## Data: XX
+							      >	## For 60 to 80k spots: $srun --pty --mem=30GB --x11 bash
+							      >	#############################################################
+
+# library(slurmjobs)					      |
+# slurmjobs::job_single('01_create_pseudobulk_data', create_s |	library("here")
+# To submit the job use: sbatch 01_create_pseudobulk_data.sh  |	library("spatialLIBD")
+							      >	library("tidyverse")
+							      >	library("ggplot2")
+							      >	library("gridExtra")
+							      >	library("sessioninfo")
+							      >	library("scater")
+							      >	library("BiocSingular") # Force svd method on pca
+							      >	library("compositions")
+							      >	#install.packages("compositions")
+							      >
+							      >	## copied from https://github.com/LieberInstitute/Visium_SPG_
+
+k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))		k <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+
+## For testing							## For testing
+if (is.na(k)) {							if (is.na(k)) {
+  k <- 2							  k <- 2
+}								}
+
+library("here")						      |	k_nice <- sprintf("%02d", k)
+library("spatialLIBD")					      <
+library("sessioninfo")					      <
+library("scater")					      <
+
+dir_rdata <- here("processed-data", "05_layer_differential_ex |	dir_rdata <- here("processed-data", "05_brain_area_differenti
+dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)	dir.create(dir_rdata, showWarnings = FALSE, recursive = TRUE)
+stopifnot(file.exists(dir_rdata)) ## Check that it was create	stopifnot(file.exists(dir_rdata)) ## Check that it was create
+							      >	dir_csv <- here(
+							      >	  "processed-data",
+							      >	  "05_brain_area_differential_expression",
+							      >	  "stats_summary_csv"
+							      >	)
+							      >	dir.create(dir_csv, showWarnings = FALSE, recursive = TRUE)
+							      >	stopifnot(file.exists(dir_csv))
+
+## load spe data						## load spe data
+							      >
+spe_in <- here("processed-data", "04_harmony_BayesSpace", "sp	spe_in <- here("processed-data", "04_harmony_BayesSpace", "sp
+spe <- readRDS(spe_in)						spe <- readRDS(spe_in)
+spe							      |	# class: SpatialExperiment 
+							      >	# dim: 26610 33409 
+
+## Import BayesSpace clusters					## Import BayesSpace clusters
+colnames(colData(spe))						colnames(colData(spe))
+clusters_BayesSpace_dir <- here(				clusters_BayesSpace_dir <- here(
+  "processed-data",						  "processed-data",
+  "04_harmony_BayesSpace",					  "04_harmony_BayesSpace",
+  "clusters_BayesSpace"						  "clusters_BayesSpace"
+)								)
+#head(spe$key[1:5])						# head(spe$key[1:5])
+spe <- cluster_import(						spe <- cluster_import(
+  spe,								  spe,
+  cluster_dir = clusters_BayesSpace_dir,			  cluster_dir = clusters_BayesSpace_dir,
+  prefix = "",							  prefix = "",
+  overwrite = TRUE						  overwrite = TRUE
+)								)
+							      >	# Overwriting 'spe$key'. Set 'overwrite = FALSE' if you do no
+							      >
+							      >
+							      >	message("Processing pseudobullk for k = ", k_nice)
+							      >
+
+## Convert from character to a factor			      |	## Prepare data to pseudobulk
+
+# Quick inspection						# Quick inspection
+colnames(colData(spe))					      |	#colData(spe)[grep("BayesSpace_harmony", colnames(colData(spe
+colData(spe)[grep("BayesSpace_harmony", colnames(colData(spe) |	#length(grep("BayesSpace_harmony", colnames(colData(spe))))
+length(grep("BayesSpace_harmony", colnames(colData(spe))))    |	colnames(colData(spe))[grepl("BayesSpace_harmony*", colnames(
+							      >	table(spe$brain_id)
+							      >	table(spe$sample_id)
+
+							      >	## set `BayesSpace` as factor
+spe$BayesSpace <- factor(					spe$BayesSpace <- factor(
+  paste0(							  paste0(
+    "Sp",							    "Sp",
+    sprintf("%02d", k),					      |	    k_nice,
+    "D",							    "D",
+    sprintf(							    sprintf(
+      "%02d",							      "%02d",
+      colData(spe)[[paste0("BayesSpace_harmony_k", sprintf("%	      colData(spe)[[paste0("BayesSpace_harmony_k", sprintf("%
+    )								    )
+  )								  )
+)								)
+head(unique(spe$BayesSpace))				      <
+
+## pseudobulk across a given BayesSpace k		      |	levels(colData(spe)$BayesSpace)
+colnames(colData(spe))					      |	# [1] "Sp02D01" "Sp02D02"
+table(spe$brain_id)					      |
+levels(spe$brain_id)					      |	# ## load annotated data at 'Broad' level to extract short an
+							      >	# 
+							      >	# dir_labels <- here("processed-data",
+							      >	#                   "06_spatial_registration_vs_snRNA-seq",
+							      >	#                   "cor_BayesSpace_vs_snRNA-seq_top100.Rdata
+							      >	# load(dir_labels)
+							      >	# # [3] "cor_broad"               "cor_fine"
+							      >	# 
+							      >	# # rename the levels to make them readable in the plots (use
+							      >	# 
+							      >	# levels(colData(spe)$BayesSpace) <- c(sort(rownames(cor_broa
+							      >	# levels(colData(spe)$BayesSpace)
+							      >	# # [1] "Sp02D01 ~ Oligo"      "Sp02D02 ~ Inhib.Thal"
+							      >	# 
+							      >	# ## we need to double-check if the annotated BayesSpace name
+							      >	# #  - this avoid error further when computing other process.
+							      >	# levels(spe$BayesSpace) <- gsub("\\s*~\\s*", ".", levels(spe
+							      >	# levels(spe$BayesSpace) <- gsub("/", "_", levels(spe$BayesSp
+							      >	# levels(spe$BayesSpace) <- gsub("\\*$", "", levels(spe$Bayes
+							      >	# # Check
+							      >	# levels(spe$BayesSpace)
+							      >	# head(spe$BayesSpace)
+							      >
+							      >
+							      >	## quick inspection: check how many genes expressed by cluste
+							      >
+							      >	table(colData(spe)$brain_id, colData(spe)$sample_id)
+							      >	table(colData(spe)$brain_id, colData(spe)$BayesSpace)
+							      >
+							      >	# number of genes before pseudobulk
+							      >	expr_mat <- assay(spe, "logcounts")
+							      >	clusters <- spe$BayesSpace
+							      >	unique_clusters <- levels(factor(clusters))
+							      >	genes_per_cluster <- sapply(unique_clusters, function(clust) 
+							      >	    # Subset expression matrix to spots in this cluster
+							      >	    cluster_expr <- expr_mat[, clusters == clust]
+							      >	    # Count genes with at least one non-zero value in the clu
+							      >	    sum(rowSums(cluster_expr > 0) > 0)
+							      >	})
+							      >	gene_counts_df <- data.frame(
+							      >	    Cluster = unique_clusters,
+							      >	    Num_Expressed_Genes = genes_per_cluster,
+							      >	    row.names = NULL
+							      >	)
+							      >	message("Number of expressed genes before pseudobulk:  ")
+							      >	gene_counts_df
+							      >	#               Cluster Num_Expressed_Genes
+							      >	# 1      Sp03D01.Oligo               18798
+							      >	# 2   Sp03D02.Habenula               26223
+							      >	# 3 Sp03D03.Inhib.Thal               21454
+							      >
+							      >
+							      >	## Assign new column 'brain-area2' based on `anterior to post
+							      >
+							      >	colData(spe)$brain_area2 <- case_when(
+							      >	  colData(spe)$sample_id == "V13B23-285_A1" ~ "G0",
+							      >	  colData(spe)$sample_id == "V13B23-285_B1" |
+							      >	    colData(spe)$sample_id == "V14F07-340_A1" |
+							      >	    colData(spe)$sample_id == "V13B23-280_A1" ~
+							      >	    "G1",
+							      >	  colData(spe)$sample_id == "V13B23-285_C1" |
+							      >	    colData(spe)$sample_id == "V14F07-340_B1" |
+							      >	    colData(spe)$sample_id == "V13B23-280_B1" ~
+							      >	    "G2",
+							      >	  colData(spe)$sample_id == "V13B23-285_D1" |
+							      >	    colData(spe)$sample_id == "V14F07-340_C1" |
+							      >	    colData(spe)$sample_id == "V13B23-280_C1" ~
+							      >	    "G3",
+							      >	  colData(spe)$sample_id == "V14F07-340_D1" |
+							      >	    colData(spe)$sample_id == "V13B23-280_D1" ~
+							      >	    "G4"
+							      >	)
+							      >
+							      >	# Make sure it's a factor
+							      >	spe$brain_area2 <- factor(spe$brain_area2)
+							      >	table(spe$BayesSpace, spe$brain_area2)
+							      >	#                       G0   G1   G2   G3   G4
+							      >	# Sp03D01.Oligo       700 1538 1231 1335 1154
+							      >	# Sp03D02.Habenula   3100 6031 6239 6763 3963
+							      >	# Sp03D03.Inhib.Thal    3  336  341  394  281
+							      >
+							      >	table(colData(spe)$brain_id, colData(spe)$brain_area2)
+							      >	#           G0   G1   G2   G3   G4
+							      >	# Br8518 3803 3119 3201 3118    0
+							      >	# Br9037    0 3117 2921 3580 3515
+							      >	# Br9090    0 1669 1689 1794 1883
+							      >
+							      >	table(colData(spe)$brain_id)
+# Br8518 Br9037 Br9090						# Br8518 Br9037 Br9090
+# 13241  13133   7035						# 13241  13133   7035
+table(spe$sample_id)					      <
+levels(spe$sample_id)					      <
+
+## save new spe object containing clusters with Broad annotat <
+
+spe_out <- here("processed-data", "05_layer_differential_expr |	# ## save new spe object containing clusters with Broad annot
+saveRDS(						      |	# 
+    spe, file = file.path(spe_out)			      |	# spe_in <- here("processed-data", "04_harmony_BayesSpace", "
+)							      |	# saveRDS(
+							      >	#   spe, file = file.path(spe_in)
+							      >	# )
+
+
+## Pseudo-bulk the gene expression, filter lowly-expressed ge |	############################
+spe_pseudo <-						      |
+							      >	message("Processing pseudobulk for BayesSpace k=", k_nice)
+							      >
+							      >	spe_pseudo_k <-
+  registration_pseudobulk(					    registration_pseudobulk(
+    spe,							        spe,
+    var_registration = "BayesSpace",				        var_registration = "BayesSpace",
+    var_sample_id = "sample_id",				        var_sample_id = "sample_id",
+    # covars = "brain_id", # git show a8a46f718caf8b858926e51 |	        covars = "brain_id",
+    min_ncells = 10						        min_ncells = 10
+  )								    )
+dim(spe_pseudo)						      |	dim(spe_pseudo_k)
+colnames(colData(spe_pseudo))				      |
+							      >	#colnames(colData(spe_pseudo))
+## list domains created						## list domains created
+rownames(colData(spe_pseudo))				      |	rownames(colData(spe_pseudo_k))
+table(spe_pseudo$sample_id)				      |	table(spe_pseudo_k$sample_id)
+table(spe_pseudo$brain_id)				      |	table(spe_pseudo_k$brain_id)
+
+# droplevels((spe_pseudo)$BayesSpace)				# droplevels((spe_pseudo)$BayesSpace)
+## drop levels not used						## drop levels not used
+table(spe_pseudo$BayesSpace)				      |	table(spe_pseudo_k$BayesSpace)
+unique(spe_pseudo$BayesSpace)				      |	unique(spe_pseudo_k$BayesSpace)
+levels(spe_pseudo$BayesSpace)				      |	levels(spe_pseudo_k$BayesSpace)
+spe_pseudo$BayesSpace <- droplevels(spe_pseudo$BayesSpace)    |	spe_pseudo_k$BayesSpace <- droplevels(spe_pseudo_k$BayesSpace
+levels(spe_pseudo$BayesSpace)				      |	levels(spe_pseudo_k$BayesSpace)
+table(spe_pseudo$BayesSpace)				      |	table(spe_pseudo_k$BayesSpace)
+
+message('Levels unused on pseudobulk `BayesSpace` dropped ')	message('Levels unused on pseudobulk `BayesSpace` dropped ')
+
+message('Pseudobulk completed ')				message('Pseudobulk completed ')
+
+## Simplify the colData()  for the pseudobulk		      <
+
+colData(spe_pseudo) <- colData(spe_pseudo)[, sort(c(	      |
+  "age",						      |	# Perform pseudobulk across BayesSpace and sample_id
+							      >
+							      >	# spe_pseudo_k <- scuttle::aggregateAcrossCells(
+							      >	#   spe,
+							      >	#   DataFrame(
+							      >	#     BayesSpace_p = spe[[paste0("BayesSpace_harmony_k", k_ni
+							      >	#     reg_sample_id = spe$sample_id
+							      >	#   )
+							      >	# )
+							      >	# head(colData(spe_pseudo_k)$BayesSpace)
+							      >	# head(colData(spe_pseudo_k)$BayesSpace_p)
+							      >	# 
+							      >	# # make the BayesSpace levels identical
+							      >	# spe_pseudo_k$BayesSpace_p <- spe_pseudo_k$BayesSpace
+							      >	# identical(spe_pseudo_k$BayesSpace, spe_pseudo_k$BayesSpace_
+							      >	# levels(spe_pseudo_k$BayesSpace) == levels(spe_pseudo_k$Baye
+							      >	# # [1] TRUE TRUE TRUE
+							      >
+							      >	## quick inspection: check how many genes expressed by cluste
+							      >
+							      >	expr_mat <- assay(spe_pseudo_k, "counts")  # or "counts" if l
+							      >	clusters <- spe_pseudo_k$BayesSpace
+							      >	unique_clusters <- unique(clusters)
+							      >	# Count expressed genes per cluster
+							      >	genes_per_cluster <- sapply(unique_clusters, function(clust) 
+							      >	    cluster_expr <- expr_mat[, clusters == clust]
+							      >	    # Count genes with expression > 0 in at least one pseudob
+							      >	    sum(rowSums(cluster_expr > 0) > 0)
+							      >	})
+							      >	gene_counts_df <- data.frame(
+							      >	    Cluster = unique_clusters,
+							      >	    Num_Expressed_Genes = genes_per_cluster,
+							      >	    row.names = NULL
+							      >	)
+							      >	message("Number of expressed genes after pseudobulk:  ")
+							      >	gene_counts_df
+							      >	#               Cluster Num_Expressed_Genes
+							      >	# 1 Sp03D01                8803
+							      >	# 2 Sp03D02                8803
+							      >	# 3 Sp03D03                8803
+							      >
+							      >
+							      >	message("Aggregation completed for k=", k_nice)
+							      >	message(
+							      >	  "Dimensions of summed data: ",
+							      >	  paste(dim(spe_pseudo_k), collapse = " x ")
+							      >	)
+							      >
+							      >	# Rename ncells to nspots
+							      >
+							      >	colData(spe_pseudo_k)$nspots <- colData(spe_pseudo_k)$ncells
+							      >	colData(spe_pseudo_k)$ncells <- NULL # Remove the old column
+							      >	# add sample-ids to pseudobulk object
+							      >	colnames(spe_pseudo_k) <- spe_pseudo_k$sample_id
+							      >
+							      >
+							      >	# Exploring nspots
+							      >
+							      >	min_nspots <- 10
+							      >	message("Total nspots: ", sum(spe_pseudo_k$nspots))
+							      >	message(
+							      >	  "Number of groups with nspots < ",
+							      >	  min_nspots,
+							      >	  ": ",
+							      >	  sum(spe_pseudo_k$nspots < min_nspots)
+							      >	)
+							      >	message("Summary of nspots:")
+							      >	print(summary(spe_pseudo_k$nspots))
+							      >
+							      >	## Adapted from https://github.com/LieberInstitute/spatialLIB
+							      >	## Drop pseudo-bulked samples that had low initial contributi
+							      >	## That is, pseudo-bulked samples that are not benefiting fro
+							      >	if (!is.null(min_nspots)) {
+							      >	  message(
+							      >	    Sys.time(),
+							      >	    " dropping ",
+							      >	    sum(spe_pseudo_k$nspots < min_nspots),
+							      >	    " pseudo-bulked samples that are below 'min_nspots'."
+							      >	  )
+							      >	  spe_pseudo_k <- spe_pseudo_k[, spe_pseudo_k$nspots >= min_n
+							      >	}
+							      >
+							      >	# Compute mitochondrial expression ratio & other meta-data
+							      >
+							      >	is_mito <- which(seqnames(spe_pseudo_k) == "chrM")
+							      >	spe_pseudo_k$expr_chrM <- colSums(counts(spe_pseudo_k)[is_mit
+							      >	spe_pseudo_k$sum_umi <- colSums(counts(spe_pseudo_k))
+							      >	spe_pseudo_k$expr_chrM_ratio <- spe_pseudo_k$expr_chrM / spe_
+							      >	spe_pseudo_k$age <- as.numeric(spe_pseudo_k$age)
+							      >
+							      >	# Convert other relevant variables to factors
+							      >
+							      >	spe_pseudo_k$brain_area2 <- factor(spe_pseudo_k$brain_area2)
+							      >	if (is.factor(spe_pseudo_k$BayesSpace_pseudo)) {
+							      >	  spe_pseudo_k$brain_area2 <- droplevels(spe_pseudo_k$brain_a
+							      >	}
+							      >	levels(spe_pseudo_k$brain_area2)
+							      >
+							      >	## Compute the logcounts
+							      >
+							      >	message(Sys.time(), " Normalize data and compute PCA")
+							      >
+							      >	assays(spe_pseudo_k)
+							      >
+							      >	logcounts(spe_pseudo_k) <-
+							      >	  edgeR::cpm(edgeR::calcNormFactors(spe_pseudo_k), log = TRUE
+							      >	# rownames(assays(spe_pseudo_k)$logcounts)
+							      >	# colnames(assays(spe_pseudo_k)$logcounts)
+							      >	dim(reducedDim(spe_pseudo_k))
+							      >	# [1] 24 10
+							      >
+							      >	# # calculate the number of cells per (sample_id + BayesSpace
+							      >	# Adapted from: https://github.com/LieberInstitute/dlpfc_asd/
+							      >
+							      >	message("----------------------------------------------------
+							      >	# Get BayesSpace cluster assignments for the current k
+							      >	cluster_ids <- spe[[paste0("BayesSpace_harmony_k", k_nice)]]
+							      >	# Create a data frame with sample_id and cluster_ids
+							      >	df <- data.frame(sample_id = spe$sample_id, cluster_ids = clu
+							      >	# Create a table between sample_id and cluster_ids
+							      >	k_table <- table(df$sample_id, df$cluster_ids)
+							      >	# Add a 'Total' column to the table by summing across rows (s
+							      >	k_table <- cbind(k_table, Total = rowSums(k_table))
+							      >	# Add a ncells from spe_pseudo_k
+							      >	k_table <- cbind(k_table, nspots = spe_pseudo_k$nspots)
+							      >	k_table_subset <- k_table[
+							      >	  colnames(spe_pseudo_k),
+							      >	  grepl("^[[:digit:]]+$", colnames(k_table))
+							      >	]
+							      >
+							      >	## Compute ILR
+							      >	k_table_ilr <- ilr(k_table_subset)
+							      >	## Note that this is basically the same as
+							      >	## ilr(k_table_subset / rowSums(k_table_subset))
+							      >	##rowSums(k_table_subset / rowSums(k_table_subset))  equal to
+							      >	colnames(k_table_ilr) <- paste0(
+							      >	  "ILR_SpD",
+							      >	  k_nice,
+							      >	  "_",
+							      >	  seq_len(ncol(k_table_ilr))
+							      >	)
+							      >	colData(spe_pseudo_k) <- cbind(
+							      >	  colData(spe_pseudo_k),
+							      >	  k_table_subset,
+							      >	  as.data.frame(k_table_ilr)
+							      >	)
+							      >
+							      >	# Print the table of cell counts per sample_id and cluster
+							      >	message("Cell counts per sample_id and cluster for k=", k_nic
+							      >	print(k_table)
+							      >
+							      >	message("----------------------------------------------------
+							      >
+							      >	## save table with basic stats
+							      >	write.csv(
+							      >	  k_table,
+							      >	  row.names = TRUE,
+							      >	  quote = FALSE,
+							      >	  here(
+							      >	    dir_csv,
+							      >	    paste0("k", sprintf("%02d", k), "_basic_stats.csv")
+							      >	  )
+							      >	)
+							      >
+							      >	message(' Normalization completed ')
+							      >
+							      >
+							      >	## Simplify the colData()  for the pseudo-bulked data
+							      >
+							      >	# colnames(colData(spe_pseudo_k))
+							      >	#spe_pseudo_k$BayesSpace
+							      >	colData(spe_pseudo_k) <- colData(spe_pseudo_k)[, sort(c(
+  "sample_id",							  "sample_id",
+  "BayesSpace",						      |	  "brain_id",
+  "brain_id", # equivalent to subject / donor / ethnicity     |	  "age",
+  # "subject", # git show 4befe3e796f0e1c5844e8c1628113366548 <
+  "sex",							  "sex",
+  "diagnosis",							  "diagnosis",
+  "ncells"						      |	  "brain_area",
+							      >	  "brain_area2",
+							      >	  "nspots",
+							      >	  "sum_umi",
+							      >	  "expr_chrM",
+							      >	  "expr_chrM_ratio",
+							      >	  "rin",
+							      >	  "pmi",
+							      >	  "BayesSpace"
+))]								))]
+
+## Explore the resulting data					## Explore the resulting data
+							      >
+options(width = 400)						options(width = 400)
+as.data.frame(colData(spe_pseudo))			      |	sp_table = as.data.frame(colData(spe_pseudo_k))
+							      >	## save table with general information about spatial-domains
+							      >	write.csv(
+							      >	  sp_table,
+							      >	  row.names = TRUE,
+							      >	  quote = FALSE,
+							      >	  here(
+							      >	    dir_csv,
+							      >	    paste0("k", sprintf("%02d", k), "_SpatialD_info.csv")
+							      >	  )
+							      >	)
+
+## Compute PCs						      <
+## Adapted from https://github.com/LieberInstitute/spatialDLP <
+
+message('Processing PCA')					message('Processing PCA')
+
+pca <- prcomp(t(assays(spe_pseudo)$logcounts))		      |	set.seed(01042025)
+dim(pca$x)						      <
+names(pca)						      <
+## Explore pca						      <
+# length(pca$sdev)					      <
+# summary(pca)						      <
+# print(pca$x)						      <
+# plot(pca, paste0("PCA of pseudobulk data with BS k=", as.ch <
+# plot(pca$x[,1],pca$x[,2])				      <
+							      <
+# Set number of components equal to pseudo bulk groups. Avoid <
+n_components <- length(pca$sdev)			      <
+if (n_components > 21) {				      <
+  n_components <- 20					      <
+}							      <
+
+message(						      |	spe_pseudo <- spe_pseudo_k
+  Sys.time(),						      <
+  " % of variance explained for the top ",		      <
+  n_components,						      <
+  " PCs:"						      <
+)							      <
+metadata(spe_pseudo) <- list(				      <
+  "PCA_var_explained" = jaffelab::getPcaVars(pca)[seq_len(n_c <
+) #[seq_len(20)])					      <
+# metadata(spe_pseudo)					      <
+colnames(pca$x) <- paste0("PC", sprintf("%02d", seq_len(ncol( <
+# head(pca$x)						      <
+reducedDims(spe_pseudo) <- list(PCA = pca$x)		      <
+#plotPCA(spe_pseudo, colour_by = "brain_id", n_components, po <
+
+## Compute some reduced dims					## Compute some reduced dims
+message('/nProcessing MDS and scarter runPCA')		      |	message('Processing MDS and scarter runPCA')
+
+set.seed(20240626)					      |	# keep ncomponents below the number of cells
+							      >	ncomponents = min(50, ncol(spe_pseudo) - 1, nrow(spe_pseudo) 
+
+spe_pseudo <- scater::runMDS(					spe_pseudo <- scater::runMDS(
+  spe_pseudo,							  spe_pseudo,
+  name = "runMDS",						  name = "runMDS",
+  ncomponents = (n_components - 1)			      |	  ncomponents = ncomponents
+)								)
+							      >
+							      >
+							      >	# Fix error when computing runPCA with irlba  - scater defaul
+							      >	# -- force exact SVD passing a BiocSingularParam object
+							      >
+spe_pseudo <- scater::runPCA(					spe_pseudo <- scater::runPCA(
+  spe_pseudo,							  spe_pseudo,
+  name = "runPCA",					      |	  ncomponents = ncomponents,
+  ncomponents = n_components				      |	  BSPARAM = ExactParam()
+)								)
+# Warning in (function (A, nv = 5, nu = nv, maxit = 1000, wor <
+#                           You're computing too large a perc <
+
+## Double check the BayesSpace meta are factors		      |	dim(reducedDim(spe_pseudo, "PCA"))
+stopifnot(is.factor(spe_pseudo$BayesSpace))		      |	# [1] 24 23
+							      >
+
+## For the spatialLIBD shiny app				## For the spatialLIBD shiny app
+							      >
+rowData(spe_pseudo)$gene_search <-				rowData(spe_pseudo)$gene_search <-
+  paste0(							  paste0(
+    rowData(spe_pseudo)$gene_name,				    rowData(spe_pseudo)$gene_name,
+    "; ",							    "; ",
+    rowData(spe_pseudo)$gene_id					    rowData(spe_pseudo)$gene_id
+  )								  )
+
+message(' Saving pseudobulk with reduced dims for BS k=', k)  |	message(
+							      >	  ' Saving pseudobulk with reduced dims for BS k=',
+							      >	  k,
+							      >	  " using brain_area as var for registration"
+							      >	)
+
+## save RDS file						## save RDS file
+saveRDS(							saveRDS(
+  spe_pseudo,							  spe_pseudo,
+  file = file.path(						  file = file.path(
+    dir_rdata,							    dir_rdata,
+    paste0("sce_pseudo_BayesSpace_k", sprintf("%02d", k), ".r |	    paste0("sce_pseudo_PCA_brain_area_k", k_nice, ".rds")
+  )								  )
+)								)
+
+							      >
+message(' Process completed!')					message(' Process completed!')
+
+							      >
+							      >	# library(slurmjobs)
+							      >	# slurmjobs::job_single('01_create_pseudobulk_data',
+							      >	#                       create_shell = TRUE, memory = '60G',
+							      >	#                       command = "01_create_pseudobulk_data.
+							      >	#                       partion = "katun")
+							      >
+## Reproducibility information					## Reproducibility information
+print("Reproducibility information:")				print("Reproducibility information:")
+Sys.time()							Sys.time()
+proc.time()							proc.time()
+options(width = 120)						options(width = 120)
+session_info()							session_info()
+							      <
+## ========================================================== <
+# [1] "Reproducibility information:"			      <
+# > Sys.time()						      <
+# [1] "2024-06-27 15:27:49 EDT"				      <
+# > proc.time()						      <
+# user    system   elapsed				      <
+# 479.382    21.189 15963.034				      <
+# > options(width = 120)				      <
+# > session_info()					      <
+# 05-03 [2] CRAN (R 4.3.2)				      <
+# beachmat                 2.18.0      2023-10-24 [2] Biocond <
+# beeswarm                 0.4.0       2021-06-01 [2] CRAN (R <
+# benchmarkme              1.0.8       2022-06-12 [2] CRAN (R <
+# benchmarkmeData          1.0.4       2020-04-23 [2] CRAN (R <
+# Biobase                * 2.62.0      2023-10-24 [2] Biocond <
+# BiocFileCache            2.10.1      2023-10-26 [2] Biocond <
+# BiocGenerics           * 0.48.1      2023-11-01 [2] Biocond <
+# BiocIO                   1.12.0      2023-10-24 [2] Biocond <
+# BiocManager              1.30.22     2023-08-08 [2] CRAN (R <
+# BiocNeighbors            1.20.2      2024-01-07 [2] Biocond <
+# BiocParallel             1.36.0      2023-10-24 [2] Biocond <
+# BiocSingular             1.18.0      2023-10-24 [2] Biocond <
+# BiocVersion              3.18.1      2023-11-15 [2] Biocond <
+# Biostrings               2.70.2      2024-01-28 [2] Biocond <
+# bit                      4.0.5       2022-11-15 [2] CRAN (R <
+# bit64                    4.0.5       2020-08-30 [2] CRAN (R <
+# bitops                   1.0-7       2021-04-24 [2] CRAN (R <
+# blob                     1.2.4       2023-03-17 [2] CRAN (R <
+# bslib                    0.6.1       2023-11-28 [2] CRAN (R <
+# cachem                   1.0.8       2023-05-01 [2] CRAN (R <
+# cli                      3.6.2       2023-12-11 [2] CRAN (R <
+# codetools                0.2-19      2023-02-01 [3] CRAN (R <
+# colorspace               2.1-0       2023-01-23 [2] CRAN (R <
+# config                   0.3.2       2023-08-30 [2] CRAN (R <
+# cowplot                  1.1.3       2024-01-22 [2] CRAN (R <
+# crayon                   1.5.2       2022-09-29 [2] CRAN (R <
+# curl                     5.2.0       2023-12-08 [2] CRAN (R <
+# data.table               1.15.0      2024-01-30 [2] CRAN (R <
+# DBI                      1.2.1       2024-01-12 [2] CRAN (R <
+# dbplyr                   2.4.0       2023-10-26 [2] CRAN (R <
+# DelayedArray             0.28.0      2023-10-24 [2] Biocond <
+# DelayedMatrixStats       1.24.0      2023-10-24 [2] Biocond <
+# digest                   0.6.34      2024-01-11 [2] CRAN (R <
+# doParallel               1.0.17      2022-02-07 [2] CRAN (R <
+# dotCall64                1.1-1       2023-11-28 [2] CRAN (R <
+# dplyr                    1.1.4       2023-11-17 [2] CRAN (R <
+# DT                       0.31        2023-12-09 [2] CRAN (R <
+# edgeR                    4.0.14      2024-01-29 [2] Biocond <
+# ellipsis                 0.3.2       2021-04-29 [2] CRAN (R <
+# ExperimentHub            2.10.0      2023-10-24 [2] Biocond <
+# fansi                    1.0.6       2023-12-08 [2] CRAN (R <
+# farver                   2.1.1       2022-07-06 [2] CRAN (R <
+# fastmap                  1.1.1       2023-02-24 [2] CRAN (R <
+# fields                   15.2        2023-08-17 [2] CRAN (R <
+# filelock                 1.0.3       2023-12-11 [2] CRAN (R <
+# foreach                  1.5.2       2022-02-02 [2] CRAN (R <
+# fs                       1.6.3       2023-07-20 [2] CRAN (R <
+# gargle                   1.5.2       2023-07-20 [2] CRAN (R <
+# generics                 0.1.3       2022-07-05 [2] CRAN (R <
+# GenomeInfoDb           * 1.38.5      2023-12-28 [2] Biocond <
+# GenomeInfoDbData         1.2.11      2024-02-09 [2] Biocond <
+# GenomicAlignments        1.38.2      2024-01-16 [2] Biocond <
+# GenomicRanges          * 1.54.1      2023-10-29 [2] Biocond <
+# ggbeeswarm               0.7.2       2023-04-29 [2] CRAN (R <
+# ggplot2                * 3.4.4       2023-10-12 [2] CRAN (R <
+# ggrepel                  0.9.5       2024-01-10 [2] CRAN (R <
+# glue                     1.7.0       2024-01-09 [2] CRAN (R <
+# golem                    0.4.1       2023-06-05 [2] CRAN (R <
+# googledrive              2.1.1       2023-06-11 [2] CRAN (R <
+# gridExtra                2.3         2017-09-09 [2] CRAN (R <
+# gtable                   0.3.4       2023-08-21 [2] CRAN (R <
+# here                   * 1.0.1       2020-12-13 [2] CRAN (R <
+# htmltools                0.5.7       2023-11-03 [2] CRAN (R <
+# htmlwidgets              1.6.4       2023-12-06 [2] CRAN (R <
+# httpuv                   1.6.14      2024-01-26 [2] CRAN (R <
+# httr                     1.4.7       2023-08-15 [2] CRAN (R <
+# interactiveDisplayBase   1.40.0      2023-10-24 [2] Biocond <
+# IRanges                * 2.36.0      2023-10-24 [2] Biocond <
+# irlba                    2.3.5.1     2022-10-03 [2] CRAN (R <
+# iterators                1.0.14      2022-02-05 [2] CRAN (R <
+# jaffelab                 0.99.34     2024-06-25 [1] Github  <
+# jquerylib                0.1.4       2021-04-26 [2] CRAN (R <
+# jsonlite                 1.8.8       2023-12-04 [2] CRAN (R <
+# KEGGREST                 1.42.0      2023-10-24 [2] Biocond <
+# labeling                 0.4.3       2023-08-29 [2] CRAN (R <
+# later                    1.3.2       2023-12-06 [2] CRAN (R <
+# lattice                  0.22-5      2023-10-24 [3] CRAN (R <
+# lazyeval                 0.2.2       2019-03-15 [2] CRAN (R <
+# lifecycle                1.0.4       2023-11-07 [2] CRAN (R <
+# limma                    3.58.1      2023-10-31 [2] Biocond <
+# locfit                   1.5-9.8     2023-06-11 [2] CRAN (R <
+# lubridate                1.9.3       2023-09-27 [2] CRAN (R <
+# magick                   2.8.2       2023-12-20 [2] CRAN (R <
+# magrittr                 2.0.3       2022-03-30 [2] CRAN (R <
+# maps                     3.4.2       2023-12-15 [2] CRAN (R <
+# MASS                     7.3-60.0.1  2024-01-13 [3] CRAN (R <
+# Matrix                   1.6-5       2024-01-11 [3] CRAN (R <
+# MatrixGenerics         * 1.14.0      2023-10-24 [2] Biocond <
+# matrixStats            * 1.2.0       2023-12-11 [2] CRAN (R <
+# memoise                  2.0.1       2021-11-26 [2] CRAN (R <
+# mime                     0.12        2021-09-28 [2] CRAN (R <
+# munsell                  0.5.0       2018-06-12 [2] CRAN (R <
+# nlme                     3.1-164     2023-11-27 [3] CRAN (R <
+# paletteer                1.6.0       2024-01-21 [2] CRAN (R <
+# pillar                   1.9.0       2023-03-22 [2] CRAN (R <
+# pkgconfig                2.0.3       2019-09-22 [2] CRAN (R <
+# plotly                   4.10.4      2024-01-13 [2] CRAN (R <
+# png                      0.1-8       2022-11-29 [2] CRAN (R <
+# Polychrome             * 1.5.1       2022-04-29 [1] R-Forge <
+# promises                 1.2.1       2023-08-10 [2] CRAN (R <
+# purrr                    1.0.2       2023-08-10 [2] CRAN (R <
+# R6                       2.5.1       2021-08-19 [2] CRAN (R <
+# rafalib                  1.0.0       2015-08-09 [1] CRAN (R <
+# rappdirs                 0.3.3       2021-01-31 [2] CRAN (R <
+# RColorBrewer             1.1-3       2022-04-03 [2] CRAN (R <
+# Rcpp                     1.0.12      2024-01-09 [2] CRAN (R <
+# RCurl                    1.98-1.14   2024-01-09 [2] CRAN (R <
+# rematch2                 2.1.2       2020-05-01 [2] CRAN (R <
+# restfulr                 0.0.15      2022-06-16 [2] CRAN (R <
+# rjson                    0.2.21      2022-01-09 [2] CRAN (R <
+# rlang                    1.1.3       2024-01-10 [2] CRAN (R <
+# rprojroot                2.0.4       2023-11-05 [2] CRAN (R <
+# Rsamtools                2.18.0      2023-10-24 [2] Biocond <
+# RSQLite                  2.3.5       2024-01-21 [2] CRAN (R <
+# rsvd                     1.0.5       2021-04-16 [2] CRAN (R <
+# rtracklayer              1.62.0      2023-10-24 [2] Biocond <
+# S4Arrays                 1.2.0       2023-10-24 [2] Biocond <
+# S4Vectors              * 0.40.2      2023-11-23 [2] Biocond <
+# sass                     0.4.8       2023-12-06 [2] CRAN (R <
+# ScaledMatrix             1.10.0      2023-10-24 [2] Biocond <
+# scales                   1.3.0       2023-11-28 [2] CRAN (R <
+# scater                 * 1.30.1      2023-11-16 [2] Biocond <
+# scatterplot3d            0.3-44      2023-05-05 [1] R-Forge <
+# scuttle                * 1.12.0      2023-10-24 [2] Biocond <
+# segmented                2.1-0       2024-05-14 [1] CRAN (R <
+# sessioninfo            * 1.2.2       2021-12-06 [2] CRAN (R <
+# shiny                    1.8.0       2023-11-17 [2] CRAN (R <
+# shinyWidgets             0.8.1       2024-01-10 [2] CRAN (R <
+# SingleCellExperiment   * 1.24.0      2023-10-24 [2] Biocond <
+# slurmjobs              * 1.2.1       2024-03-20 [1] Github  <
+# spam                     2.10-0      2023-10-23 [2] CRAN (R <
+# SparseArray              1.2.3       2023-12-25 [2] Biocond <
+# sparseMatrixStats        1.14.0      2023-10-24 [2] Biocond <
+# SpatialExperiment      * 1.12.0      2023-10-24 [2] Biocond <
+# spatialLIBD            * 1.15.4      2024-05-01 [1] Github  <
+# statmod                  1.5.0       2023-01-06 [2] CRAN (R <
+# stringi                  1.8.3       2023-12-11 [2] CRAN (R <
+# stringr                  1.5.1       2023-11-14 [2] CRAN (R <
+# SummarizedExperiment   * 1.32.0      2023-10-24 [2] Biocond <
+# tibble                   3.2.1       2023-03-20 [2] CRAN (R <
+# tidyr                    1.3.1       2024-01-24 [2] CRAN (R <
+# tidyselect               1.2.0       2022-10-10 [2] CRAN (R <
+# timechange               0.3.0       2024-01-18 [2] CRAN (R <
+# utf8                     1.2.4       2023-10-22 [2] CRAN (R <
+# vctrs                    0.6.5       2023-12-01 [2] CRAN (R <
+# vipor                    0.4.7       2023-12-18 [2] CRAN (R <
+# viridis                  0.6.5       2024-01-29 [2] CRAN (R <
+# viridisLite              0.4.2       2023-05-02 [2] CRAN (R <
