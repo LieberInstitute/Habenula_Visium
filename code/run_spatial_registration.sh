@@ -61,10 +61,9 @@ rm -f ${PROCESSEDIR}/${SUBDIR}/sce_pseudo_PCA_brain_area*.rds
 id1=$(sbatch --parsable 01_create_pseudobulk_data.sh)
 echo "Running array job: ${id1}"
 
-# dependency job 
+# dependency array job 
 rm -f logs/06_model_BayesSpace_*.txt
 rm -f ${PROCESSEDIR}/${SUBDIR}/modeling_results_BS/modeling_results_BayesSpace*.Rdata
-#sbatch 06_model_BayesSpace.sh
 id2=$(sbatch --parsable --dependency=afterok:$id1 06_model_BayesSpace.sh)
 echo "Running dependency array job: ${id2}"
 
@@ -73,6 +72,7 @@ echo "Running dependency array job: ${id2}"
 ##### EDA: build HISTOGRANS and STACKED BAR PLOTS with Hb and no-Habenula count/proportions by BayesSpace domain
 # Here we compare Hb-Taxomony manual annotations (RNAScope) vs SpD in clustering
 
+# independent job
 rm -f logs/08_manual_ann_vs_bayes_space_*.txt
 rm -f ${PLOTDIR}/${SUBDIR}/08_manual_ann_vs_bayes_space/*.pdf
 sbatch 08_manual_ann_vs_bayes_space.sh
@@ -88,14 +88,16 @@ SUBDIR="06_spatial_registration_vs_snRNA-seq"
 cd ${CODEDIR}/${SUBDIR}
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
-
+# dependency array job 
 echo " Spatial Registrattion Visum  vs scRNAseq human pilot"
 rm -f logs/01_compute_cor.*.out
 rm -f logs/01_compute_cor.*.err
 rm -f ${PROCESSEDIR}/${SUBDIR}/cor_BayesSpace_vs_snRNA-seq_top100.Rdata
 rm -f ${PLOTDIR}/${SUBDIR}/*_broadRes.pdf
 rm -f ${PLOTDIR}/${SUBDIR}/*_fineRes.pdf
-sbatch 01_compute_cor.sh
+id3=$(sbatch --parsable --dependency=afterok:$id2 01_compute_cor.sh)
+#sbatch 01_compute_cor.sh
+echo "Running dependency array job: ${id3}"
 
 
 echo " Spatial Registrattion Visium vs scRNAseq human pilot with Hb clusters merged"

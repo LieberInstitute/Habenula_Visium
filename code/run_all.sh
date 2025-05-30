@@ -132,21 +132,6 @@ sbatch 04-BayesSpace_k_search.sh
 
 echo "#########   cell-type differential expression  ########################### "
 
-## change directory
-SUBDIR="05_layer_differential_expression"
-cd ${CODEDIR}/${SUBDIR}
-echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
-
-## First remove old plots
-rm -f logs/01_create_pseudobulk_data_*.txt
-# rm -f ${PLOTDIR}/${SUBDIR}/sce_pseudo_gene_explanatory_vars_k*.pdf
-rm -f ${PROCESSEDIR}/${SUBDIR}/sce_pseudo_BayesSpace_k*.rds
-
-sbatch 01_create_pseudobulk_data.sh
-
-
-echo "#########   Running exploring variance ################################## "
-
 ## First remove old plots
 rm -f logs/02_explore_expr_variability_*.txt
 rm -f ${PLOTDIR}/${SUBDIR}/sce_pseudo_PCs_k*.pdf

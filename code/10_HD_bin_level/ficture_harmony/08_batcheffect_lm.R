@@ -28,6 +28,8 @@ spe = spe[nonzero_rows, nonzero_cols]
 message(Sys.time(), ' | Performing log normalization...')
 spe = computeLibraryFactors(spe)
 spe = logNormCounts(spe, transform = "none")
+assays(spe)$counts) = assays(spe)$normcounts
+assays(spe)$normcounts = NULL
 
 mod <- with(colData(spe), model.matrix(~ sample_id))
 
