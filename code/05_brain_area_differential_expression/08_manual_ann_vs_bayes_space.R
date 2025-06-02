@@ -270,107 +270,122 @@ message("StackedPlot done!")
 ## =============================================================================
 ## Additional analysis for BS k=28
 
-k=28
+k_list <- c(15, 28)
 
-## select BayesSpace_harmony of interest
-df_domains_k <- df_domains[, c("sample_id", "brain_id", "spot_name_ann", "BayesSpace_harmony_k28")]
-#df_domains_k
-# Remove rows where BayesSpace_harmony_k28 is in the vector c(5, 10, 20, 27)
-unique(df_domains_k$BayesSpace_harmony_k28)
-df_domain_filtered <- subset(df_domains_k, (BayesSpace_harmony_k28 %in% c(5, 10, 11, 20, 27)))
-unique(df_domain_filtered$BayesSpace_harmony_k28)
+for (k in k_list) {
+
+    ## select BayesSpace_harmony of interest
+    BS_k <- paste0("BayesSpace_harmony_k", k)
     
-# add a unique column to match barcodes
-df_domain_filtered$spot_name_ann2 <- paste0(df_domain_filtered$sample_id, "-", df_domain_filtered$spot_name_ann)
-head(df_domain_filtered, n=3)
-
-# remove samples not manually annotated - to match with the samples annotated
-if (!length(unique(df_domain_filtered$sample_id)) == length(unique(df_manual_annotations$sample_id))) {
-    df_domain_filtered <- df_domain_filtered |>
-        filter(sample_id %in% unique(df_manual_annotations$sample_id))
-}    
-unique(df_domain_filtered$sample_id)
-unique(df_manual_annotations$sample_id)
-message("Total spots: ", length(df_domain_filtered$spot_name_ann))
-
-# Mark Matches and Non-Matches by sample
-anyDuplicated(df_domain_filtered$spot_name_ann2)         # should be 0
-anyDuplicated(df_manual_annotations$spot_name2) # should be 0
-
-df_domain_labeled <- df_domain_filtered |>
-    mutate(match_status = ifelse(spot_name_ann2 %in% df_manual_annotations$spot_name2, "Habenula", "No-Habenula")) |>
-    left_join(
-        df_manual_annotations[, "spot_name2", drop = FALSE],
-        by = c("spot_name_ann2" = "spot_name2")
+    message("Processing histogram for Hb SpD(s) ", BS_k)
+    
+    df_domains_k <- df_domains[, c("sample_id", "brain_id", "spot_name_ann", BS_k)]
+    #df_domains_k
+    # Keep rows where BayesSpace_harmony_k is in the vector c(5, 10, 20, 27)
+    unique(df_domains_k[[BS_k]])
+    
+    if (k==15) {
+        df_domain_filtered <- subset(df_domains_k, (BayesSpace_harmony_k15 %in% c(6, 10, 14)))
+    } else if ((k==28)) {
+        df_domain_filtered <- subset(df_domains_k, (BayesSpace_harmony_k28 %in% c(5, 10, 11, 20, 27)))
+    } else {
+        message("SpD(s) not specified")
+        stop()
+    }
+        
+    # add a unique column to match barcodes
+    df_domain_filtered$spot_name_ann2 <- paste0(df_domain_filtered$sample_id, "-", df_domain_filtered$spot_name_ann)
+    head(df_domain_filtered, n=3)
+    
+    # remove samples not manually annotated - to match with the samples annotated
+    if (!length(unique(df_domain_filtered$sample_id)) == length(unique(df_manual_annotations$sample_id))) {
+        df_domain_filtered <- df_domain_filtered |>
+            filter(sample_id %in% unique(df_manual_annotations$sample_id))
+    }    
+    unique(df_domain_filtered$sample_id)
+    unique(df_manual_annotations$sample_id)
+    message("Total spots: ", length(df_domain_filtered$spot_name_ann))
+    
+    # Mark Matches and Non-Matches by sample
+    anyDuplicated(df_domain_filtered$spot_name_ann2)         # should be 0
+    anyDuplicated(df_manual_annotations$spot_name2) # should be 0
+    
+    df_domain_labeled <- df_domain_filtered |>
+        mutate(match_status = ifelse(spot_name_ann2 %in% df_manual_annotations$spot_name2, "Habenula", "No-Habenula")) |>
+        left_join(
+            df_manual_annotations[, "spot_name2", drop = FALSE],
+            by = c("spot_name_ann2" = "spot_name2")
+        )
+    #names(df_domain_labeled)
+    #head(df_domain_labeled)
+    #table(df_domain_labeled$match_status, df_domain_labeled$sample_id)
+    
+    # count of how many spots per ManualAnnotation are Habenula or No-Habenula
+    SpD <- BS_k
+    df_plot <- df_domain_labeled |>
+        group_by(brain_id, sample_id, !!sym(SpD), match_status) |>
+        summarise(count = n(), .groups = "drop") # plot absolute counts
+    #head(df_plot)
+    
+    # Combine sample and cluster in x-axis
+    df_plot <- df_plot |>
+        mutate(x_label = interaction(sample_id, !!sym(SpD)))
+    
+    # Extract cluster values (e.g., 1–13) from the SpD column
+    cluster_vals <- df_plot[[SpD]]
+    x_labels <- levels(df_plot$x_label)
+    
+    # Build label vector: show cluster value every k bars
+    custom_labels <- ifelse(seq_along(x_labels) %% k == 1, as.character(cluster_vals), "")
+    
+    # Get cluster values in the same order as x_label levels
+    cluster_by_x <- df_plot |>
+        distinct(x_label, .keep_all = TRUE) |>
+        arrange(factor(x_label, levels = levels(df_plot$x_label))) |>
+        pull(!!sym(SpD))
+    
+    # prepare customized x-axis labels and add vertical lines to separate clusters
+    # Keep the first occurrence of each new cluster, blank for repeated values
+    custom_labels <- ifelse(
+        c(TRUE, diff(cluster_by_x) != 0),  # first is always TRUE
+        as.character(cluster_by_x),
+        ""
     )
-#names(df_domain_labeled)
-#head(df_domain_labeled)
-#table(df_domain_labeled$match_status, df_domain_labeled$sample_id)
+    custom_labels <- ifelse(custom_labels != "", paste0("SpD ", custom_labels), "")
+    
+    # Include sample_id in the x_label labels for the plot
+    
+    custom_labels <- paste0(custom_labels, " (", gsub(":.*", "", sub("\\..*", "", x_labels)), ")")
+    
+    # Define bar positions based dynamically
+    bar_positions <- which(custom_labels != "")-1
+    
+    plt1 <- ggplot(df_plot, aes(x = x_label, y = count, fill = match_status)) +
+        geom_bar(stat = "identity") +
+        geom_vline(xintercept = bar_positions + 0.5, linetype = "solid", color = "darkgray") +
+        scale_x_discrete(labels = custom_labels) +
+        labs(
+            title = paste0("Habenula vs No-Habenula: ", SpD),
+            x = paste0("Spatial-Domains"),
+            y = "Number of Spots",
+            fill = "Match Status"
+        ) +
+        theme_minimal() +
+        theme(
+            axis.text.x = element_text(angle = 45, size=8, hjust = 1),
+            panel.grid.major.x = element_blank(),
+            panel.grid.minor.x = element_blank(),
+            legend.position = "top"
+        )
+    
+    # Set PDF for combine plot by sample and cluster in x-axis
+    pdf(file = file.path(dir_plots, paste0("Habenula_BS_k", k, "_histogram_bar_manual-vs-BS_by_clusters-sample.pdf")))
+    print(plt1)
+    dev.off() 
+    
+    message("Habenula Histogram done!")
 
-# count of how many spots per ManualAnnotation are Habenula or No-Habenula
-df_plot <- df_domain_labeled |>
-    group_by(brain_id, sample_id, !!sym(SpD), match_status) |>
-    summarise(count = n(), .groups = "drop") # plot absolute counts
-#head(df_plot)
-
-# Combine sample and cluster in x-axis
-df_plot <- df_plot |>
-    mutate(x_label = interaction(sample_id, !!sym(SpD)))
-
-# Extract cluster values (e.g., 1–13) from the SpD column
-cluster_vals <- df_plot[[SpD]]
-x_labels <- levels(df_plot$x_label)
-
-# Build label vector: show cluster value every k bars
-custom_labels <- ifelse(seq_along(x_labels) %% k == 1, as.character(cluster_vals), "")
-
-# Get cluster values in the same order as x_label levels
-cluster_by_x <- df_plot |>
-    distinct(x_label, .keep_all = TRUE) |>
-    arrange(factor(x_label, levels = levels(df_plot$x_label))) |>
-    pull(!!sym(SpD))
-
-# prepare customized x-axis labels and add vertical lines to separate clusters
-# Keep the first occurrence of each new cluster, blank for repeated values
-custom_labels <- ifelse(
-    c(TRUE, diff(cluster_by_x) != 0),  # first is always TRUE
-    as.character(cluster_by_x),
-    ""
-)
-custom_labels <- ifelse(custom_labels != "", paste0("SpD ", custom_labels), "")
-
-# Include sample_id in the x_label labels for the plot
-
-custom_labels <- paste0(custom_labels, " (", gsub(":.*", "", sub("\\..*", "", x_labels)), ")")
-
-# Define bar positions based dynamically
-bar_positions <- which(custom_labels != "")-1
-
-plt1 <- ggplot(df_plot, aes(x = x_label, y = count, fill = match_status)) +
-    geom_bar(stat = "identity") +
-    geom_vline(xintercept = bar_positions + 0.5, linetype = "solid", color = "darkgray") +
-    scale_x_discrete(labels = custom_labels) +
-    labs(
-        title = paste0("Habenula vs No-Habenula: ", SpD),
-        x = paste0("Spatial-Domains"),
-        y = "Number of Spots",
-        fill = "Match Status"
-    ) +
-    theme_minimal() +
-    theme(
-        axis.text.x = element_text(angle = 45, size=8, hjust = 1),
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank(),
-        legend.position = "top"
-    )
-
-# Set PDF for combine plot by sample and cluster in x-axis
-pdf(file = file.path(dir_plots, paste0("Habenula_BS_k28_histogram_bar_manual-vs-BS_by_clusters-sample.pdf")))
-print(plt1)
-dev.off() 
-
-message("Habenula Histogram for BS k=28 done!")
-
+}
 
 ## =============================================================================
 
