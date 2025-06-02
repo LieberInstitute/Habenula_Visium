@@ -270,7 +270,7 @@ message("StackedPlot done!")
 ## =============================================================================
 ## Additional analysis for BS k=28
 
-k_list <- c(11, 15, 20, 28)
+k_list <- c(11, 15, 20, 24, 28)
 
 for (k in k_list) {
 
@@ -329,7 +329,7 @@ for (k in k_list) {
         group_by(brain_id, sample_id, !!sym(SpD), match_status) |>
         summarise(count = n(), .groups = "drop") # plot absolute counts
     #head(df_plot)
-    ## calculate number og Habenula spots vs not-habneula (to use on plot)
+    ## calculate number of Habenula spots vs not-habneula (to use on subtitle plots)
     df_summary <- df_plot |>
         group_by(match_status) |>
         summarise(total_count = sum(count), .groups = "drop")
