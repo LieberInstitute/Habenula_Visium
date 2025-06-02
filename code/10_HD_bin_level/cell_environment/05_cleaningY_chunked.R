@@ -1,56 +1,47 @@
 library(jaffelab)
 library(here)
 library(tidyverse)
-library(scran)
-library(spatialLIBD)
+library(SpatialExperiment)
 library(sessioninfo)
-library(HDF5Array)
 library(Matrix)
 
 #   Get k from array task ID
 k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 
-#spe <- readRDS("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture_harmony/spe_raw.rds")
-spe <- readRDS("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/spe_raw.rds")
+spe_path = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'spe_filtered.rds'
+)
+out_path = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'cleaningY', 'temp_chunks', sprintf('%d.rds', k)
+)
+num_chunks_total = 1000
+this_num_chunks = 20
 
-original_row_names <- rownames(spe)
-original_col_names <- colnames(spe)
-nonzero_rows <- rowSums(assays(spe)$counts) > 0
-nonzero_cols <- colSums(assays(spe)$counts) > 0
-#  Choose the nonzero bins
-spe = spe[nonzero_rows, nonzero_cols]
-#   Did a normalization before cleaningY()
-#   Use library-size normalization (normalization by deconvolution is not
-#   computationally feasible with data this large). Don't log scale, as for
-#   FICTURE we want counts that statistically resemble real counts
-message(Sys.time(), ' | Performing log normalization...')
-spe = computeLibraryFactors(spe)
-spe = logNormCounts(spe, transform = "none")
-assays(spe)$counts) = assays(spe)$normcounts
-assays(spe)$normcounts = NULL
+dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
 
-mod <- with(colData(spe), model.matrix(~ sample_id))
+spe = readRDS(spe_path)
+
+mod = with(colData(spe), model.matrix(~ sample_id))
 
 # split the genes
-n_genes <- nrow(spe)
-gene_indices <- split(seq_len(n_genes), cut(seq_len(n_genes), 1000, labels = FALSE))
+gene_indices = split(
+    seq_len(nrow(spe)), cut(seq_len(nrow(spe)), num_chunks_total,
+    labels = FALSE)
+)
 
-result_list <- vector("list", length = 1000)
-
-for (i in ((1:100)+100*(k-1))) {
-  cat("Cleaning chunk", i, "\n")
-  
-  idx <- gene_indices[[i]]
-  counts_chunk <- assays(spe)$counts[idx, , drop = FALSE]
-  zero_mask <- counts_chunk == 0
-  # regression
-  cleaned <- cleaningY(counts_chunk, mod, P = 1)
-  cleaned[zero_mask] <- 0
-  cleaned_sparse <- Matrix(cleaned, sparse = TRUE)
-  result_list[[i]] <- cleaned_sparse
-
-  rm(counts_chunk, cleaned, cleaned_sparse)
-  gc()
+result_list = list()
+for (i in (seq_len(this_num_chunks) + this_num_chunks * (k - 1))) {
+    counts_chunk = assays(spe)$normcounts[gene_indices[[i]], , drop = FALSE]
+    zero_mask = counts_chunk == 0
+    # regression
+    cleaned = cleaningY(counts_chunk, mod, P = 1)
+    cleaned[zero_mask] = 0
+    result_list[[i]] = as(cleaned, "CsparseMatrix")
 }
+final_result = do.call(rbind, result_list)
 
-final_result <- do.call(rbind, result_list)
+saveRDS(final_result, out_path)
+
+session_info()
