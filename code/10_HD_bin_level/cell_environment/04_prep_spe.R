@@ -17,8 +17,6 @@ bin_set_path = here(
     'extracellular_bins.csv.gz'
 )
 
-dir.create(dirname(counts_out_path), showWarnings = FALSE)
-
 ################################################################################
 #   Take only extracellular bins and genes with nonzero expression
 ################################################################################
