@@ -35,6 +35,8 @@ dir.create(dirname(counts_out_path), showWarnings = FALSE)
 #   Read in batch-corrected counts
 ################################################################################
 
+message(Sys.time(), ' | Reading in SPE and batch-corrected counts...')
+
 spe = readRDS(spe_path)
 
 #   Read in cleaningY chunks of counts and merge
@@ -44,8 +46,11 @@ for (i in seq_len(num_chunks)) {
 }
 cleaned_counts = do.call(rbind, cleaned_counts)
 
+#   Attach to SPE
 stopifnot(identical(dim(spe), dim(cleaned_counts)))
 assays(spe)$normcounts = cleaned_counts
+rm(cleaned_counts)
+gc()
 
 ################################################################################
 #   Convert counts to FICTURE input
