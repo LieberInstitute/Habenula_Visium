@@ -1,0 +1,93 @@
+**** Job starts ****
+Fri May 30 11:52:57 AM EDT 2025
+**** JHPCE info ****
+User: neagles
+Job id: 16886446
+Job name: 11_hb_classifier
+Node name: compute-166
+Task id: 4
+
+Currently Loaded Modules:
+  1) JHPCE_ROCKY9_DEFAULT_ENV   2) JHPCE_tools/3.0
+
+ 
+
+Loading LIBD SLURM module for visium_hd/1.0
+Loading LIBD SLURM module for htslib/1.18
+---- Trying decision tree...
+Training report:
+               precision    recall  f1-score   support
+
+    habenula       0.55      0.36      0.43     28026
+not_habenula       0.91      0.96      0.93    190074
+
+    accuracy                           0.88    218100
+   macro avg       0.73      0.66      0.68    218100
+weighted avg       0.86      0.88      0.87    218100
+
+Test report:
+               precision    recall  f1-score   support
+
+    habenula       0.55      0.36      0.43      7007
+not_habenula       0.91      0.96      0.93     47518
+
+    accuracy                           0.88     54525
+   macro avg       0.73      0.66      0.68     54525
+weighted avg       0.86      0.88      0.87     54525
+
+---- Trying SVM...
+Training report:
+               precision    recall  f1-score   support
+
+           0       0.95      0.87      0.91      4369
+           1       0.44      0.71      0.54       631
+
+    accuracy                           0.85      5000
+   macro avg       0.70      0.79      0.73      5000
+weighted avg       0.89      0.85      0.86      5000
+
+Test report:
+               precision    recall  f1-score   support
+
+           0       0.94      0.89      0.91      1093
+           1       0.44      0.61      0.51       157
+
+    accuracy                           0.85      1250
+   macro avg       0.69      0.75      0.71      1250
+weighted avg       0.88      0.85      0.86      1250
+
+---- Trying random forest...
+Training report:
+               precision    recall  f1-score   support
+
+           0       0.88      1.00      0.93      4369
+           1       0.87      0.03      0.06       631
+
+    accuracy                           0.88      5000
+   macro avg       0.87      0.52      0.50      5000
+weighted avg       0.88      0.88      0.82      5000
+
+Test report:
+               precision    recall  f1-score   support
+
+           0       0.88      1.00      0.93      1093
+           1       0.67      0.03      0.05       157
+
+    accuracy                           0.88      1250
+   macro avg       0.77      0.51      0.49      1250
+weighted avg       0.85      0.88      0.82      1250
+
+-----
+matplotlib          3.9.2
+numpy               1.26.4
+pandas              2.2.3
+pyhere              1.0.3
+session_info        1.0.0
+sklearn             1.5.2
+-----
+Python 3.9.20 | packaged by conda-forge | (main, Sep 30 2024, 17:49:10) [GCC 13.3.0]
+Linux-5.14.0-427.13.1.el9_4.x86_64-x86_64-with-glibc2.34
+-----
+Session information updated at 2025-05-30 11:53
+**** Job ends ****
+Fri May 30 11:53:22 AM EDT 2025

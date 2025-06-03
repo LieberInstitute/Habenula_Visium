@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=16G
-#SBATCH --job-name=07_spatula_join
+#SBATCH --job-name=09_spatula_join
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/07_spatula_join_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/07_spatula_join_%a.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/09_spatula_join_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/09_spatula_join_%a.txt
 #SBATCH --array=70,100%2
 
 set -e

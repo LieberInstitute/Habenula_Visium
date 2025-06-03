@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=5G
-#SBATCH --job-name=06_ficture_plot
+#SBATCH --job-name=08_ficture_plot
 #SBATCH -c 1
 #SBATCH -t 1:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/06_ficture_plot_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/06_ficture_plot_%a.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/08_ficture_plot_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/08_ficture_plot_%a.txt
 #SBATCH --array=70,100%2
 
 set -e

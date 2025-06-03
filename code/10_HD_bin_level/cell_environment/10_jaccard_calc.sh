@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=10G
-#SBATCH --job-name=11_hb_classifier
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/11_hb_classifier_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/11_hb_classifier_%a.txt
+#SBATCH --mem=40G
+#SBATCH --job-name=10_jaccard_calc
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/10_jaccard_calc_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/10_jaccard_calc_%a.txt
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH --array=20
+#SBATCH --array=70,100%2
 
 set -e
 
@@ -22,8 +22,8 @@ echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 module list
 
-module load visium_hd/1.0
-python 11_hb_classifier.py
+module load conda_R/4.4.x
+Rscript 10_jaccard_calc.R
 
 echo "**** Job ends ****"
 date

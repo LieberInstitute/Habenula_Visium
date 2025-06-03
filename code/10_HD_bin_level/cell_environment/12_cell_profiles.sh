@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=40G
-#SBATCH --job-name=08_jaccard_calc
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/08_jaccard_calc_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/08_jaccard_calc_%a.txt
+#SBATCH --job-name=12_cell_profiles
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/12_cell_profiles_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/12_cell_profiles_%a.txt
 #SBATCH -c 1
-#SBATCH -t 1-0:00:00
-#SBATCH --array=70,100%2
+#SBATCH -t 8:00:00
+#SBATCH --array=4-40:2%10
 
 set -e
 
@@ -23,7 +23,7 @@ echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 module list
 
 module load conda_R/4.4.x
-Rscript 08_jaccard_calc.R
+Rscript 12_cell_profiles.R
 
 echo "**** Job ends ****"
 date

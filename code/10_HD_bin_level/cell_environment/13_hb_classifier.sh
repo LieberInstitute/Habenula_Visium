@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=40G
-#SBATCH --job-name=10_cell_profiles
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/10_cell_profiles_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/10_cell_profiles_%a.txt
+#SBATCH --mem=10G
+#SBATCH --job-name=13_hb_classifier
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/13_hb_classifier_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/13_hb_classifier_%a.txt
 #SBATCH -c 1
-#SBATCH -t 8:00:00
-#SBATCH --array=4-40:2%10
+#SBATCH -t 1-0:00:00
+#SBATCH --array=20
 
 set -e
 
@@ -22,8 +22,8 @@ echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 module list
 
-module load conda_R/4.4.x
-Rscript 10_cell_profiles.R
+module load visium_hd/1.0
+python 13_hb_classifier.py
 
 echo "**** Job ends ****"
 date
