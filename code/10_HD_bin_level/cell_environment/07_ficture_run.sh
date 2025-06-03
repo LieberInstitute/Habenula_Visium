@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=300G
+#SBATCH --mem=140G
 #SBATCH --job-name=07_ficture_run
 #SBATCH -c 1
 #SBATCH -t 2-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/07_ficture_run_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/07_ficture_run_%a.txt
-#SBATCH --array=70,100%2
+#SBATCH --array=4-40:2%8
 
 set -e
 
@@ -22,12 +22,10 @@ echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 module load visium_hd/1.0
 
-echo "Using 1 core"
-
 #   Path definitions
 repo_dir=$(git rev-parse --show-toplevel)
 in_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/cell_environment/ficture_inputs
-out_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/cell_environment/ficture_outputs/normalized/k_${SLURM_ARRAY_TASK_ID}
+out_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/cell_environment/ficture_outputs/cleaningy/k_${SLURM_ARRAY_TASK_ID}
 
 mkdir -p $out_dir
 
@@ -35,8 +33,8 @@ mkdir -p $out_dir
 if [[ $SLURM_ARRAY_TASK_ID -eq 2 ]]; then
     #   Overwride the default of finding top 3 factors, since only 2 exist
     ficture run_together \
-        --in-tsv $in_dir/normalized_input.tsv.gz \
-        --in-minmax $in_dir/normalized_minmax.tsv \
+        --in-tsv $in_dir/cleaningy_input.tsv.gz \
+        --in-minmax $in_dir/cleaningy_minmax.tsv \
         --out-dir $out_dir \
         --mu-scale 1 \
         --major-axis X \
@@ -46,8 +44,8 @@ if [[ $SLURM_ARRAY_TASK_ID -eq 2 ]]; then
         --fractional-count 1
 else
     ficture run_together \
-        --in-tsv $in_dir/normalized_input.tsv.gz \
-        --in-minmax $in_dir/normalized_minmax.tsv \
+        --in-tsv $in_dir/cleaningy_input.tsv.gz \
+        --in-minmax $in_dir/cleaningy_minmax.tsv \
         --out-dir $out_dir \
         --mu-scale 1 \
         --major-axis X \
