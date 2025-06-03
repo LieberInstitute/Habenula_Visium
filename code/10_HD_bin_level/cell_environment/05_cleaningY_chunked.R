@@ -27,8 +27,8 @@ mod = with(colData(spe), model.matrix(~ sample_id))
 
 #   Split genes into chunks
 gene_indices = split(
-    seq_len(nrow(spe)), cut(seq_len(nrow(spe)), num_chunks_total,
-    labels = FALSE)
+    seq_len(nrow(spe)),
+    cut(seq_len(nrow(spe)), num_chunks_total, labels = FALSE)
 )
 
 message(Sys.time(), ' | Executing cleaningY in chunks...')

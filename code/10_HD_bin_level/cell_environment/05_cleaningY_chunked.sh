@@ -2,11 +2,11 @@
 #SBATCH -p katun
 #SBATCH --mem=40G
 #SBATCH --job-name=05_cleaningY_chunked
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/05_cleaningY_chunked.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/05_cleaningY_chunked.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/05_cleaningY_chunked_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/05_cleaningY_chunked_%a.txt
 #SBATCH -c 1
 #SBATCH -t 8:00:00
-#SBATCH --array=1-50%20
+#SBATCH --array=1-50%10
 
 set -e
 
