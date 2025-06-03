@@ -6,11 +6,11 @@
 #SBATCH -t 1-00:00:00
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
-#SBATCH --array=1-5%5
+#SBATCH --array=1-6%6
 # SBATCH --mail-type=ALL
 
 ## Define BayesSpace k of interest
-BS_k_list=(3 11 15 20 28)
+BS_k_list=(3 11 15 20 24 28)
 BS_k=${BS_k_list[$((SLURM_ARRAY_TASK_ID - 1))]}
 
 mkdir -p logs

@@ -86,11 +86,12 @@ bayes_space_counts
 ## Additional analysis
 ## Get count and percentages for BS k of interest
 
-if (k==11 || k==15 || k==20 || k==28) {
+if (k==11 || k==15 || k==20 || k==24 || k==28) {
     
     if (k==11) { domains_of_interest <- c("Sp11D06", "Sp11D11") }
     if (k==15) { domains_of_interest <- c("Sp15D06", "Sp15D10", "Sp15D14") }
     if (k==20) { domains_of_interest <- c("Sp20D06", "Sp20D08", "Sp20D16", "Sp20D20") }
+    if (k==24) { domains_of_interest <- c("Sp24D07", "Sp24D18", "Sp24D22", "Sp24D23", "Sp24D24") }
     if (k==28) { domains_of_interest <- c("Sp28D05", "Sp28D10", "Sp28D11", "Sp28D20", "Sp28D27") }
     
     message("Hb Spatial Domians in k", k_nice)
@@ -172,7 +173,7 @@ generate_color_lists <- function(num_colors, custom_RNAScope_SpD, custom_Spatial
         "black", "#24FF24", "darkblue", "darkgreen", "lightblue", 
         "darkorange", "violet", "gold", "darkred", "indianred"
     )
-    if (num_colors>20) {
+    if (num_colors > 20) {
         # Additional 20 colors to be added to the vector for k(s)>20
         additional_colors <- c(
             "lightgreen", "darkgray", "lightgray", "#290AD8", "#1E8E99", 
@@ -240,6 +241,14 @@ if (k_nice=="03") {
     # for handle legends labels
     RNAScope_SpD <- c(6, 7, 8, 15, 16, 17, 19)
     SpatialReg_SpD <- c(6, 8, 16, 19)
+    
+} else if (k_nice=="24") {
+    # for handle palette of colors
+    custom_RNAScope_SpD <- c(6, 7, 8, 16, 18, c(22, 23, 24) - 1) #19
+    custom_SpatialReg_SpD <- c(7, 18, c(22, 23, 24) - 1) #19
+    # for handle legends labels
+    RNAScope_SpD <- c(6, 7, 8, 16, 18, 22, 23, 24)
+    SpatialReg_SpD <- c(7, 18, 22, 23, 24)
     
 } else if (k_nice=="28") {
     #levels_to_remove # [1] "Sp28D18" "Sp28D26"
