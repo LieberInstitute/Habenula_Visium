@@ -38,7 +38,13 @@ dir_plots <- here(
     "05_brain_area_differential_expression",
     "07_hb_spot_plots_coverage"
 )
+dir_csv <- here(
+    "processed-data",
+    "05_brain_area_differential_expression",
+    "07_hb_spot_plots_coverage"
+)
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
+dir.create(dir_csv, showWarnings = FALSE, recursive = TRUE)
 
 ## load spe with BayesSpace_harmony data
 spe <- readRDS(spe_dir)
@@ -76,6 +82,10 @@ levels(colData(spe)$BayesSpace)
 ## make manual verification to identify missing SpD(s) in samples causing visualization issues
 spots_by_domain_table <- table(colData(spe)$sample_id, colData(spe)$BayesSpace)
 spots_by_domain_table
+## Save table with counts per SpD and sample
+f_name <- paste0("BS_k", k_nice, "_count_per_SpD_sample.csv")
+f_name <- here(dir_csv, f_name)
+write.csv(spots_by_domain_table, file = f_name, row.names = TRUE)
 
 # Get the table of counts for each level in colData(spe)$BayesSpace
 bayes_space_counts <- colSums(spots_by_domain_table)
