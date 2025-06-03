@@ -6,17 +6,9 @@ library(rjson)
 library(sessioninfo)
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-spe_in_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'spe_raw.rds'
-)
-spe_out_path = here(
+spe_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
     'spe_filtered.rds'
-)
-bin_set_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
-    'extracellular_bins.csv.gz'
 )
 scalefactors_path = here(
     'processed-data', '01_spaceranger', 'probe_fix', '%s', 'outs',
@@ -24,59 +16,36 @@ scalefactors_path = here(
 )
 counts_out_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
-    'ficture_inputs', 'normalized_input.tsv.gz'
+    'ficture_inputs', 'cleaningy_input.tsv.gz'
 )
 minmax_out_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
-    'ficture_inputs', 'normalized_minmax.tsv'
+    'ficture_inputs', 'cleaningy_minmax.tsv'
+)
+out_path = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'cleaningY', 'temp_chunks', '%d.rds'
 )
 buffer_prop = 0.05
+num_chunks = 50
 
 dir.create(dirname(counts_out_path), showWarnings = FALSE)
 
 ################################################################################
-#   Prep SpatialExperiment
+#   Read in batch-corrected counts
 ################################################################################
 
-#-------------------------------------------------------------------------------
-#   Take only extracellular bins and genes with nonzero expression
-#-------------------------------------------------------------------------------
+spe = readRDS(spe_path)
 
-message(Sys.time(), ' | Loading...')
-spe = readRDS(spe_in_path)
-spe$key = paste(spe$sample_id, colnames(spe), sep = '_')
+#   Read in cleaningY chunks of counts and merge
+cleaned_counts = list()
+for (i in seq_len(num_chunks)) {
+    cleaned_counts[[i]] = readRDS(sprintf(out_path, i))
+}
+cleaned_counts = do.call(rbind, cleaned_counts)
 
-bin_set = read_csv(bin_set_path, show_col_types = FALSE) |>
-    mutate(key = paste(sample_id, bin_id, sep = '_')) |>
-    pull(key)
-
-message(
-    Sys.time(),
-    sprintf(
-        ' | Keeping extracellular bins (%.1f%%)',
-        100 * mean(spe$key %in% bin_set)
-    )
-)
-spe = spe[, spe$key %in% bin_set]
-
-#   Filter raw SPE: drop bins with 0 counts for all genes, and drop genes with
-#   0 counts in every bin
-message(Sys.time(), ' | Dropping zero-expression bins and genes...')
-spe = spe[rowSums(assays(spe)$counts) > 0, colSums(assays(spe)$counts) > 0]
-
-#-------------------------------------------------------------------------------
-#   Library-size normalize
-#-------------------------------------------------------------------------------
-
-#   Use library-size normalization (normalization by deconvolution is not
-#   computationally feasible with data this large). Don't log scale, as for
-#   FICTURE we want counts that statistically resemble real counts
-message(Sys.time(), ' | Performing log normalization...')
-spe = computeLibraryFactors(spe)
-spe = logNormCounts(spe, transform = "none")
-
-assays(spe)$counts = NULL
-gc()
+stopifnot(identical(dim(spe), dim(cleaned_counts)))
+assays(spe)$normcounts = cleaned_counts
 
 ################################################################################
 #   Convert counts to FICTURE input
