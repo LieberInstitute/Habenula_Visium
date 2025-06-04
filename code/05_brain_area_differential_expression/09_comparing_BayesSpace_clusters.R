@@ -152,4 +152,12 @@ print(p1_integrated)
 
 dev.off()
 
+## =============================================================================
+
+# library(slurmjobs)
+# slurmjobs::job_single('09_comparing_BayesSpace_clusters',
+#                       create_shell = TRUE,
+#                       memory = '15G',
+#                       command = "09_comparing_BayesSpace_clusters.R",
+#                       partition = "katun")
 
