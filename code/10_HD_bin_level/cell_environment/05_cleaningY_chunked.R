@@ -33,17 +33,42 @@ gene_indices = split(
 
 message(Sys.time(), ' | Executing cleaningY in chunks...')
 result_list = list()
+negative_df_list = list()
 for (i in (seq_len(this_num_chunks) + this_num_chunks * (k - 1))) {
     #   Grab a chunk of genes, tracking which counts begin as zeros
     counts_chunk = assays(spe)$normcounts[gene_indices[[i]], , drop = FALSE]
     zero_mask = counts_chunk == 0
 
-    #   Regress out sample ID and forcefully preserve zeros
+    #   Regress out sample ID, preserving initial zeros
     cleaned = cleaningY(counts_chunk, mod, P = 1)
     cleaned[zero_mask] = 0
+    cleaned = as(cleaned, "CsparseMatrix")
 
-    #   Ensure column-sparse data format and append to list
-    result_list[[i]] = as(cleaned, "CsparseMatrix")
+    #   In rare cases, cleaningY can introduce negative counts. Warn about this,
+    #   but shift expression to make the minimum zero for affected genes
+    mins = rowMins(cleaned)
+    mask = mins < 0
+    if (any(mins < 0)) {
+        negative_df_list[[i]] = tibble(
+            gene_symbol = rowData(spe)$symbol[gene_indices[[i]][mask]],
+            min_val = mins[mask],
+            mean_val = rowMeans(cleaned)[mask]
+        )
+
+        cleaned[mask, ] = cleaned[mask, ] + mins[mask]
+    }
+
+    result_list[[i]] = cleaned
+}
+
+#   Warn about any genes with negative counts
+if (length(negative_df_list) > 0) {
+    negative_df = do.call(rbind, negative_df_list)
+    warning(
+        "Some negative counts for genes '",
+        paste(negative_df$symbol, collapse = "', '"), "'"
+    )
+    print(negative_df, n = nrow(negative_df))
 }
 
 message(Sys.time(), ' | Merging all chunks...')
