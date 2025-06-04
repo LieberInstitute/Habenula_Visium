@@ -124,32 +124,41 @@ df_plot <- cbind(
 
 
 
-var_height <- 24 # 24/3=8
-var_width <- 26 # 36/4=9
-var_point_size <- 2
-var_guide_point_size = 3
+# var_point_size <- 2
+# var_guide_point_size = 3
 
 set.seed(07112024)
 
-p1_lst <- vis_grid_clus(
-    spe = spe,
-    clustervar = "cluster_agreement",
-    height = var_height,
-    width = var_width,
-    point_size = var_point_size,
-    sort_clust = FALSE,
-    guide_point_size = var_guide_point_size,
-    colors = c("red", "gold", "darkgreen", "grey"), ## Only_k20 Only_k28     Both     None 
-    return_plots = TRUE
-)
-
+plt_list <- function(var_point_size, var_guide_point_size) {
+    p1_lst <- vis_grid_clus(
+        spe = spe,
+        clustervar = "cluster_agreement",
+        height = 24, # 24/3=8,
+        width = 26, # 36/4=9
+        point_size = var_point_size,
+        sort_clust = FALSE,
+        guide_point_size = var_guide_point_size,
+        colors = c("red", "gold", "darkgreen", "grey"), ## Only_k20 Only_k28     Both     None 
+        return_plots = TRUE
+    )
+    return(p1_lst)
+}
+    
+## full version, print all plots in one page
+p1_lst <- plt_list(2, 3)
 p1_integrated <- wrap_plots(p1_lst, nrow = 3, ncol = 4)
 
 f_name <- here(dir_plots, "BS_k20_k28_comparison.pdf")
-pdf(f_name, height = var_height, width = var_width)
-
+pdf(f_name, height = 24, width = 26)
 print(p1_integrated)
+dev.off()
 
+## detailed version, print one plot by page
+p1_lst <- plt_list(5, 6)
+
+f_name <- here(dir_plots, "BS_k20_k28_comparison_detailed.pdf")
+pdf(f_name, height = 24, width = 26)
+print(p1_lst)
 dev.off()
 
 ## =============================================================================
