@@ -48,14 +48,19 @@ for (i in (seq_len(this_num_chunks) + this_num_chunks * (k - 1))) {
     #   but shift expression to make the minimum zero for affected genes
     mins = rowMins(cleaned)
     mask = mins < 0
-    if (any(mins < 0)) {
+    if (any(mask)) {
         negative_df_list[[i]] = tibble(
             gene_symbol = rowData(spe)$symbol[gene_indices[[i]][mask]],
             min_val = mins[mask],
             mean_val = rowMeans(cleaned)[mask]
         )
-
+        
+        #   Shift counts to make the minimum zero. Conversion to dense is
+        #   critical to avoid the extremely slow rowwise operation on the
+        #   previously column-sparse format
+        cleaned = as.matrix(cleaned)
         cleaned[mask, ] = cleaned[mask, ] + mins[mask]
+        cleaned = as(cleaned, "CsparseMatrix")
     }
 
     result_list[[i]] = cleaned
