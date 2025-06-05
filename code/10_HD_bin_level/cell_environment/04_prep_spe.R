@@ -48,11 +48,10 @@ spe = spe[rowSums(assays(spe)$counts) > 0, colSums(assays(spe)$counts) > 0]
 ################################################################################
 
 #   Use library-size normalization (normalization by deconvolution is not
-#   computationally feasible with data this large). Don't log scale, as for
-#   FICTURE we want counts that statistically resemble real counts
+#   computationally feasible with data this large)
 message(Sys.time(), ' | Performing log normalization...')
 spe = computeLibraryFactors(spe)
-spe = logNormCounts(spe, transform = "none")
+spe = logNormCounts(spe)
 assays(spe)$counts = NULL
 
 message(Sys.time(), ' | Saving filtered SPE...')
