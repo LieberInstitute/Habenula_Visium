@@ -6,7 +6,7 @@
 #SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/05_cleaningY_chunked_%a.txt
 #SBATCH -c 1
 #SBATCH -t 8:00:00
-#SBATCH --array=1-50%10
+#SBATCH --array=1-50%15
 
 set -e
 
