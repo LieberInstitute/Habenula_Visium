@@ -19,6 +19,17 @@ JHPCE location: `/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium
 
 <br>
 
+### JHPCE paths
+
+<br><br>
+
+
+| Description                              | JHPCE path                                                                 |
+|:-----------------------------------------|:---------------------------------------------------------------------------|
+| Multiome t-stats enrichment data         | <span style="color:red">`~/processed-data/05_snRNA-seq_model_stats/enrichment_snRNA-multiome_v2.rds`</span> |
+| snRNAseq t-stats enrichment data "FINE" | <span style="color:red">`~/processed-data/05_snRNA-seq_model_stats/enrichment_final_Annotations.rds`</span> |
+| Visium modeling-results                  | <span style="color:red">`~/processed-data/05_brain_area_differential_expression/modeling_results_BS/`</span> |
+
 
 
 
