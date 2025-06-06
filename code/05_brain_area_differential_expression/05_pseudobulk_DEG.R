@@ -44,35 +44,35 @@ k_values <- c(3, 13, 21, 26) # new k(s) selected based on the Habenula reference
 
 ##########functions for pseudobulk, saving results and volcano plots##########
 
-## Function to perform pseudoBulkDGE and return results
-## ## Fails to compare multiple contrast - make a generalization
-run_pseudoBulkDGE <- function(data, design, coef, method) {
-  #  runs quasi-likelihood F-tests using the edgeR pipeline
-  de_results <- scran::pseudoBulkDGE(
-    data,
-    label = data$BayesSpace,
-    design = design,
-    coef = coef,                    # "brain_area2G2" "brain_area2G3" "brain_area2G4"
-    condition = data$brain_area2,
-    row.data = rowData(data),
-    method = method
-  )
-
-}
-
-## Function to perform pseudoBulkDGE using brain_area2 as linear predictor 
-## Fails to fix conflict with names when trying to group multiple observations into one pseudo-sample (scran)
-run_pseudoBulkDGE_linear <- function(data, design_formula, method = "edgeR", coef) {
-    scran::pseudoBulkDGE(
-        x = data,
-        label = "pseudo_sample",  # point to the composed unique variable. eg. Br9037_Sp13D11.Habenula
-        design = design_formula,  # remove 'condition' when using design formula 
-        row.data = rowData(data),
-        method = method,
-        coef = coef,
-        #uniqueify = TRUE 
-    )
-}
+# ## Function to perform pseudoBulkDGE and return results
+# ## ## Fails to compare multiple contrast - make a generalization
+# run_pseudoBulkDGE <- function(data, design, coef, method) {
+#   #  runs quasi-likelihood F-tests using the edgeR pipeline
+#   de_results <- scran::pseudoBulkDGE(
+#     data,
+#     label = data$BayesSpace,
+#     design = design,
+#     coef = coef,                    # "brain_area2G2" "brain_area2G3" "brain_area2G4"
+#     condition = data$brain_area2,
+#     row.data = rowData(data),
+#     method = method
+#   )
+# 
+# }
+# 
+# ## Function to perform pseudoBulkDGE using brain_area2 as linear predictor 
+# ## Fails to fix conflict with names when trying to group multiple observations into one pseudo-sample (scran)
+# run_pseudoBulkDGE_linear <- function(data, design_formula, method = "edgeR", coef) {
+#     scran::pseudoBulkDGE(
+#         x = data,
+#         label = "pseudo_sample",  # point to the composed unique variable. eg. Br9037_Sp13D11.Habenula
+#         design = design_formula,  # remove 'condition' when using design formula 
+#         row.data = rowData(data),
+#         method = method,
+#         coef = coef,
+#         #uniqueify = TRUE 
+#     )
+# }
 
 
 run_pseudobulk_linear_DE <- function(data) {
@@ -177,8 +177,7 @@ create_volcano_plots <- function(results, model_name, output_dir, brain_area) {
   }
 }
 
-# Iterate over each k value and process the pseudoBulkDGE analysis
-
+## Iterate over each k value and process the pseudoBulkDGE analysis
 
 for (k in k_values) {
   
