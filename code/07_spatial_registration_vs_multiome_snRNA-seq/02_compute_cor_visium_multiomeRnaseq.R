@@ -14,6 +14,7 @@ library("spatialLIBD")
 library("tidyverse")
 library("jaffelab")
 library("ComplexHeatmap")
+library("grid") # need to print the plot, otherwise is clipped by internal function of layer_stat_cor_plot()
 library("here")
 library("sessioninfo")
 
@@ -74,30 +75,31 @@ head(colnames(unique(sn_multiome_data$enrichment)))
 
 snRNA_t_stats_sorted <- function(sn_data) {  
   
-  sn_data <- sn_multiome_data
-  x <- sn_data$enrichment
-  t_stats <- x[, grep("^t_stat_", colnames(x))]
-  colnames(t_stats) <- gsub("^t_stat_", "", colnames(t_stats))
-  newname_clusters <- colnames(t_stats)
-  
-  ## split hb-clusters from not hb clusters
-  no_hb_clust = list()
-  hb_clusters = list()
-  desired_order = list()
-  for (idx in newname_clusters) { if (nchar(idx) <= 4) { no_hb_clust <- append(no_hb_clust, idx) } }
-  no_hb_clust <- sort(c(unlist(no_hb_clust)))
-  hb_clusters <- sort(newname_clusters[! newname_clusters %in% c(no_hb_clust)])
-  desired_order <- c(hb_clusters, no_hb_clust)
-  
-  ## Set new class order on the enrichment data set
-  t_stats <- t_stats[, desired_order]
-  colnames(t_stats)
-  sn_data$enrichment <- t_stats
-  colnames(sn_data$enrichment)
+      sn_data <- sn_multiome_data
+      x <- sn_data$enrichment
+      t_stats <- x[, grep("^t_stat_", colnames(x))]
+      colnames(t_stats) <- gsub("^t_stat_", "", colnames(t_stats))
+      newname_clusters <- colnames(t_stats)
+      
+      ## split hb-clusters from not hb clusters
+      no_hb_clust = list()
+      hb_clusters = list()
+      desired_order = list()
+      for (idx in newname_clusters) { if (nchar(idx) <= 4) { no_hb_clust <- append(no_hb_clust, idx) } }
+      no_hb_clust <- sort(c(unlist(no_hb_clust)))
+      hb_clusters <- sort(newname_clusters[! newname_clusters %in% c(no_hb_clust)])
+      desired_order <- c(hb_clusters, no_hb_clust)
+      
+      ## Set new class order on the enrichment data set
+      t_stats <- t_stats[, desired_order]
+      colnames(t_stats)
+      sn_data$enrichment <- t_stats
+      colnames(sn_data$enrichment)
 
     return(sn_data)
   
 }
+
 
 
 ## Load Visium Registration Results 
@@ -160,62 +162,70 @@ map(registration_t_stats, jaffelab::corner)
 
 ## compute t-statistic and plot correlations for selected BayesSpace k(s)
 
-plt_corr_snmultiome <- function(kl, bs_reg) {
+plt_corr_snmultiome <- function(kl, 
+                                reg_t_stats, reg_t_stats_multiome,
+                                pl_name) {
     k_lst = kl
-    bayesSpace_registration = bs_reg 
-    #k_lst = k_list
-    #bayesSpace_registration = registration_t_stats
-  # plt_name <- paste0("cor_top100_registration_Visium_snMultiome.pdf")
+    tstats = reg_t_stats 
+    tstats_multiome = reg_t_stats_multiome
+    plt_name = pl_name
 
-  for (kl in names(k_lst)) {
+    pdf(pl_name, width = 10, height = 10)
+
+    for (kl in names(k_lst)) {
     # kl = names(k_lst[2])
       
-    k = names(k_lst[kl])
-    message("Processing Spatial-Registration for BayesSpace ", k)
-    # extract t-stats for the specific BS k
-    bayesSpace_registration_k <- bayesSpace_registration[[k]]
-    # [grep("^t_stat_Sp[0-9]+D[0-9]+", colnames(bayesSpace_registration[[k]]), value = TRUE)]
-    #print(head(bayesSpace_registration_k))
+        k = names(k_lst[kl])
+        message("Processing Spatial-Registration for BayesSpace ", k)
+        # extract t-stats for the specific BS k
+        tstats_k <- tstats[[k]]
+        # [grep("^t_stat_Sp[0-9]+D[0-9]+", colnames(tstats[[k]]), value = TRUE)]
+        #print(head(tstats_k))
+        
+        cor_layer <- layer_stat_cor(
+          stats = tstats_k,
+          modeling_results = tstats_multiome,
+          model_type = "enrichment",
+          top_n = 100
+        )
+        #print(head(cor_layer))
+        
+        annotated_clusters <- annotate_registered_clusters(cor_layer, confidence_threshold = 0.25, cutoff_merge_ratio = 0.1)
+        #head(annotated_clusters)
 
-    cor_layer <- layer_stat_cor(
-      stats = bayesSpace_registration_k,
-      modeling_results = sn_multiome_data,
-      model_type = "enrichment",
-      top_n = 100
-    )
-    print(head(cor_layer))
-   
-    annotated_clusters <- annotate_registered_clusters(cor_layer, confidence_threshold = 0.25, cutoff_merge_ratio = 0.1)
-    head(annotated_clusters)
-    # cluster     layer_confidence layer_label
-    # 1 Sp02D01             good   C.02/C.22
-    # 2 Sp02D02             good        C.37
-
-    # cor_layer <-
-    #   rownames(cor_layer) <- paste0(rownames(cor_layer), " ~ ", annotated_clusters[match(rownames(cor_layer), annotated_clusters$cluster)])
-
-    #rdata_name <- paste0("bayesSpace_cor_top100_", k,"_", suffix_name, ".Rdata")
-    rdata_name <- paste0("bayesSpace_cor_top100_Visium_Multiome_", k, ".Rdata")
-    save(cor_layer, file = here(data_dir, rdata_name))
-
-    ## make spatial-registration heatmap for specific k
-    p1 <- layer_stat_cor_plot(
+        # cor_layer <-
+        #   rownames(cor_layer) <- paste0(rownames(cor_layer), " ~ ", annotated_clusters[match(rownames(cor_layer), annotated_clusters$cluster)])
+        
+        #rdata_name <- paste0("bayesSpace_cor_top100_", k,"_", suffix_name, ".Rdata")
+        rdata_name <- paste0("bayesSpace_cor_top100_Visium_Multiome_", k, ".Rdata")
+        save(cor_layer, file = here(data_dir, rdata_name))
+        
+        ## make spatial-registration heatmap for specific k
+        p1 <- layer_stat_cor_plot(
             cor_layer, annotation = annotated_clusters,
             heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1)),
-            column_names_gp = gpar(fontsize = 10),
-            row_names_gp = gpar(fontsize = 10)
-      )
-    print(p1)
+            column_names_gp = gpar(fontsize = 16),
+            row_names_gp = gpar(fontsize = 16),
+            cluster_rows = FALSE
+            )
+        draw(
+            p1,
+            column_title = "Spatial-Registration: Visium vs Multiome (Fine res)",
+            column_title_gp = gpar(fontsize = 20, fontface = "bold")
+            )
     
-   }
+    }
    
-  dev.off()
+    dev.off()
 
 }
 
 
 ## call function to compute SpatialRegistration of Visium vs snMultiome
-plt_corr_snmultiome(k_list, registration_t_stats)
+plt_name <- here(plot_dir, paste0("cor_top100_registration_Visium_snMultiome_all_clusters.pdf"))
+plt_corr_snmultiome(k_list, 
+                    registration_t_stats, sn_multiome_data,
+                    plt_name)
 
 message("Spatial registration Visium vs Multiome, Done!")
 
