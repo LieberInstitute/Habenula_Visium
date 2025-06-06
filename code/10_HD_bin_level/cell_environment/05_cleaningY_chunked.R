@@ -47,10 +47,7 @@ for (i in (seq_len(this_num_chunks) + this_num_chunks * (k - 1))) {
     cleaned = 2 ** cleaned - 1
     cleaned = as(cleaned, "CsparseMatrix")
 
-    #   In rare cases, cleaningY can introduce negative counts. Warn about this,
-    #   but shift expression to make the minimum zero for affected genes
     mins = rowMins(cleaned)
-
     mask = mins < 0
     if (any(mask)) {
         #   For genes where negative counts were introduced, calculate the
