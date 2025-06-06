@@ -13,6 +13,7 @@ from sklearn.metrics import classification_report, confusion_matrix, ConfusionMa
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 import matplotlib.pyplot as plt
+from scipy.stats import chisquare
 
 k = int(os.getenv('SLURM_ARRAY_TASK_ID'))
 
@@ -167,6 +168,22 @@ grid.fit(x_train_small, y_train_small_int)
 generate_report(
     grid.best_estimator_, 'SVM', x_train_small, x_test_small,
     y_train_small_int, y_test_small_int
+)
+
+#   Are certain FICTURE clusters enriched in poorly classified cells? 
+y_pred = grid.best_estimator_.predict(x_test_small)
+expected = pd.Series(np.argmax(np.array(x_test_small), axis = 1) + 1).value_counts()
+observed = pd.Series(np.argmax(np.array(x_test_small)[y_test_small_int != y_pred, :], axis = 1) + 1).value_counts()
+chi_df = pd.DataFrame(
+    {
+        'expected': np.sum(observed) * expected / np.sum(expected),
+        'observed': observed
+    },
+    index = list(range(1, k + 1))
+).fillna(0)
+_, p = chisquare(f_obs = chi_df['observed'], f_exp = chi_df['expected'])
+print(
+    f'Chi-squared test for enrichment of poorly classified cells by FICTURE cluster: p = {p:.2e}'
 )
 
 #-------------------------------------------------------------------------------
