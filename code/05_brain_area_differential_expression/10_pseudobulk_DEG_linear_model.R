@@ -42,38 +42,7 @@ if (!dir.exists(plot_dir)) dir.create(plot_dir, recursive = TRUE)
 k_values <- c(3, 13, 21, 26) # new k(s) selected based on the Habenula reference merged to only one Habenula class
 
 
-##########functions for pseudobulk, saving results and volcano plots##########
-
-# ## Function to perform pseudoBulkDGE and return results
-# ## ## Fails to compare multiple contrast - make a generalization
-# run_pseudoBulkDGE <- function(data, design, coef, method) {
-#   #  runs quasi-likelihood F-tests using the edgeR pipeline
-#   de_results <- scran::pseudoBulkDGE(
-#     data,
-#     label = data$BayesSpace,
-#     design = design,
-#     coef = coef,                    # "brain_area2G2" "brain_area2G3" "brain_area2G4"
-#     condition = data$brain_area2,
-#     row.data = rowData(data),
-#     method = method
-#   )
-# 
-# }
-# 
-# ## Function to perform pseudoBulkDGE using brain_area2 as linear predictor 
-# ## Fails to fix conflict with names when trying to group multiple observations into one pseudo-sample (scran)
-# run_pseudoBulkDGE_linear <- function(data, design_formula, method = "edgeR", coef) {
-#     scran::pseudoBulkDGE(
-#         x = data,
-#         label = "pseudo_sample",  # point to the composed unique variable. eg. Br9037_Sp13D11.Habenula
-#         design = design_formula,  # remove 'condition' when using design formula 
-#         row.data = rowData(data),
-#         method = method,
-#         coef = coef,
-#         #uniqueify = TRUE 
-#     )
-# }
-
+########## functions for pseudobulk, saving results and volcano plots##########
 
 run_pseudobulk_linear_DE <- function(data) {
 
@@ -335,6 +304,57 @@ for (k in k_values) {
 }
 
   
+
+#============= Alternative analysis ============================================
+#============= Prepare data to compute DGE with linear model on BayesSpace k=20 
+
+k_merge = 20
+k_merge <- sprintf("%02d", k_merge)
+
+message("Processing BayesSpace k=", k_merge)
+
+## Load data for the current k
+data_file <- file.path(input_dir, paste0("sce_pseudo_PCA_brain_area_k", k_merge, ".rds"))
+spe_data <- readRDS(data_file)
+
+## inspect data
+colnames(colData(spe_data))
+# [1] "age"             "BayesSpace"      "brain_area"      "brain_area2"    
+# [5] "brain_id"        "diagnosis"       "expr_chrM"       "expr_chrM_ratio"
+# [9] "nspots"          "pmi"             "rin"             "sample_id"      
+# [13] "sex"             "sum_umi" 
+table(spe_data$BayesSpace)
+# Sp20D01 Sp20D02 Sp20D03 Sp20D04 Sp20D06 Sp20D07 Sp20D08 Sp20D09 Sp20D10 Sp20D11 
+#   9      12      12      12      10      12      11      12      12      11 
+# Sp20D12 Sp20D13 Sp20D14 Sp20D15 Sp20D16 Sp20D17 Sp20D18 Sp20D19 Sp20D20 
+#   10      11      12      12      11      12      12      11      12 
+table(spe_data$brain_id, spe_data$BayesSpace)
+#           Sp20D18 Sp20D19 Sp20D20
+# Br8518       4       3       4
+# Br9037       4       4       4
+# Br9090       4       4       4
+table(spe_data$sample_id, spe_data$BayesSpace)
+
+## merge Hb SpD(s) based on SpatialRegistration "Fine" resolution
+levels(spe_data$BayesSpace)
+# [1] "Sp20D01" "Sp20D02" "Sp20D03" "Sp20D04" "Sp20D06" "Sp20D07" "Sp20D08"
+# [8] "Sp20D09" "Sp20D10" "Sp20D11" "Sp20D12" "Sp20D13" "Sp20D14" "Sp20D15"
+# [15] "Sp20D16" "Sp20D17" "Sp20D18" "Sp20D19" "Sp20D20"
+
+k20_SpD_to_merge <- "^Sp20D06|^Sp20D08|^Sp20D16|^Sp20D19"
+
+spe_data$hb_BSk20_merged <-
+    gsub(k20_SpD_to_merge, "hb_BSk20_merged", spe_data$BayesSpace)
+spe_data$hb_BSk20_merged <- as.factor(spe_data$hb_BSk20_merged)
+levels(spe_data$hb_BSk20_merged)
+#table(spe_data$sample_id, spe_data$BayesSpace)
+#table(spe_data$sample_id, spe_data$hb_BSk20_merged)
+
+
+#===============================================================================
+
+
+
   #### Compute model against brain_area linear variable == this model doesn't have the correct desing, need to use manual DEG using contrast
   
   # # Remove level "G0" from the data, as we only have one sample for this group
