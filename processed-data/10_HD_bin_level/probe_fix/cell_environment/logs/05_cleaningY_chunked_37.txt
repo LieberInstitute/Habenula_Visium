@@ -1,10 +1,10 @@
 **** Job starts ****
-Mon Jun  2 05:43:04 PM EDT 2025
+Thu Jun  5 04:53:24 PM EDT 2025
 **** JHPCE info ****
 User: neagles
-Job id: 16917420
+Job id: 16947851
 Job name: 05_cleaningY_chunked
-Node name: compute-166
+Node name: compute-169
 Task id: 37
 
 Currently Loaded Modules:
@@ -154,10 +154,23 @@ The following objects are masked from ‘package:tidyr’:
 
     expand, pack, unpack
 
-2025-06-02 17:45:08.643939 | Executing cleaningY in chunks...
-There were 20 warnings (use warnings() to see them)
-2025-06-02 17:50:50.21845 | Merging all chunks...
-2025-06-02 17:52:35.270176 | Saving merged chunks...
+2025-06-05 16:55:56.553723 | Executing cleaningY in chunks...
+There were 24 warnings (use warnings() to see them)
+# A tibble: 8 × 4
+  gene_symbol  min_val orig_min_val mean_val
+  <chr>          <dbl>        <dbl>    <dbl>
+1 MT-ND1      -0.00168       0.0131   0.0332
+2 MT-ND2      -0.0192        0.0126   0.0691
+3 MT-CO2      -0.0367        0.0108   0.139 
+4 MT-ATP6     -0.0364        0.0131   0.167 
+5 MT-CO3      -0.0261        0.0129   0.143 
+6 MT-ND4L     -0.00713       0.0131   0.0517
+7 MT-ND4      -0.0341        0.0130   0.166 
+8 MT-CYB      -0.0145        0.0129   0.0929
+Warning message:
+Some negative counts for genes 'MT-ND1', 'MT-ND2', 'MT-CO2', 'MT-ATP6', 'MT-CO3', 'MT-ND4L', 'MT-ND4', 'MT-CYB' 
+2025-06-05 17:04:44.850943 | Merging all chunks...
+2025-06-05 17:07:17.321484 | Saving merged chunks...
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.4.3 Patched (2025-02-28 r88218)
@@ -168,7 +181,7 @@ There were 20 warnings (use warnings() to see them)
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2025-06-02
+ date     2025-06-05
  pandoc   3.2 @ /jhpce/shared/community/core/conda_R/4.4.x/bin/pandoc
  quarto   NA
 
@@ -229,6 +242,7 @@ There were 20 warnings (use warnings() to see them)
  sessioninfo          * 1.2.3    2025-02-05 [2] CRAN (R 4.4.2)
  SingleCellExperiment * 1.28.1   2024-11-10 [2] Bioconductor 3.20 (R 4.4.2)
  SparseArray            1.6.0    2024-10-29 [1] Bioconduc~
+ sparseMatrixStats      1.18.0   2024-10-29 [1] Bioconduc~
  SpatialExperiment    * 1.16.0   2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
  statmod                1.5.0    2023-01-06 [2] CRAN (R 4.4.0)
  stringi                1.8.4    2024-05-06 [1] CRAN (R 4.4.2)
@@ -241,6 +255,7 @@ There were 20 warnings (use warnings() to see them)
  timechange             0.3.0    2024-01-18 [2] CRAN (R 4.4.0)
  tzdb                   0.5.0    2025-03-15 [2] CRAN (R 4.4.3)
  UCSC.utils             1.2.0    2024-10-29 [2] Bioconductor 3.20 (R 4.4.2)
+ utf8                   1.2.4    2023-10-22 [1] CRAN (R 4.4.2)
  vctrs                  0.6.5    2023-12-01 [1] CRAN (R 4.4.2)
  withr                  3.0.2    2024-10-28 [1] CRAN (R 4.4.2)
  XVector                0.46.0   2024-10-29 [1] Bioconduc~
@@ -253,4 +268,4 @@ There were 20 warnings (use warnings() to see them)
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Mon Jun  2 05:52:52 PM EDT 2025
+Thu Jun  5 05:07:40 PM EDT 2025
