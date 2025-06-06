@@ -350,6 +350,38 @@ levels(spe_data$hb_BSk20_merged)
 #table(spe_data$sample_id, spe_data$BayesSpace)
 #table(spe_data$sample_id, spe_data$hb_BSk20_merged)
 
+## create new variable describing 'pseudo_brain_area' to test Habenula A-P DGE
+# Br8518 = V13B23-285 defined
+# Br9037 = V13B23-280
+# Br9090 = V14F07-340
+
+colData(spe_data)$pseudo_brain_area <- case_when(
+    colData(spe_data)$sample_id == "V13B23-285_A1" ~ 0,
+    
+    colData(spe_data)$sample_id == "V13B23-285_B1" |
+        colData(spe_data)$sample_id == "V14F07-340_D1" |
+        colData(spe_data)$sample_id == "V13B23-280_D1" ~ 1,
+    
+    colData(spe_data)$sample_id == "V13B23-285_C1" |
+        colData(spe_data)$sample_id == "V14F07-340_C1" |
+        colData(spe_data)$sample_id == "V13B23-280_C1" ~ 2,
+    
+    colData(spe_data)$sample_id == "V13B23-285_D1" |
+        colData(spe_data)$sample_id == "V14F07-340_B1" |
+        colData(spe_data)$sample_id == "V14F07-340_A1" |
+        colData(spe_data)$sample_id == "V13B23-280_B1" ~ 3,
+    
+    colData(spe_data)$sample_id == "V13B23-280_A1" ~ 4
+)
+# Make a factor
+spe_data$pseudo_brain_area <- factor(spe_data$pseudo_brain_area)
+table(spe_data$BayesSpace, spe_data$pseudo_brain_area)
+table(spe_data$hb_BSk20_merged, spe_data$pseudo_brain_area)
+table(spe_data$brain_id, spe_data$pseudo_brain_area)
+#         0  1  2  3  4
+# Br8518 15 18 19 19  0
+# Br9037  0 18 19 19 19
+# Br9090  0 17 17 36  0
 
 #===============================================================================
 
