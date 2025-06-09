@@ -643,14 +643,8 @@ plot_clusterwise_volcanos <- function(
             next
         }
         
-        #design_cluster <- model.matrix(~ pseudo_brain_area + donor, data = coldata_cluster)
-        design_cluster <- model.matrix(~ pseudo_brain_area, data = coldata_cluster)
-        
-        # Filter samples in the cluster
-        #sample_mask <- colnames(return_dge$fit$counts) %in% coldata_cluster$sample_id
-        #dge_cluster <- edgeR::DGEList(counts = return_dge$fit$counts[, sample_mask])
+        design_cluster <- model.matrix(~ pseudo_brain_area + donor, data = coldata_cluster)
         dge_cluster <- calcNormFactors(dge_cluster)
-        
         dge_cluster <- estimateDisp(dge_cluster, design_cluster)
         fit_cluster <- glmFit(dge_cluster, design_cluster)
         # likelihood ratio test (LRT)
@@ -696,8 +690,6 @@ plot_clusterwise_volcanos <- function(
 }
 
 
-colnames(design)
-
 #===============================================================================
 
 # LHb++: Column 1 (coef = 0): The intercept (baseline expression for pseudo_brain_area0)
@@ -708,6 +700,8 @@ colnames(design)
 
 # model1:  from LHb+ to LHb++
 # - covar: donor
+
+colnames(design)
 
 model_name = paste0("BSk", k_merge, "_model1_AP1-0")
 model_name
@@ -738,6 +732,35 @@ plot_clusterwise_volcanos(
     contrast_label = "AP3-0",
     contrast_coef = 4 # area3 vs area0
 )
+
+
+## Compare pseudo_brain_area1 vs pseudo_brain_area3
+
+model_name = paste0("BSk", k_merge, "_model1_AP1-3")
+model_name
+# [1] "BSk20_model1_AP1-3"
+
+# Set pseudo_brain_area3 as the reference level to compare pseudo_brain_area1 vs pseudo_brain_area3
+# model1:  from LHb+ to MHb+
+coldata_cluster$pseudo_brain_area <- factor(coldata_cluster$pseudo_brain_area)
+coldata_cluster$pseudo_brain_area <- relevel(coldata_cluster$pseudo_brain_area, ref = "3")
+# re-create the design matrix
+design <- model.matrix(~ pseudo_brain_area + donor, data = coldata_cluster)
+colnames(design)
+# [1] "(Intercept)"        "pseudo_brain_area0" "pseudo_brain_area1"
+# [4] "pseudo_brain_area2" "pseudo_brain_area4" "donorBr9037"       
+# [7] "donorBr9090"  
+
+plot_clusterwise_volcanos(
+    spe_data = spe_data,
+    return_dge = return_dge,
+    model_name = model_name,
+    cluster_var = "SpD20_merged",
+    output_dir = plot_dir,
+    contrast_label = "AP1-3", # From LHb to MHb
+    contrast_coef = 3 
+)
+
 
 
 #===============================================================================
