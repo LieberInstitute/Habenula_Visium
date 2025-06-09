@@ -26,9 +26,13 @@ plot_dir = here(
 
 dir.create(plot_dir, showWarnings = FALSE)
 
+#   We'll only deal with primary cells, since the set of secondary cells changes
+#   between the full-data SPE and the extracellular analysis. Also, only the
+#   primary cells are affected by bad H&E images
 spe = loadHDF5SummarizedExperiment(spe_dir)
 spe = spe[, spe$labels_joint_source == 'primary']
 
+#   For each cell, compute number of extracellular bins
 extra_df = fread(extra_path) |>
     as_tibble() |>
     mutate(key = paste(cell_id, sample_id, sep = '_')) |>
@@ -36,4 +40,23 @@ extra_df = fread(extra_path) |>
     select(key) |>
     group_by(key) |>
     summarize(num_neighbors = n())
-    
+
+#   Join this metric with the SPE
+spe$num_neighbors = colData(spe) |>
+    as_tibble() |>
+    left_join(extra_df, by = 'key') |>
+    pull(num_neighbors)
+spe$num_neighbors[is.na(spe$num_neighbors)] = 0
+
+#   Check distribution of cells' number of constituent bins by sample
+p = colData(spe)[, c('sample_id', 'bin_count')] |>
+    as_tibble() |>
+    filter(bin_count < 80) |>
+    ggplot(aes(x = bin_count, fill = sample_id)) +
+        geom_density(alpha = 0.25) +
+        theme_bw(base_size = 20) +
+        guides(fill = guide_legend(override.aes = list(alpha = 1))) +
+        labs(x = 'Cell Size (Bins)', y = 'Density', fill = 'Sample ID')
+pdf(file.path(plot_dir, 'cell_size_density.pdf'), width = 10, height = 6)
+print(p)
+dev.off()
