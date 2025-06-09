@@ -563,11 +563,13 @@ plot_clusterwise_volcanos <- function(
         return_dge,
         model_name,
         cluster_var = "SpD20_merged", # relative to SpD k=20 with Hb merged clusters
-        expr_threshold = 1,           # only plot genes with FDR > 1 in the cluster
+        expr_threshold = 1,           # only include genes with average CPM > 1 in the cluster (minimum expression level)
+        FDR_thr = 0.05,
         output_dir = NULL,
         # assay_name = "counts",
         contrast_label,
-        contrast_coef                 # ge. coef=2 ~ area1 vs area0
+        contrast_coef,                 # ge. coef=2 ~ area1 vs area0
+        expression_quantile = NULL
 ) {
 
     expr_cpm <- edgeR::cpm(return_dge$fit$counts)
@@ -611,7 +613,8 @@ plot_clusterwise_volcanos <- function(
     message("Generating volcano plots by cluster...")
     message("Processing ", length(clusters), " levels")
     
-    pdf_file <- file.path(output_dir, paste0("volcano_", model_name, "_FDR05.pdf"))
+    # pdf_file <- file.path(output_dir, paste0("volcano_", model_name, "_FDR05.pdf"))
+    pdf_file <- file.path(output_dir, paste0("volcano_", model_name, "_FDR", FDR_thr ,"_ExpQuantile", expression_quantile,".pdf"))
     pdf(pdf_file, width = 8, height = 8)
 
     for (clust in clusters) {
@@ -653,11 +656,23 @@ plot_clusterwise_volcanos <- function(
         res_cluster <- edgeR::topTags(lrt_cluster, n = Inf)$table
         res_cluster$gene_name <- gene_name_map[rownames(res_cluster)]
         
-        # Filter for low expressed genes in the current cluster
-        cluster_samples <- coldata_cluster$sample_id
-        sample_ids_cpm <- colnames(expr_cpm)
-        sample_mask_cpm <- grepl(paste(cluster_samples, collapse = "|"), sample_ids_cpm)
-        expressed_genes <- rownames(expr_cpm)[rowMeans(expr_cpm[, sample_mask_cpm, drop = FALSE]) > expr_threshold]
+        ## Filter for low expressed genes in the current cluster
+        if (is.null(expression_quantile)) {
+            cluster_samples <- coldata_cluster$sample_id
+            sample_ids_cpm <- colnames(expr_cpm)
+            sample_mask_cpm <- grepl(paste(cluster_samples, collapse = "|"), sample_ids_cpm)
+            expressed_genes <- rownames(expr_cpm)[rowMeans(expr_cpm[, sample_mask_cpm, drop = FALSE]) > expr_threshold]
+        } else {
+            ## filter for low expressed genes in the current cluster using CPM quantiles
+            cluster_samples <- coldata_cluster$sample_id
+            sample_mask_cpm <- grepl(paste(cluster_samples, collapse = "|"), colnames(expr_cpm))
+            avg_expr <- rowMeans(expr_cpm[, sample_mask_cpm, drop = FALSE])
+            nonzero_expr <- avg_expr[avg_expr > 0]
+            # dynamically set threshold; g.e 25th / 50th percentile threshold
+            cluster_expr_threshold <- quantile(nonzero_expr, probs = expression_quantile, na.rm = TRUE)
+            message("Percentile threshold set (", (expression_quantile*100), "th): ", cluster_expr_threshold)
+            expressed_genes <- names(avg_expr)[avg_expr > cluster_expr_threshold]
+        }        
         
         res_filtered <- res_cluster[rownames(res_cluster) %in% expressed_genes, ]
         if (nrow(res_filtered) == 0) {
@@ -673,10 +688,12 @@ plot_clusterwise_volcanos <- function(
             selectLab = top_genes,
             x = "logFC",
             y = "FDR",
-            title = paste("Habenula", contrast_label, "- Cluster:", clust),
-            subtitle = model_name,
-            pCutoff = 0.05,
-            FCcutoff = 0.5,
+            title = paste("Habenula AP", contrast_label, "- Cluster:", clust),
+            subtitle = paste0(model_name, " (FDR=", FDR_thr ,"; Expr.Quantile=", expression_quantile ,")"),
+            # pCutoff = 0.05, # statistical significance threshold (FDR ≤ 0.05)
+            # FCcutoff = 0.5, # biological effect size threshold (log2FC > ±0.5)
+            pCutoff = FDR_thr,     # even 0.2 for discovery / Default 0.05
+            FCcutoff = 0.25,       # for smaller effect genes
             pointSize = 2.0,
             labSize = 4.0,
             max.overlaps = 50, 
@@ -734,6 +751,7 @@ plot_clusterwise_volcanos(
 )
 
 
+#===============================================================================
 ## Compare pseudo_brain_area1 vs pseudo_brain_area3
 
 model_name = paste0("BSk", k_merge, "_model1_AP1-3")
@@ -751,18 +769,58 @@ colnames(design)
 # [4] "pseudo_brain_area2" "pseudo_brain_area4" "donorBr9037"       
 # [7] "donorBr9090"  
 
+# FDR at 5%, with filtering by gene expr at 50% percentile, with relaxed FCcutoff for smaller effect genes
 plot_clusterwise_volcanos(
     spe_data = spe_data,
     return_dge = return_dge,
     model_name = model_name,
     cluster_var = "SpD20_merged",
     output_dir = plot_dir,
-    contrast_label = "AP1-3", # From LHb to MHb
-    contrast_coef = 3 
+    FDR_thr = 0.05, 
+    contrast_label = " From LHb to MHb", # From LHb to MHb
+    contrast_coef = 3, 
+    expression_quantile = 0.50 # Relaxed; allows moderately expressed genes
 )
 
+# FDR at 5%, with filtering by gene expr at 75% percentile, with relaxed FCcutoff for smaller effect genes
+plot_clusterwise_volcanos(
+    spe_data = spe_data,
+    return_dge = return_dge,
+    model_name = model_name,
+    cluster_var = "SpD20_merged",
+    output_dir = plot_dir,
+    FDR_thr = 0.05, 
+    contrast_label = " From LHb to MHb", # From LHb to MHb
+    contrast_coef = 3, 
+    expression_quantile = 0.75 # More strict expressed genes
+)
 
+# FDR at 5%, with filtering by gene expr at 97% percentile, with relaxed FCcutoff for smaller effect genes
+plot_clusterwise_volcanos(
+    spe_data = spe_data,
+    return_dge = return_dge,
+    model_name = model_name,
+    cluster_var = "SpD20_merged",
+    output_dir = plot_dir,
+    FDR_thr = 0.05, # more permissive
+    contrast_label = " From LHb to MHb", # From LHb to MHb
+    contrast_coef = 3, 
+    expression_quantile = 0.97 # More strict, ideally should be >1
+)
 
+#===============================================================================
+## FDR at 10%, with filtering by gene expr at 97% percentile, with  strict expressed genes
+# plot_clusterwise_volcanos(
+#     spe_data = spe_data,
+#     return_dge = return_dge,
+#     model_name = model_name,
+#     cluster_var = "SpD20_merged",
+#     output_dir = plot_dir,
+#     FDR_thr = 0.1, # more permissive
+#     contrast_label = " From LHb to MHb", # From LHb to MHb
+#     contrast_coef = 3, 
+#     expression_quantile = 0.95 # More strict expressed genes
+# )
 #===============================================================================
 
 
