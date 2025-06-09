@@ -1,17 +1,13 @@
-# Load required libraries
-#library("spatialLIBD")
 library("SingleCellExperiment")
 library("scran")
 library("scuttle")
 library("edgeR")
 library("purrr")
-library("IRanges")
-library("S4Vectors")
-# library("limma")
-# library("BayesSpace")
+# library("IRanges")
+# library("S4Vectors")
 library("ggplot2")
-library("ggpubr")
-library("ggrepel")
+# library("ggpubr")
+# library("ggrepel")
 library("EnhancedVolcano")
 library("pheatmap")
 library("dplyr")
@@ -34,7 +30,7 @@ input_dir <- here("processed-data", "05_brain_area_differential_expression")
 data_dir <- here("processed-data", "05_brain_area_differential_expression")
 if (!dir.exists(data_dir)) dir.create(data_dir, recursive = TRUE)
 
-plot_dir <- here("plots", "05_brain_area_differential_expression", "05_pseudobulk_DEG")
+plot_dir <- here("plots", "05_brain_area_differential_expression", "10_pseudobulk_DEG_linear_model")
 if (!dir.exists(plot_dir)) dir.create(plot_dir, recursive = TRUE)
 
 # Define k values to iterate over
@@ -90,20 +86,21 @@ run_pseudobulk_linear_DE <- function(data) {
 
 
 ## Function to create and save Enhanced Volcano plots
-create_volcano_plots <- function(results, model_name, output_dir, brain_area) {
+create_volcano_plots <- function(results, model_name, plt_dir, brain_area) {
   
   # create directory for specific model  
   if (!dir.exists(model_name)) dir.create(here(plot_dir, model_name), recursive = TRUE, showWarnings = FALSE)
-  # results = de_results_1
-  # model_name = paste0("model1_k", k_nice)
-  # output_dir = here(plot_dir, paste0("model1_k", k_nice))
+  # results = return_dge
+  # model_name = "K20_brainID_model_naive"
+  # plt_dir = plot_dir
+  # brain_area = "hb_BSk20_merged"
   
   for (domain in names(results)) {
     
-    # domain = "Sp13D11 ~ Habenula"
+    # domain = "hb_BSk20_merged"
     # domain = "Sp13D01 ~ Oligo"
     
-    domain_results <- results[[domain]]
+    domain_results <- results[domain]
 
     # replace tilde " ~ " from file-name with "-"
     f_name = paste0("volcano_", domain, "_", model_name, ".pdf")
@@ -306,6 +303,7 @@ for (k in k_values) {
   
 
 #============= Alternative analysis ============================================
+
 #============= Prepare data to compute DGE with linear model on BayesSpace k=20 
 
 k_merge = 20
@@ -333,24 +331,38 @@ table(spe_data$brain_id, spe_data$BayesSpace)
 # Br8518       4       3       4
 # Br9037       4       4       4
 # Br9090       4       4       4
-table(spe_data$sample_id, spe_data$BayesSpace)
+#table(spe_data$sample_id, spe_data$BayesSpace)
 
+#===============================================================================
 ## merge Hb SpD(s) based on SpatialRegistration "Fine" resolution
 levels(spe_data$BayesSpace)
 # [1] "Sp20D01" "Sp20D02" "Sp20D03" "Sp20D04" "Sp20D06" "Sp20D07" "Sp20D08"
 # [8] "Sp20D09" "Sp20D10" "Sp20D11" "Sp20D12" "Sp20D13" "Sp20D14" "Sp20D15"
 # [15] "Sp20D16" "Sp20D17" "Sp20D18" "Sp20D19" "Sp20D20"
 
-k20_SpD_to_merge <- "^Sp20D06|^Sp20D08|^Sp20D16|^Sp20D19"
+SpD20_merged <- "^Sp20D06|^Sp20D08|^Sp20D16|^Sp20D19"
+spe_data$SpD20_merged <-gsub(SpD20_merged, "SpD20_Hb_merged", spe_data$BayesSpace)
 
-spe_data$hb_BSk20_merged <-
-    gsub(k20_SpD_to_merge, "hb_BSk20_merged", spe_data$BayesSpace)
-spe_data$hb_BSk20_merged <- as.factor(spe_data$hb_BSk20_merged)
-levels(spe_data$hb_BSk20_merged)
-#table(spe_data$sample_id, spe_data$BayesSpace)
-#table(spe_data$sample_id, spe_data$hb_BSk20_merged)
+# ensure all unmatched levels remain unchanged
+spe_data$SpD20_merged <- ifelse(grepl(SpD20_merged, spe_data$BayesSpace),
+                                "SpD20_Hb_merged", as.character(spe_data$BayesSpace))
+spe_data$SpD20_merged <- factor(spe_data$SpD20_merged)
+levels(spe_data$SpD20_merged)
+levels(spe_data$BayesSpace)
 
+head(table(spe_data$sample_id, spe_data$SpD20_merged))
+# ...
+#               SpD20_Hb_merged
+# V13B23-280_A1               4
+# V13B23-280_B1               4
+# V13B23-280_C1               4
+# V13B23-280_D1               4
+# V13B23-285_A1               0
+# V13B23-285_B1               3
+
+#===============================================================================
 ## create new variable describing 'pseudo_brain_area' to test Habenula A-P DGE
+
 # Br8518 = V13B23-285 defined
 # Br9037 = V13B23-280
 # Br9090 = V14F07-340
@@ -373,17 +385,296 @@ colData(spe_data)$pseudo_brain_area <- case_when(
     
     colData(spe_data)$sample_id == "V13B23-280_A1" ~ 4
 )
+# make sure all sample IDs are included
+table(is.na(spe_data$pseudo_brain_area))  # should be FALSE
+
 # Make a factor
 spe_data$pseudo_brain_area <- factor(spe_data$pseudo_brain_area)
 table(spe_data$BayesSpace, spe_data$pseudo_brain_area)
-table(spe_data$hb_BSk20_merged, spe_data$pseudo_brain_area)
+# table(spe_data$hb_BSk20_merged, spe_data$pseudo_brain_area)
 table(spe_data$brain_id, spe_data$pseudo_brain_area)
 #         0  1  2  3  4
 # Br8518 15 18 19 19  0
 # Br9037  0 18 19 19 19
 # Br9090  0 17 17 36  0
 
+# creates unique factor levels for every combination of brain_id and BayesSpace and avoids accidental duplicates.
+colData(spe_data)$pseudo_sample_id <- paste0(colData(spe_data)$sample_id, "_", colData(spe_data)$SpD20_merged)
+
+# inspect uniqueness
+table(duplicated(colData(spe_data)$pseudo_sample_id))
+dups <- colData(spe_data)$pseudo_sample_id[duplicated(colData(spe_data)$pseudo_sample_id)]
+head(table(colData(spe_data)$pseudo_sample_id))  
+length(unique(colData(spe_data)$brain_id)) * length(unique(colData(spe_data)$SpD20_merged))
+# = 3 × 12 = 36
+# How many pseudo-bulk groups?
+length(unique(colData(spe_data)$pseudo_sample_id))
+
+
 #===============================================================================
+## compute linear DGE across colData(spe_data)$pseudo_brain_area
+#de_results <- run_pseudobulk_linear_DE(spe_data)
+
+aggregated <- scuttle::aggregateAcrossCells(
+    x = spe_data,
+    ids = colData(spe_data)$pseudo_sample_id,
+    statistics = "sum",
+    use.assay.type = "counts"
+)
+
+# Parse pseudo-sample names into metadata - split sample-name from bayesspace annotated domain
+col_names <- colnames(aggregated)
+sampleID <- sub("^(([^_]+_[^_]+))_.*", "\\1", col_names)
+SpD <- sub("^[^_]+_[^_]+_(.*)", "\\1", col_names)
+agg_coldata <- data.frame(cluster = SpD, sample_id = sampleID)
+colnames(agg_coldata) <- c("cluster", "sample_id")
+
+# Map pseudo_brain_area to each pseudo-bulk sample
+#map_df <- unique(colData(spe_data)[, c("sample_id", "pseudo_brain_area")])
+map_pseudo <- as.data.frame(colData(spe_data)) |>
+    distinct(sample_id, .keep_all = TRUE)
+
+agg_coldata$pseudo_brain_area <- map_pseudo$pseudo_brain_area[
+    match(agg_coldata$sample_id, map_pseudo$sample_id)
+]
+head(map_pseudo)
+
+## Create design matrix
+# This sets up a linear model where pseudo_brain_area0 is the reference. Each coefficient (coef = 2:4) compares against it
+# - pseudo_brain_area is a factor with 5 levels (e.g., 0 to 4)
+design <- model.matrix(~ pseudo_brain_area, data = agg_coldata)
+colnames(design)
+# [1] "(Intercept)"        "pseudo_brain_area1" "pseudo_brain_area2"
+# [4] "pseudo_brain_area3" "pseudo_brain_area4"
+
+# run EdgeR differential expression
+dge <- DGEList(counts = assay(aggregated, "counts"))
+dge <- calcNormFactors(dge)
+dge <- estimateDisp(dge, design)
+fit <- glmFit(dge, design)
+# lrt <- glmLRT(fit, coef = 2)  # area1 vs area0 (baseline)
+lrt <- glmLRT(fit, coef = 4)  # area3 vs area0 
+
+# DGE return results
+return_dge <- list(
+    lrt = lrt,
+    top_genes = topTags(lrt),
+    fit = fit,
+    design = design,
+    coldata = agg_coldata
+)
+res_table <- edgeR::topTags(return_dge$lrt, n = Inf)$table
+head(res_table)
+#                   logFC    logCPM        LR       PValue          FDR
+# ENSG00000129824  7.3036109  6.576374 47.925523 4.427207e-12 2.777187e-08
+# ENSG00000067048  5.6468725  5.246189 34.821007 3.614523e-09 1.007103e-05
+# ENSG00000198692  5.3496602  5.017050 34.123204 5.173071e-09 1.007103e-05  
+
+str(res_table)
+
+#===============================================================================
+
+model_name = paste0("K", k_merge, "_brainID_model_naive")
+model_name
+
+# Add gene names
+gene_name_map <- rowData(spe_data)$gene_name
+names(gene_name_map) <- rownames(spe_data)
+res_table$gene_name <- gene_name_map[rownames(res_table)]
+
+
+#===============================================================================
+## Summarize global brain area effects — the results don't change per cluster.
+    
+clust="SpD20_Hb_merged"
+message("Volcano plot for cluster: ", clust)
+
+# Identify samples in this cluster
+samples_in_cluster <- colData(spe_data)$sample_id[spe_data$SpD20_merged == clust]
+
+# check if certain genes are highly expressed in this cluster — for labeling
+# Or just reuse global result but change plot title
+top_genes <- head(res_table$gene_name[order(res_table$FDR)], 20)
+
+## make volcano plots by SpD (cluster)
+pdf_file <- file.path(output_dir, paste0("volcano_", model_name, "_global_A3_vs_A0_FDR05.pdf"))
+pdf(pdf_file, width = 8, height = 8)
+
+p1 <- EnhancedVolcano::EnhancedVolcano(
+    res_table,
+    lab = res_table$gene_name,
+    selectLab = top_genes,
+    x = "logFC",
+    y = "FDR",
+    title = paste("Habenula AP Global - All Cluster:", clust),
+    subtitle = paste(model_name, " ", clust),
+    pCutoff = 0.05,
+    FCcutoff = 0.5,
+    pointSize = 2.0,
+    labSize = 4.0,
+    drawConnectors = TRUE
+)
+print(p1)
+dev.off()
+
+
+#===============================================================================
+# performs a differential gene expression (DGE) test using a single linear model (GLM) per cluster
+# - Subsets the DGE input data (return_dge$coldata) to include only pseudo-bulk samples belonging to that cluster 
+# - highlight (filter) genes that are actually expressed in each cluster
+# - Builds a design matrix accordingly 
+# - creates a linear model with an intercept and coefficients for each level of pseudo_brain_area compared to the reference level (level 0). 
+# - NOTE. It is not computing all pairwise contrasts, only the coefficient specified in: edgeR::glmLRT(fit_cluster, coef = 2)
+
+# say: only plot genes with FDR > 1 in the cluster
+expr_cpm <- edgeR::cpm(return_dge$fit$counts)
+colnames(expr_cpm)
+# [1] "V13B23-280_A1_Sp20D01"         "V13B23-280_A1_Sp20D02"        
+# [3] "V13B23-280_A1_Sp20D03"         "V13B23-280_A1_Sp20D04"        
+# [5] "V13B23-280_A1_Sp20D07"         "V13B23-280_A1_Sp20D09"        
+# [7] "V13B23-280_A1_Sp20D10"         "V13B23-280_A1_Sp20D11"   
+
+clusters <- unique(return_dge$coldata$cluster)
+# [1] "Sp20D01"         "Sp20D02"         "Sp20D03"         "Sp20D04"        
+# [5] "Sp20D07"         "Sp20D09"         "Sp20D10"         "Sp20D11"        
+# [9] "Sp20D12"         "Sp20D13"         "Sp20D14"         "Sp20D15"        
+# [13] "Sp20D17"         "Sp20D18"         "Sp20D20"         "SpD20_Hb_merged"
+
+# skip clusters that have fewer than 2 levels of pseudo_brain_area
+if (nlevels(coldata_cluster$pseudo_brain_area) < 2) {
+    message("Skipping ", clust, ": not enough brain area levels.")
+    next
+}
+
+pdf_file <- file.path(output_dir, paste0("volcano_", model_name, "_SpD_A3_vs_A0_", clust, "_FDR05.pdf"))
+pdf(pdf_file, width = 8, height = 8)
+
+for (clust in clusters) {
+    
+    #clust="SpD20_Hb_merged"
+    #clust="Sp20D01"
+    message("Volcano plot for cluster: ", clust)
+    
+    # Identify samples in cluster
+    samples_in_cluster <- return_dge$coldata$sample_id[return_dge$coldata$cluster == clust]
+    samples_in_cluster
+    # [1] "V13B23-280_A1" "V13B23-280_B1" "V13B23-280_C1" "V13B23-280_D1"
+    # [5] "V13B23-285_B1" "V13B23-285_C1" "V13B23-285_D1" "V14F07-340_A1"
+    # [9] "V14F07-340_B1" "V14F07-340_C1" "V14F07-340_D1"
+    
+    # Filter samples in the cluster
+    sample_mask <- grepl(paste(samples_in_cluster, collapse = "|"), colnames(aggregated))
+    dge_cluster <- DGEList(counts = assay(aggregated, "counts")[, sample_mask])
+    
+    # Subset coldata + design, and drop levels that does not exist in that cluster to avoid error on estimateDisp()
+    coldata_cluster <- droplevels(
+        return_dge$coldata[return_dge$coldata$sample_id %in% samples_in_cluster, ]
+    )
+    design_cluster <- model.matrix(~ pseudo_brain_area, data = coldata_cluster)
+    
+    dge_cluster <- calcNormFactors(dge_cluster)
+    dge_cluster <- estimateDisp(dge_cluster, design_cluster)
+    fit_cluster <- glmFit(dge_cluster, design_cluster)
+    # likelihood ratio test (LRT)
+    lrt_cluster <- glmLRT(fit_cluster, coef = 4)  # area3 vs area0
+    
+    res_cluster <- edgeR::topTags(lrt_cluster, n = Inf)$table
+    res_cluster$gene_name <- gene_name_map[rownames(res_cluster)]
+    
+    top_genes <- head(res_cluster$gene_name[order(res_cluster$FDR)], 20)
+    
+    p1 <- EnhancedVolcano::EnhancedVolcano(
+        res_subset,
+        lab = res_subset$gene_name,
+        selectLab = top_genes,
+        x = "logFC",
+        y = "FDR",
+        title = paste("Habenula AP (A3 vs A0) - Cluster:", clust),
+        subtitle = model_name,
+        pCutoff = 0.05,
+        FCcutoff = 0.5,
+        pointSize = 2.0,
+        labSize = 4.0,
+        drawConnectors = TRUE
+    )
+    print(p1)
+}
+
+dev.off()
+
+#===============================================================================
+
+
+
+
+top_genes <- rownames(topTags(return_dge$lrt, n = 50)$table)
+dge <- return_dge$fit
+counts <- cpm(dge$counts, log = TRUE)  # log2 CPM
+
+# Subset to top genes
+heatmap_matrix <- counts[top_genes, ]
+# Z-score normalize by gene (row-wise)
+heatmap_matrix_z <- t(scale(t(heatmap_matrix)))
+
+# Add annotation for brain_area2_numeric (for columns)
+sample_metadata <- return_dge$coldata
+rownames(sample_metadata) <- colnames(heatmap_matrix)
+
+annotation_col <- data.frame(
+    brain_area2_numeric = sample_metadata$pseudo_brain_area
+)
+rownames(annotation_col) <- colnames(heatmap_matrix)
+
+
+## prepare heatmaps with gene-expr data
+
+pheatmap(
+    heatmap_matrix_z,
+    annotation_col = annotation_col,
+    cluster_rows = TRUE,
+    cluster_cols = TRUE,
+    show_rownames = TRUE,
+    show_colnames = FALSE,
+    fontsize_row = 6,
+    main = "Top DE Genes Heatmap"
+)
+
+
+# Top 50 genes (already from previous steps)
+top_genes <- rownames(edgeR::topTags(return_dge$lrt, n = 50)$table)
+
+# LogCPM from DGEList
+dge <- return_dge$fit
+logCPM <- edgeR::cpm(dge$counts, log = TRUE)
+
+# Subset to top genes
+heatmap_matrix <- logCPM[top_genes, ]
+
+# Z-score normalization (gene-wise)
+heatmap_matrix_z <- t(scale(t(heatmap_matrix)))
+
+# Column annotation
+sample_metadata <- de_results$coldata
+rownames(sample_metadata) <- colnames(heatmap_matrix_z)
+
+annotation_col <- data.frame(
+    pseudo_brain_area = sample_metadata$pseudo_brain_area
+)
+rownames(annotation_col) <- colnames(heatmap_matrix_z)
+
+# Plot heatmap with clustering enabled
+pheatmap(
+    heatmap_matrix_z,
+    annotation_col = annotation_col,
+    cluster_rows = TRUE,     # cluster genes
+    cluster_cols = TRUE,     # cluster samples
+    show_rownames = TRUE,
+    show_colnames = FALSE,
+    cutree_cols = 3,
+    fontsize_row = 6,
+    main = "Top 50 DE Genes (Clustered)"
+)
+
 
 
 
