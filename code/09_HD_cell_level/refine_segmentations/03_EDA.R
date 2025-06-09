@@ -64,14 +64,23 @@ dev.off()
 
 spe$any_neighbors = spe$num_neighbors > 0
 
-plot_list = list()
+plot_list_neighbor = list()
+plot_list_size = list()
 for (sample_id in unique(spe$sample_id)) {
-    plot_list[[sample_id]] = vis_clus(
+    plot_list_neighbor[[sample_id]] = vis_clus(
         spe, sampleid = sample_id, clustervar = 'any_neighbors',
+        is_stitched = TRUE, point_size = 10
+    )
+    plot_list_size[[sample_id]] = vis_gene(
+        spe, sampleid = sample_id, geneid = 'bin_count', cap_percentile = 0.99,
         is_stitched = TRUE, point_size = 10
     )
 }
 
 png(file.path(plot_dir, 'any_neighbors_spatial.png'), width = 4000, height = 800)
-plot_grid(plotlist = plot_list, nrow = 1)
+plot_grid(plotlist = plot_list_neighbor, nrow = 1)
+dev.off()
+
+png(file.path(plot_dir, 'cell_size_spatial.png'), width = 4000, height = 800)
+plot_grid(plotlist = plot_list_size, nrow = 1)
 dev.off()
