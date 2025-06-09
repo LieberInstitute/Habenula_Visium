@@ -433,16 +433,22 @@ colnames(agg_coldata) <- c("cluster", "sample_id")
 #map_df <- unique(colData(spe_data)[, c("sample_id", "pseudo_brain_area")])
 map_pseudo <- as.data.frame(colData(spe_data)) |>
     distinct(sample_id, .keep_all = TRUE)
+head(map_pseudo)
 
 agg_coldata$pseudo_brain_area <- map_pseudo$pseudo_brain_area[
     match(agg_coldata$sample_id, map_pseudo$sample_id)
 ]
-head(map_pseudo)
+# ad brain_id (donor)
+agg_coldata$donor <- map_pseudo$brain_id[
+    match(agg_coldata$sample_id, map_pseudo$sample_id)
+]
+agg_coldata$donor <- factor(agg_coldata$donor)
+
 
 ## Create design matrix
 # This sets up a linear model where pseudo_brain_area0 is the reference. Each coefficient (coef = 2:4) compares against it
 # - pseudo_brain_area is a factor with 5 levels (e.g., 0 to 4)
-design <- model.matrix(~ pseudo_brain_area, data = agg_coldata)
+design <- model.matrix(~ pseudo_brain_area + donor, data = agg_coldata)
 colnames(design)
 # [1] "(Intercept)"        "pseudo_brain_area1" "pseudo_brain_area2"
 # [4] "pseudo_brain_area3" "pseudo_brain_area4"
@@ -470,7 +476,7 @@ head(res_table)
 # ENSG00000067048  5.6468725  5.246189 34.821007 3.614523e-09 1.007103e-05
 # ENSG00000198692  5.3496602  5.017050 34.123204 5.173071e-09 1.007103e-05  
 
-str(res_table)
+#str(res_table)
 
 #===============================================================================
 
@@ -506,13 +512,14 @@ p1 <- EnhancedVolcano::EnhancedVolcano(
     selectLab = top_genes,
     x = "logFC",
     y = "FDR",
-    title = paste("Habenula AP Global - All Cluster:", clust),
+    title = paste("AP Global Exxpression - All Cluster:", clust),
     subtitle = paste(model_name, " ", clust),
     pCutoff = 0.05,
     FCcutoff = 0.5,
     pointSize = 2.0,
     labSize = 4.0,
-    drawConnectors = TRUE
+    drawConnectors = TRUE,
+    max.overlaps = Inf 
 )
 print(p1)
 dev.off()
@@ -570,7 +577,7 @@ for (clust in clusters) {
     coldata_cluster <- droplevels(
         return_dge$coldata[return_dge$coldata$sample_id %in% samples_in_cluster, ]
     )
-    design_cluster <- model.matrix(~ pseudo_brain_area, data = coldata_cluster)
+    design_cluster <- model.matrix(~ pseudo_brain_area + donor, data = coldata_cluster)
     
     dge_cluster <- calcNormFactors(dge_cluster)
     dge_cluster <- estimateDisp(dge_cluster, design_cluster)
@@ -607,73 +614,73 @@ dev.off()
 
 
 
-top_genes <- rownames(topTags(return_dge$lrt, n = 50)$table)
-dge <- return_dge$fit
-counts <- cpm(dge$counts, log = TRUE)  # log2 CPM
-
-# Subset to top genes
-heatmap_matrix <- counts[top_genes, ]
-# Z-score normalize by gene (row-wise)
-heatmap_matrix_z <- t(scale(t(heatmap_matrix)))
-
-# Add annotation for brain_area2_numeric (for columns)
-sample_metadata <- return_dge$coldata
-rownames(sample_metadata) <- colnames(heatmap_matrix)
-
-annotation_col <- data.frame(
-    brain_area2_numeric = sample_metadata$pseudo_brain_area
-)
-rownames(annotation_col) <- colnames(heatmap_matrix)
-
-
-## prepare heatmaps with gene-expr data
-
-pheatmap(
-    heatmap_matrix_z,
-    annotation_col = annotation_col,
-    cluster_rows = TRUE,
-    cluster_cols = TRUE,
-    show_rownames = TRUE,
-    show_colnames = FALSE,
-    fontsize_row = 6,
-    main = "Top DE Genes Heatmap"
-)
-
-
-# Top 50 genes (already from previous steps)
-top_genes <- rownames(edgeR::topTags(return_dge$lrt, n = 50)$table)
-
-# LogCPM from DGEList
-dge <- return_dge$fit
-logCPM <- edgeR::cpm(dge$counts, log = TRUE)
-
-# Subset to top genes
-heatmap_matrix <- logCPM[top_genes, ]
-
-# Z-score normalization (gene-wise)
-heatmap_matrix_z <- t(scale(t(heatmap_matrix)))
-
-# Column annotation
-sample_metadata <- de_results$coldata
-rownames(sample_metadata) <- colnames(heatmap_matrix_z)
-
-annotation_col <- data.frame(
-    pseudo_brain_area = sample_metadata$pseudo_brain_area
-)
-rownames(annotation_col) <- colnames(heatmap_matrix_z)
-
-# Plot heatmap with clustering enabled
-pheatmap(
-    heatmap_matrix_z,
-    annotation_col = annotation_col,
-    cluster_rows = TRUE,     # cluster genes
-    cluster_cols = TRUE,     # cluster samples
-    show_rownames = TRUE,
-    show_colnames = FALSE,
-    cutree_cols = 3,
-    fontsize_row = 6,
-    main = "Top 50 DE Genes (Clustered)"
-)
+# top_genes <- rownames(topTags(return_dge$lrt, n = 50)$table)
+# dge <- return_dge$fit
+# counts <- cpm(dge$counts, log = TRUE)  # log2 CPM
+# 
+# # Subset to top genes
+# heatmap_matrix <- counts[top_genes, ]
+# # Z-score normalize by gene (row-wise)
+# heatmap_matrix_z <- t(scale(t(heatmap_matrix)))
+# 
+# # Add annotation for brain_area2_numeric (for columns)
+# sample_metadata <- return_dge$coldata
+# rownames(sample_metadata) <- colnames(heatmap_matrix)
+# 
+# annotation_col <- data.frame(
+#     brain_area2_numeric = sample_metadata$pseudo_brain_area
+# )
+# rownames(annotation_col) <- colnames(heatmap_matrix)
+# 
+# 
+# ## prepare heatmaps with gene-expr data
+# 
+# pheatmap(
+#     heatmap_matrix_z,
+#     annotation_col = annotation_col,
+#     cluster_rows = TRUE,
+#     cluster_cols = TRUE,
+#     show_rownames = TRUE,
+#     show_colnames = FALSE,
+#     fontsize_row = 6,
+#     main = "Top DE Genes Heatmap"
+# )
+# 
+# 
+# # Top 50 genes (already from previous steps)
+# top_genes <- rownames(edgeR::topTags(return_dge$lrt, n = 50)$table)
+# 
+# # LogCPM from DGEList
+# dge <- return_dge$fit
+# logCPM <- edgeR::cpm(dge$counts, log = TRUE)
+# 
+# # Subset to top genes
+# heatmap_matrix <- logCPM[top_genes, ]
+# 
+# # Z-score normalization (gene-wise)
+# heatmap_matrix_z <- t(scale(t(heatmap_matrix)))
+# 
+# # Column annotation
+# sample_metadata <- de_results$coldata
+# rownames(sample_metadata) <- colnames(heatmap_matrix_z)
+# 
+# annotation_col <- data.frame(
+#     pseudo_brain_area = sample_metadata$pseudo_brain_area
+# )
+# rownames(annotation_col) <- colnames(heatmap_matrix_z)
+# 
+# # Plot heatmap with clustering enabled
+# pheatmap(
+#     heatmap_matrix_z,
+#     annotation_col = annotation_col,
+#     cluster_rows = TRUE,     # cluster genes
+#     cluster_cols = TRUE,     # cluster samples
+#     show_rownames = TRUE,
+#     show_colnames = FALSE,
+#     cutree_cols = 3,
+#     fontsize_row = 6,
+#     main = "Top 50 DE Genes (Clustered)"
+# )
 
 
 
