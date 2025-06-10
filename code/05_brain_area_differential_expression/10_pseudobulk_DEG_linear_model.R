@@ -209,7 +209,6 @@ table(agg_coldata$donor)
 
 plot_clusterwise_volcanos <- function(
         spe_data,
-        # return_dge,
         aggregated_counts,
         agg_coldata,
         model_name,
@@ -504,7 +503,7 @@ plot_clusterwise_volcanos(
 # enabling tests of trend along the AP axis (e.g., increasing index)
 #===============================================================================
 
-model_name = paste0("BSk", k_merge, "_model3_AP_linear_0_4")
+model_name = paste0("BSk", k_merge, "_model_linear_AP0-4")
 model_name
 
 # function to add a new variable to compute linear predictor
@@ -540,12 +539,38 @@ plot_clusterwise_volcanos(
     cluster_var = "SpD20_merged",
     output_dir = plot_dir,
     FDR_thr = 0.05,
-    contrast_label = "linear (From 0-4)",
+    contrast_label = "linear",
     contrast_coef = 2,
     expression_quantile = 0.50
 )
 
-    
+#===============================================================================
+# compute and plot volcano plots only for samples with pseudo_brain_area_numeric from 1 to 3
+
+model_name = paste0("BSk", k_merge, "_model_linear_AP1-3")
+model_name
+# Subset only pseudo_brain_area_numeric in 1, 2, 3
+subset_ids <- agg_coldata$sample_id[agg_coldata$pseudo_brain_area_numeric %in% 1:3]
+agg_coldata_subset <- agg_coldata[agg_coldata$sample_id %in% subset_ids, ]
+# Subset counts
+aggregated_subset <- aggregated[, colnames(aggregated) %in% subset_ids]
+# Subset the main SPE object if needed (for rowData)
+spe_data_subset <- spe_data[, colnames(spe_data) %in% subset_ids]
+
+plot_clusterwise_volcanos(
+    spe_data = spe_data_subset,
+    aggregated_counts = assay(aggregated_subset, "counts"),
+    agg_coldata = agg_coldata_subset,
+    model_name = model_name,
+    brain_area_var = "pseudo_brain_area_numeric", 
+    cluster_var = "SpD20_merged",
+    output_dir = plot_dir,
+    FDR_thr = 0.05,
+    contrast_label = "linear",
+    contrast_coef = 2,
+    expression_quantile = 0.50
+)
+
     
     
     
