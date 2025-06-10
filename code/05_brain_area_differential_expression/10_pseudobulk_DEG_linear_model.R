@@ -92,28 +92,43 @@ head(table(spe_data$sample_id, spe_data$SpD20_merged))
 # Br9037 = V13B23-280
 # Br9090 = V14F07-340
 
-colData(spe_data)$pseudo_brain_area <- case_when(
-    colData(spe_data)$sample_id == "V13B23-285_A1" ~ 0,
-    
-    colData(spe_data)$sample_id == "V13B23-285_B1" |
-        colData(spe_data)$sample_id == "V14F07-340_D1" |
-        colData(spe_data)$sample_id == "V13B23-280_D1" ~ 1,
-    
-    colData(spe_data)$sample_id == "V13B23-285_C1" |
-        colData(spe_data)$sample_id == "V14F07-340_C1" |
-        colData(spe_data)$sample_id == "V13B23-280_C1" ~ 2,
-    
-    colData(spe_data)$sample_id == "V13B23-285_D1" |
-        colData(spe_data)$sample_id == "V14F07-340_B1" |
-        colData(spe_data)$sample_id == "V14F07-340_A1" |
-        colData(spe_data)$sample_id == "V13B23-280_B1" ~ 3,
-    
-    colData(spe_data)$sample_id == "V13B23-280_A1" ~ 4
-)
+# colData(spe_data)$pseudo_brain_area <- case_when(
+#     colData(spe_data)$sample_id == "V13B23-285_A1" ~ 0,
+#     
+#     colData(spe_data)$sample_id == "V13B23-285_B1" |
+#         colData(spe_data)$sample_id == "V14F07-340_D1" |
+#         colData(spe_data)$sample_id == "V13B23-280_D1" ~ 1,
+#     
+#     colData(spe_data)$sample_id == "V13B23-285_C1" |
+#         colData(spe_data)$sample_id == "V14F07-340_C1" |
+#         colData(spe_data)$sample_id == "V13B23-280_C1" ~ 2,
+#     
+#     colData(spe_data)$sample_id == "V13B23-285_D1" |
+#         colData(spe_data)$sample_id == "V14F07-340_B1" |
+#         colData(spe_data)$sample_id == "V14F07-340_A1" |
+#         colData(spe_data)$sample_id == "V13B23-280_B1" ~ 3,
+#     
+#     colData(spe_data)$sample_id == "V13B23-280_A1" ~ 4
+# )
+# add a new variable to compute DGE
+assign_AP_index <- function(sample_ids) {
+    case_when(
+        sample_ids == "V13B23-285_A1" ~ 0,
+        sample_ids %in% c("V13B23-285_B1", "V14F07-340_D1", "V13B23-280_D1") ~ 1,
+        sample_ids %in% c("V13B23-285_C1", "V14F07-340_C1", "V13B23-280_C1") ~ 2,
+        sample_ids %in% c("V13B23-285_D1", "V14F07-340_B1", "V14F07-340_A1", "V13B23-280_B1") ~ 3,
+        sample_ids == "V13B23-280_A1" ~ 4,
+        TRUE ~ NA_integer_  # fallback for unmapped samples
+    )
+}
+# create the categorical brain-area variable
+colData(spe_data)$pseudo_brain_area <- assign_AP_index(colData(spe_data)$sample_id)
 # make sure all sample IDs are included
 table(is.na(spe_data$pseudo_brain_area))  # should be FALSE
+# create the linear predictor brain-area variable
+#colData(spe_data)$pseudo_brain_area_numeric <- as.integer(as.character(colData(spe_data)$pseudo_brain_area))
 
-# Make a factor
+# Make a factor for compare groups
 spe_data$pseudo_brain_area <- factor(spe_data$pseudo_brain_area)
 table(spe_data$BayesSpace, spe_data$pseudo_brain_area)
 table(spe_data$brain_id, spe_data$pseudo_brain_area)
@@ -124,19 +139,32 @@ table(spe_data$brain_id, spe_data$pseudo_brain_area)
 
 # creates unique factor levels for every combination of brain_id and BayesSpace and avoids accidental duplicates.
 colData(spe_data)$pseudo_sample_id <- paste0(colData(spe_data)$sample_id, "_", colData(spe_data)$SpD20_merged)
+# colData(spe_data)$pseudo_sample_id <- paste0(
+#     colData(spe_data)$sample_id, "_", colData(spe_data)$SpD20_merged, "_", seq_len(ncol(spe_data))
+# )
 head(spe_data$pseudo_sample_id)
 # [1] "V13B23-280_A1_Sp20D01" "V13B23-280_B1_Sp20D01" "V13B23-280_C1_Sp20D01"
 # [4] "V13B23-280_D1_Sp20D01" "V13B23-285_A1_Sp20D01" "V13B23-285_B1_Sp20D01"
 
 # inspect uniqueness
 table(duplicated(colData(spe_data)$pseudo_sample_id))
+# FALSE  TRUE 
+# 184    32 
 dups <- colData(spe_data)$pseudo_sample_id[duplicated(colData(spe_data)$pseudo_sample_id)]
-head(table(colData(spe_data)$pseudo_sample_id))  
+# track sample_ids duplicated. Expected due H_merged is a composite region
+if (length(dups)>0) {
+    head(dups)
+    # [1] "V13B23-280_A1_SpD20_Hb_merged" "V13B23-280_B1_SpD20_Hb_merged"
+    # [3] "V13B23-280_C1_SpD20_Hb_merged" "V13B23-280_D1_SpD20_Hb_merged" ..
+    dup_table <- table(colData(spe_data)$pseudo_sample_id)
+    dup_table[dup_table > 1]
+}
+
 length(unique(colData(spe_data)$brain_id)) * length(unique(colData(spe_data)$SpD20_merged))
-# = 3 × 12 = 36
+# = 3 × 16 = 48
 # How many pseudo-bulk groups?
 length(unique(colData(spe_data)$pseudo_sample_id))
-
+# 216
 
 #===============================================================================
 # compute counts matrix from the global aggregation
@@ -159,6 +187,7 @@ agg_coldata$base_id <- sub("^(([^_]+_[^_]+))_.*", "\\1", agg_coldata$sample_id)
 # Add metadata (e.g. pseudo_brain_area and brain_id/donor)
 map_pseudo <- as.data.frame(colData(spe_data)) |> distinct(sample_id, .keep_all = TRUE)
 
+# add categorical variable and other meta-data
 agg_coldata$pseudo_brain_area <- map_pseudo$pseudo_brain_area[
     match(agg_coldata$base_id, map_pseudo$sample_id)
 ]
@@ -171,6 +200,7 @@ table(agg_coldata$donor)
 # Br8518 Br9037 Br9090 
 # 63     63     58
 
+#agg_coldata$pseudo_brain_area_numeric <- assign_AP_index(agg_coldata$base_id)
 
 #===============================================================================
 # ## Create design matrix for contrasts specific brain areas 
@@ -209,8 +239,8 @@ table(agg_coldata$donor)
 
 plot_clusterwise_volcanos <- function(
         spe_data,
-        aggregated_counts,
-        agg_coldata,
+        aggregated_counts,                    # "SpatialExperiment"
+        agg_coldata,                          # "data.frame"
         model_name,
         brain_area_var = "pseudo_brain_area", # or pseudo_brain_area_numeric for the linear model
         cluster_var = "SpD20_merged",         # relative to SpD k=20 with Hb merged clusters
@@ -262,7 +292,8 @@ plot_clusterwise_volcanos <- function(
     message("Processing ", length(clusters), " levels")
     
     # pdf_file <- file.path(output_dir, paste0("volcano_", model_name, "_FDR05.pdf"))
-    pdf_file <- file.path(output_dir, paste0("volcano_", model_name, "_FDR", FDR_thr ,"_ExpQuantile", (expression_quantile*100),"th.pdf"))
+    pdf_file <- file.path(output_dir, paste0("volcano_", model_name, "_FDR", (FDR_thr*100) ,"p_ExpQuantile", (expression_quantile*100),"th.pdf"))
+    message("File name:", pdf_file)
     pdf(pdf_file, width = 8, height = 8)
     
     for (clust in clusters) {
@@ -291,7 +322,7 @@ plot_clusterwise_volcanos <- function(
         #     next
         # }
         
-        # Use brain_area_var to define if a trend or contrast variable 
+        # Use "brain_area_var" to define brain-area categorical or numeric variable
         #design_cluster <- model.matrix(~ pseudo_brain_area + donor, data = coldata_cluster)
         design_cluster <- model.matrix(
             reformulate(termlabels = c(brain_area_var, "donor")),
@@ -340,11 +371,12 @@ plot_clusterwise_volcanos <- function(
         
         # make custom subtitle
         if (!is.null(expression_quantile)) {
-            sub_title <- paste0(model_name, " (FDR=", FDR_thr, "; Expr.Quantile=", (expression_quantile*100) ,"th)")
+            sub_title <- paste0(model_name, " (FDR=", FDR_thr*100, "%; Expr.Quantile=", (expression_quantile*100) ,"th)")
         } else {
-            sub_title <- paste0(model_name, " (FDR=", FDR_thr, ")") 
+            sub_title <- paste0(model_name, " (FDR=", FDR_thr*100, "%)") 
         }
-            
+        message(sub_title)
+        
         p1 <- EnhancedVolcano::EnhancedVolcano(
             res_filtered,
             lab = res_filtered$gene_name,
@@ -370,7 +402,6 @@ plot_clusterwise_volcanos <- function(
         
 }
     
-   
     
 #===============================================================================
     
@@ -383,7 +414,6 @@ plot_clusterwise_volcanos <- function(
 # model1:  from LHb+ to LHb++
 # - covar: donor
 
-colnames(design)
 # model_name = paste0("BSk", k_merge, "_model1_AP1-0")
 # model_name
 # [1] "BSk20_AP1-0"
@@ -401,19 +431,19 @@ colnames(design)
 # )
     
 #===============================================================================
-## Compare pseudo_brain_area0 vs pseudo_brain_area4
+## DGE WITH CATEGORICAL VARIABLE: Compare pseudo_brain_area0 vs pseudo_brain_area4
 
 # model1:  from LHb+ to MHb+
 
-model_name = paste0("BSk", k_merge, "_model1_APG0-G4")
+model_name = paste0("BSk", k_merge, "_model1_AP_G0-G4")
 model_name
 # [1] "BSk20_model1_APG0-G4"
 plot_clusterwise_volcanos(
     spe_data = spe_data,
-    #return_dge = return_dge,
-    aggregated_counts = assay(aggregated, "counts"),
-    agg_coldata = agg_coldata,
+    aggregated_counts = aggregated,  # "SpatialExperiment" / #assay(aggregated, "counts"),
+    agg_coldata = agg_coldata,       # "data.frame"
     model_name = model_name,
+    brain_area_var = "pseudo_brain_area",
     cluster_var = "SpD20_merged",
     output_dir = plot_dir,
     FDR_thr = 0.05, 
@@ -427,7 +457,7 @@ plot_clusterwise_volcanos(
 #===============================================================================
 ## Compare pseudo_brain_area1 vs pseudo_brain_area3
 
-model_name = paste0("BSk", k_merge, "_model2_APG1-G3")
+model_name = paste0("BSk", k_merge, "_model2_AP_G1-G3")
 model_name
 # [1] "BSk20_model1_AP1-3"
 
@@ -447,56 +477,17 @@ agg_coldata$pseudo_brain_area <- relevel(agg_coldata$pseudo_brain_area, ref = "3
 # FDR at 5%, with filtering by gene expr at 50% percentile, with relaxed FCcutoff for smaller effect genes
 plot_clusterwise_volcanos(
     spe_data = spe_data,
-    aggregated_counts = assay(aggregated, "counts"),
+    aggregated_counts = aggregated, #  assay(aggregated, "counts"),
     agg_coldata = agg_coldata,
     model_name = model_name,
+    brain_area_var = "pseudo_brain_area",
     cluster_var = "SpD20_merged",
     output_dir = plot_dir,
-    FDR_thr = 0.05, 
+    FDR_thr = 0.05,            # try 0.1 for EDA or event 0.2 for discovery
     contrast_label = "G1-G3",
     contrast_coef = 2, 
-    expression_quantile = 0.50 # Relaxed
+    expression_quantile = 0.50 # 0.50 Relaxed FOR EDA;  0.75 a bit more strict; 0.97 most to ideal=1 
 )
-
-# # FDR at 5%, with filtering by gene expr at 75% percentile, with relaxed FCcutoff for smaller effect genes
-# plot_clusterwise_volcanos(
-#     spe_data = spe_data,
-#     return_dge = return_dge,
-#     model_name = model_name,
-#     cluster_var = "SpD20_merged",
-#     output_dir = plot_dir,
-#     FDR_thr = 0.05, 
-#     contrast_label = " From LHb to MHb", # From LHb to MHb
-#     contrast_coef = 3, 
-#     expression_quantile = 0.75 # More strict expressed genes
-# )
-# 
-# # FDR at 5%, with filtering by gene expr at 97% percentile, with relaxed FCcutoff for smaller effect genes
-# plot_clusterwise_volcanos(
-#     spe_data = spe_data,
-#     return_dge = return_dge,
-#     model_name = model_name,
-#     cluster_var = "SpD20_merged",
-#     output_dir = plot_dir,
-#     FDR_thr = 0.05, # more permissive
-#     contrast_label = " From LHb to MHb", # From LHb to MHb
-#     contrast_coef = 3, 
-#     expression_quantile = 0.97 # More strict, ideally should be >1
-# )
-#
-## FDR at 10%, with filtering by gene expr at 97% percentile, with  strict expressed genes
-# plot_clusterwise_volcanos(
-#     spe_data = spe_data,
-#     return_dge = return_dge,
-#     model_name = model_name,
-#     cluster_var = "SpD20_merged",
-#     output_dir = plot_dir,
-#     FDR_thr = 0.1, # more permissive
-#     contrast_label = " From LHb to MHb", # From LHb to MHb
-#     contrast_coef = 3, 
-#     expression_quantile = 0.95 # More strict expressed genes
-# )
-
 
 #===============================================================================
 # NOTE: pseudo_brain_area is modeled as a linear numeric variable,
@@ -506,18 +497,19 @@ plot_clusterwise_volcanos(
 model_name = paste0("BSk", k_merge, "_model_linear_AP0-4")
 model_name
 
-# function to add a new variable to compute linear predictor
-assign_AP_index <- function(sample_ids) {
-    case_when(
-        sample_ids == "V13B23-285_A1" ~ 0,
-        sample_ids %in% c("V13B23-285_B1", "V14F07-340_D1", "V13B23-280_D1") ~ 1,
-        sample_ids %in% c("V13B23-285_C1", "V14F07-340_C1", "V13B23-280_C1") ~ 2,
-        sample_ids %in% c("V13B23-285_D1", "V14F07-340_B1", "V14F07-340_A1", "V13B23-280_B1") ~ 3,
-        sample_ids == "V13B23-280_A1" ~ 4,
-        TRUE ~ NA_integer_  # fallback for unmapped samples
-    )
-}
-colData(spe_data)$pseudo_brain_area_numeric <- assign_AP_index(colData(spe_data)$sample_id)
+# # function to add a new variable to compute linear predictor
+# assign_AP_index <- function(sample_ids) {
+#     case_when(
+#         sample_ids == "V13B23-285_A1" ~ 0,
+#         sample_ids %in% c("V13B23-285_B1", "V14F07-340_D1", "V13B23-280_D1") ~ 1,
+#         sample_ids %in% c("V13B23-285_C1", "V14F07-340_C1", "V13B23-280_C1") ~ 2,
+#         sample_ids %in% c("V13B23-285_D1", "V14F07-340_B1", "V14F07-340_A1", "V13B23-280_B1") ~ 3,
+#         sample_ids == "V13B23-280_A1" ~ 4,
+#         TRUE ~ NA_integer_  # fallback for unmapped samples
+#     )
+# }
+# colData(spe_data)$pseudo_brain_area_numeric <- assign_AP_index(colData(spe_data)$sample_id)
+
 agg_coldata$pseudo_brain_area_numeric <- assign_AP_index(agg_coldata$base_id)
 
 # make sure all sample IDs are included
