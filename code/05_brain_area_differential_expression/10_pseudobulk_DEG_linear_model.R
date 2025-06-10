@@ -177,15 +177,15 @@ agg_coldata$base_id <- sub("^(([^_]+_[^_]+))_.*", "\\1", agg_coldata$sample_id)
 # Add metadata (e.g. pseudo_brain_area and brain_id/donor)
 map_pseudo <- as.data.frame(colData(spe_data)) |> distinct(sample_id, .keep_all = TRUE)
 
-# add categorical variable and other meta-data
+# add categorical brain-area variable
 agg_coldata$pseudo_brain_area <- map_pseudo$pseudo_brain_area[
     match(agg_coldata$base_id, map_pseudo$sample_id)
 ]
+# add donor to meta-data for used as covariable
 agg_coldata$donor <- map_pseudo$brain_id[
     match(agg_coldata$base_id, map_pseudo$sample_id)
 ]
 agg_coldata$donor <- factor(agg_coldata$donor)
-
 table(agg_coldata$donor)
 # Br8518 Br9037 Br9090 
 # 63     63     58
@@ -198,6 +198,7 @@ plot_clusterwise_volcanos <- function(
         agg_coldata,                          # "data.frame"
         model_name,
         brain_area_var = "pseudo_brain_area", # or pseudo_brain_area_numeric for the linear model
+        covar = "donor",                      # g.e: donor or nspots
         cluster_var = "SpD20_merged",         # relative to SpD k=20 with Hb merged clusters
         expr_threshold = 1,                   # only include genes with average CPM > 1 in the cluster (minimum expression level)
         FDR_thr = 0.05,
@@ -213,6 +214,28 @@ plot_clusterwise_volcanos <- function(
     # [1] "V13B23-280_A1_Sp20D01"         "V13B23-280_A1_Sp20D02"        
     # [3] "V13B23-280_A1_Sp20D03"         "V13B23-280_A1_Sp20D04"        
     # ... "V14F07-340_D1_SpD20_Hb_merged"
+    
+    # ==========================================================================
+    # extract and join `nspots` from `spe_data` to `agg_coldata`
+    if (covar=="nspots") {
+        spot_metadata <- data.frame(
+            pseudo_sample_id = colData(spe_data)$pseudo_sample_id,
+            nspots = colData(spe_data)$nspots,
+            stringsAsFactors = FALSE
+        )
+        # Ensure one row per pseudo_sample_id
+        spot_metadata_unique <- spot_metadata[!duplicated(spot_metadata$pseudo_sample_id), ]
+        # Join to agg_coldata by matching sample_id <-> pseudo_sample_id
+        agg_coldata$nspots <- spot_metadata_unique$nspots[
+            match(agg_coldata$sample_id, spot_metadata_unique$pseudo_sample_id)
+        ]
+        # Check for failed joins
+        if (anyNA(agg_coldata$nspots)) {
+            warning("Some sample_id values in agg_coldata could not be matched to nspots.")
+        }
+    }
+    # ==========================================================================
+    
     
     # Add gene names
     gene_name_map <- rowData(spe_data)$gene_name
@@ -277,12 +300,17 @@ plot_clusterwise_volcanos <- function(
         #     next
         # }
         
-        # Use "brain_area_var" to define brain-area categorical or numeric variable
-        #design_cluster <- model.matrix(~ pseudo_brain_area + donor, data = coldata_cluster)
+        # Use "brain_area_var" for categorical variable OR "brain_area_var_numeric" for linear model
+        if (!is.null(covar)) {
+            terms <- c(brain_area_var, covar)
+        } else {
+            terms <- brain_area_var
+        }
         design_cluster <- model.matrix(
-            reformulate(termlabels = c(brain_area_var, "donor")),
+            reformulate(termlabels = terms),
             data = coldata_cluster
         )
+        
         print(colnames(design_cluster))
         dge_cluster <- calcNormFactors(dge_cluster)
         dge_cluster <- estimateDisp(dge_cluster, design_cluster)
@@ -366,55 +394,43 @@ plot_clusterwise_volcanos <- function(
 # MHb+: Column 4 (coef = 3): logFC for pseudo_brain_area3 vs. baseline
 # MHb++: Column 5 (coef = 4): logFC for pseudo_brain_area4 vs. baseline
 
-# model1:  from LHb+ to LHb++
-# - covar: donor
-
-# model_name = paste0("BSk", k_merge, "_model1_AP1-0")
-# model_name
-# [1] "BSk20_AP1-0"
-# 
-# plot_clusterwise_volcanos(
-#     spe_data = spe_data,
-#     return_dge = return_dge,
-#     model_name = model_name,
-#     cluster_var = "SpD20_merged",
-#     output_dir = plot_dir,
-#     FDR_thr = 0.05, 
-#     contrast_label = " From LHb++ to LHb+",
-#     contrast_coef = 2, # area1 vs area0
-#     expression_quantile = 0.97 
-# )
-    
 #===============================================================================
 ## DGE WITH CATEGORICAL VARIABLE: Compare pseudo_brain_area0 vs pseudo_brain_area4
+#===============================================================================
 
-# model1:  from LHb+ to MHb+
+# From LHb+ to MHb+
+for (covar_term in c("donor", "nspots")) {
+    
+    print(covar_term)
+    model_name = paste0("BSk", k_merge, "_model1_AP_G0-G4_", covar_term)
+    message("Processing categorical model: ", model_name)
+    
+    # build DGE and plot Volcanos
+    # - FDR at 5%, with filtering by gene expr at 50% percentile, with relaxed FCcutoff for smaller effect genes
+    plot_clusterwise_volcanos(
+        spe_data = spe_data,
+        aggregated_counts = aggregated,  # "SpatialExperiment"
+        agg_coldata = agg_coldata,       # "data.frame"
+        model_name = model_name,
+        brain_area_var = "pseudo_brain_area",
+        covar = covar_term,
+        cluster_var = "SpD20_merged",
+        output_dir = plot_dir,
+        FDR_thr = 0.05, 
+        contrast_label = paste0("G0-G4 (", covar_term, ")"),
+        contrast_coef = 5, # area4 vs area0 (area0 is baseline)
+        expression_quantile = 0.50 # Relaxed; allows moderately expressed genes
+    )
+    message("Plots done!")
+    
+}
 
-model_name = paste0("BSk", k_merge, "_model1_AP_G0-G4")
-model_name
-# [1] "BSk20_model1_APG0-G4"
-plot_clusterwise_volcanos(
-    spe_data = spe_data,
-    aggregated_counts = aggregated,  # "SpatialExperiment" / #assay(aggregated, "counts"),
-    agg_coldata = agg_coldata,       # "data.frame"
-    model_name = model_name,
-    brain_area_var = "pseudo_brain_area",
-    cluster_var = "SpD20_merged",
-    output_dir = plot_dir,
-    FDR_thr = 0.05, 
-    contrast_label = "G0-G4",
-    contrast_coef = 5, # area4 vs area0 (area0 is baseline)
-    expression_quantile = 0.50 # Relaxed; allows moderately expressed genes
-)
+
 # Positive logFC → genes upregulated in area4 compared to area0
 # Negative logFC → genes upregulated in area0 compared to area4
 
 #===============================================================================
 ## Compare pseudo_brain_area1 vs pseudo_brain_area3
-
-model_name = paste0("BSk", k_merge, "_model2_AP_G1-G3")
-model_name
-# [1] "BSk20_model1_AP1-3"
 
 # Set pseudo_brain_area1 as the reference level to compare pseudo_brain_area3 (LHb -> MHb)
 # model1:  from LHb+ to MHb+
@@ -423,59 +439,75 @@ agg_coldata$pseudo_brain_area <- relevel(agg_coldata$pseudo_brain_area, ref = "3
 # re-create the design matrix to check intercept
 # design <- model.matrix(~ pseudo_brain_area + donor, data = agg_coldata)
 # colnames(design)
-# # [1] "(Intercept)"        "pseudo_brain_area1" "pseudo_brain_area0"
-# # [4] "pseudo_brain_area2" "pseudo_brain_area4" "donorBr9037"       
-# # [7] "donorBr9090"  
 # which(colnames(design) == "pseudo_brain_area1")
-# [1] 2
 
-# FDR at 5%, with filtering by gene expr at 50% percentile, with relaxed FCcutoff for smaller effect genes
-plot_clusterwise_volcanos(
-    spe_data = spe_data,
-    aggregated_counts = aggregated, #  assay(aggregated, "counts"),
-    agg_coldata = agg_coldata,
-    model_name = model_name,
-    brain_area_var = "pseudo_brain_area",
-    cluster_var = "SpD20_merged",
-    output_dir = plot_dir,
-    FDR_thr = 0.05,            # try 0.1 for EDA or event 0.2 for discovery
-    contrast_label = "G1-G3",
-    contrast_coef = 2, 
-    expression_quantile = 0.50 # 0.50 Relaxed FOR EDA;  0.75 a bit more strict; 0.97 most to ideal=1 
-)
+for (covar_term in c("donor", "nspots")) {
+    
+    print(covar_term)
+    model_name = paste0("BSk", k_merge,  "_model2_AP_G1-G3_", covar_term)
+    message("Processing categorical model: ", model_name)
+    
+    # build DGE and plot Volcanos
+    # - FDR at 5%, with filtering by gene expr at 50% percentile, with relaxed FCcutoff for smaller effect genes
+    plot_clusterwise_volcanos(
+        spe_data = spe_data,
+        aggregated_counts = aggregated, #  assay(aggregated, "counts"),
+        agg_coldata = agg_coldata,
+        model_name = model_name,
+        brain_area_var = "pseudo_brain_area",
+        covar = covar_term,
+        cluster_var = "SpD20_merged",
+        output_dir = plot_dir,
+        FDR_thr = 0.05,            # try 0.1 for EDA or event 0.2 for discovery
+        contrast_label = paste0("G1-G3 (", covar_term, ")"),
+        contrast_coef = 2, 
+        expression_quantile = 0.50 # 0.50 Relaxed FOR EDA;  0.75 a bit more strict; 0.97 most to ideal=1 
+    )
+    message("Plots done!")
+    
+}
+
 
 #===============================================================================
-# NOTE: pseudo_brain_area is modeled as a linear numeric variable,
+# DGE LINEAR MODEL: pseudo_brain_area is modeled as a linear numeric variable,
 # enabling tests of trend along the AP axis (e.g., increasing index)
 #===============================================================================
 
-model_name = paste0("BSk", k_merge, "_model_linear_AP_0-4")
-model_name
 ## add to pseudo_brain_area_numeric to meta-data
 agg_coldata$pseudo_brain_area_numeric <- assign_AP_index(agg_coldata$base_id)
 # make sure all sample IDs are included
 table(is.na(spe_data$pseudo_brain_area_numeric))  # should be FALSE
 
-# FDR at 5%, with filtering by gene expr at 50th percentile, with relaxed FCcutoff for smaller effect genes
-plot_clusterwise_volcanos(
-    spe_data = spe_data,
-    aggregated_counts = aggregated, 
-    agg_coldata = agg_coldata,
-    model_name = model_name,
-    brain_area_var = "pseudo_brain_area_numeric", 
-    cluster_var = "SpD20_merged",
-    output_dir = plot_dir,
-    FDR_thr = 0.05,
-    contrast_label = "linear",
-    contrast_coef = 2,
-    expression_quantile = 0.50
-)
+for (covar_term in c("donor", "nspots")) {
+    
+    print(covar_term)
+    model_name = paste0("BSk", k_merge,  "_model3_linear_AP_0-4_", covar_term)
+    message("Processing linear model: ", model_name)
+    
+    # build DGE and plot Volcanos
+    # - FDR at 5%, with filtering by gene expr at 50th percentile, with relaxed FCcutoff for smaller effect genes
+    plot_clusterwise_volcanos(
+        spe_data = spe_data,
+        aggregated_counts = aggregated, 
+        agg_coldata = agg_coldata,
+        model_name = model_name,
+        brain_area_var = "pseudo_brain_area_numeric", 
+        covar = covar_term,
+        cluster_var = "SpD20_merged",
+        output_dir = plot_dir,
+        FDR_thr = 0.05,
+        contrast_label = paste0("linear:0-4 (", covar_term, ")"),
+        contrast_coef = 2,
+        expression_quantile = 0.50
+    )
+    message("Plots done!")
+    
+}
+
 
 #===============================================================================
 # compute DGE and plot volcano plots only for samples with pseudo_brain_area_numeric from 1 to 3
 
-model_name = paste0("BSk", k_merge, "_model_linear_AP_1-3")
-model_name
 # Subset only pseudo_brain_area_numeric in 1, 2, 3
 subset_ids <- agg_coldata$sample_id[agg_coldata$pseudo_brain_area_numeric %in% 1:3]
 agg_coldata_subset <- agg_coldata[agg_coldata$sample_id %in% subset_ids, ]
@@ -484,23 +516,60 @@ aggregated_subset <- aggregated[, colnames(aggregated) %in% subset_ids]
 # Subset the main SPE object if needed (for rowData)
 spe_data_subset <- spe_data[, colnames(spe_data) %in% subset_ids]
 
-plot_clusterwise_volcanos(
-    spe_data = spe_data_subset,
-    aggregated_counts = aggregated,
-    agg_coldata = agg_coldata_subset,
-    model_name = model_name,
-    brain_area_var = "pseudo_brain_area_numeric", 
-    cluster_var = "SpD20_merged",
-    output_dir = plot_dir,
-    FDR_thr = 0.05,
-    contrast_label = "linear",
-    contrast_coef = 2,
-    expression_quantile = 0.50
-)
+for (covar_term in c("donor", "nspots")) {
+    
+    print(covar_term)
+    model_name = paste0("BSk", k_merge, "_model4_linear_AP_1-3_", covar_term)
+    message("Processing linear model: ", model_name)
+    
+    # build DGE and plot Volcanos
+    # - FDR at 5%, with filtering by gene expr at 50th percentile, with relaxed FCcutoff for smaller effect genes
+    plot_clusterwise_volcanos(
+        spe_data = spe_data_subset,
+        aggregated_counts = aggregated_subset,
+        agg_coldata = agg_coldata_subset,
+        model_name = model_name,
+        brain_area_var = "pseudo_brain_area_numeric", 
+        covar = covar_term,
+        cluster_var = "SpD20_merged",
+        output_dir = plot_dir,
+        FDR_thr = 0.05,
+        contrast_label = paste0("linear:1-3 (", covar_term, ")"),
+        contrast_coef = 2,
+        expression_quantile = 0.50
+    )
+    message("Plots done!")
+    
+}
 
-    
-    
-    
+# Need to check: nspots in linear AP 1-3 Fails
+# Error in glmFit.default(sely, design, offset = seloffset, dispersion = 0.05,  : 
+#                             nrow(design) disagrees with ncol(y)
+#                         In addition: Warning message:
+#                             In plot_clusterwise_volcanos(spe_data = spe_data_subset, aggregated_counts = aggregated_subset,  :
+#                                                              Some sample_id values in agg_coldata could not be matched to nspots.
+
+
+
+# model_name = paste0("BSk", k_merge, "_model4_linear_AP_1-3_nspots")
+# model_name
+# ## check, fails
+# plot_clusterwise_volcanos(
+#     spe_data = spe_data_subset,
+#     aggregated_counts = aggregated_subset,
+#     agg_coldata = agg_coldata_subset,
+#     model_name = model_name,
+#     brain_area_var = "pseudo_brain_area_numeric", 
+#     covar = "nspots", 
+#     cluster_var = "SpD20_merged",
+#     output_dir = plot_dir,
+#     FDR_thr = 0.05,
+#     contrast_label = "linear (donor)",
+#     contrast_coef = 2,
+#     expression_quantile = 0.50
+# )
+
+
     
     #===============================================================================
     
