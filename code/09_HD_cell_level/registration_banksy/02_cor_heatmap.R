@@ -49,7 +49,7 @@ ref_paths = c(
     ),
     #    Visium BayesSpace clusters (k 2 through 28)
     here(
-        "processed-data", "05_layer_differential_expression",
+        "processed-data", "05_brain_area_differential_expression",
         "modeling_results_BS",
         sprintf("modeling_results_BayesSpace_k%02d.Rdata", 2:28)
     )
