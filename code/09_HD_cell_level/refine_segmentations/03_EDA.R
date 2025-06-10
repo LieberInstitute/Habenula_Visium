@@ -8,6 +8,7 @@ library(data.table)
 library(spatialLIBD)
 library(HDF5Array)
 library(cowplot)
+library(paletteer)
 library(sessioninfo)
 
 spe_dir = here(
@@ -83,4 +84,22 @@ dev.off()
 
 png(file.path(plot_dir, 'cell_size_spatial.png'), width = 4000, height = 800)
 plot_grid(plotlist = plot_list_size, nrow = 1)
+dev.off()
+
+banksy_df = read_csv(banksy_path, show_col_types = FALSE)
+cluster_colors = paletteer_d(
+    "Polychrome::palette36", length(unique(banksy_df$banksy_lambda0_2))
+)
+
+p = colData(spe)[, c('sample_id', 'key')] |>
+    as_tibble() |>
+    left_join(banksy_df, by = 'key') |>
+    ggplot(aes(x = sample_id, fill = factor(banksy_lambda0_2))) +
+        geom_bar(position = 'fill') +
+        theme_bw(base_size = 20) +
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+        labs(x = 'Sample ID', y = 'Proportion of Cells', fill = 'Banksy Cluster') +
+        scale_fill_manual(values = cluster_colors)
+pdf(file.path(plot_dir, 'banksy_by_sample.pdf'), height = 10)
+print(p)
 dev.off()
