@@ -459,33 +459,32 @@ plot_clusterwise_volcanos(
     expression_quantile = 0.50 # Relaxed
 )
 
-# FDR at 5%, with filtering by gene expr at 75% percentile, with relaxed FCcutoff for smaller effect genes
-plot_clusterwise_volcanos(
-    spe_data = spe_data,
-    return_dge = return_dge,
-    model_name = model_name,
-    cluster_var = "SpD20_merged",
-    output_dir = plot_dir,
-    FDR_thr = 0.05, 
-    contrast_label = " From LHb to MHb", # From LHb to MHb
-    contrast_coef = 3, 
-    expression_quantile = 0.75 # More strict expressed genes
-)
-
-# FDR at 5%, with filtering by gene expr at 97% percentile, with relaxed FCcutoff for smaller effect genes
-plot_clusterwise_volcanos(
-    spe_data = spe_data,
-    return_dge = return_dge,
-    model_name = model_name,
-    cluster_var = "SpD20_merged",
-    output_dir = plot_dir,
-    FDR_thr = 0.05, # more permissive
-    contrast_label = " From LHb to MHb", # From LHb to MHb
-    contrast_coef = 3, 
-    expression_quantile = 0.97 # More strict, ideally should be >1
-)
-
-#===============================================================================
+# # FDR at 5%, with filtering by gene expr at 75% percentile, with relaxed FCcutoff for smaller effect genes
+# plot_clusterwise_volcanos(
+#     spe_data = spe_data,
+#     return_dge = return_dge,
+#     model_name = model_name,
+#     cluster_var = "SpD20_merged",
+#     output_dir = plot_dir,
+#     FDR_thr = 0.05, 
+#     contrast_label = " From LHb to MHb", # From LHb to MHb
+#     contrast_coef = 3, 
+#     expression_quantile = 0.75 # More strict expressed genes
+# )
+# 
+# # FDR at 5%, with filtering by gene expr at 97% percentile, with relaxed FCcutoff for smaller effect genes
+# plot_clusterwise_volcanos(
+#     spe_data = spe_data,
+#     return_dge = return_dge,
+#     model_name = model_name,
+#     cluster_var = "SpD20_merged",
+#     output_dir = plot_dir,
+#     FDR_thr = 0.05, # more permissive
+#     contrast_label = " From LHb to MHb", # From LHb to MHb
+#     contrast_coef = 3, 
+#     expression_quantile = 0.97 # More strict, ideally should be >1
+# )
+#
 ## FDR at 10%, with filtering by gene expr at 97% percentile, with  strict expressed genes
 # plot_clusterwise_volcanos(
 #     spe_data = spe_data,
@@ -505,57 +504,47 @@ plot_clusterwise_volcanos(
 # enabling tests of trend along the AP axis (e.g., increasing index)
 #===============================================================================
 
-colData(spe_data)$pseudo_brain_area_numeric <- case_when(
-    colData(spe_data)$sample_id == "V13B23-285_A1" ~ 0,
-    colData(spe_data)$sample_id == "V13B23-285_B1" |
-        colData(spe_data)$sample_id == "V14F07-340_D1" |
-        colData(spe_data)$sample_id == "V13B23-280_D1" ~ 1,
-    colData(spe_data)$sample_id == "V13B23-285_C1" |
-        colData(spe_data)$sample_id == "V14F07-340_C1" |
-        colData(spe_data)$sample_id == "V13B23-280_C1" ~ 2,
-    colData(spe_data)$sample_id == "V13B23-285_D1" |
-        colData(spe_data)$sample_id == "V14F07-340_B1" |
-        colData(spe_data)$sample_id == "V14F07-340_A1" |
-        colData(spe_data)$sample_id == "V13B23-280_B1" ~ 3,
-    colData(spe_data)$sample_id == "V13B23-280_A1" ~ 4
-)
+model_name = paste0("BSk", k_merge, "_model3_AP_linear_0_4")
+model_name
+
+# function to add a new variable to compute linear predictor
+assign_AP_index <- function(sample_ids) {
+    case_when(
+        sample_ids == "V13B23-285_A1" ~ 0,
+        sample_ids %in% c("V13B23-285_B1", "V14F07-340_D1", "V13B23-280_D1") ~ 1,
+        sample_ids %in% c("V13B23-285_C1", "V14F07-340_C1", "V13B23-280_C1") ~ 2,
+        sample_ids %in% c("V13B23-285_D1", "V14F07-340_B1", "V14F07-340_A1", "V13B23-280_B1") ~ 3,
+        sample_ids == "V13B23-280_A1" ~ 4,
+        TRUE ~ NA_integer_  # fallback for unmapped samples
+    )
+}
+colData(spe_data)$pseudo_brain_area_numeric <- assign_AP_index(colData(spe_data)$sample_id)
+agg_coldata$pseudo_brain_area_numeric <- assign_AP_index(agg_coldata$base_id)
+
 # make sure all sample IDs are included
 table(is.na(spe_data$pseudo_brain_area_numeric))  # should be FALSE
-# Make a factor
-#spe_data$pseudo_brain_area <- factor(spe_data$pseudo_brain_area_numeric)
 table(spe_data$BayesSpace, spe_data$pseudo_brain_area_numeric)
 table(spe_data$brain_id, spe_data$pseudo_brain_area_numeric)
-# creates unique factor levels for every combination of brain_id and BayesSpace and avoids accidental duplicates.
-#colData(spe_data)$pseudo_sample_id <- paste0(colData(spe_data)$sample_id, "_", colData(spe_data)$SpD20_merged)
-head(spe_data$pseudo_sample_id)
-# inspect uniqueness
-table(duplicated(colData(spe_data)$pseudo_sample_id))
-head(table(colData(spe_data)$pseudo_sample_id))  
 length(unique(colData(spe_data)$brain_id)) * length(unique(colData(spe_data)$SpD20_merged))
-# = 3 × 12 = 36
-# How many pseudo-bulk groups?
-length(unique(colData(spe_data)$pseudo_sample_id))
-
-return_dge_linear <- run_pseudobulk_linear_DE(spe_data)
+# = 3 × 16 = 48
+# return_dge_linear <- run_pseudobulk_linear_DE(spe_data)
 
 # Plot Volcanos 
 # FDR at 5%, with filtering by gene expr at 50th percentile, with relaxed FCcutoff for smaller effect genes
-
-#plot_cluster_volcanos_linear(
 plot_clusterwise_volcanos(
     spe_data = spe_data,
-    return_dge = return_dge_linear,
-    model_name = "BSk20_AP_linear",
-    brain_area_var = "pseudo_brain_area_numeric",  # now dynamic change if linear 
+    aggregated_counts = assay(aggregated, "counts"),
+    agg_coldata = agg_coldata,
+    model_name = model_name,
+    brain_area_var = "pseudo_brain_area_numeric", 
     cluster_var = "SpD20_merged",
     output_dir = plot_dir,
-    contrast_label = "linearAP",
+    FDR_thr = 0.05,
+    contrast_label = "linear (From 0-4)",
     contrast_coef = 2,
-    FDR_thr = 0.10,
     expression_quantile = 0.50
 )
 
-    
     
     
     
