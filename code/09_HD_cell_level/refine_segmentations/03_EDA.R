@@ -28,6 +28,10 @@ plot_dir = here(
 
 dir.create(plot_dir, showWarnings = FALSE)
 
+################################################################################
+#   Load and prep data
+################################################################################
+
 #   We'll only deal with primary cells, since the set of secondary cells changes
 #   between the full-data SPE and the extracellular analysis. Also, only the
 #   primary cells are affected by bad H&E images
@@ -49,6 +53,11 @@ spe$num_neighbors = colData(spe) |>
     left_join(extra_df, by = 'key') |>
     pull(num_neighbors)
 spe$num_neighbors[is.na(spe$num_neighbors)] = 0
+
+################################################################################
+#   Check spatial distribution of number of cells and number of extracellular
+#   bins
+################################################################################
 
 #   Check distribution of cells' number of constituent bins by sample
 p = colData(spe)[, c('sample_id', 'bin_count')] |>
@@ -86,6 +95,10 @@ png(file.path(plot_dir, 'cell_size_spatial.png'), width = 4000, height = 800)
 plot_grid(plotlist = plot_list_size, nrow = 1)
 dev.off()
 
+################################################################################
+#   Are certain clusters specific to samples with bad H&E images?
+################################################################################
+
 banksy_df = read_csv(banksy_path, show_col_types = FALSE)
 cluster_colors = paletteer_d(
     "Polychrome::palette36", length(unique(banksy_df$banksy_lambda0_2))
@@ -103,3 +116,42 @@ p = colData(spe)[, c('sample_id', 'key')] |>
 pdf(file.path(plot_dir, 'banksy_by_sample.pdf'), height = 10)
 print(p)
 dev.off()
+
+################################################################################
+#   Are cells with no extracellular bins specific to certain Banksy clusters?
+################################################################################
+
+#   From the spatial plots, we know that cells with no extracellular bins have
+#   a spatial pattern, including being slightly less likely to occur in habenula.
+#   Let's confirm this statistically with a chi-squared test.
+
+cluster_df = colData(spe)[, 'key', drop = FALSE] |>
+    as_tibble() |>
+    left_join(extra_df, by = 'key') |>
+    left_join(banksy_df, by = 'key') |>
+    mutate(
+        banksy_cluster = factor(banksy_lambda0_2),
+        num_neighbors = ifelse(is.na(num_neighbors), 0, num_neighbors)
+    ) |>
+    select(-banksy_lambda0_2)
+
+no_df = cluster_df |>
+    filter(num_neighbors == 0) |>
+    group_by(banksy_cluster) |>
+    summarize(num_cells_no = n())
+
+cluster_df = cluster_df |>
+    group_by(banksy_cluster) |>
+    summarize(num_cells_total = n()) |>
+    left_join(no_df, by = 'banksy_cluster')
+    
+chi_result = chisq.test(
+    cluster_df$num_cells_no,
+    p = cluster_df$num_cells_total / sum(cluster_df$num_cells_total)
+)
+
+if (chi_result$p.value < 0.05) {
+    message(
+        'Some Banksy clusters are enriched in cells with no extracellular bins.'
+    )
+}
