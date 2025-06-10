@@ -155,3 +155,5 @@ if (chi_result$p.value < 0.05) {
         'Some Banksy clusters are enriched in cells with no extracellular bins.'
     )
 }
+
+session_info()
