@@ -242,7 +242,7 @@ plot_clusterwise_volcanos <- function(
     # 2 V13B23-280_A1_Sp20D02 Sp20D02
     # 3 V13B23-280_A1_Sp20D03 Sp20D03  
     # Sanity check:
-    identical(colnames(aggregated), map_cluster$sample_id)
+    identical(colnames(aggregated_counts), map_cluster$sample_id)
     # TRUE
     # Direct match on full pseudo sample IDs
     agg_coldata$cluster <- map_cluster$cluster[
@@ -279,8 +279,8 @@ plot_clusterwise_volcanos <- function(
         # [1] "V13B23-280_A1" "V13B23-280_B1" "V13B23-280_C1" "V13B23-280_D1" ... n
         
         # Filter samples in the cluster
-        sample_mask <- grepl(paste(samples_in_cluster, collapse = "|"), colnames(aggregated))
-        dge_cluster <- DGEList(counts = assay(aggregated, "counts")[, sample_mask])
+        sample_mask <- grepl(paste(samples_in_cluster, collapse = "|"), colnames(aggregated_counts))
+        dge_cluster <- DGEList(counts = assay(aggregated_counts, "counts")[, sample_mask])
         
         # Subset agg_coldata + design, and drop levels that does not exist in that cluster to avoid error on estimateDisp()
         coldata_cluster <- droplevels(
@@ -428,32 +428,35 @@ plot_clusterwise_volcanos(
 #===============================================================================
 ## Compare pseudo_brain_area1 vs pseudo_brain_area3
 
-model_name = paste0("BSk", k_merge, "_model1_AP1-3")
+model_name = paste0("BSk", k_merge, "_model2_APG1-G3")
 model_name
 # [1] "BSk20_model1_AP1-3"
 
-# Set pseudo_brain_area3 as the reference level to compare pseudo_brain_area1 vs pseudo_brain_area3
+# Set pseudo_brain_area1 as the reference level to compare pseudo_brain_area3 (LHb -> MHb)
 # model1:  from LHb+ to MHb+
-coldata_cluster$pseudo_brain_area <- factor(coldata_cluster$pseudo_brain_area)
-coldata_cluster$pseudo_brain_area <- relevel(coldata_cluster$pseudo_brain_area, ref = "3")
-# re-create the design matrix
-design <- model.matrix(~ pseudo_brain_area + donor, data = coldata_cluster)
-colnames(design)
-# [1] "(Intercept)"        "pseudo_brain_area0" "pseudo_brain_area1"
-# [4] "pseudo_brain_area2" "pseudo_brain_area4" "donorBr9037"       
-# [7] "donorBr9090"  
+agg_coldata$pseudo_brain_area <- factor(agg_coldata$pseudo_brain_area)
+agg_coldata$pseudo_brain_area <- relevel(agg_coldata$pseudo_brain_area, ref = "3")
+# re-create the design matrix to check intercept
+# design <- model.matrix(~ pseudo_brain_area + donor, data = agg_coldata)
+# colnames(design)
+# # [1] "(Intercept)"        "pseudo_brain_area1" "pseudo_brain_area0"
+# # [4] "pseudo_brain_area2" "pseudo_brain_area4" "donorBr9037"       
+# # [7] "donorBr9090"  
+# which(colnames(design) == "pseudo_brain_area1")
+# [1] 2
 
 # FDR at 5%, with filtering by gene expr at 50% percentile, with relaxed FCcutoff for smaller effect genes
 plot_clusterwise_volcanos(
     spe_data = spe_data,
-    return_dge = return_dge,
+    aggregated_counts = assay(aggregated, "counts"),
+    agg_coldata = agg_coldata,
     model_name = model_name,
     cluster_var = "SpD20_merged",
     output_dir = plot_dir,
     FDR_thr = 0.05, 
-    contrast_label = " From LHb to MHb", # From LHb to MHb
-    contrast_coef = 3, 
-    expression_quantile = 0.50 # Relaxed; allows moderately expressed genes
+    contrast_label = "G1-G3",
+    contrast_coef = 2, 
+    expression_quantile = 0.50 # Relaxed
 )
 
 # FDR at 5%, with filtering by gene expr at 75% percentile, with relaxed FCcutoff for smaller effect genes
