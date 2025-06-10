@@ -1,18 +1,13 @@
 library("SingleCellExperiment")
-# library("scran")
 library("scuttle")
 library("edgeR")
 library("purrr")
-# library("IRanges")
-# library("S4Vectors")
 library("ggplot2")
-# library("ggpubr")
-# library("ggrepel")
 library("EnhancedVolcano")
-library("pheatmap")
+#library("pheatmap")
 library("dplyr")
 library("here")
-library("sessioninfo")
+# library("sessioninfo")
 
 
 # Note that scran::pseudoBulkDGE() does not allow you to specify which contrasts or groups to test directly in the function call when you have multiple coefficients 
@@ -40,38 +35,58 @@ k_values <- c(3, 13, 21, 26) # new k(s) selected based on the Habenula reference
 
 ########## functions for pseudobulk, saving results and volcano plots##########
 
-run_pseudobulk_linear_DE <- function(data) {
-
-    # Aggregate 
+run_pseudobulk_linear_DE <- function(spe_data, assay_type = "counts") {
+    # spe_data = spe_data
+    # assay_type = "counts"
+    message("Aggregating pseudo-bulk samples...")
+    
+    # Aggregate counts across pseudo-samples
     aggregated <- scuttle::aggregateAcrossCells(
-        x = data,
-        ids = colData(data)$pseudo_sample,
+        x = spe_data,
+        ids = colData(spe_data)$pseudo_sample_id,
         statistics = "sum",
-        use.assay.type = "counts"
+        use.assay.type = assay_type
     )
     
-    # Parse pseudo-sample names into metadata - splot sample-name from bayesspace annotated domain
-    sample_names <- colnames(aggregated)
-    first_parts <- sub("^(([^_]+_[^_]+))_.*", "\\1", sample_names)
-    second_parts <- sub("^[^_]+_[^_]+_(.*)", "\\1", sample_names)
-    agg_coldata <- data.frame(cluster = second_parts, sample_id = first_parts)
-    colnames(agg_coldata) <- c("cluster", "sample_id")
+    # Extract cluster label from pseudo-sample name (e.g., SpD20_merged)
+    agg_coldata <- data.frame(
+        sample_id = colnames(aggregated),  # this is the full pseudo_sample_id
+        cluster = sub(".*_", "", colnames(aggregated))  # extract SpD label
+    )
+    # Now extract true sample base for mapping metadata
+    agg_coldata$base_id <- sub("^(([^_]+_[^_]+))_.*", "\\1", agg_coldata$sample_id)
     
-    # Map brain_area2_numeric to each pseudo-bulk sample
-    map_df <- unique(colData(data)[, c("sample_id", "brain_area2_numeric")])
-    agg_coldata$brain_area2_numeric <- map_df$brain_area2_numeric[
-        match(agg_coldata$sample_id, map_df$sample_id)
-    ]
+    # Map numeric pseudo_brain_area and donor info
+    map_meta <- as.data.frame(colData(spe_data)) |>
+        dplyr::distinct(sample_id, .keep_all = TRUE)
+    
+    agg_coldata$pseudo_brain_area_numeric <- map_pseudo$pseudo_brain_area_numeric[
+        match(agg_coldata$base_id, map_pseudo$sample_id)]
+    
+    agg_coldata$donor <- map_pseudo$brain_id[
+        match(agg_coldata$base_id, map_pseudo$sample_id)]
+    agg_coldata$donor <- factor(agg_coldata$donor)
+    
+    if (anyNA(agg_coldata$pseudo_brain_area_numeric)) {
+        warning("Missing values found in pseudo_brain_area_numeric. Check mapping.")
+    }
+    if (anyNA(agg_coldata$donor)) {
+        warning("Missing donor information for some samples.")
+    }
+    
+    message("Donors:")
+    print(table(agg_coldata$donor))
     
     # Create design matrix
-    design <- model.matrix(~ brain_area2_numeric, data = agg_coldata)
-    
-    # Step 5: Run EdgeR differential expression
-    dge <- DGEList(counts = aggregated, assay_type)
+    design <- model.matrix(~ pseudo_brain_area_numeric + donor, data = agg_coldata)
+    message("Design matrix columns:")
+    print(colnames(design))
+    # Run EdgeR differential expression
+    dge <- edgeR::DGEList(counts = assay(aggregated, assay_type))
     dge <- calcNormFactors(dge)
     dge <- estimateDisp(dge, design)
     fit <- glmFit(dge, design)
-    lrt <- glmLRT(fit, coef = 2)  # brain_area2_numeric
+    lrt <- glmLRT(fit, coef = 2)  # Coef 2 = pseudo_brain_area_numeric
     
     # Return results
     return(list(
@@ -391,7 +406,6 @@ table(is.na(spe_data$pseudo_brain_area))  # should be FALSE
 # Make a factor
 spe_data$pseudo_brain_area <- factor(spe_data$pseudo_brain_area)
 table(spe_data$BayesSpace, spe_data$pseudo_brain_area)
-# table(spe_data$hb_BSk20_merged, spe_data$pseudo_brain_area)
 table(spe_data$brain_id, spe_data$pseudo_brain_area)
 #         0  1  2  3  4
 # Br8518 15 18 19 19  0
@@ -415,8 +429,7 @@ length(unique(colData(spe_data)$pseudo_sample_id))
 
 
 #===============================================================================
-## compute linear DGE across colData(spe_data)$pseudo_brain_area
-#de_results <- run_pseudobulk_linear_DE(spe_data)
+## compute DGE across colData(spe_data)$pseudo_brain_area
 
 aggregated <- scuttle::aggregateAcrossCells(
     x = spe_data,
@@ -425,28 +438,6 @@ aggregated <- scuttle::aggregateAcrossCells(
     use.assay.type = "counts"
 )
 
-# Parse pseudo-sample names into metadata - split sample-name from bayesspace annotated domain
-# col_names <- colnames(aggregated)
-# sampleID <- sub("^(([^_]+_[^_]+))_.*", "\\1", col_names)
-# SpD <- sub("^[^_]+_[^_]+_(.*)", "\\1", col_names)
-# agg_coldata <- data.frame(cluster = SpD, sample_id = sampleID)
-# colnames(agg_coldata) <- c("cluster", "sample_id")
-# 
-# # Map pseudo_brain_area to each pseudo-bulk sample
-# #map_df <- unique(colData(spe_data)[, c("sample_id", "pseudo_brain_area")])
-# map_pseudo <- as.data.frame(colData(spe_data)) |>
-#     distinct(sample_id, .keep_all = TRUE)
-# head(map_pseudo)
-# 
-# # add meta-data as covariables of the model
-# agg_coldata$pseudo_brain_area <- map_pseudo$pseudo_brain_area[
-#     match(agg_coldata$sample_id, map_pseudo$sample_id)
-# ]
-# # ad brain_id (donor)
-# agg_coldata$donor <- map_pseudo$brain_id[
-#     match(agg_coldata$sample_id, map_pseudo$sample_id)
-# ]
-# agg_coldata$donor <- factor(agg_coldata$donor)
 agg_coldata <- data.frame(
     sample_id = colnames(aggregated),  # this is the full pseudo_sample_id
     cluster = sub(".*_", "", colnames(aggregated))  # extract SpD label
@@ -470,8 +461,9 @@ table(agg_coldata$donor)
 # Br8518 Br9037 Br9090 
 # 63     63     58
 
+
 #===============================================================================
-## Create design matrix
+## Create design matrix for contrasts specific brain areas 
 
 # This sets up a linear model where pseudo_brain_area0 is the reference. It coefficient= 2 compares against it.
 # - pseudo_brain_area is a factor with 5 levels (0 to 4)
@@ -497,59 +489,6 @@ return_dge <- list(
     coldata = agg_coldata
 )
 
-
-#===============================================================================
-## Summarize global brain area effects — the results don't change per cluster.
-
-# res_table <- edgeR::topTags(return_dge$lrt, n = Inf)$table
-# head(res_table)
-# #                   logFC    logCPM        LR       PValue          FDR
-# # ENSG00000129824  7.3036109  6.576374 47.925523 4.427207e-12 2.777187e-08
-# # ENSG00000067048  5.6468725  5.246189 34.821007 3.614523e-09 1.007103e-05
-# # ENSG00000198692  5.3496602  5.017050 34.123204 5.173071e-09 1.007103e-05  
-# #str(res_table)
-# 
-# model_name = paste0("BSk", k_merge,  "_Global_AP2-0")
-# model_name
-# 
-# # Add gene names
-# gene_name_map <- rowData(spe_data)$gene_name
-# names(gene_name_map) <- rownames(spe_data)
-# res_table$gene_name <- gene_name_map[rownames(res_table)]
-#     
-# clust="SpD20_Hb_merged"
-# message("Volcano plot for merged cluster on: ", clust)
-# 
-# # Identify samples in this cluster
-# samples_in_cluster <- colData(spe_data)$sample_id[spe_data$SpD20_merged == clust]
-# 
-# # check if certain genes are highly expressed in this cluster — for labeling
-# # - or just reuse global result but change plot title
-# top_genes <- head(res_table$gene_name[order(res_table$FDR)], 20)
-# 
-# ## make volcano plots by SpD (cluster)
-# pdf_file <- file.path(plot_dir, paste0("volcano_", model_name, "_model1_naive_glmLRT_AP_3_vs_0_FDR05.pdf"))
-# pdf(pdf_file, width = 8, height = 8)
-# 
-# p1 <- EnhancedVolcano::EnhancedVolcano(
-#     res_table,
-#     lab = res_table$gene_name,
-#     selectLab = top_genes,
-#     x = "logFC",
-#     y = "FDR",
-#     title = paste("AP Global Expression - All Cluster"),
-#     subtitle = paste(model_name),
-#     pCutoff = 0.05,
-#     FCcutoff = 0.5,
-#     pointSize = 2.0,
-#     labSize = 4.0,
-#     drawConnectors = TRUE,
-#     max.overlaps = Inf 
-# )
-# print(p1)
-# dev.off()
-
-
 #===============================================================================
 # compute a differential gene expression (DGE) test using a single linear model (GLM) per cluster
 # -> with intercept and coefficients for each level of pseudo_brain_area compared to the reference level 0
@@ -568,7 +507,7 @@ plot_clusterwise_volcanos <- function(
         output_dir = NULL,
         # assay_name = "counts",
         contrast_label,
-        contrast_coef,                 # ge. coef=2 ~ area1 vs area0
+        contrast_coef,                 # ge. coef=2 ~ area1 vs area0 or linear -> depends on the call
         expression_quantile = NULL
 ) {
 
@@ -719,10 +658,12 @@ plot_clusterwise_volcanos <- function(
 # - covar: donor
 
 colnames(design)
-
 model_name = paste0("BSk", k_merge, "_model1_AP1-0")
 model_name
 #[1] "BSk20_AP1-0"
+
+#===============================================================================
+## Compare pseudo_brain_area1 vs pseudo_brain_area4
 
 plot_clusterwise_volcanos(
     spe_data = spe_data,
@@ -730,8 +671,10 @@ plot_clusterwise_volcanos(
     model_name = model_name,
     cluster_var = "SpD20_merged",
     output_dir = plot_dir,
-    contrast_label = "AP1-0",
-    contrast_coef = 2 # area1 vs area0
+    FDR_thr = 0.05, 
+    contrast_label = " From LHb++ to LHb+",
+    contrast_coef = 2, # area1 vs area0
+    expression_quantile = 0.97 
 )
 
 
@@ -821,7 +764,62 @@ plot_clusterwise_volcanos(
 #     contrast_coef = 3, 
 #     expression_quantile = 0.95 # More strict expressed genes
 # )
+
+
 #===============================================================================
+# NOTE: pseudo_brain_area is modeled as a linear numeric variable,
+# enabling tests of trend along the AP axis (e.g., increasing index)
+#===============================================================================
+
+colData(spe_data)$pseudo_brain_area_numeric <- case_when(
+    colData(spe_data)$sample_id == "V13B23-285_A1" ~ 0,
+    colData(spe_data)$sample_id == "V13B23-285_B1" |
+        colData(spe_data)$sample_id == "V14F07-340_D1" |
+        colData(spe_data)$sample_id == "V13B23-280_D1" ~ 1,
+    colData(spe_data)$sample_id == "V13B23-285_C1" |
+        colData(spe_data)$sample_id == "V14F07-340_C1" |
+        colData(spe_data)$sample_id == "V13B23-280_C1" ~ 2,
+    colData(spe_data)$sample_id == "V13B23-285_D1" |
+        colData(spe_data)$sample_id == "V14F07-340_B1" |
+        colData(spe_data)$sample_id == "V14F07-340_A1" |
+        colData(spe_data)$sample_id == "V13B23-280_B1" ~ 3,
+    colData(spe_data)$sample_id == "V13B23-280_A1" ~ 4
+)
+# make sure all sample IDs are included
+table(is.na(spe_data$pseudo_brain_area_numeric))  # should be FALSE
+# Make a factor
+#spe_data$pseudo_brain_area <- factor(spe_data$pseudo_brain_area_numeric)
+table(spe_data$BayesSpace, spe_data$pseudo_brain_area_numeric)
+table(spe_data$brain_id, spe_data$pseudo_brain_area_numeric)
+# creates unique factor levels for every combination of brain_id and BayesSpace and avoids accidental duplicates.
+#colData(spe_data)$pseudo_sample_id <- paste0(colData(spe_data)$sample_id, "_", colData(spe_data)$SpD20_merged)
+head(spe_data$pseudo_sample_id)
+# inspect uniqueness
+table(duplicated(colData(spe_data)$pseudo_sample_id))
+head(table(colData(spe_data)$pseudo_sample_id))  
+length(unique(colData(spe_data)$brain_id)) * length(unique(colData(spe_data)$SpD20_merged))
+# = 3 × 12 = 36
+# How many pseudo-bulk groups?
+length(unique(colData(spe_data)$pseudo_sample_id))
+
+return_dge_linear <- run_pseudobulk_linear_DE(spe_data)
+
+# FDR at 5%, with filtering by gene expr at 50th percentile, with relaxed FCcutoff for smaller effect genes
+plot_clusterwise_volcanos(
+    spe_data = spe_data,
+    return_dge = return_dge_linear,
+    model_name = "BSk20_AP_linear",
+    cluster_var = "SpD20_merged",
+    output_dir = plot_dir,
+    contrast_label = "linearAP",
+    contrast_coef = 2,  # pseudo_brain_area linear slope
+    FDR_thr = 0.05,     # relaxed for EDA
+    expression_quantile = 0.25
+)
+
+
+
+
 
 
 
