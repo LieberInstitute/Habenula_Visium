@@ -9,15 +9,23 @@ library("dplyr")
 library("here")
 # library("sessioninfo")
 
+#===============================================================================
+# Compute differential gene expression (DGE) test for both:
+# - brain-area categorical, and
+# - brain-area-numeric (linear model/GLM)  per cluster
 
-# Note that scran::pseudoBulkDGE() does not allow you to specify which contrasts or groups to test directly in the function call when you have multiple coefficients 
-#   (e.g., 4 brain areas). In short:
-# As this is a wrapper that helps run DGE (differential gene expression) analysis on aggregated pseudobulk data,  
-#.  when we pass a design matrix with multiple coefficients (like 4 brain areas), it:
-# - By default, return all model coefficients (not contrasts).
-# - It does not interpret or apply contrasts for you, and 
+# Overview:
+# - Subsets the DGE input data (return_dge$coldata) to include only pseudo-bulk samples belonging to that cluster 
+# - highlight (filter) genes that are actually expressed in each cluster accordingly with 50th quantile on edgeR::cpm(aggregated_counts)
+# - On categorical var I am not computing all pairwise contrasts, only the coefficient specified
+#===============================================================================
+# Technical notes: scran::pseudoBulkDGE() does not allow you to specify which contrasts or groups to test directly in the function call when you have multiple coefficients (e.g., 4 brain areas), because of that, I am using manual implementation with edgeR
+# scran::pseudoBulkDGE(), In short:
+# It is a wrapper that helps run DGE (differential gene expression) analysis on aggregated pseudobulk data,  
+# when we pass a design matrix with multiple coefficients (like 4 brain areas), it:
+# - By default, return all model coefficients (not contrasts)
 # - It runs a likelihood ratio test (LRT) or Wald test, depending on the method used (edgeR vs DESeq2).
-
+#===============================================================================
 
 #### Set up dirs ####
 input_dir <- here("processed-data", "05_brain_area_differential_expression")
@@ -92,24 +100,6 @@ head(table(spe_data$sample_id, spe_data$SpD20_merged))
 # Br9037 = V13B23-280
 # Br9090 = V14F07-340
 
-# colData(spe_data)$pseudo_brain_area <- case_when(
-#     colData(spe_data)$sample_id == "V13B23-285_A1" ~ 0,
-#     
-#     colData(spe_data)$sample_id == "V13B23-285_B1" |
-#         colData(spe_data)$sample_id == "V14F07-340_D1" |
-#         colData(spe_data)$sample_id == "V13B23-280_D1" ~ 1,
-#     
-#     colData(spe_data)$sample_id == "V13B23-285_C1" |
-#         colData(spe_data)$sample_id == "V14F07-340_C1" |
-#         colData(spe_data)$sample_id == "V13B23-280_C1" ~ 2,
-#     
-#     colData(spe_data)$sample_id == "V13B23-285_D1" |
-#         colData(spe_data)$sample_id == "V14F07-340_B1" |
-#         colData(spe_data)$sample_id == "V14F07-340_A1" |
-#         colData(spe_data)$sample_id == "V13B23-280_B1" ~ 3,
-#     
-#     colData(spe_data)$sample_id == "V13B23-280_A1" ~ 4
-# )
 # add a new variable to compute DGE
 assign_AP_index <- function(sample_ids) {
     case_when(
@@ -125,8 +115,8 @@ assign_AP_index <- function(sample_ids) {
 colData(spe_data)$pseudo_brain_area <- assign_AP_index(colData(spe_data)$sample_id)
 # make sure all sample IDs are included
 table(is.na(spe_data$pseudo_brain_area))  # should be FALSE
-# create the linear predictor brain-area variable
-#colData(spe_data)$pseudo_brain_area_numeric <- as.integer(as.character(colData(spe_data)$pseudo_brain_area))
+# duplicate variable to handle as continuous linear predictor brain-area variable
+colData(spe_data)$pseudo_brain_area_numeric <- as.integer(as.character(colData(spe_data)$pseudo_brain_area))
 
 # Make a factor for compare groups
 spe_data$pseudo_brain_area <- factor(spe_data$pseudo_brain_area)
@@ -200,42 +190,7 @@ table(agg_coldata$donor)
 # Br8518 Br9037 Br9090 
 # 63     63     58
 
-#agg_coldata$pseudo_brain_area_numeric <- assign_AP_index(agg_coldata$base_id)
-
 #===============================================================================
-# ## Create design matrix for contrasts specific brain areas 
-# 
-# # This sets up a linear model where pseudo_brain_area0 is the reference. It coefficient= 2 compares against it.
-# # - pseudo_brain_area is a factor with 5 levels (0 to 4)
-# # run EdgeR differential expression
-# 
-# design <- model.matrix(~ pseudo_brain_area + donor, data = agg_coldata)
-# colnames(design)
-# # [1] "(Intercept)"        "pseudo_brain_area1" "pseudo_brain_area2"
-# # [4] "pseudo_brain_area3" "pseudo_brain_area4"
-# 
-# dge <- DGEList(counts = assay(aggregated, "counts"))
-# dge <- calcNormFactors(dge)
-# dge <- estimateDisp(dge, design)
-# fit <- glmFit(dge, design)
-# lrt <- glmLRT(fit, coef = 2)  # area2 vs area0 
-# 
-# # DGE return results
-# return_dge <- list(
-#     lrt = lrt,
-#     top_genes = topTags(lrt),
-#     fit = fit,
-#     design = design,
-#     coldata = agg_coldata
-# )
-
-#===============================================================================
-# compute a differential gene expression (DGE) test using a single linear model (GLM) per cluster
-# -> with intercept and coefficients for each level of pseudo_brain_area compared to the reference level 0
-# - Subsets the DGE input data (return_dge$coldata) to include only pseudo-bulk samples belonging to that cluster 
-# - highlight (filter) genes that are actually expressed in each cluster
-# -> NOTE. It is not computing all pairwise contrasts, only the coefficient specified in: edgeR::glmLRT(fit_cluster, coef = 2)
-
 
 plot_clusterwise_volcanos <- function(
         spe_data,
@@ -494,37 +449,17 @@ plot_clusterwise_volcanos(
 # enabling tests of trend along the AP axis (e.g., increasing index)
 #===============================================================================
 
-model_name = paste0("BSk", k_merge, "_model_linear_AP0-4")
+model_name = paste0("BSk", k_merge, "_model_linear_AP_0-4")
 model_name
-
-# # function to add a new variable to compute linear predictor
-# assign_AP_index <- function(sample_ids) {
-#     case_when(
-#         sample_ids == "V13B23-285_A1" ~ 0,
-#         sample_ids %in% c("V13B23-285_B1", "V14F07-340_D1", "V13B23-280_D1") ~ 1,
-#         sample_ids %in% c("V13B23-285_C1", "V14F07-340_C1", "V13B23-280_C1") ~ 2,
-#         sample_ids %in% c("V13B23-285_D1", "V14F07-340_B1", "V14F07-340_A1", "V13B23-280_B1") ~ 3,
-#         sample_ids == "V13B23-280_A1" ~ 4,
-#         TRUE ~ NA_integer_  # fallback for unmapped samples
-#     )
-# }
-# colData(spe_data)$pseudo_brain_area_numeric <- assign_AP_index(colData(spe_data)$sample_id)
-
+## add to pseudo_brain_area_numeric to meta-data
 agg_coldata$pseudo_brain_area_numeric <- assign_AP_index(agg_coldata$base_id)
-
 # make sure all sample IDs are included
 table(is.na(spe_data$pseudo_brain_area_numeric))  # should be FALSE
-table(spe_data$BayesSpace, spe_data$pseudo_brain_area_numeric)
-table(spe_data$brain_id, spe_data$pseudo_brain_area_numeric)
-length(unique(colData(spe_data)$brain_id)) * length(unique(colData(spe_data)$SpD20_merged))
-# = 3 × 16 = 48
-# return_dge_linear <- run_pseudobulk_linear_DE(spe_data)
 
-# Plot Volcanos 
 # FDR at 5%, with filtering by gene expr at 50th percentile, with relaxed FCcutoff for smaller effect genes
 plot_clusterwise_volcanos(
     spe_data = spe_data,
-    aggregated_counts = assay(aggregated, "counts"),
+    aggregated_counts = aggregated, 
     agg_coldata = agg_coldata,
     model_name = model_name,
     brain_area_var = "pseudo_brain_area_numeric", 
@@ -537,9 +472,9 @@ plot_clusterwise_volcanos(
 )
 
 #===============================================================================
-# compute and plot volcano plots only for samples with pseudo_brain_area_numeric from 1 to 3
+# compute DGE and plot volcano plots only for samples with pseudo_brain_area_numeric from 1 to 3
 
-model_name = paste0("BSk", k_merge, "_model_linear_AP1-3")
+model_name = paste0("BSk", k_merge, "_model_linear_AP_1-3")
 model_name
 # Subset only pseudo_brain_area_numeric in 1, 2, 3
 subset_ids <- agg_coldata$sample_id[agg_coldata$pseudo_brain_area_numeric %in% 1:3]
@@ -551,7 +486,7 @@ spe_data_subset <- spe_data[, colnames(spe_data) %in% subset_ids]
 
 plot_clusterwise_volcanos(
     spe_data = spe_data_subset,
-    aggregated_counts = assay(aggregated_subset, "counts"),
+    aggregated_counts = aggregated,
     agg_coldata = agg_coldata_subset,
     model_name = model_name,
     brain_area_var = "pseudo_brain_area_numeric", 
