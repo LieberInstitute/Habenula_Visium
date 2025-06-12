@@ -19,12 +19,7 @@ library("sessioninfo")
 
 
 ## Input dir
-# Test done for debug code: 
-#dir_input <- here("processed-data", "05_layer_differential_expression", "modeling_results_BS_old")
-#dir_input <- here("processed-data", "05_layer_differential_expression", "modeling_results_BS")
 dir_input <- here("processed-data", "05_brain_area_differential_expression", "modeling_results_BS")
-
-
 
 ## Create output directories
 dir_rdata <- here("processed-data", "06_spatial_registration_vs_snRNA-seq")
