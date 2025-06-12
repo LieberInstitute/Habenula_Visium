@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/09_spatula_join_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/09_spatula_join_%a.txt
-#SBATCH --array=4-40:2%10
+#SBATCH --array=70,100%2
 
 set -e
 
