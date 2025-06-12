@@ -205,7 +205,8 @@ plot_clusterwise_volcanos <- function(
         output_dir = NULL,
         contrast_label,
         contrast_coef,                        # ge. coef=2 ~ area1 vs area0 
-        expression_quantile = NULL
+        expression_quantile = NULL,
+        ref_level = NULL                      # Used to resort levels automatically if required (only for `pseudo_brain_area` categorical)
 ) {
     
     # expr_cpm <- edgeR::cpm(return_dge$fit$counts)
@@ -270,7 +271,8 @@ plot_clusterwise_volcanos <- function(
     message("Processing ", length(clusters), " levels")
     
     # pdf_file <- file.path(output_dir, paste0("volcano_", model_name, "_FDR05.pdf"))
-    pdf_file <- file.path(output_dir, paste0("volcano_", model_name, "_FDR", (FDR_thr*100) ,"p_ExpQuantile", (expression_quantile*100),"th.pdf"))
+    pdf_file <- file.path(output_dir, paste0("volcano_", model_name, 
+                                             "_FDR", (FDR_thr*100) ,"p_ExpQuantile", (expression_quantile*100),"th.pdf"))
     message("File name:", pdf_file)
     pdf(pdf_file, width = 8, height = 8)
     
@@ -280,6 +282,7 @@ plot_clusterwise_volcanos <- function(
         # clust="Sp20D01"
         message("Volcano plot for cluster: ", clust)
         
+        #============================== prepare data
         # Identify samples in cluster
         table(agg_coldata$cluster)
         samples_in_cluster <- agg_coldata$sample_id[agg_coldata$cluster == clust]
@@ -300,6 +303,14 @@ plot_clusterwise_volcanos <- function(
         #     next
         # }
         
+        #============================== set up model
+        ## reorder factor levels automatically if required. Only available for categorical vars (ge. G3 -> G1)
+        if (brain_area_var=='pseudo_brain_area' & !is.null(ref_level)) {
+            coldata_cluster[[brain_area_var]] <- relevel(
+                factor(coldata_cluster[[brain_area_var]]), ref = ref_level
+            )
+        }
+        
         # Use "brain_area_var" for categorical variable OR "brain_area_var_numeric" for linear model
         if (!is.null(covar)) {
             terms <- c(brain_area_var, covar)
@@ -311,6 +322,7 @@ plot_clusterwise_volcanos <- function(
             data = coldata_cluster
         )
         
+        #============================== compute model
         print(colnames(design_cluster))
         dge_cluster <- calcNormFactors(dge_cluster)
         dge_cluster <- estimateDisp(dge_cluster, design_cluster)
@@ -343,6 +355,7 @@ plot_clusterwise_volcanos <- function(
             next
         }
         
+        #============================== set up volcano variables
         # Identify top up/down genes based on logFC direction and significance
         #top_genes <- head(res_cluster$gene_name[order(res_cluster$FDR)], 20)
         mhb_up_genes <- res_filtered$gene_name[res_filtered$logFC > 0 & res_filtered$FDR < FDR_thr]
@@ -360,6 +373,7 @@ plot_clusterwise_volcanos <- function(
         }
         message(sub_title)
         
+        #============================== build Volcano
         p1 <- EnhancedVolcano::EnhancedVolcano(
             res_filtered,
             lab = res_filtered$gene_name,
@@ -382,6 +396,8 @@ plot_clusterwise_volcanos <- function(
     }
         
     dev.off()
+    
+    message("Plot done!")
         
 }
     
@@ -421,7 +437,6 @@ for (covar_term in c("donor", "nspots")) {
         contrast_coef = 5, # area4 vs area0 (area0 is baseline)
         expression_quantile = 0.50 # Relaxed; allows moderately expressed genes
     )
-    message("Plots done!")
     
 }
 
@@ -430,18 +445,48 @@ for (covar_term in c("donor", "nspots")) {
 # Negative logFC → genes upregulated in area0 compared to area4
 
 #===============================================================================
-## Compare pseudo_brain_area1 vs pseudo_brain_area3
+## Compare pseudo_brain_area3 vs pseudo_brain_area1 (G3 -> G1)
 
 # Set pseudo_brain_area1 as the reference level to compare pseudo_brain_area3 (LHb -> MHb)
 # model1:  from LHb+ to MHb+
-agg_coldata$pseudo_brain_area <- factor(agg_coldata$pseudo_brain_area)
-agg_coldata$pseudo_brain_area <- relevel(agg_coldata$pseudo_brain_area, ref = "3")
-# re-create the design matrix to check intercept
+
+## Function itself control levels behavior, so, use this chunck only for debugging outside the function
+# verification: re-create the design matrix to check intercept before resort levels
+# table(agg_coldata$pseudo_brain_area)
 # design <- model.matrix(~ pseudo_brain_area + donor, data = agg_coldata)
 # colnames(design)
 # which(colnames(design) == "pseudo_brain_area1")
+# agg_coldata$pseudo_brain_area <- relevel(agg_coldata$pseudo_brain_area, ref = "1")
+# which(colnames(design) == "pseudo_brain_area3")
+# [1] 4
 
-for (covar_term in c("donor", "nspots")) {
+for (covar_term in c("donor")) {
+    
+    print(covar_term)
+    model_name = paste0("test_BSk", k_merge,  "_model2_AP_G3-G1_", covar_term)
+    message("Processing categorical model: ", model_name)
+    
+    # build DGE and plot Volcanos
+    # - FDR at 5%, with filtering by gene expr at 50% percentile, with relaxed FCcutoff for smaller effect genes
+    plot_clusterwise_volcanos(
+        spe_data = spe_data,
+        aggregated_counts = aggregated,
+        agg_coldata = agg_coldata,
+        model_name = model_name,
+        brain_area_var = "pseudo_brain_area",
+        covar = covar_term,
+        cluster_var = "SpD20_merged",
+        output_dir = plot_dir,
+        FDR_thr = 0.05,             # try 0.1 for EDA or event 0.2 for discovery
+        contrast_label = paste0("G3-G1 (", covar_term, ")"),
+        ref_level = 3,              # sets G3 as the baseline 
+        contrast_coef = 2,          # column for pseudo_brain_area1
+        expression_quantile = 0.50  # 0.50 Relaxed FOR EDA;  0.75 a bit more strict; 0.97 most to ideal=1 
+    )
+    
+}
+
+for (covar_term in c("donor")) {
     
     print(covar_term)
     model_name = paste0("BSk", k_merge,  "_model2_AP_G1-G3_", covar_term)
@@ -451,19 +496,19 @@ for (covar_term in c("donor", "nspots")) {
     # - FDR at 5%, with filtering by gene expr at 50% percentile, with relaxed FCcutoff for smaller effect genes
     plot_clusterwise_volcanos(
         spe_data = spe_data,
-        aggregated_counts = aggregated, #  assay(aggregated, "counts"),
+        aggregated_counts = aggregated,
         agg_coldata = agg_coldata,
         model_name = model_name,
         brain_area_var = "pseudo_brain_area",
         covar = covar_term,
         cluster_var = "SpD20_merged",
         output_dir = plot_dir,
-        FDR_thr = 0.05,            # try 0.1 for EDA or event 0.2 for discovery
+        FDR_thr = 0.05,             # try 0.1 for EDA or event 0.2 for discovery
         contrast_label = paste0("G1-G3 (", covar_term, ")"),
-        contrast_coef = 2, 
-        expression_quantile = 0.50 # 0.50 Relaxed FOR EDA;  0.75 a bit more strict; 0.97 most to ideal=1 
+        ref_level = 1,              # sets G1 as the baseline 
+        contrast_coef = 4,          # column for pseudo_brain_area3
+        expression_quantile = 0.50  # 0.50 Relaxed FOR EDA;  0.75 a bit more strict; 0.97 most to ideal=1 
     )
-    message("Plots done!")
     
 }
 
@@ -500,7 +545,6 @@ for (covar_term in c("donor", "nspots")) {
         contrast_coef = 2,
         expression_quantile = 0.50
     )
-    message("Plots done!")
     
 }
 
@@ -538,7 +582,6 @@ for (covar_term in c("donor", "nspots")) {
         contrast_coef = 2,
         expression_quantile = 0.50
     )
-    message("Plots done!")
     
 }
 
