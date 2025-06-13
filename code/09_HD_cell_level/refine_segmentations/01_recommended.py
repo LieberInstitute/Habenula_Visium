@@ -32,29 +32,29 @@ adata = sc.read(orig_path)
 
 random_cells = (
     adata.obs
-        .loc[adata.obs['labels_he'] != 0, :]
-        .drop_duplicates(subset = 'labels_he')
+        .loc[adata.obs['labels_he_expanded'] != 0, :]
+        .drop_duplicates(subset = 'labels_he_expanded')
         .sample(n = num_random_cells, random_state = random_state)
-        ['labels_he']
+        ['labels_he_expanded']
         .values
 )
 
 for i, random_cell in enumerate(random_cells):
-    small_adata = adata[adata.obs['labels_he'] == random_cell, :]
+    small_adata = adata[adata.obs['labels_he_expanded'] == random_cell, :]
 
     mask = (
         (adata.obs['array_row'] >= small_adata.obs['array_row'].min() - 40) &
         (adata.obs['array_row'] <= small_adata.obs['array_row'].max() + 40) &
         (adata.obs['array_col'] >= small_adata.obs['array_col'].min() - 40) &
         (adata.obs['array_col'] <= small_adata.obs['array_col'].max() + 40) &
-        (adata.obs['labels_he'] != 0)
+        (adata.obs['labels_he_expanded'] != 0)
     )
     small_adata = adata[mask, :].copy()
-    small_adata.obs['labels_he'] = small_adata.obs['labels_he'].astype(str)
+    small_adata.obs['labels_he_expanded'] = small_adata.obs['labels_he_expanded'].astype(str)
 
     #   Plot the primary-cell labels
     sc.pl.spatial(
-        small_adata, color=[None, "labels_he"],
+        small_adata, color=[None, "labels_he_expanded"],
         img_key=f"{mpp}_mpp_150_buffer", basis="spatial_cropped_150_buffer"
     )
     plt.savefig(
