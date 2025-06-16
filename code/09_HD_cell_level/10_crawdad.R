@@ -18,9 +18,10 @@ scalefactors_path = here(
     'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
 )
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-scales = c(100, 200, 500, 1000, 5000)
+# scales = c(100, 200, 500, 1000, 5000)
+scales = c(1000, 5000)
 random_seed = 0
-
+downsample_prop = 0.1
 
 sample_id = readLines(sample_id_path)[
     as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
@@ -29,23 +30,24 @@ sample_id = readLines(sample_id_path)[
 spe = loadHDF5SummarizedExperiment(spe_dir)
 spe = spe[, spe$sample_id == sample_id]
 
-#   Join in Banksy clusters with SPE
-spe$banksy = tibble(key = spe$key) |>
-    left_join(read_csv(banksy_path, show_col_types = FALSE), by = 'key') |>
-    pull(banksy_lambda0_2)
-stopifnot(!any(is.na(spe$banksy)))
-
-#   Get spatial coordinates in units of microns
+#   Ultimately, we'll be converting spatial coordinates to units of microns,
+#   which is more interpretable than pixels
 micron_per_px = fromJSON(file = sprintf(scalefactors_path, sample_id))[['microns_per_pixel']]
-coords_df = spatialCoords(spe) |>
-    as.data.frame() |>
-    mutate(
-        x = pxl_col_in_fullres * micron_per_px,
-        y = pxl_row_in_fullres * micron_per_px
-    ) |>
-    select(x, y)
 
-pos_df = toSF(pos = coords_df, cellTypes = factor(spe$banksy))
+#   Gather spatial coordinates and Banksy clusters
+cell_df = tibble(
+        key = spe$key,
+        x = spatialCoords(spe)[, 'pxl_col_in_fullres'] * micron_per_px,
+        y = spatialCoords(spe)[, 'pxl_row_in_fullres'] * micron_per_px
+    ) |>
+    left_join(read_csv(banksy_path, show_col_types = FALSE), by = 'key') |>
+    slice_sample(prop = downsample_prop) |>
+    mutate(banksy = factor(banksy_lambda0_2)) |>
+    select(x, y, banksy) |>
+    as.data.frame()
+stopifnot(!any(is.na(cell_df$banksy)))
+
+pos_df = toSF(pos = select(cell_df, c(x, y)), cellTypes = cell_df$banksy)
 shuffle_list = makeShuffledCells(
     pos_df, scales = scales, seed = random_seed, verbose = TRUE
 )
