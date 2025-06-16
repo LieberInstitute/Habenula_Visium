@@ -18,6 +18,8 @@ scalefactors_path = here(
     'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
 )
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
+scales = c(100, 200, 500, 1000, 5000)
+random_seed = 0
 
 
 sample_id = readLines(sample_id_path)[
@@ -44,3 +46,9 @@ coords_df = spatialCoords(spe) |>
     select(x, y)
 
 pos_df = toSF(pos = coords_df, cellTypes = factor(spe$banksy))
+shuffle_list = makeShuffledCells(
+    pos_df, scales = scales, seed = random_seed, verbose = TRUE
+)
+results = findTrends(
+    pos_df, shuffleList = shuffle_list, verbose = TRUE, returnMeans = FALSE
+)
