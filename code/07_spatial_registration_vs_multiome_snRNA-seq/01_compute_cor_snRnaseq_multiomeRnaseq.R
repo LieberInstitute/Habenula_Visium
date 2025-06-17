@@ -20,7 +20,8 @@ library("tidyverse")
 rds_input <- here(
   "processed-data",
   "05_snRNA-seq_model_stats",
-  "enrichment_snRNA-multiome_v2.rds"
+  #"enrichment_snRNA-multiome_v2.rds"
+  "enrichment_snRNA-multiome_v3.rds"
 )
 ## Create output directories
 dir_rdata <- here(
@@ -62,7 +63,7 @@ colnames(modeling_res_enrichment) <- gsub(
   "",
   colnames(modeling_res_enrichment)
 )
-# modeling_res_enrichment[1:3,]
+modeling_res_enrichment[1:3,]
 #                 Astrocyte        Endo Excit.Thal Inhib.Thal      LHb.1
 # ENSG00000238009  0.6873346  1.23174976  1.2820563   1.526893 -0.6502180
 # ENSG00000241860  0.7626024 -2.42952913  1.4923036   2.026956  1.2102714
@@ -81,7 +82,7 @@ if (designF == "vertical") {
 
   results_enrichment_multiome <- readRDS(rds_input)$enrichment |>
     filter(!duplicated(ensembl))
-  # rownames(results_enrichment_multiome)
+  head(rownames(results_enrichment_multiome))
   class(results_enrichment_multiome) # [1] "data.frame"
   head(results_enrichment_multiome[5:10])
   #                 t_stat_C.05.DD_LHb t_stat_C.06 t_stat_C.07.DD_MHb t_stat_C.08
