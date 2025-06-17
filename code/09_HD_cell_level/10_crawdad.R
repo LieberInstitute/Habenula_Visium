@@ -21,11 +21,10 @@ sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
 plot_path = here(
     'plots', '09_HD_cell_level', 'probe_fix', 'crawdad', 'dot_plot.pdf'
 )
-# scales = c(100, 200, 500, 1000, 5000)
-scales = c(500, 5000)
+scales = c(100, 200, 500, 1000, 5000)
 random_seed = 0
-downsample_prop = 0.1
 
+num_cores = as.integer(Sys.getenv("SLURM_CPUS_ON_NODE"))
 dir.create(dirname(plot_path), showWarnings = FALSE)
 
 sample_id = readLines(sample_id_path)[
@@ -46,7 +45,6 @@ cell_df = tibble(
         y = spatialCoords(spe)[, 'pxl_row_in_fullres'] * micron_per_px
     ) |>
     left_join(read_csv(banksy_path, show_col_types = FALSE), by = 'key') |>
-    slice_sample(prop = downsample_prop) |>
     mutate(banksy = factor(banksy_lambda0_2)) |>
     select(x, y, banksy) |>
     as.data.frame()
@@ -56,12 +54,14 @@ pos_df = toSF(pos = select(cell_df, c(x, y)), cellTypes = cell_df$banksy)
 
 #   Shuffle cell-type assignments to create null background
 shuffle_list = makeShuffledCells(
-    pos_df, scales = scales, seed = random_seed, verbose = TRUE
+    pos_df, scales = scales, seed = random_seed, ncores = num_cores,
+    verbose = TRUE
 )
 
 #   Main Z-score calculation for each reference-neighbor pair
 results = findTrends(
-    pos_df, shuffleList = shuffle_list, verbose = TRUE, returnMeans = FALSE
+    pos_df, shuffleList = shuffle_list, returnMeans = FALSE, ncores = num_cores,
+    verbose = TRUE
 )
 
 #   Reformat and compute multiple-testing-corrected Z-score
@@ -74,5 +74,8 @@ vizColocDotplot(
     results, zSigThresh = z_sig, zScoreLimit = 2 * z_sig, dotSizes = c(1, 5)
 )
 dev.off()
+
+message('Memory usage:')
+gc()
 
 session_info()
