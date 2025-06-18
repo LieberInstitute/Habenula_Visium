@@ -38,29 +38,21 @@ message(
 )
 
 levels(SeuratOBJ)
-# [1] "C.05.DD_LHb"         "C.07.DD_MHb"         "C.10.DD_MHb"        
-# [4] "C.11.DD_MHb"         "C.14.DD_MHb"         "C.16.DD_MHb"        
-# [7] "C.18.DD_LHb"         "C.23.DD_LHb"         "C.24.DD_LHb"        
-# [10] "C.30.DD_LHb"         "C.33.DD_LHb"         "C.36.DD_MHb"        
-# [13] "C.40.DD_LHb"         "C.01.undeterminated" "C.02.DD_Oligo"      
-# [16] "C.03.undeterminated" "C.04.undeterminated" "C.06.DD_Exit.Thal"  
-# [19] "C.08.undeterminated" "C.09.undeterminated" "C.12.undeterminated"
-# [22] "C.13.no-match"       "C.15.DD_Exit.Thal"   "C.17.DD_Exit.Thal"  
-# [25] "C.19.DD_Inhib.Thal"  "C.20.DD_Astrocyte"   "C.21.DD_Astrocyte"  
-# [28] "C.22.undeterminated" "C.25.undeterminated" "C.26.DD_OPC"        
-# [31] "C.27.DD_Microglia"   "C.28.DD_Inhib.Thal"  "C.29.DD_Endo"       
-# [34] "C.31.DD_Exit.Thal"   "C.32.undeterminated" "C.34.DD_Oligo"      
-# [37] "C.35.undeterminated" "C.37.undeterminated" "C.38.DD_Inhib.Thal" 
-# [40] "C.39.DD_Inhib.Thal"  "C.41.DD_Microglia"   "C.42.no-match"      
-
-
-## Assign new cluster_ann column to Seurat
+# [1] "C.05.DD_LHb"        "C.07.DD_MHb"        "C.10.DD_MHb"       
+# [4] "C.11.DD_MHb"        "C.14.DD_MHb"        "C.16.DD_MHb"       
+# [7] "C.18.DD_LHb"        "C.23.DD_LHb"        "C.24.DD_LHb"       
+# [10] "C.30.DD_LHb"        "C.33.DD_LHb"        "C.36.DD_MHb"       
+# [13] "C.40.DD_LHb"        "C.01.undetermined"  "C.02.DD_Oligo"     
+# [16] "C.03.undetermined"  "C.04.undetermined"  "C.06.DD_Excit.Thal"
+# [19] "C.08.undetermined"  "C.09.undetermined"  "C.12.undetermined" 
+# [22] "C.13.no-match"      "C.15.DD_Excit.Thal" "C.17.DD_Excit.Thal"
+# [25] "C.19.DD_Inhib.Thal" "C.20.DD_Astrocyte"  "C.21.DD_Astrocyte" 
+# [28] "C.22.undetermined"  "C.25.undetermined"  "C.26.DD_OPC"       
+# [31] "C.27.DD_Microglia"  "C.28.DD_Inhib.Thal" "C.29.DD_Endo"      
+# [34] "C.31.DD_Excit.Thal" "C.32.undetermined"  "C.34.DD_Oligo"     
+# [37] "C.35.undetermined"  "C.37.undetermined"  "C.38.DD_Inhib.Thal"
 colnames(SeuratOBJ@meta.data)
-table(SeuratOBJ[["seurat_clusters"]])
-cluster_ann <- as.vector(Idents(SeuratOBJ))
-# assign new identities to the Seurat object
-SeuratOBJ$cluster_ann <- cluster_ann
-table(SeuratOBJ[["cluster_ann"]])
+unique(SeuratOBJ@meta.data$cluster_ann)
 
 
 ## Import RNA assay into sce object
@@ -209,68 +201,6 @@ head(rowData(sce))
 # AL627309.3   AL627309.3 ENSG00000239945
 # AL627309.2   AL627309.2 ENSG00000239906
 
-
-# names(gtf) <- gtf$gene_id # ensembl ids
-# # Here:
-# # gene_name = gene symbols (multiome)
-# # gene_id = gene ensembl
-# 
-# # Extract gene symbols from Seurat object
-# 
-# gene_symbols <- rownames(SeuratOBJ) # Modify if needed for different slot
-# head(gene_symbols)
-# # [1] "MIR1302-2HG" "FAM138A"     "OR4F5"       "AL627309.1"  "AL627309.3"
-# 
-# length(gene_symbols)
-# # [1] 36601
-
-
-## match gene symbols to Ensembl IDs in the sce object
-# 
-# rowData(sce)$gene_id <- unname(gtf$gene_id[match(rownames(sce), gtf$gene_name)])
-# rowData(sce)$gene_symbol <- rownames(sce)
-# table(is.na(rownames(sce)))
-# length(rownames(sce)) # [1] 36601
-# head(rownames(sce))
-# # [1] "MIR1302-2HG" "FAM138A"     "OR4F5"       "AL627309.1"  "AL627309.3"
-# 
-# ## some validations
-# 
-# table(is.na(rowData(sce)$gene_id)) # ensembl
-# table(is.na(rowData(sce)$gene_symbol))
-# table(rownames(sce) %in% gtf$gene_name)
-# # FALSE  TRUE
-# # 10    36591
-# ## check genes duplicated or genes that does not match the reference
-# dup_genes <- setdiff(rownames(sce), gtf$gene_name)
-# # [1] "TBCE.1"           "LINC01238.1"      "CYB561D2.1"       "MATR3.1"
-# # [5] "LINC01505.1"      "HSPA14.1"         "GOLGA8M.1"        "GGT1.1"
-# # [9] "ARMCX5-GPRASP2.1" "TMSB15B.1"
-# 
-# ## manage duplicated genes
-# 
-# if (length(dup_genes) > 1) {
-#   ## remove .1 from gene name
-#   for (gen in dup_genes) {
-#     gen_new_name = sub('\\.1', '', gen)
-#     # print(gen_new_name)
-#     rownames(sce)[rownames(sce) == gen] <- gen_new_name
-#   }
-#   ## match reference again
-#   rowData(sce)$gene_id <- unname(gtf$gene_id[match(
-#     rownames(sce),
-#     gtf$gene_name
-#   )])
-#   rowData(sce)$gene_symbol <- rownames(sce)
-#   ## verify
-#   dup_genes <- setdiff(rownames(sce), gtf$gene_name)
-# }
-# 
-# if (length(dup_genes) == 0) {
-#   message("Annotation ready!")
-# } else {
-#   stop()
-# }
 
 ## Perform the enrichment t-stats
 
