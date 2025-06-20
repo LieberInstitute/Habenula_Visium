@@ -1,6 +1,7 @@
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
+library(spatialLIBD)
 library(HDF5Array)
 library(crawdad)
 library(rjson)
@@ -13,6 +14,10 @@ banksy_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
     'leiden_res1_3_subset.csv'
 )
+cor_path = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
+    'lambda0_2', 'cor_vs_snRNAseq_fine_subset.rds'
+)
 scalefactors_path = here(
     'processed-data', '01_spaceranger', 'probe_fix', '%s', 'outs',
     'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
@@ -23,6 +28,7 @@ plot_path = here(
 )
 scales = c(100, 200, 500, 1000, 5000)
 random_seed = 0
+cor_index = 13
 
 num_cores = as.integer(Sys.getenv("SLURM_CPUS_ON_NODE"))
 dir.create(dirname(plot_path), showWarnings = FALSE)
@@ -38,6 +44,15 @@ spe = spe[, spe$sample_id == sample_id]
 #   which is more interpretable than pixels
 micron_per_px = fromJSON(file = sprintf(scalefactors_path, sample_id))[['microns_per_pixel']]
 
+anno_df = readRDS(cor_path)[[cor_index]] |>
+    annotate_registered_clusters(cutoff_merge_ratio = 0.1) |>
+    as_tibble() |>
+    mutate(
+        layer_label = ifelse(
+            layer_confidence == 'good', layer_label, paste0('C',cluster)
+        )
+    )
+
 #   Gather spatial coordinates and Banksy clusters
 cell_df = tibble(
         key = spe$key,
@@ -45,10 +60,14 @@ cell_df = tibble(
         y = spatialCoords(spe)[, 'pxl_row_in_fullres'] * micron_per_px
     ) |>
     left_join(read_csv(banksy_path, show_col_types = FALSE), by = 'key') |>
-    mutate(banksy = factor(banksy_lambda0_2)) |>
-    select(x, y, banksy) |>
+    mutate(
+        cell_type = factor(
+            anno_df$layer_label[match(banksy_lambda0_2, anno_df$cluster)]
+        )
+    ) |>
+    select(x, y, cell_type) |>
     as.data.frame()
-stopifnot(!any(is.na(cell_df$banksy)))
+stopifnot(!any(is.na(cell_df$cell_type)))
 
 pos_df = toSF(pos = select(cell_df, c(x, y)), cellTypes = cell_df$banksy)
 
