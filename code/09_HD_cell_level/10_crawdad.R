@@ -24,7 +24,7 @@ scalefactors_path = here(
 )
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
 plot_path = here(
-    'plots', '09_HD_cell_level', 'probe_fix', 'crawdad', 'dot_plot.pdf'
+    'plots', '09_HD_cell_level', 'probe_fix', 'crawdad', 'dot_plot_%s.pdf'
 )
 out_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad',
@@ -75,7 +75,7 @@ cell_df = tibble(
     as.data.frame()
 stopifnot(!any(is.na(cell_df$cell_type)))
 
-pos_df = toSF(pos = select(cell_df, c(x, y)), cellTypes = cell_df$banksy)
+pos_df = toSF(pos = select(cell_df, c(x, y)), cellTypes = cell_df$cell_type)
 
 #   Shuffle cell-type assignments to create null background
 shuffle_list = makeShuffledCells(
@@ -94,15 +94,14 @@ results = meltResultsList(results, withPerms = TRUE)
 z_sig = correctZBonferroni(results)
 
 #   Main dot plot figure
-pdf(plot_path)
+pdf(sprintf(plot_path, sample_id))
 vizColocDotplot(
-    results, zSigThresh = z_sig, zScoreLimit = 2 * z_sig, dotSizes = c(1, 5)
+    results, zSigThresh = z_sig, zScoreLimit = 2 * z_sig, dotSizes = c(2, 10)
 )
 dev.off()
 
 #   Export results
-sprintf(out_path, sample_id) |>
-    write_csv()
+write_csv(results, sprintf(out_path, sample_id))
 
 message('Memory usage:')
 gc()
