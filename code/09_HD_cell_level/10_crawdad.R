@@ -26,12 +26,17 @@ sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
 plot_path = here(
     'plots', '09_HD_cell_level', 'probe_fix', 'crawdad', 'dot_plot.pdf'
 )
+out_path = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad',
+    '%s_results.csv'
+)
 scales = c(100, 200, 500, 1000, 5000)
 random_seed = 0
 cor_index = 13
 
 num_cores = as.integer(Sys.getenv("SLURM_CPUS_ON_NODE"))
 dir.create(dirname(plot_path), showWarnings = FALSE)
+dir.create(dirname(out_path), showWarnings = FALSE)
 
 sample_id = readLines(sample_id_path)[
     as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
@@ -44,6 +49,7 @@ spe = spe[, spe$sample_id == sample_id]
 #   which is more interpretable than pixels
 micron_per_px = fromJSON(file = sprintf(scalefactors_path, sample_id))[['microns_per_pixel']]
 
+#   Compute a reference table matching clusters to fine cell types
 anno_df = readRDS(cor_path)[[cor_index]] |>
     annotate_registered_clusters(cutoff_merge_ratio = 0.1) |>
     as_tibble() |>
@@ -93,6 +99,10 @@ vizColocDotplot(
     results, zSigThresh = z_sig, zScoreLimit = 2 * z_sig, dotSizes = c(1, 5)
 )
 dev.off()
+
+#   Export results
+sprintf(out_path, sample_id) |>
+    write_csv()
 
 message('Memory usage:')
 gc()
