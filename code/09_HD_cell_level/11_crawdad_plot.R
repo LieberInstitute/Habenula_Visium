@@ -25,7 +25,32 @@ for (sample_id in sample_ids) {
     )
 }
 
-do.call(rbind, result_list) |>
+result_df = do.call(rbind, result_list) |>
+    filter(neighbor != reference) |>
     #   First average Z-scores across permutations
     group_by(sample_id, neighbor, scale, reference, Z_sig) |>
-    summarize(Z = mean(Z))
+    summarize(Z = mean(Z)) |>
+    ungroup() |>
+    #   Then filter to the smallest spatial scale with significant Z-scores
+    filter(abs(Z) >= Z_sig) |>
+    group_by(sample_id, neighbor, reference) |>
+    filter(scale == min(scale)) |>
+    ungroup()
+
+result_df$pair = sapply(
+    seq_len(nrow(result_df)),
+    function(i) {
+        paste(
+            sort(c(result_df$neighbor[i], result_df$reference[i])),
+            collapse = '_'
+        )
+    }
+)
+
+result_df = result_df |>
+    group_by(sample_id, pair) |>
+    filter(n() == 2) |>
+    summarize(scale = mean(scale)) |>
+    group_by(pair) |>
+    filter(n() == length(unique(sample_ids))) |>
+    summarize(scale = max(scale))
