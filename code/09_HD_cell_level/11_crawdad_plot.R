@@ -37,6 +37,8 @@ result_df = do.call(rbind, result_list) |>
     filter(scale == min(scale)) |>
     ungroup()
 
+#   Create an order-agnostic pair identifier for each neighbor-reference
+#   combination
 result_df$pair = sapply(
     seq_len(nrow(result_df)),
     function(i) {
@@ -48,9 +50,13 @@ result_df$pair = sapply(
 )
 
 result_df = result_df |>
+    #   Retain combinations where both directions of association are
+    #   significant, and average scales across directions
     group_by(sample_id, pair) |>
     filter(n() == 2) |>
     summarize(scale = mean(scale)) |>
+    #   Retain combinations that are significant in all samples, then
+    #   take the maximum scale across samples
     group_by(pair) |>
     filter(n() == length(unique(sample_ids))) |>
     summarize(scale = max(scale))
