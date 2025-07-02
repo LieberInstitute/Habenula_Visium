@@ -51,12 +51,10 @@ result_df$pair = sapply(
 
 result_df = result_df |>
     #   Retain combinations where both directions of association are
-    #   significant, and average scales across directions
-    group_by(sample_id, pair) |>
-    filter(n() == 2) |>
-    summarize(scale = mean(scale)) |>
-    #   Retain combinations that are significant in all samples, then
-    #   take the maximum scale across samples
+    #   significant, and sign of Z scores agree across directions and samples
     group_by(pair) |>
-    filter(n() == length(unique(sample_ids))) |>
-    summarize(scale = max(scale))
+    filter(n() == 2 * length(unique(sample_ids)), all(Z > 0) | all(Z < 0)) |>
+    #   Take the maximum scale across samples and the Z score at that scale
+    group_by(neighbor, reference) |>
+    summarize(scale = max(scale), Z = Z[which.max(scale)]) |>
+    ungroup()
