@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=100G
+#SBATCH --mem=200G
 #SBATCH --job-name=12_sample_specificity
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00

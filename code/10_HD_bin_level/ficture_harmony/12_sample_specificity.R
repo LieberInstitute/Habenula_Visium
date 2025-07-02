@@ -8,12 +8,11 @@ library(sessioninfo)
 
 ficture_cluster_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'bin_level_clusters.csv.gz'
+    'bin_level_clusters_normalized.csv.gz'
 )
 ficture_cleany_cluster_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'ficture_outputs', 'cleany',
-    'bin_level_clusters.csv.gz'
+    'bin_level_clusters_batch.csv.gz'
 )
 banksy_cluster_paths = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', '%s',
@@ -105,7 +104,7 @@ p = ggplot(
     geom_line() +
     labs(x = 'k', y = 'Number of Balanced Clusters', color = 'Method') +
     theme_bw(base_size = 20)
-pdf(file.path(plot_dir, 'sample_specificity_new.pdf'))
+pdf(file.path(plot_dir, 'sample_specificity_Jun27.pdf'))
 print(p)
 dev.off()
 
