@@ -11,6 +11,9 @@ result_paths = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad',
     '%s_results.csv'
 )
+plot_path = here(
+    'plots', '09_HD_cell_level', 'probe_fix', 'crawdad', 'dot_plot_combined.pdf'
+)
 
 sample_ids = readLines(sample_id_path)[1:3]
 
@@ -58,3 +61,22 @@ result_df = result_df |>
     group_by(neighbor, reference) |>
     summarize(scale = max(scale), Z = Z[which.max(scale)]) |>
     ungroup()
+
+p = ggplot(
+        result_df, aes(x = reference, y = neighbor, color = Z, size = scale)
+    ) +
+    geom_point() +
+    scale_color_gradient2(low = 'blue', mid = 'white', high = 'red') +
+    scale_radius(
+        trans = 'reverse',
+        breaks = seq(
+            min(result_df$scale), max(result_df$scale), length.out = 3
+        ),
+        range = c(2, 15)
+    ) +
+    coord_fixed() +
+    theme_bw(base_size = 20) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+pdf(plot_path, width = 9)
+print(p)
+dev.off()
