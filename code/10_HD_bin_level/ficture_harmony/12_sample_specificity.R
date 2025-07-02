@@ -36,9 +36,24 @@ ficture_df = fread(ficture_cluster_path) |>
         cols = matches('^FICTURE_k'),
         names_to = 'k', values_to = 'cluster'
     ) |>
-    filter(!is.na(cluster)) |>
+    filter(!is.na(cluster))
+
+#   Compute scalars for each sample, such that all add to 1 and each
+#   represents the relative number of bins comprising each sample
+size_df = ficture_df |>
+    group_by(sample_id, k) |>
+    summarize(sample_size_scalar = n()) |>
+    group_by(k) |>
+    mutate(
+        sample_size_scalar = length(unique(sample_id)) * sample_size_scalar /
+            sum(sample_size_scalar)
+    ) |>
+    ungroup()
+
+ficture_df = ficture_df |>
+    left_join(size_df, by = c('sample_id', 'k')) |>
     group_by(sample_id, k, cluster) |>
-    summarize(num_bins = n()) |>
+    summarize(num_bins = n() / sample_size_scalar[1]) |>
     group_by(k, cluster) |>
     summarize(max_prop = max(num_bins) / sum(num_bins)) |>
     group_by(k) |>
