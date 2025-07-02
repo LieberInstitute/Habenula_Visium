@@ -51,7 +51,8 @@ calculate_balanced = function(cluster_df, method_name) {
         group_by(k) |>
         summarize(num_balanced = sum(max_prop <= sample_cutoff)) |>
         ungroup() |>
-        mutate(method = method_name)
+        mutate(method = method_name) |>
+        select(k, num_balanced, method)
     
     return(cluster_df)
 }
@@ -60,6 +61,7 @@ calculate_balanced = function(cluster_df, method_name) {
 #   Read in and clean clustering results
 ################################################################################
 
+message(Sys.time(), ' - Cleaning normalized FICTURE results')
 ficture_norm_df = fread(ficture_cluster_path) |>
     as_tibble() |>
     mutate(sample_id = factor(sample_id)) |>
@@ -71,6 +73,7 @@ ficture_norm_df = fread(ficture_cluster_path) |>
     mutate(k = as.integer(sub('^FICTURE_k', '', k))) |>
     calculate_balanced(method_name = 'FICTURE_normalized')
 
+message(Sys.time(), ' - Cleaning cleaningY FICTURE results')
 ficture_clean_df = fread(ficture_cleany_cluster_path) |>
     as_tibble() |>
     mutate(sample_id = factor(sample_id)) |>
@@ -82,34 +85,31 @@ ficture_clean_df = fread(ficture_cleany_cluster_path) |>
     mutate(k = as.integer(sub('^FICTURE_k', '', k))) |>
     calculate_balanced(method_name = 'FICTURE_cleaningY')
 
-banksy_df_list = list()
+message(Sys.time(), ' - Cleaning Banksy results')
+banksy_df_outer_list = list()
 for (lambda in all_banksy_lambda) {
     lambda_neat = paste0('lambda', sub('\\.', '_', as.character(lambda)))
+    banksy_df_inner_list = list()
     for (res in all_banksy_res) {
         res_neat = sub('\\.', '_', as.character(res))
-        banksy_df_list[[length(banksy_df_list) + 1]] = sprintf(
+        banksy_df_inner_list[[length(banksy_df_inner_list) + 1]] = sprintf(
                 banksy_cluster_paths, lambda_neat, res_neat
             ) |>
             read_csv(show_col_types = FALSE) |>
             dplyr::rename(cluster = paste0('banksy_', lambda_neat)) |>
             mutate(
                 sample_id = factor(sub('^[0-9]+_', '', key)),
-                k = length(unique(cluster)),
-                method = paste0('banksy_', lambda_neat)
-            )
+                k = length(unique(cluster))
+            )            
     }
+    banksy_df_outer_list[[length(banksy_df_outer_list) + 1]] = do.call(
+            rbind, banksy_df_inner_list
+        ) |>
+        calculate_balanced(method_name = paste0('banksy_', lambda_neat))
 }
+banksy_df = do.call(rbind, banksy_df_outer_list)
 
-banksy_df = do.call(rbind, banksy_df_list) |>
-    group_by(method, sample_id, k, cluster) |>
-    summarize(num_bins = n()) |>
-    group_by(method, k, cluster) |>
-    summarize(max_prop = max(num_bins) / sum(num_bins)) |>
-    group_by(method, k) |>
-    summarize(num_balanced = sum(max_prop <= sample_cutoff)) |>
-    ungroup() |>
-    select(k, num_balanced, method)
-
+message(Sys.time(), ' - Plotting')
 p = ggplot(
         rbind(ficture_norm_df, ficture_clean_df, banksy_df),
         aes(x = k, y = num_balanced, color = method)
