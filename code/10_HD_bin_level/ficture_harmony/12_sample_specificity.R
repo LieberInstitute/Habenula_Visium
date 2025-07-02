@@ -26,45 +26,41 @@ all_banksy_lambda = c(0.2, 0.8)
 sample_cutoff = 0.5
 
 ################################################################################
+#   Functions
+################################################################################
+
+calculate_balanced = function(cluster_df, method_name) {
+    #   Compute scalars for each sample, such that all add to 1 and each
+    #   represents the relative number of bins comprising each sample
+    size_df = cluster_df |>
+        group_by(sample_id, k) |>
+        summarize(sample_size_scalar = n()) |>
+        group_by(k) |>
+        mutate(
+            sample_size_scalar = length(unique(sample_id)) *
+                sample_size_scalar / sum(sample_size_scalar)
+        ) |>
+        ungroup()
+
+    cluster_df = cluster_df |>
+        left_join(size_df, by = c('sample_id', 'k')) |>
+        group_by(sample_id, k, cluster) |>
+        summarize(num_bins = n() / sample_size_scalar[1]) |>
+        group_by(k, cluster) |>
+        summarize(max_prop = max(num_bins) / sum(num_bins)) |>
+        group_by(k) |>
+        summarize(num_balanced = sum(max_prop <= sample_cutoff)) |>
+        ungroup() |>
+        mutate(method = method_name)
+    
+    return(cluster_df)
+}
+
+################################################################################
 #   Read in and clean clustering results
 ################################################################################
 
-ficture_df = fread(ficture_cluster_path) |>
-    as_tibble() |>
-    mutate(sample_id = factor(sample_id)) |>
-    pivot_longer(
-        cols = matches('^FICTURE_k'),
-        names_to = 'k', values_to = 'cluster'
-    ) |>
-    filter(!is.na(cluster))
-
-#   Compute scalars for each sample, such that all add to 1 and each
-#   represents the relative number of bins comprising each sample
-size_df = ficture_df |>
-    group_by(sample_id, k) |>
-    summarize(sample_size_scalar = n()) |>
-    group_by(k) |>
-    mutate(
-        sample_size_scalar = length(unique(sample_id)) * sample_size_scalar /
-            sum(sample_size_scalar)
-    ) |>
-    ungroup()
-
-ficture_df = ficture_df |>
-    left_join(size_df, by = c('sample_id', 'k')) |>
-    group_by(sample_id, k, cluster) |>
-    summarize(num_bins = n() / sample_size_scalar[1]) |>
-    group_by(k, cluster) |>
-    summarize(max_prop = max(num_bins) / sum(num_bins)) |>
-    group_by(k) |>
-    summarize(num_balanced = sum(max_prop <= sample_cutoff)) |>
-    ungroup() |>
-    mutate(
-        k = as.integer(sub('^FICTURE_k', '', k)),
-        method = 'ficture_normalized'
-    )
-
-ficture_cleany_df = fread(ficture_cleany_cluster_path) |>
+ficture_norm_df = fread(ficture_cluster_path) |>
     as_tibble() |>
     mutate(sample_id = factor(sample_id)) |>
     pivot_longer(
@@ -72,17 +68,19 @@ ficture_cleany_df = fread(ficture_cleany_cluster_path) |>
         names_to = 'k', values_to = 'cluster'
     ) |>
     filter(!is.na(cluster)) |>
-    group_by(sample_id, k, cluster) |>
-    summarize(num_bins = n()) |>
-    group_by(k, cluster) |>
-    summarize(max_prop = max(num_bins) / sum(num_bins)) |>
-    group_by(k) |>
-    summarize(num_balanced = sum(max_prop <= sample_cutoff)) |>
-    ungroup() |>
-    mutate(
-        k = as.integer(sub('^FICTURE_k', '', k)),
-        method = 'ficture_cleany'
-    )
+    mutate(k = as.integer(sub('^FICTURE_k', '', k))) |>
+    calculate_balanced(method_name = 'FICTURE_normalized')
+
+ficture_clean_df = fread(ficture_cleany_cluster_path) |>
+    as_tibble() |>
+    mutate(sample_id = factor(sample_id)) |>
+    pivot_longer(
+        cols = matches('^FICTURE_k'),
+        names_to = 'k', values_to = 'cluster'
+    ) |>
+    filter(!is.na(cluster)) |>
+    mutate(k = as.integer(sub('^FICTURE_k', '', k))) |>
+    calculate_balanced(method_name = 'FICTURE_cleaningY')
 
 banksy_df_list = list()
 for (lambda in all_banksy_lambda) {
@@ -113,7 +111,7 @@ banksy_df = do.call(rbind, banksy_df_list) |>
     select(k, num_balanced, method)
 
 p = ggplot(
-        rbind(ficture_df, ficture_cleany_df, banksy_df),
+        rbind(ficture_norm_df, ficture_clean_df, banksy_df),
         aes(x = k, y = num_balanced, color = method)
     ) +
     geom_line() +
