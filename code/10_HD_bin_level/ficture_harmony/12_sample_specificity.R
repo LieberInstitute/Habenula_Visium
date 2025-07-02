@@ -110,14 +110,33 @@ for (lambda in all_banksy_lambda) {
 banksy_df = do.call(rbind, banksy_df_outer_list)
 
 message(Sys.time(), ' - Plotting')
+
+#   All clustering methods (for internal use)
 p = ggplot(
         rbind(ficture_norm_df, ficture_clean_df, banksy_df),
         aes(x = k, y = num_balanced, color = method)
     ) +
+    geom_abline(slope = 1, linetype = 'dashed') +
     geom_line() +
     labs(x = 'k', y = 'Number of Balanced Clusters', color = 'Method') +
     theme_bw(base_size = 20)
-pdf(file.path(plot_dir, 'sample_specificity_Jun27.pdf'))
+pdf(file.path(plot_dir, 'sample_specificity.pdf'), height = 5)
+print(p)
+dev.off()
+
+#   FICTURE only (for a supplementary figure)
+p = rbind(ficture_norm_df, ficture_clean_df) |>
+    mutate(
+        method = ifelse(
+            method == 'FICTURE_normalized', 'Normalized Only', 'Batch Corrected'
+        )
+    ) |>
+    ggplot(aes(x = k, y = num_balanced, color = method)) +
+        geom_abline(slope = 1, linetype = 'dashed') +
+        geom_line() +
+        labs(x = 'k', y = 'Number of Balanced Clusters', color = 'Method') +
+        theme_bw(base_size = 20)
+pdf(file.path(plot_dir, 'sample_specificity_ficture.pdf'), height = 5)
 print(p)
 dev.off()
 
