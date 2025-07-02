@@ -4,8 +4,9 @@
 #SBATCH --job-name=12_sample_specificity
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/12_sample_specificity.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/12_sample_specificity.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/12_sample_specificity_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/12_sample_specificity_%a.txt
+#SBATCH --array=3-9%3
 
 set -e
 

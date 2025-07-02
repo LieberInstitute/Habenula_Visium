@@ -23,7 +23,8 @@ plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony')
 all_banksy_res = c(seq_len(20) / 10, 4, 8)
 all_banksy_lambda = c(0.2, 0.8)
 
-sample_cutoff = 0.5
+sample_cutoff = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID')) / 10
+sample_cutoff_clean = sub('\\.', '_', as.character(sample_cutoff))
 
 ################################################################################
 #   Functions
@@ -109,6 +110,10 @@ for (lambda in all_banksy_lambda) {
 }
 banksy_df = do.call(rbind, banksy_df_outer_list)
 
+################################################################################
+#   Plots
+################################################################################
+
 message(Sys.time(), ' - Plotting')
 
 #   All clustering methods (for internal use)
@@ -120,7 +125,12 @@ p = ggplot(
     geom_line() +
     labs(x = 'k', y = 'Number of Balanced Clusters', color = 'Method') +
     theme_bw(base_size = 20)
-pdf(file.path(plot_dir, 'sample_specificity.pdf'), height = 5)
+pdf(
+    file.path(
+        plot_dir, sprintf('sample_specificity_%s.pdf', sample_cutoff_clean)
+    ),
+    height = 5
+)
 print(p)
 dev.off()
 
@@ -136,7 +146,13 @@ p = rbind(ficture_norm_df, ficture_clean_df) |>
         geom_line() +
         labs(x = 'k', y = 'Number of Balanced Clusters', color = 'Method') +
         theme_bw(base_size = 20)
-pdf(file.path(plot_dir, 'sample_specificity_ficture.pdf'), height = 5)
+pdf(
+    file.path(
+        plot_dir,
+        sprintf('sample_specificity_ficture_%s.pdf', sample_cutoff_clean)
+    ),
+    height = 5
+)
 print(p)
 dev.off()
 
