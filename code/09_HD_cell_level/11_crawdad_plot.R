@@ -57,7 +57,6 @@ for (sample_id in sample_ids) {
 }
 
 result_df = do.call(rbind, result_list) |>
-    filter(neighbor != reference) |>
     #   First average Z-scores across permutations
     group_by(sample_id, neighbor, scale, reference, Z_sig) |>
     summarize(Z = mean(Z)) |>
@@ -81,15 +80,20 @@ result_df$pair = sapply(
 )
 
 result_df = result_df |>
-    #   Retain combinations where both directions of association are
-    #   significant, and sign of Z scores agree across samples
-    group_by(pair) |>
-    filter(n() == 2 * length(unique(sample_ids))) |>
+    #   Retain combinations where both directions of association and all
+    #   samples are significant, and sign of Z scores agree across samples.
+    #   In the case that a cell type is paired with itself, just require all
+    #   samples to be significant with same-sign Z scores
     group_by(reference, neighbor) |>
     filter(all(Z > 0) | all(Z < 0)) |>
+    group_by(pair) |>
+    filter(
+        (all(reference == neighbor) & (n() == length(unique(sample_ids)))) |
+        (n() == 2 * length(unique(sample_ids)))
+    ) |>
     #   Take the maximum scale across samples and the min Z score at that scale
     group_by(neighbor, reference) |>
-    summarize(scale = max(scale), Z = min(Z[which.max(scale)])) |>
+    summarize(scale = max(scale), Z = min(Z[scale == max(scale)])) |>
     ungroup()
 
 custom_dotplot(result_df, 'dot_plot_combined.pdf')
