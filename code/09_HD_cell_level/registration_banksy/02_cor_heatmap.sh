@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
-#SBATCH --array=1-60%5
+#SBATCH --array=4-5%2
 
 ## Define loops and appropriately subset each variable for the array task ID
 all_ref=($(seq 1 30))

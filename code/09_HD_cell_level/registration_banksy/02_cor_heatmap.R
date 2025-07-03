@@ -45,7 +45,7 @@ ref_paths = c(
     #   Multiome data
     here(
         'processed-data', '05_snRNA-seq_model_stats',
-        'enrichment_snRNA-multiome_v2.rds'
+        'enrichment_snRNA-multiome_v4.rds'
     ),
     #    Visium BayesSpace clusters (k 2 through 28)
     here(
