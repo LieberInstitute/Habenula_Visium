@@ -82,9 +82,11 @@ result_df$pair = sapply(
 
 result_df = result_df |>
     #   Retain combinations where both directions of association are
-    #   significant, and sign of Z scores agree across directions and samples
+    #   significant, and sign of Z scores agree across samples
     group_by(pair) |>
-    filter(n() == 2 * length(unique(sample_ids)), all(Z > 0) | all(Z < 0)) |>
+    filter(n() == 2 * length(unique(sample_ids))) |>
+    group_by(reference, neighbor) |>
+    filter(all(Z > 0) | all(Z < 0)) |>
     #   Take the maximum scale across samples and the min Z score at that scale
     group_by(neighbor, reference) |>
     summarize(scale = max(scale), Z = min(Z[which.max(scale)])) |>
