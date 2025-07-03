@@ -85,9 +85,9 @@ result_df = result_df |>
     #   significant, and sign of Z scores agree across directions and samples
     group_by(pair) |>
     filter(n() == 2 * length(unique(sample_ids)), all(Z > 0) | all(Z < 0)) |>
-    #   Take the maximum scale across samples and the Z score at that scale
+    #   Take the maximum scale across samples and the min Z score at that scale
     group_by(neighbor, reference) |>
-    summarize(scale = max(scale), Z = Z[which.max(scale)]) |>
+    summarize(scale = max(scale), Z = min(Z[which.max(scale)])) |>
     ungroup()
 
 custom_dotplot(result_df, 'dot_plot_combined.pdf')
