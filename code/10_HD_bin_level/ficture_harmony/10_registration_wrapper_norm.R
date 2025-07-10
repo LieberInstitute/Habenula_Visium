@@ -6,6 +6,7 @@ library(sessioninfo)
 library(tidyverse)
 library(rtracklayer)
 library(data.table)
+options(stringsAsFactors = TRUE)
 
 #   Get k from array task ID
 k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
@@ -30,7 +31,7 @@ gtf_path = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GR
 ficture_colnames = c('sample_id', 'barcode', sprintf('FICTURE_k%d', k))
 
 dir.create(dirname(pseudo_path), showWarnings = FALSE, recursive = TRUE)
-dir.create(dirname(model_path), showWarnings = FALSE, recursive =)
+dir.create(dirname(model_path), showWarnings = FALSE, recursive = TRUE)
 
 spe = readRDS(spe_path)
 

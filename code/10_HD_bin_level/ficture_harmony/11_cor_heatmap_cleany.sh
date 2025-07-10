@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=20G
-#SBATCH --job-name=10_registration_wrapper
+#SBATCH --mem=10G
+#SBATCH --job-name=11_cor_heatmap
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/10_registration_wrapper_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/10_registration_wrapper_%a.txt
-#SBATCH --array=4-40:2,70,100%10
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/11_cor_heatmap_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/11_cor_heatmap_%a.txt
+#SBATCH --array=1-30%15
 
 set -e
 
@@ -21,12 +21,12 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.4.x
+module load conda_R
 
 ## List current modules for reproducibility
 module list
 
-Rscript 10_registration_wrapper.R
+Rscript 11_cor_heatmap_cleany.R
 
 echo "**** Job ends ****"
 date
