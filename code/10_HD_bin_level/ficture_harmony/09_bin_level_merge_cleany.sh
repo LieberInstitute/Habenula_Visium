@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=64G
-#SBATCH --job-name=09_bin_level_merge
+#SBATCH --job-name=09_bin_level_merge_cleany
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/09_bin_level_merge.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/09_bin_level_merge.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/09_bin_level_merge_cleany.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/09_bin_level_merge_cleany.txt
 
 set -e
 
@@ -25,7 +25,7 @@ module load conda_R/4.4.x
 ## List current modules for reproducibility
 module list
 
-Rscript 09_bin_level_merge.R
+Rscript 09_bin_level_merge_cleany.R
 
 echo "**** Job ends ****"
 date
