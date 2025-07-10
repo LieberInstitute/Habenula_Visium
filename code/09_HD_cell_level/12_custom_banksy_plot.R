@@ -22,11 +22,11 @@ plot_path = here(
     'leiden_res1_4', sprintf('clusters_%s_subset_custom.png', sample_id)
 )
 cluster_colors = c(
-    "2" = "#246eb9",
-    "3" = "#2BA822",
+    "2" = "#35B42B",
+    "3" = "#2F97FF",
     "9" = "#583E23",
-    "11" = "#ED8105",
-    "other" = "#ABAFA9"
+    "11" = "#FFA239",
+    "other" = "#DFE1DD"
 )
 
 #   Load just the sample we're using to disambiguate
@@ -37,20 +37,26 @@ spe = spe[, spe$sample_id == sample_id]
 spe$banksy = tibble(key = spe$key) |>
     left_join(read_csv(cluster_path, show_col_types = FALSE), by = 'key') |>
     mutate(
-        banksy = ifelse(
-            as.character(banksy_lambda0_2) %in% names(cluster_colors),
-            as.character(banksy_lambda0_2),
-            "other"
+        banksy = factor(
+            ifelse(
+                as.character(banksy_lambda0_2) %in% names(cluster_colors),
+                as.character(banksy_lambda0_2),
+                "other"
+            ),
+            levels = names(cluster_colors)
         )
     ) |>
     pull(banksy)
 stopifnot(!any(is.na(spe$banksy)))
 
-p = vis_clus(
-        spe, clustervar = 'banksy', is_stitched = TRUE, point_size = 20,
-        spatial = FALSE, colors = cluster_colors
-    ) +
-    guides(fill = guide_legend(override.aes = list(size = 8)))
+#   Run twice to overcome a bug with different behavior on the first plot
+for (i in seq_len(2)) {
+    p = vis_clus(
+            spe, clustervar = 'banksy', is_stitched = TRUE, point_size = 20,
+            spatial = FALSE, colors = cluster_colors
+        ) +
+        guides(fill = guide_legend(override.aes = list(size = 8)))
+}
 png(plot_path, width = 1500, height = 1500)
 print(p)
 dev.off()
