@@ -21,7 +21,7 @@ out_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
     'bin_level_clusters.csv.gz'
 )
-k_values = c(seq(4, 40, 2), 70, 100)
+k_values = c(seq(3, 40), 70, 100)
 
 ficture_colnames = c('sample_id', 'barcode', 'factor_K1')
 
