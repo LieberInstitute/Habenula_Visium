@@ -46,7 +46,6 @@ colData(spe) = colData(spe) |>
     ) |>
     dplyr::rename(ficture = sprintf('FICTURE_k%d', k)) |>
     mutate(ficture = factor(ficture, levels = sort(unique(ficture)))) |>
-    #mutate(ficture = factor(as.character(paste0('c',ficture)), levels = sort(unique(paste0('c',ficture))))) |>
     DataFrame()
 
 spe = spe[, !is.na(spe$ficture)]

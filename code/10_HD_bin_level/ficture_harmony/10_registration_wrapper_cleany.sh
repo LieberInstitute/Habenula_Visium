@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=200G
-#SBATCH --job-name=10_registration_wrapper
+#SBATCH --job-name=10_registration_wrapper_cleany
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/10_registration_wrapper_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/10_registration_wrapper_%a.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/10_registration_wrapper_cleany_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/10_registration_wrapper_cleany_%a.txt
 #SBATCH --array=15,16,18,23,24
 
 set -e
