@@ -8,7 +8,7 @@ library(spatialLIBD)
 model_paths = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
     'registration', 'modeling_results', 'normalized',
-    sprintf('%d.rds', c(seq(4, 40, 2), 70, 100))
+    sprintf('%d.rds', c(seq(3, 40), 70, 100))
 )
 plot_dir = here(
     'plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony', 'registration'
@@ -27,11 +27,11 @@ ref_paths = c(
     #   Multiome data
     here(
         'processed-data', '05_snRNA-seq_model_stats',
-        'enrichment_snRNA-multiome_v2.rds'
+        'enrichment_snRNA-multiome_v4.rds'
     ),
     #    Visium BayesSpace clusters (k 2 through 28)
     here(
-        "processed-data", "05_layer_differential_expression",
+        "processed-data", "05_brain_area_differential_expression",
         "modeling_results_BS",
         sprintf("modeling_results_BayesSpace_k%02d.Rdata", 2:28)
     )
@@ -68,21 +68,6 @@ if (grepl('^Visium', ref_name)) {
             filter(!duplicated(ensembl))
     )
 }
-
-# message("Checking t_stats[[1]] structure...")
-# print(str(t_stats[[1]]))
-
-# message("Checking results_enrichment$enrichment structure...")
-# print(str(results_enrichment$enrichment))
-
-# message("R options:")
-# print(options("stringsAsFactors"))
-
-# message("R locale:")
-# print(Sys.getlocale())
-
-# message("Package version:")
-# print(packageVersion("spatialLIBD"))
 
 this_cor = lapply(
     t_stats,
