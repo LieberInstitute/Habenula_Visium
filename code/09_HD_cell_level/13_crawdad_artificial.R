@@ -1,3 +1,9 @@
+#   Try running CRAWDAD as if we only had one sample ("the BayesSpace trick"),
+#   by putting cells from all samples in the same space in adjacent sections,
+#   separated by the largest spatial scale used in the analysis. The idea is
+#   described more at https://github.com/JEFworks-Lab/CRAWDAD/issues/34 (the
+#   authors hadn't responded at the time of writing this script)
+
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
