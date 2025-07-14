@@ -1,6 +1,6 @@
 #   The Visium HD spatial registration data was used to disambiguate annotations
-#   of some multiome clusters. This script plots a particular Banksy resolution
-#   and set of clusters used in this disambiguation process
+#   of some multiome clusters. This script plots some particular Banksy
+#   resolutions and sets of clusters used in this disambiguation process
 
 library(here)
 library(tidyverse)
@@ -13,51 +13,77 @@ sample_id = "H1-MVPY9BW_A1_8433"
 spe_dir = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
 )
-cluster_path = here(
+cluster_1_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
     'leiden_res1_4_subset.csv'
 )
-plot_path = here(
+plot_1_path = here(
     'plots', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
-    'leiden_res1_4', sprintf('clusters_%s_subset_custom.png', sample_id)
+    'leiden_res1_4', sprintf('clusters_%s_subset_custom_1.png', sample_id)
 )
-cluster_colors = c(
+plot_2_path = here(
+    'plots', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
+    'leiden_res1_4', sprintf('clusters_%s_subset_custom_2.png', sample_id)
+)
+cluster_colors_1 = c(
     "2" = "#35B42B",
     "3" = "#2F97FF",
     "9" = "#583E23",
     "11" = "#FFA239",
     "other" = "#DFE1DD"
 )
+cluster_colors_2 = c("17" = "#001DAF", "other" = "#DFE1DD")
 
 #   Load just the sample we're using to disambiguate
 spe = loadHDF5SummarizedExperiment(spe_dir)
 spe = spe[, spe$sample_id == sample_id]
 
 #   Merge in Banksy clusters to SPE
-spe$banksy = tibble(key = spe$key) |>
-    left_join(read_csv(cluster_path, show_col_types = FALSE), by = 'key') |>
+temp = colnames(spe)
+colData(spe) = colData(spe) |>
+    as_tibble() |>
+    left_join(read_csv(cluster_1_path, show_col_types = FALSE), by = 'key') |>
     mutate(
-        banksy = factor(
+        banksy_1 = factor(
             ifelse(
-                as.character(banksy_lambda0_2) %in% names(cluster_colors),
+                as.character(banksy_lambda0_2) %in% names(cluster_colors_1),
                 as.character(banksy_lambda0_2),
                 "other"
             ),
-            levels = names(cluster_colors)
+            levels = names(cluster_colors_1)
+        ),
+        banksy_2 = factor(
+            ifelse(
+                as.character(banksy_lambda0_2) %in% names(cluster_colors_2),
+                as.character(banksy_lambda0_2),
+                "other"
+            ),
+            levels = names(cluster_colors_2)
         )
     ) |>
-    pull(banksy)
-stopifnot(!any(is.na(spe$banksy)))
+    DataFrame()
+colnames(spe) = temp
+stopifnot(!any(is.na(spe$banksy_1)))
+stopifnot(!any(is.na(spe$banksy_2)))
 
 #   Run twice to overcome a bug with different behavior on the first plot
 for (i in seq_len(2)) {
     p = vis_clus(
-            spe, clustervar = 'banksy', is_stitched = TRUE, point_size = 20,
-            spatial = FALSE, colors = cluster_colors
+            spe, clustervar = 'banksy_1', is_stitched = TRUE, point_size = 20,
+            spatial = FALSE, colors = cluster_colors_1
         ) +
         guides(fill = guide_legend(override.aes = list(size = 8)))
 }
-png(plot_path, width = 1500, height = 1500)
+png(plot_1_path, width = 1500, height = 1500)
+print(p)
+dev.off()
+
+p = vis_clus(
+        spe, clustervar = 'banksy_2', is_stitched = TRUE, point_size = 20,
+        spatial = FALSE, colors = cluster_colors_2
+    ) +
+    guides(fill = guide_legend(override.aes = list(size = 8)))
+png(plot_2_path, width = 1500, height = 1500)
 print(p)
 dev.off()
 
