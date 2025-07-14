@@ -73,29 +73,37 @@ spe = spe[, spe$sample_id == sample_id]
 temp = colnames(spe)
 colData(spe) = colData(spe) |>
     as_tibble() |>
-    left_join(read_csv(cluster_1_path, show_col_types = FALSE), by = 'key') |>
-    left_join(read_csv(cluster_3_path, show_col_types = FALSE), by = 'key') |>
+    left_join(
+        read_csv(cluster_1_path, show_col_types = FALSE) |>
+            dplyr::rename(banksy_1_4 = banksy_lambda0_2),
+        by = 'key'
+    ) |>
+    left_join(
+        read_csv(cluster_3_path, show_col_types = FALSE) |>
+            dplyr::rename(banksy_1_7 = banksy_lambda0_2),
+        by = 'key'
+    ) |>
     mutate(
         banksy_1 = factor(
             ifelse(
-                as.character(banksy_lambda0_2) %in% names(cluster_colors_1),
-                as.character(banksy_lambda0_2),
+                as.character(banksy_1_4) %in% names(cluster_colors_1),
+                as.character(banksy_1_4),
                 "other"
             ),
             levels = names(cluster_colors_1)
         ),
         banksy_2 = factor(
             ifelse(
-                as.character(banksy_lambda0_2) %in% names(cluster_colors_2),
-                as.character(banksy_lambda0_2),
+                as.character(banksy_1_4) %in% names(cluster_colors_2),
+                as.character(banksy_1_4),
                 "other"
             ),
             levels = names(cluster_colors_2)
         ),
         banksy_3 = factor(
             ifelse(
-                as.character(banksy_lambda0_2) %in% names(cluster_colors_3),
-                as.character(banksy_lambda0_2),
+                as.character(banksy_1_7) %in% names(cluster_colors_3),
+                as.character(banksy_1_7),
                 "other"
             ),
             levels = names(cluster_colors_3)
