@@ -106,4 +106,44 @@ dev.off()
 
 saveRDS(this_cor, file = out_path)
 
+#   For helping to annotate the multiome data, we also want a version where
+#   Visium HD is the reference
+if (ref_name == 'multiome') {
+    #   Remove 'X' from Visium HD cluster names
+    for (i in seq_len(length(t_stats))) {
+        colnames(t_stats[[i]]) = sub(
+            '_X([0-9]+)', '_\\1', colnames(t_stats[[i]])
+        )
+    }
+
+    this_cor = lapply(
+        t_stats,
+        function(x) {
+            layer_stat_cor(
+                results_enrichment$enrichment,
+                modeling_results = list(enrichment = x),
+                model_type = "enrichment",
+                top_n = 100
+            )
+        }
+    )
+
+    #   Annotate clusters
+    annotated_clusters = lapply(
+        this_cor, annotate_registered_clusters, cutoff_merge_ratio = 0.1
+    )
+
+    #   Make heatmaps
+    pdf(file.path(plot_dir, "multiome_flipped.pdf"))
+    for (i in seq_len(length(this_cor))) {
+        print(
+            layer_stat_cor_plot(
+                this_cor[[i]], annotation = annotated_clusters[[i]],
+                heatmap_legend_param = list(title = "Cor", at = c(-1, 0, 1))
+            )
+        )
+    }
+    dev.off()
+}
+
 session_info()
