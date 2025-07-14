@@ -29,10 +29,7 @@ scalefactors_path = here(
     'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
 )
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-plot_path = here(
-    'plots', '09_HD_cell_level', 'probe_fix', 'crawdad',
-    'dot_plot_combined_artificial.pdf'
-)
+plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'crawdad')
 out_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad',
     'combined_results.csv'
@@ -42,8 +39,38 @@ random_seed = 0
 cor_index = 13
 
 num_cores = as.integer(Sys.getenv("SLURM_CPUS_ON_NODE"))
-dir.create(dirname(plot_path), showWarnings = FALSE)
+dir.create(plot_dir, showWarnings = FALSE)
 dir.create(dirname(out_path), showWarnings = FALSE)
+
+################################################################################
+#   Functions
+################################################################################
+
+custom_dotplot = function(result_df, filename) {
+    p = ggplot(
+            result_df, aes(x = reference, y = neighbor, color = Z, size = scale)
+        ) +
+        geom_point() +
+        scale_color_gradient2(low = 'blue', mid = 'white', high = 'red') +
+        scale_radius(
+            trans = 'reverse',
+            breaks = seq(
+                min(result_df$scale), max(result_df$scale), length.out = 3
+            ),
+            range = c(2, 15)
+        ) +
+        coord_fixed() +
+        theme_bw(base_size = 20) +
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+    pdf(file.path(plot_dir, filename), width = 9)
+    print(p)
+    dev.off()
+}
+
+################################################################################
+#   Main
+################################################################################
 
 sample_ids = readLines(sample_id_path)[1:3]
 
@@ -112,15 +139,20 @@ results = findTrends(
 results = meltResultsList(results, withPerms = TRUE)
 z_sig = correctZBonferroni(results)
 
+#   Export results
+write_csv(results, out_path)
+
 #   Main dot plot figure
-pdf(plot_path)
+pdf(file.path(plot_dir, 'dot_plot_combined_artificial.pdf'))
 vizColocDotplot(
     results, zSigThresh = z_sig, zScoreLimit = 2 * z_sig, dotSizes = c(2, 10)
 )
 dev.off()
 
-#   Export results
-write_csv(results, out_path)
+#   Also plot a version visually similar to the one in 11_crawdad_plot.R
+results |>
+    filter(abs(Z) >= z_sig) |>
+    custom_dotplot(filename = 'dot_plot_combined_artificial_custom.pdf')
 
 message('Memory usage:')
 gc()
