@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=10G
+#SBATCH --mem=40G
 #SBATCH --job-name=13_crawdad_artificial
 #SBATCH -c 8
 #SBATCH -t 2-0:00:00
