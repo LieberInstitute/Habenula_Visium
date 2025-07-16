@@ -151,7 +151,15 @@ dev.off()
 
 #   Also plot a version visually similar to the one in 11_crawdad_plot.R
 results |>
+    #   First average Z-scores across permutations
+    group_by(neighbor, scale, reference) |>
+    summarize(Z = mean(Z)) |>
+    ungroup() |>
+    #   Then filter to the smallest spatial scale with significant Z-scores
     filter(abs(Z) >= z_sig) |>
+    group_by(neighbor, reference) |>
+    filter(scale == min(scale)) |>
+    ungroup() |>
     custom_dotplot(filename = 'dot_plot_combined_artificial_custom.pdf')
 
 message('Memory usage:')
