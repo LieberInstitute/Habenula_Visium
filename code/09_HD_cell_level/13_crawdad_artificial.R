@@ -46,9 +46,9 @@ dir.create(dirname(out_path), showWarnings = FALSE)
 #   Functions
 ################################################################################
 
-custom_dotplot = function(result_df, filename) {
+custom_dotplot = function(result_df, filename, color_var = 'Z') {
     p = ggplot(
-            result_df, aes(x = reference, y = neighbor, color = Z, size = scale)
+            result_df, aes(x = reference, y = neighbor, color = !!sym(color_var), size = scale)
         ) +
         geom_point() +
         scale_color_gradient2(low = 'blue', mid = 'white', high = 'red') +
@@ -150,7 +150,7 @@ vizColocDotplot(
 dev.off()
 
 #   Also plot a version visually similar to the one in 11_crawdad_plot.R
-results |>
+results = results |>
     #   First average Z-scores across permutations
     group_by(neighbor, scale, reference) |>
     summarize(Z = mean(Z)) |>
@@ -159,8 +159,16 @@ results |>
     filter(abs(Z) >= z_sig) |>
     group_by(neighbor, reference) |>
     filter(scale == min(scale)) |>
-    ungroup() |>
-    custom_dotplot(filename = 'dot_plot_combined_artificial_custom.pdf')
+    ungroup()
+
+custom_dotplot(results, filename = 'dot_plot_combined_artificial_custom.pdf')
+results |>
+    #   Try to improve color range with a square-root-based transformation
+    mutate(significance = sign(Z) * sqrt(abs(Z))) |>
+    custom_dotplot(
+        filename = 'dot_plot_combined_artificial_custom_sqrt.pdf',
+        color_var = 'significance'
+    )
 
 message('Memory usage:')
 gc()
