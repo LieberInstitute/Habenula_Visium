@@ -103,4 +103,31 @@ result_df |>
     filter(abs(Z) >= 8) |>
     custom_dotplot(filename = 'dot_plot_combined_strict.pdf')
 
+#   Plot Z-scores vs scale for a particularly interesting cell-type pair
+p = do.call(rbind, result_list) |>
+    #   Average Z-scores across permutations
+    group_by(sample_id, neighbor, scale, reference, Z_sig) |>
+    summarize(Z = mean(Z)) |>
+    ungroup() |>
+    #   Improve plot appearance
+    mutate(
+        sample_id = paste0('Br', str_extract(sample_id, '[0-9]{4}$')),
+        facet_anno = sprintf("Ref: %s\nNeighbor: %s", reference, neighbor)
+    ) |>
+    #   Focus on a particular pair (and its reverse)
+    filter(
+        ((neighbor == 'MHb.2') & (reference == 'Microglia')) |
+        ((neighbor == 'Microglia') & (reference == 'MHb.2'))
+    ) |>
+    ggplot(aes(x = scale, y = Z, color = sample_id, group = sample_id)) +
+        geom_line() +
+        geom_point() +
+        facet_wrap(~ facet_anno, nrow = 1) +
+        theme_bw(base_size = 20) +
+        labs(x = 'Scale (Microns)', color = 'Sample ID')
+
+pdf(file.path(plot_dir, 'z_scores_MHb_microglia.pdf'), width = 10, height = 5)
+print(p)
+dev.off()
+
 session_info()
