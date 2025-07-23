@@ -1,17 +1,33 @@
 library(here)
 library(tidyverse)
 library(crawdad)
+library(spatialLIBD)
+library(HDF5Array)
 library(sessioninfo)
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-plot_path = here(
-    'plots', '09_HD_cell_level', 'probe_fix', 'crawdad', 'dot_plot_%s.pdf'
-)
 result_paths = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad',
     '%s_results.csv'
 )
+spe_dir = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+)
+banksy_path = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
+    'leiden_res1_3_subset.csv'
+)
+cor_path = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
+    'lambda0_2', 'cor_vs_snRNAseq_fine_subset.rds'
+)
+cell_type_colors = c(
+    Microglia = "#2F97FF", MHb.2 = "#FFA239", Other = "#DFE1DD"
+)
 plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'crawdad')
+cor_index = 13
+
+dir.create(file.path(plot_dir, 'spatial_plots'), showWarnings = FALSE)
 
 ################################################################################
 #   Functions
@@ -40,7 +56,7 @@ custom_dotplot = function(result_df, filename) {
 }
 
 ################################################################################
-#   Main
+#   CRAWDAD-specific plots
 ################################################################################
 
 sample_ids = readLines(sample_id_path)[1:3]
@@ -129,5 +145,57 @@ p = do.call(rbind, result_list) |>
 pdf(file.path(plot_dir, 'z_scores_MHb_microglia.pdf'), width = 10, height = 5)
 print(p)
 dev.off()
+
+################################################################################
+#   Spatial distribution of particular cell types
+################################################################################
+
+spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = spe[, spe$sample_id %in% sample_ids]
+
+#   Compute a reference table matching clusters to fine cell types
+anno_df = readRDS(cor_path)[[cor_index]] |>
+    annotate_registered_clusters(cutoff_merge_ratio = 0.1) |>
+    as_tibble() |>
+    mutate(
+        layer_label = ifelse(
+            layer_confidence == 'good', layer_label, paste0('C',cluster)
+        )
+    )
+
+#   Annotate Banksy clusters with cell type
+spe$cell_type = tibble(key = spe$key) |>
+    left_join(read_csv(banksy_path, show_col_types = FALSE), by = 'key') |>
+    mutate(
+        cell_type = anno_df$layer_label[
+            match(banksy_lambda0_2, anno_df$cluster)
+        ]
+    ) |>
+    mutate(
+        cell_type = ifelse(
+            cell_type %in% c("Microglia", "MHb.2"), cell_type, 'Other'
+        )
+    ) |>
+    pull(cell_type)
+stopifnot(!any(is.na(spe$cell_type)))
+
+#   Plot the cell-type pair spatially in each sample
+for (sample_id in sample_ids) {
+    #   Run twice to overcome a bug with different behavior on the first plot
+    for (i in seq_len(2)) {
+        p = vis_clus(
+                spe, sampleid = sample_id, clustervar = 'cell_type',
+                is_stitched = TRUE, point_size = 20, spatial = FALSE,
+                colors = cell_type_colors
+            ) +
+                guides(fill = guide_legend(override.aes = list(size = 8)))
+    }
+    png(
+        file.path(plot_dir, 'spatial_plots', sprintf('%s.png', sample_id)),
+        width = 1500, height = 1500
+    )
+    print(p)
+    dev.off()
+}
 
 session_info()
