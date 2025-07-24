@@ -3,6 +3,7 @@ library(tidyverse)
 library(crawdad)
 library(spatialLIBD)
 library(HDF5Array)
+library(scales)
 library(sessioninfo)
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
@@ -33,12 +34,17 @@ dir.create(file.path(plot_dir, 'spatial_plots'), showWarnings = FALSE)
 #   Functions
 ################################################################################
 
-custom_dotplot = function(result_df, filename) {
+custom_dotplot = function(result_df, z_sig, filename) {
     p = ggplot(
             result_df, aes(x = reference, y = neighbor, color = Z, size = scale)
         ) +
         geom_point() +
-        scale_color_gradient2(low = 'blue', mid = 'white', high = 'red') +
+        scale_color_gradientn(
+            colors = c('blue', 'white', 'white', 'red'),
+            values = rescale(
+                c(min(result_df$Z), -1 * z_sig, z_sig, max(result_df$Z))
+            )
+        ) +
         scale_radius(
             trans = 'reverse',
             breaks = seq(
@@ -95,6 +101,12 @@ result_df$pair = sapply(
     }
 )
 
+#   Significance thresholds should only be determined by number of clusters,
+#   which should be equal in all samples. Grab the single cutoff
+z_sig = unname(unlist(lapply(result_list, function(x) x$Z_sig)))
+stopifnot(length(unique(z_sig)) == 1)
+z_sig = unique(z_sig)
+
 result_df = result_df |>
     #   Retain combinations where both directions of association and all
     #   samples are significant, and sign of Z scores agree across samples.
@@ -112,12 +124,7 @@ result_df = result_df |>
     summarize(scale = max(scale), Z = min(Z[scale == max(scale)])) |>
     ungroup()
 
-custom_dotplot(result_df, 'dot_plot_combined.pdf')
-
-#   Somewhat arbitrarily increase stringency of effect size to narrow results
-result_df |>
-    filter(abs(Z) >= 8) |>
-    custom_dotplot(filename = 'dot_plot_combined_strict.pdf')
+custom_dotplot(result_df, z_sig, 'dot_plot_combined.pdf')
 
 #   Plot Z-scores vs scale for a particularly interesting cell-type pair
 p = do.call(rbind, result_list) |>

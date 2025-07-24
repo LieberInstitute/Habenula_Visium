@@ -46,12 +46,17 @@ dir.create(dirname(out_path), showWarnings = FALSE)
 #   Functions
 ################################################################################
 
-custom_dotplot = function(result_df, filename, color_var = 'Z') {
+custom_dotplot = function(result_df, z_sig, filename, color_var = 'Z') {
     p = ggplot(
             result_df, aes(x = reference, y = neighbor, color = !!sym(color_var), size = scale)
         ) +
         geom_point() +
-        scale_color_gradient2(low = 'blue', mid = 'white', high = 'red') +
+        scale_color_gradientn(
+            colors = c('blue', 'white', 'white', 'red'),
+            values = rescale(
+                c(min(result_df$Z), -1 * z_sig, z_sig, max(result_df$Z))
+            )
+        ) +
         scale_radius(
             trans = 'reverse',
             breaks = seq(
@@ -161,14 +166,9 @@ results = results |>
     filter(scale == min(scale)) |>
     ungroup()
 
-custom_dotplot(results, filename = 'dot_plot_combined_artificial_custom.pdf')
-results |>
-    #   Try to improve color range with a square-root-based transformation
-    mutate(significance = sign(Z) * sqrt(abs(Z))) |>
-    custom_dotplot(
-        filename = 'dot_plot_combined_artificial_custom_sqrt.pdf',
-        color_var = 'significance'
-    )
+custom_dotplot(
+    results, z_sig, filename = 'dot_plot_combined_artificial_custom.pdf'
+)
 
 message('Memory usage:')
 gc()
