@@ -164,25 +164,41 @@ anno_df = readRDS(cor_path)[[cor_index]] |>
     )
 
 #   Annotate Banksy clusters with cell type
-spe$cell_type = tibble(key = spe$key) |>
+anno_join_df = tibble(key = spe$key) |>
     left_join(read_csv(banksy_path, show_col_types = FALSE), by = 'key') |>
     mutate(
         cell_type = anno_df$layer_label[
             match(banksy_lambda0_2, anno_df$cluster)
-        ]
-    ) |>
-    mutate(
-        cell_type = ifelse(
+        ],
+        cell_type_pair = ifelse(
             cell_type %in% c("Microglia", "MHb.2"), cell_type, 'Other'
         )
-    ) |>
-    pull(cell_type)
-stopifnot(!any(is.na(spe$cell_type)))
+    )
+stopifnot(!any(is.na(anno_join_df$cell_type)))
+spe$cell_type = anno_join_df$cell_type
+spe$cell_type_pair = anno_join_df$cell_type_pair
 
-#   Plot the cell-type pair spatially in each sample
 for (sample_id in sample_ids) {
     #   Run twice to overcome a bug with different behavior on the first plot
     for (i in seq_len(2)) {
+        #   Plot the cell-type pair spatially in each sample
+        p = vis_clus(
+                spe, sampleid = sample_id, clustervar = 'cell_type_pair',
+                is_stitched = TRUE, point_size = 20, spatial = FALSE,
+                colors = cell_type_colors
+            ) +
+                guides(fill = guide_legend(override.aes = list(size = 8)))
+    }
+    png(
+        file.path(plot_dir, 'spatial_plots', sprintf('%s_pair.png', sample_id)),
+        width = 1500, height = 1500
+    )
+    print(p)
+    dev.off()
+
+    #   Run twice to overcome a bug with different behavior on the first plot
+    for (i in seq_len(2)) {
+        #   Plot all clusters spatially
         p = vis_clus(
                 spe, sampleid = sample_id, clustervar = 'cell_type',
                 is_stitched = TRUE, point_size = 20, spatial = FALSE,
