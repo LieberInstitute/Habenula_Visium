@@ -122,7 +122,9 @@ result_df = result_df |>
     #   Take the maximum scale across samples and the min Z score at that scale
     group_by(neighbor, reference) |>
     summarize(scale = max(scale), Z = min(Z[scale == max(scale)])) |>
-    ungroup()
+    ungroup() |>
+    #   Cap Z-score at twice the magnitude of the significance threshold
+    mutate(Z = sign(Z) * pmin(abs(Z), z_sig * 2))
 
 custom_dotplot(result_df, z_sig, 'dot_plot_combined.pdf')
 

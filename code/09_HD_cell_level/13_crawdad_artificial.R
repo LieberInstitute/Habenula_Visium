@@ -164,7 +164,9 @@ results = results |>
     filter(abs(Z) >= z_sig) |>
     group_by(neighbor, reference) |>
     filter(scale == min(scale)) |>
-    ungroup()
+    ungroup() |>
+    #   Cap Z-score at twice the magnitude of the significance threshold
+    mutate(Z = sign(Z) * pmin(abs(Z), z_sig * 2))
 
 custom_dotplot(
     results, z_sig, filename = 'dot_plot_combined_artificial_custom.pdf'
