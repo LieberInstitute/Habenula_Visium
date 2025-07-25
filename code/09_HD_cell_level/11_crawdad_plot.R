@@ -89,18 +89,6 @@ result_df = do.call(rbind, result_list) |>
     filter(scale == min(scale)) |>
     ungroup()
 
-#   Create an order-agnostic pair identifier for each neighbor-reference
-#   combination
-result_df$pair = sapply(
-    seq_len(nrow(result_df)),
-    function(i) {
-        paste(
-            sort(c(result_df$neighbor[i], result_df$reference[i])),
-            collapse = '_'
-        )
-    }
-)
-
 #   Significance thresholds should only be determined by number of clusters,
 #   which should be equal in all samples. Grab the single cutoff
 z_sig = unname(unlist(lapply(result_list, function(x) x$Z_sig)))
@@ -108,17 +96,11 @@ stopifnot(length(unique(z_sig)) == 1)
 z_sig = unique(z_sig)
 
 result_df = result_df |>
-    #   Retain combinations where both directions of association and all
-    #   samples are significant, and sign of Z scores agree across samples.
-    #   In the case that a cell type is paired with itself, just require all
-    #   samples to be significant with same-sign Z scores
+    #   Retain pairs where all samples are significant, and sign of Z scores
+    #   agree across samples
     group_by(reference, neighbor) |>
     filter(all(Z > 0) | all(Z < 0)) |>
-    group_by(pair) |>
-    filter(
-        (all(reference == neighbor) & (n() == length(unique(sample_ids)))) |
-        (n() == 2 * length(unique(sample_ids)))
-    ) |>
+    filter(n() == length(unique(sample_ids))) |>
     #   Take the maximum scale across samples and the min Z score at that scale
     group_by(neighbor, reference) |>
     summarize(scale = max(scale), Z = min(Z[scale == max(scale)])) |>
