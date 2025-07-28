@@ -40,7 +40,7 @@ custom_dotplot = function(result_df, z_sig, filename) {
         ) +
         geom_point() +
         scale_color_gradientn(
-            colors = c('blue', 'white', 'white', 'red'),
+            colors = c('blue', '#CECECE', '#CECECE', 'red'),
             values = rescale(
                 c(min(result_df$Z), -1 * z_sig, z_sig, max(result_df$Z))
             )
@@ -101,9 +101,9 @@ result_df = result_df |>
     group_by(reference, neighbor) |>
     filter(all(Z > 0) | all(Z < 0)) |>
     filter(n() == length(unique(sample_ids))) |>
-    #   Take the maximum scale across samples and the min Z score at that scale
+    #   Take the mean Z-score and scale across samples
     group_by(neighbor, reference) |>
-    summarize(scale = max(scale), Z = min(Z[scale == max(scale)])) |>
+    summarize(scale = mean(scale), Z = mean(Z)) |>
     ungroup() |>
     #   Cap Z-score at twice the magnitude of the significance threshold
     mutate(Z = sign(Z) * pmin(abs(Z), z_sig * 2))
