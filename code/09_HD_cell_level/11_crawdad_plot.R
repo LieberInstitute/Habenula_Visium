@@ -23,7 +23,7 @@ cor_path = here(
     'lambda0_2', 'cor_vs_snRNAseq_fine_subset.rds'
 )
 cell_type_colors = c(
-    Microglia = "#2F97FF", MHb.2 = "#FFA239", Other = "#DFE1DD"
+    Astrocyte = "#2F97FF", MHb.2 = "#FFA239", Other = "#DFE1DD"
 )
 plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'crawdad')
 cor_index = 13
@@ -123,17 +123,19 @@ p = do.call(rbind, result_list) |>
     ) |>
     #   Focus on a particular pair (and its reverse)
     filter(
-        ((neighbor == 'MHb.2') & (reference == 'Microglia')) |
-        ((neighbor == 'Microglia') & (reference == 'MHb.2'))
+        ((neighbor == 'MHb.2') & (reference == 'Astrocyte')) |
+        ((neighbor == 'Astrocyte') & (reference == 'MHb.2'))
     ) |>
     ggplot(aes(x = scale, y = Z, color = sample_id, group = sample_id)) +
         geom_line() +
         geom_point() +
+        geom_hline(yintercept = z_sig, linetype = 'dashed') +
+        geom_hline(yintercept = -1 * z_sig, linetype = 'dashed') +
         facet_wrap(~ facet_anno, nrow = 1) +
         theme_bw(base_size = 20) +
         labs(x = 'Scale (Microns)', color = 'Sample ID')
 
-pdf(file.path(plot_dir, 'z_scores_MHb_microglia.pdf'), width = 10, height = 5)
+pdf(file.path(plot_dir, 'z_scores_MHb2_astro.pdf'), width = 10, height = 5)
 print(p)
 dev.off()
 
@@ -162,7 +164,7 @@ anno_join_df = tibble(key = spe$key) |>
             match(banksy_lambda0_2, anno_df$cluster)
         ],
         cell_type_pair = ifelse(
-            cell_type %in% c("Microglia", "MHb.2"), cell_type, 'Other'
+            cell_type %in% c("Astrocyte", "MHb.2"), cell_type, 'Other'
         )
     )
 stopifnot(!any(is.na(anno_join_df$cell_type)))
