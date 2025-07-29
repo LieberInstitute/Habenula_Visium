@@ -41,7 +41,7 @@ spe <- read10xVisiumWrapper(
     type = "sparse",
     data = "raw",
     images = "lowres",
-    load = FALSE,
+    load = TRUE,
     reference_gtf = reference_gtf
 )
 
