@@ -1,3 +1,7 @@
+#   We're interested in running CRAWDAD on only the habenula or only thalamus.
+#   This script reads in annotations of the regions from Shiny, and otherwise
+#   prepares input data for CRAWDAD
+
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
