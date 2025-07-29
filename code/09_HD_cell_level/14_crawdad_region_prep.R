@@ -36,11 +36,11 @@ out_path = here(
 )
 habenula_anno_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
-    'habenula_shiny_annotations.csv'
+    'habenula_shiny_annotations.csv.gz'
 )
 thalamus_anno_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
-    'thalamus_shiny_annotations.csv'
+    'thalamus_shiny_annotations.csv.gz'
 )
 cor_index = 13
 region_colors = c(
