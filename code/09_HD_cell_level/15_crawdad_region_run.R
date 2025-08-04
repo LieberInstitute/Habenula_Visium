@@ -1,4 +1,11 @@
 library(getopt)
+library(here)
+library(tidyverse)
+library(SpatialExperiment)
+library(spatialLIBD)
+library(HDF5Array)
+library(crawdad)
+library(rjson)
 library(sessioninfo)
 
 # Import command-line parameters
@@ -16,6 +23,41 @@ opt <- getopt(spec)
 
 message("Using the following parameters:")
 print(opt)
+
+in_path = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
+    'input_cells.csv.gz'
+)
+out_path = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
+    'output', sprintf('%s_%s_results.csv', opt$sample_id, opt$region)
+)
+scales = c(100, 200, 500, 1000, 5000)
+random_seed = 0
+
+num_cores = as.integer(Sys.getenv("SLURM_CPUS_ON_NODE"))
+dir.create(dirname(out_path), showWarnings = FALSE)
+
+cell_df = read_csv(in_path, show_col_types = FALSE) |>
+    filter(sample_id == opt$sample_id, region_anno == opt$region) |>
+    as.data.frame()
+
+pos_df = toSF(pos = select(cell_df, c(x, y)), cellTypes = cell_df$cell_type)
+
+#   Shuffle cell-type assignments to create null background
+shuffle_list = makeShuffledCells(
+    pos_df, scales = scales, seed = random_seed, ncores = num_cores,
+    verbose = TRUE
+)
+
+#   Main Z-score calculation for each reference-neighbor pair
+results = findTrends(
+        pos_df, shuffleList = shuffle_list, returnMeans = FALSE,
+        ncores = num_cores, verbose = TRUE
+    ) |>
+    #   Reformat and export
+    makeResultsList(withPerms = TRUE) |>
+    write_csv(out_path)
 
 message("Memory usage:")
 gc()
