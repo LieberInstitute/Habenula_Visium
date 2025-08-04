@@ -1,11 +1,7 @@
 library(getopt)
 library(here)
 library(tidyverse)
-library(SpatialExperiment)
-library(spatialLIBD)
-library(HDF5Array)
 library(crawdad)
-library(rjson)
 library(sessioninfo)
 
 # Import command-line parameters
