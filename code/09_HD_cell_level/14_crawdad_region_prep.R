@@ -119,7 +119,7 @@ for (sample_id in sample_ids) {
 
 #   Gather spatial coordinates, Banksy clusters, and region annotations into a
 #   single CSV for input to CRAWDAD
-tibble(
+cell_df = tibble(
         key = spe$key,
         sample_id = spe$sample_id,
         region_anno = spe$region_anno,
@@ -135,7 +135,20 @@ tibble(
         cell_type = factor(
             anno_df$layer_label[match(banksy_lambda0_2, anno_df$cluster)]
         )
-    ) |>
+    )
+
+#   Keep combinations of cell type and region that consitute at least 1% of the
+#   region's cells
+cell_counts_df = cell_df |>
+    group_by(region_anno, cell_type) |>
+    summarize(n = n()) |>
+    group_by(region_anno) |>
+    filter(n >= sum(n) * 0.01) |>
+    ungroup()
+
+#   Clean up, filter very rare cell types, and export
+cell_counts_df |>
+    left_join(cell_df, by = c('region_anno', 'cell_type')) |>
     select(x, y, sample_id, region_anno, cell_type) |>
     write_csv(out_path)
 
