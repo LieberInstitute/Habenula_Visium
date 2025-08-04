@@ -6,7 +6,7 @@
 #SBATCH -t 1-00:00:00
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
-#SBATCH --array=1-6%6
+#SBATCH --array=2,4%2
 
 ## Define loops and appropriately subset each variable for the array task ID
 all_sample_id=(H1-W369TJK_D1_9090 H1-MVPY9BW_A1_8433 H1-MVPY9BW_D1_8667)

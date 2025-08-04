@@ -52,7 +52,7 @@ results = findTrends(
         ncores = num_cores, verbose = TRUE
     ) |>
     #   Reformat and export
-    makeResultsList(withPerms = TRUE) |>
+    meltResultsList(withPerms = TRUE) |>
     write_csv(out_path)
 
 message("Memory usage:")
