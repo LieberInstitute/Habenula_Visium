@@ -66,12 +66,6 @@ for (sample_id in sample_ids) {
     }
 }
 
-#   Grab all unique cell types for later
-cell_types = do.call(rbind, result_list) |>
-    pull(reference) |>
-    unique() |>
-    sort()
-
 #   Get the Z-score significance threshold (same in all samples/regions)
 z_sig = do.call(rbind, result_list) |>
     filter(region == regions[1], sample_id == sample_ids[1]) |>
@@ -100,6 +94,13 @@ result_df = do.call(rbind, result_list) |>
 
 #   Custom dot plot for each region
 for (region_name in regions) {
+    #   Grab all unique cell types originally present in the data
+    cell_types = do.call(rbind, result_list) |>
+        filter(region == region_name) |>
+        pull(reference) |>
+        unique() |>
+        sort()
+
     result_df |>
         filter(region == region_name) |>
         custom_dotplot(
