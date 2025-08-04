@@ -20,11 +20,13 @@ dir.create(file.path(plot_dir, 'spatial_plots'), showWarnings = FALSE)
 #   Functions
 ################################################################################
 
-custom_dotplot = function(result_df, z_sig, filename) {
+custom_dotplot = function(result_df, z_sig, cell_types, filename) {
     p = ggplot(
             result_df, aes(x = reference, y = neighbor, color = Z, size = scale)
         ) +
         geom_point() +
+        scale_x_discrete(limits = cell_types) +
+        scale_y_discrete(limits = cell_types) +
         scale_color_gradientn(
             colors = c('blue', '#CECECE', '#CECECE', 'red'),
             values = rescale(
@@ -64,6 +66,12 @@ for (sample_id in sample_ids) {
     }
 }
 
+#   Grab all unique cell types for later
+cell_types = do.call(rbind, result_list) |>
+    pull(reference) |>
+    unique() |>
+    sort()
+
 #   Get the Z-score significance threshold (same in all samples/regions)
 z_sig = do.call(rbind, result_list) |>
     filter(region == regions[1], sample_id == sample_ids[1]) |>
@@ -82,7 +90,7 @@ result_df = do.call(rbind, result_list) |>
     #   agree across samples
     group_by(region, reference, neighbor) |>
     filter(all(Z > 0) | all(Z < 0)) |>
-    filter(n() == length(unique(sample_ids))) |>
+    filter(n() == length(sample_ids)) |>
     #   Take the mean Z-score and scale across samples
     group_by(region, neighbor, reference) |>
     summarize(scale = mean(scale), Z = mean(Z)) |>
@@ -91,10 +99,12 @@ result_df = do.call(rbind, result_list) |>
     mutate(Z = sign(Z) * pmin(abs(Z), z_sig * 2))
 
 #   Custom dot plot for each region
-for (region in regions) {
+for (region_name in regions) {
     result_df |>
-        filter(region == region) |>
-        custom_dotplot(z_sig, sprintf('dot_plot_%s.pdf', region))
+        filter(region == region_name) |>
+        custom_dotplot(
+            z_sig, cell_types, sprintf('dot_plot_%s.pdf', region_name)
+        )
 }
 
 session_info()
