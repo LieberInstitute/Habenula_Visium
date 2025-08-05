@@ -65,14 +65,13 @@ id=$(sbatch --parsable 02_multiome_rna_reference.sh)
 sbatch --dependency=afterok:$id --wrap="ls -1t \"${PROCESSEDIR}/${SUBDIR}/\""
 
 
-
-echo "Build multiome-RNA reference with final annotations from: "
-echo "https://github.com/LieberInstitute/Hb_multiome ######################### "
-echo "Alternative version for Habenula clusters merged"
-rm -f logs/03_pseudobulk_reference_habenula_merged.txt
-rm -f ${PROCESSEDIR}/${SUBDIR}/pseudobulk_Hb_merged_final*.rds
-rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_Hb_merged_final*.rds
-sbatch 03_pseudobulk_reference_habenula_merged.sh
+# echo "Build multiome-RNA reference with final annotations from: "
+# echo "https://github.com/LieberInstitute/Hb_multiome ######################### "
+# echo "Alternative version for Habenula clusters merged"
+# rm -f logs/03_pseudobulk_reference_habenula_merged.txt
+# rm -f ${PROCESSEDIR}/${SUBDIR}/pseudobulk_Hb_merged_final*.rds
+# rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_Hb_merged_final*.rds
+# sbatch 03_pseudobulk_reference_habenula_merged.sh
 
 
 echo "**** Job ends ****"
@@ -80,4 +79,4 @@ date
 
 } > $log_path 2>&1
 
-## Cynthia SC - May, 2025
+## Cynthia SC - Aug, 2025
