@@ -45,6 +45,7 @@ table(sce_final$final_Annotations_broad, useNA = "ifany")
 #       538         38       1800       7612       2214        710
 # Microglia      Oligo        OPC
 #       145       2178       1796
+head(str(sce_final))
 
 registration_vars <-
   c("final_Annotations", "final_Annotations_broad")
@@ -110,6 +111,12 @@ head(modeling_results$enrichment)
 # 4 ENSG00000177757      FAM87B
 # 5 ENSG00000225880   LINC00115
 # 6 ENSG00000230368      FAM41C
+
+
+# ## added slurm job for reproducibility
+# library("slurmjobs")
+# job_single("01_pseudobulk_reference", cores = 2, partition = "katun", create_shell = TRUE)
+
 
 ## Reproducibility information
 print("Reproducibility information:")
