@@ -46,21 +46,24 @@ echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
 echo "Build snRNASeq reference with final annotations from: "
 echo "https://github.com/LieberInstitute/Habenula_Pilot ####################### "
-rm -f logs/01_pseudobulk_reference.txt
+mv logs/01_pseudobulk_reference.txt logs/old/ 2>/dev/null || true
 rm -f ${PROCESSEDIR}/${SUBDIR}/pseudobulk_final_*.rds
 rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_final_*.rds
 
 id=$(sbatch --parsable 01_pseudobulk_reference.sh)
 #ls -1t "${PROCESSEDIR}/${SUBDIR}/"
-sbatch --dependency=afterok:$id --wrap="ls -1 \"${PROCESSEDIR}/${SUBDIR}/\""
+sbatch --dependency=afterok:$id --wrap="ls -1t \"${PROCESSEDIR}/${SUBDIR}/\""
 
 
 echo "Build multiome-RNA reference with final annotations from: "
 echo "https://github.com/LieberInstitute/Hb_multiome ######################### "
 mv logs/02_multiome_rna_reference.txt logs/old/ 2>/dev/null || true
-rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_snRNA-multiome*.rds
-sbatch 02_multiome_rna_reference.sh
-#ls -1t "${PROCESSEDIR}/${SUBDIR}/"
+rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_snRNA-multiome_v4.rds
+rm -f ${PROCESSEDIR}/${SUBDIR}/seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2_renamed_visium_v4.rds
+
+id=$(sbatch --parsable 02_multiome_rna_reference.sh)
+sbatch --dependency=afterok:$id --wrap="ls -1t \"${PROCESSEDIR}/${SUBDIR}/\""
+
 
 
 echo "Build multiome-RNA reference with final annotations from: "
