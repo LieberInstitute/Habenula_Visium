@@ -34,5 +34,8 @@ full_counts <- sparseMatrix(
 
 assays(spe1)$counts <- full_counts
 
+# range(full_counts)
+# [1] 0.000000 8.566133
+
 #saveRDS(spe, file = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture_harmony/spe/y_clean_spe.rds")
 saveRDS(spe1, file = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/spe/y_clean_spe.rds")

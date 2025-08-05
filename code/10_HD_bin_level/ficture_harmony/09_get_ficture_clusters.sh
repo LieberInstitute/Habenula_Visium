@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/09_get_ficture_clusters_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/09_get_ficture_clusters_%a.txt
-#SBATCH --array=100
+#SBATCH --array=60,70,80,90,100%5
 
 echo "**** Job starts ****"
 date

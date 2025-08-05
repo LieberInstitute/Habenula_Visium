@@ -27,9 +27,9 @@ spe = spe[nonzero_rows, nonzero_cols]
 #   FICTURE we want counts that statistically resemble real counts
 message(Sys.time(), ' | Performing log normalization...')
 spe = computeLibraryFactors(spe)
-spe = logNormCounts(spe, transform = "none")
-assays(spe)$counts) = assays(spe)$normcounts
-assays(spe)$normcounts = NULL
+spe = logNormCounts(spe, transform = "log")
+assays(spe)$counts = assays(spe)$logcounts
+assays(spe)$logcounts = NULL
 
 mod <- with(colData(spe), model.matrix(~ sample_id))
 
@@ -38,26 +38,70 @@ n_genes <- nrow(spe)
 gene_indices <- split(seq_len(n_genes), cut(seq_len(n_genes), 1000, labels = FALSE))
 
 result_list <- vector("list", length = 1000)
+negative_df_list = list()
 
-for (i in ((1:100)+100*(k-1))) {
+for (i in ((1:100) + 100 * (k - 1))) {
   cat("Cleaning chunk", i, "\n")
-  
+
   idx <- gene_indices[[i]]
   counts_chunk <- assays(spe)$counts[idx, , drop = FALSE]
   zero_mask <- counts_chunk == 0
-  # regression
-  cleaned <- cleaningY(counts_chunk, mod, P = 1)
-  cleaned[zero_mask] <- 0
-  cleaned_sparse <- Matrix(cleaned, sparse = TRUE)
-  result_list[[i]] <- cleaned_sparse
 
-  rm(counts_chunk, cleaned, cleaned_sparse)
+ #  Regress out sample ID, preserving initial zeros
+  cleaned = cleaningY(counts_chunk, mod, P = 1)
+  cleaned[zero_mask] = 0
+
+  #   Remove log transform for FICTURE
+  cleaned = 2 ** cleaned - 1
+  cleaned = as(cleaned, "CsparseMatrix")
+
+  mins = rowMins(cleaned)
+  mask = mins < 0
+  if (any(mask)) {
+      #   For genes where negative counts were introduced, calculate the
+      #   original minimum (nonzero) counts across bins
+      counts_chunk = 2 ** as.matrix(counts_chunk)[mask, , drop = FALSE] - 1
+      counts_chunk[counts_chunk == 0] = NA
+      orig_mins = rowMins(counts_chunk, na.rm = TRUE)
+
+      negative_df_list[[i]] = tibble(
+          gene_symbol = rowData(spe)$symbol[gene_indices[[i]][mask]],
+          min_val = mins[mask],
+          orig_min_val = orig_mins,
+          mean_val = rowMeans(cleaned)[mask]
+      )
+      
+      #   For each gene, shift counts to make the minimum equal to the
+      #   pre-cleaningY minimum value. Conversion to dense is critical to
+      #   avoid the extremely slow rowwise operation on the previously
+      #   column-sparse 'cleaned'
+      cleaned = as.matrix(cleaned)
+      cleaned[mask, ] = cleaned[mask, ] + (orig_mins - mins[mask])
+      cleaned[as.matrix(zero_mask)] = 0
+      cleaned = as(cleaned, "CsparseMatrix")
+    }
+
+    result_list[[i]] = cleaned
+    rm(counts_chunk, cleaned)
   gc()
 }
 
+#   Warn about any genes with negative counts
+if (length(negative_df_list) > 0) {
+    negative_df = do.call(rbind, negative_df_list)
+    warning(
+        "Some negative counts for genes '",
+        paste(negative_df$gene_symbol, collapse = "', '"), "'"
+    )
+    print(negative_df, n = nrow(negative_df))
+}
+
+message(Sys.time(), ' | Merging all chunks...')
 final_result <- do.call(rbind, result_list)
 #saveRDS(final_result,paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture_harmony/spe/count_cleaned_",k,".rds"))
 saveRDS(final_result,paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/spe/count_cleaned_",k,".rds"))
+
+session_info()
 
 # full_counts <- matrix(0, nrow = length(original_row_names), ncol = length(original_col_names),
 #                       dimnames = list(original_row_names, original_col_names))

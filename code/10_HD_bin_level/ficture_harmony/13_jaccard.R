@@ -10,16 +10,15 @@ library(sessioninfo)
 library(data.table)
 
 spe_cleany_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/spe/y_clean_spe.rds"
-spe_normalized_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/spe_norm"
+# spe_normalized_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/spe_norm"
 
 cluster_cleany_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'ficture_outputs', 'cleany',
-    'bin_level_clusters.csv.gz'
+    'bin_level_clusters_batch.csv.gz'
 )
 cluster_normalized_path = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'bin_level_clusters.csv.gz'
+    'bin_level_clusters_normalized.csv.gz'
 )
 
 plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/plots/10_HD_bin_level/probe_fix/ficture_harmony"
@@ -48,7 +47,6 @@ cluster_cols_1 <- setdiff(names(a1), c("sample_id", "barcode"))
 cluster_cols_2 <- setdiff(names(a2), c("sample_id", "barcode"))
 
 common_cluster_cols <- intersect(cluster_cols_1, cluster_cols_2)
-common_cluster_cols <- common_cluster_cols[31:36]
 
 out_dir <- file.path(plot_dir, "jaccard_cross_spe")
 dir.create(out_dir, showWarnings = FALSE)
