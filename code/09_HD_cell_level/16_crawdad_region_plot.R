@@ -11,6 +11,10 @@ result_paths = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
     'output', '%s_%s_results.csv'
 )
+in_path = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
+    'input_cells.csv.gz'
+)
 plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region')
 regions = c('habenula', 'thalamus')
 
@@ -107,5 +111,35 @@ for (region_name in regions) {
             z_sig, cell_types, sprintf('dot_plot_%s.pdf', region_name)
         )
 }
+
+#   Plot Z-scores vs scale for a particularly interesting cell-type pair
+p = do.call(rbind, result_list) |>
+    #   Average Z-scores across permutations
+    group_by(region, sample_id, neighbor, scale, reference) |>
+    summarize(Z = mean(Z)) |>
+    ungroup() |>
+    #   Improve plot appearance
+    mutate(
+        sample_id = paste0('Br', str_extract(sample_id, '[0-9]{4}$')),
+        facet_anno = sprintf("Ref: %s\nNeighbor: %s", reference, neighbor)
+    ) |>
+    #   Focus on a particular pair (and its reverse)
+    filter(
+        region == 'habenula',
+        ((neighbor == 'MHb.2') & (reference == 'Astrocyte')) |
+        ((neighbor == 'Astrocyte') & (reference == 'MHb.2'))
+    ) |>
+    ggplot(aes(x = scale, y = Z, color = sample_id, group = sample_id)) +
+        geom_line() +
+        geom_point() +
+        geom_hline(yintercept = z_sig, linetype = 'dashed') +
+        geom_hline(yintercept = -1 * z_sig, linetype = 'dashed') +
+        facet_wrap(~ facet_anno, nrow = 1) +
+        theme_bw(base_size = 20) +
+        labs(x = 'Scale (Microns)', color = 'Sample ID')
+
+pdf(file.path(plot_dir, 'z_scores_MHb2_astro.pdf'), width = 10, height = 5)
+print(p)
+dev.off()
 
 session_info()
