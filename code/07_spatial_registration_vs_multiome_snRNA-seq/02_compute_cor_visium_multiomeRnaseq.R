@@ -27,12 +27,14 @@ dir_input <- here(
 
 ## Set up plotting
 plot_dir <- here("plots", 
-                 "07_spatial_registration_vs_multiome_snRNA-seq"
+    "07_spatial_registration_vs_multiome_snRNA-seq"
 )
 data_dir <- here(
   "processed-data",
   "07_spatial_registration_vs_multiome_snRNA-seq"
 )
+plt_sufix <- "v5" 
+
 if (!dir.exists(plot_dir)) {
   dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 }
@@ -41,11 +43,7 @@ if (!dir.exists(data_dir)) {
 }
 
 ## Load enrichment data from multiome
-
-# suffix_reference = "v1" # have all the clusters containing Hb, even those with mix cells. This is an EDA version
-# rds_input <- here("processed-data", "05_snRNA-seq_model_stats", "enrichment_snRNA-multiome.rds") 
-#suffix_reference = "v2" # have Hb clusters containing Hb in 50%+. This is a polished version
-rds_input <- here("processed-data", "05_snRNA-seq_model_stats", "enrichment_snRNA-multiome_v2.rds")
+rds_input <- here("processed-data", "05_snRNA-seq_model_stats", paste0("enrichment_snRNA-multiome_", plt_sufix, ".rds"))
 
 
 sn_multiome_data <- readRDS(rds_input)
@@ -58,22 +56,12 @@ head(sn_multiome_data$enrichment[5:10])
 # ENSG00000225880          1.0900785    1.994628          0.2073577 -0.06977143
 # ENSG00000230368          0.5377206    1.413340         -0.4024732  0.61983127
 
-head(colnames(unique(sn_multiome_data$enrichment)))
-# # ======= clusters on v2 (polished version)
-# [1] "t_stat_C.01"         "t_stat_C.02"         "t_stat_C.03"        
-# [4] "t_stat_C.04"         "t_stat_C.05.DD_LHb"  "t_stat_C.06"        
-# [7] "t_stat_C.07.DD_MHb"  "t_stat_C.08"         "t_stat_C.09"        
-# [10] "t_stat_C.10.DD_MHb"  "t_stat_C.11.DD_MHb"  "t_stat_C.12"      
-# ======= clusters on v1
-# [1] "t_stat_C.01.DD_LHb"  "t_stat_C.02"         "t_stat_C.03"        
-# [4] "t_stat_C.04.DD_LHb"  "t_stat_C.05.DD_LHb"  "t_stat_C.06"        
-# [7] "t_stat_C.07.DD_MHb"  "t_stat_C.08.DD_LHb"  "t_stat_C.09"        
-# [10] "t_stat_C.10.DD_MHb"  "t_stat_C.11.DD_MHb"  "t_stat_C.12.DD_LHb" 
+grep("t_stat", colnames(sn_multiome_data$enrichment), value = TRUE)
 
 
 ## extract only enrichment stats and sorted the t-stats by hb and no hb clusters
 
-snRNA_t_stats_sorted <- function(sn_data) {  
+multiome_t_stats_sorted <- function(sn_data) {  
   
       sn_data <- sn_multiome_data
       x <- sn_data$enrichment
@@ -112,18 +100,15 @@ snRNA_t_stats_sorted <- function(sn_data) {
 
 
 ## Load Visium Registration Results 
+k_list <- c(2:28) 
+#k_list <- c(3,9,13,21,26) # --> previous version
+#k_list <- c(3,11,15,20,24,28)
 
-#k_list <- c(2:28) --> old version all clusters included
-#k_list <- c(3,9,13,21,26)
-k_list <- c(3,11,15,20,24,28)
-
-# testing k_list=13
-names(k_list) <- paste0("k", sprintf("%02d", k_list)) ## Use naming convention
+# Use naming convention
+names(k_list) <- paste0("k", sprintf("%02d", k_list)) 
 names(k_list)
-# [1] "k03" "k09" "k13" "k21" "k26"
-# [1] "k03" "k11" "k15" "k20" "k24" "k28"
 
-## Load Registration Results 
+## Load Visium Registration Results 
 
 bayesSpace_registration_fn <-
   map(k_list, ~ here(
@@ -135,11 +120,8 @@ bayesSpace_registration_fn <-
     )
   ))
 bayesSpace_registration_fn
-# bayesSpace_registration_fn[12]
-# [1] "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/05_brain_area_differential_expression/modeling_results_BS/modeling_results_BayesSpace_k11.Rdata"
 
 ## Load the 3 model results (anova, enrichment, pairwise) for each domain in the BS
-
 bayesSpace_registration <-
   lapply(bayesSpace_registration_fn, function(x) {
     get(load(x))
@@ -150,7 +132,6 @@ names(bayesSpace_registration[[1]])
 # [1] "anova"      "enrichment" "pairwise"  
 
 ## Select t-stats from the registration enrichment data
-
 registration_t_stats <-
   map(bayesSpace_registration, function(data) {
     x <- data$enrichment
@@ -159,7 +140,7 @@ registration_t_stats <-
     return(t_stats)
   })
 stopifnot(is.list(registration_t_stats))
-str(registration_t_stats)
+#str(registration_t_stats)
 #head(registration_t_stats[[1]])
                   # Sp02D01    Sp02D02
 # ENSG00000237491 -1.6855500  1.6855500
@@ -170,7 +151,6 @@ map(registration_t_stats, jaffelab::corner)
 
 
 ## compute t-statistic and plot correlations for selected BayesSpace k(s)
-
 plt_corr_snmultiome <- function(k_lst, 
                                 tstats, tstats_multiome,
                                 plt_name) {
@@ -193,6 +173,7 @@ plt_corr_snmultiome <- function(k_lst,
           top_n = 100
         )
         #print(head(cor_layer))
+        message("Correlation computed ...")
         
         annotated_clusters <- annotate_registered_clusters(cor_layer, confidence_threshold = 0.25, cutoff_merge_ratio = 0.1)
         #head(annotated_clusters)
@@ -200,7 +181,6 @@ plt_corr_snmultiome <- function(k_lst,
         # cor_layer <-
         #   rownames(cor_layer) <- paste0(rownames(cor_layer), " ~ ", annotated_clusters[match(rownames(cor_layer), annotated_clusters$cluster)])
         
-        #rdata_name <- paste0("bayesSpace_cor_top100_", k,"_", suffix_name, ".Rdata")
         rdata_name <- paste0("bayesSpace_cor_top100_Visium_Multiome_", k, ".Rdata")
         save(cor_layer, file = here(data_dir, rdata_name))
         
@@ -221,37 +201,47 @@ plt_corr_snmultiome <- function(k_lst,
     }
    
     dev.off()
+    message("Plot done!")
 
 }
 
 
 ## call function to compute SpatialRegistration of Visium vs snMultiome
-plt_name <- here(plot_dir, paste0("cor_top100_registration_Visium_snMultiome_all_clusters.pdf"))
-plt_corr_snmultiome(k_list,
-                    registration_t_stats, sn_multiome_data,
-                    plt_name)
+plt_name <- here(plot_dir, paste0("cor_top100_registration_Visium_snMultiome_all_clusters_", plt_sufix, ".pdf"))
+plt_corr_snmultiome(
+    k_list,
+    registration_t_stats, sn_multiome_data,
+    plt_name
+)
 
-plt_name <- here(plot_dir, paste0("cor_top100_registration_Visium_snMultiome_all_clusters_sorted.pdf"))
-sn_multiome <- snRNA_t_stats_sorted(sn_multiome_data)
-colnames(sn_multiome$enrichment)
-plt_corr_snmultiome(k_list, 
-                    registration_t_stats, sn_multiome,
-                    plt_name)
+plt_name <- here(plot_dir, paste0("cor_top100_registration_Visium_snMultiome_all_clusters_sorted_", plt_sufix, ".pdf"))
+sn_multiome_sorted <- multiome_t_stats_sorted(
+    sn_multiome_data
+)
 
-## Prepare Hb subset 
-cor_multiome <- sn_multiome_data
-# subset columns that contain "LHb", "MHb", or "Thal"? in the matrix 
-colnames(cor_multiome$enrichment)
-rownames(cor_multiome$enrichment)
-cor_multiome$enrichment <- cor_multiome$enrichment[, grep("LHb|MHb|Thal", colnames(cor_multiome$enrichment))]
-str(cor_multiome)
+plt_corr_snmultiome(
+    k_list, 
+    registration_t_stats, sn_multiome_sorted,
+    plt_name
+)
 
-plt_name <- here(plot_dir, paste0("cor_top100_registration_Visium_snMultiome_Hb_clusters.pdf"))
+## =============================================================================
 
-plt_corr_snmultiome(k_list, 
-                    registration_t_stats, 
-                    cor_multiome,
-                    plt_name)
+# ## Prepare Hb subset for cell-types of interest: "LHb", "MHb" and "Thal"
+# sn_multiome_Hb_subset <- sn_multiome_data
+# 
+# #colnames(sn_multiome_Hb_subset$enrichment)
+# #rownames(sn_multiome_Hb_subset$enrichment)
+# sn_multiome_Hb_subset$enrichment <- sn_multiome_Hb_subset$enrichment[, grep("LHb|MHb|Thal", 
+#                                                                             colnames(sn_multiome_Hb_subset$enrichment))]
+# 
+# plt_name <- here(plot_dir, paste0("cor_top100_registration_Visium_snMultiome_Hb_clusters_", plt_sufix,".pdf"))
+# 
+# plt_corr_snmultiome(
+#     k_list,
+#     registration_t_stats, 
+#     sn_multiome_Hb_subset,
+# plt_name)
 
 message("Spatial registration Visium vs Multiome, Done!")
 
