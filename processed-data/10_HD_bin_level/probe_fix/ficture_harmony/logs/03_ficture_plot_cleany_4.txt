@@ -1,0 +1,41 @@
+**** Job starts ****
+Fri Jul 18 09:42:46 PM EDT 2025
+**** JHPCE info ****
+User: cliu3
+Job id: 19976614
+Job name: 03_ficture_plot
+Node name: compute-093
+Task id: 4
+Loading LIBD SLURM module for visium_hd/1.0
+Loading LIBD SLURM module for htslib/1.18
+09:42:48 PM Background color 000000
+09:42:48 PM Read color table (4)
+09:42:48 PM Read header {'K': 4, 'TOPK': 3, 'BLOCK_SIZE': 2000, 'BLOCK_AXIS': 'X', 'INDEX_AXIS': 'Y', 'OFFSET_X': 0, 'OFFSET_Y': 0, 'SIZE_X': 35640, 'SIZE_Y': 6856, 'SCALE': 100}
+09:42:48 PM Image size 4571 x 23760
+09:42:53 PM Reading pixels... 2665, 24, 893876
+Index(['0', '1', '2', '3'], dtype='object', name='Name')
+['BLOCK', 'X', 'Y', 'K1', 'K2', 'K3', 'K4', 'P1', 'P2', 'P3', 'P4']
+Traceback (most recent call last):
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/bin/ficture", line 8, in <module>
+    sys.exit(main())
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/ficture/cli.py", line 44, in main
+    function(sys.argv[2:])
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/ficture/scripts/plot_pixel_full.py", line 137, in plot_pixel_full
+    df[c] = np.clip(np.around(df[c] * 255),0,255).astype(np.uint8)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/pandas/core/generic.py", line 6643, in astype
+    new_data = self._mgr.astype(dtype=dtype, copy=copy, errors=errors)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/pandas/core/internals/managers.py", line 430, in astype
+    return self.apply(
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/pandas/core/internals/managers.py", line 363, in apply
+    applied = getattr(b, f)(**kwargs)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/pandas/core/internals/blocks.py", line 758, in astype
+    new_values = astype_array_safe(values, dtype, copy=copy, errors=errors)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/pandas/core/dtypes/astype.py", line 237, in astype_array_safe
+    new_values = astype_array(values, dtype, copy=copy)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/pandas/core/dtypes/astype.py", line 182, in astype_array
+    values = _astype_nansafe(values, dtype, copy=copy)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/pandas/core/dtypes/astype.py", line 101, in _astype_nansafe
+    return _astype_float_to_int_nansafe(arr, dtype, copy)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/pandas/core/dtypes/astype.py", line 145, in _astype_float_to_int_nansafe
+    raise IntCastingNaNError(
+pandas.errors.IntCastingNaNError: Cannot convert non-finite values (NA or inf) to integer
