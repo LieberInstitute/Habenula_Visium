@@ -15,7 +15,7 @@ log_path=logs/run_spatial_registration.txt
 set -e
 
 echo "**** Job starts ****"
-echo "Build single-cell RNA-seq and multiome-RNA references for Spatial-Registration"
+echo "Run Spatial-Registration"
 date
 
 echo "**** SLURM info ****"
@@ -50,34 +50,43 @@ SUBDIR="05_brain_area_differential_expression"
 cd ${CODEDIR}/${SUBDIR}
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
+## we do not need to run the clustering again if only reference change, so you can safely skip this process
+# 
+# ##### Compute pseudobulk and correlation model for Visium BayesSpace k=(2-28)
+# ## The model statistics are required to compute spatial-registration, if done, jump this chunck ------------
+# 
+# rm -f logs/01_create_pseudobulk_data_*.txt 
+# rm -f ${PROCESSEDIR}/${SUBDIR}/stats_summary_csv/*_basic_stats.csv
+# rm -f ${PROCESSEDIR}/${SUBDIR}/stats_summary_csv/*_SpatialD_info.csv
+# rm -f ${PROCESSEDIR}/${SUBDIR}/sce_pseudo_PCA_brain_area*.rds
+# 
+# id1=$(sbatch --parsable 01_create_pseudobulk_data.sh)
+# echo "Running array job: ${id1}"
+# 
+# # dependency array job 
+# rm -f logs/06_model_BayesSpace_*.txt
+# rm -f ${PROCESSEDIR}/${SUBDIR}/modeling_results_BS/modeling_results_BayesSpace*.Rdata
+# id2=$(sbatch --parsable --dependency=afterok:$id1 06_model_BayesSpace.sh)
+# echo "Running dependency array job: ${id2}"
+# 
+# #------------------------------------------------------------------------------------------------------------
+# 
+# ##### EDA: build HISTOGRAMS and STACKED BAR PLOTS with Hb and no-Habenula count/proportions by BayesSpace domain
+# # Here we compare Hb-Taxomony manual annotations (RNAScope) vs SpD in clustering
+# 
+# # independent job
+# rm -f logs/08_manual_ann_vs_bayes_space_*.txt
+# rm -f ${PLOTDIR}/${SUBDIR}/08_manual_ann_vs_bayes_space/*.pdf
+# sbatch 08_manual_ann_vs_bayes_space.sh
+# 
+# #------------------------------------------------------------------------------------------------------------
 
-##### Compute pseudobulk and correlation model for Visium BayesSpace k=(2-28)
-## The model statistics are required to compute spatial-registration, if done, jump this chunck ------------
+# submit dummy Slurm jobs that do nothing but exit successfully to be able to skip the lines above
+id1=$(sbatch --parsable --wrap="echo 'Skipping 06_model_BayesSpace.sh'; sleep 1")
+id2=$(sbatch --parsable --dependency=afterok:$id1 \
+    --wrap="echo 'Skipping 06_model_BayesSpace.sh'; sleep 1")
+echo "Dummy job submitted with ID: ${id2}"
 
-rm -f logs/01_create_pseudobulk_data_*.txt
-rm -f ${PROCESSEDIR}/${SUBDIR}/stats_summary_csv/*_basic_stats.csv
-rm -f ${PROCESSEDIR}/${SUBDIR}/stats_summary_csv/*_SpatialD_info.csv
-rm -f ${PROCESSEDIR}/${SUBDIR}/sce_pseudo_PCA_brain_area*.rds
-id1=$(sbatch --parsable 01_create_pseudobulk_data.sh)
-echo "Running array job: ${id1}"
-
-# dependency array job 
-rm -f logs/06_model_BayesSpace_*.txt
-rm -f ${PROCESSEDIR}/${SUBDIR}/modeling_results_BS/modeling_results_BayesSpace*.Rdata
-id2=$(sbatch --parsable --dependency=afterok:$id1 06_model_BayesSpace.sh)
-echo "Running dependency array job: ${id2}"
-
-#------------------------------------------------------------------------------------------------------------
-
-##### EDA: build HISTOGRANS and STACKED BAR PLOTS with Hb and no-Habenula count/proportions by BayesSpace domain
-# Here we compare Hb-Taxomony manual annotations (RNAScope) vs SpD in clustering
-
-# independent job
-rm -f logs/08_manual_ann_vs_bayes_space_*.txt
-rm -f ${PLOTDIR}/${SUBDIR}/08_manual_ann_vs_bayes_space/*.pdf
-sbatch 08_manual_ann_vs_bayes_space.sh
-
-#------------------------------------------------------------------------------------------------------------
 
 #####  Compute Spatial registration for VISIUM Bayes-Space vs both FINE and BROAD (snRNAseq)
 ## x-axis = snRNAseq cell-types
@@ -90,13 +99,22 @@ echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
 # dependency array job 
 echo " Spatial Registrattion Visum  vs scRNAseq human pilot"
-rm -f logs/01_compute_cor.*.out
-rm -f logs/01_compute_cor.*.err
-rm -f ${PROCESSEDIR}/${SUBDIR}/cor_BayesSpace_vs_snRNA-seq_top100.Rdata
-rm -f ${PLOTDIR}/${SUBDIR}/*_broadRes.pdf
-rm -f ${PLOTDIR}/${SUBDIR}/*_fineRes.pdf
+
+mv logs/01_compute_cor.* logs/old/ 2>/dev/null || true
+if [ -f "${PROCESSEDIR}/${SUBDIR}/cor_BayesSpace_vs_snRNA-seq_top100.Rdata" ]; then
+    mkdir -p old
+    mv "${PROCESSEDIR}/${SUBDIR}/cor_BayesSpace_vs_snRNA-seq_top100.Rdata" old/
+fi
+if [ -f "${PLOTDIR}/${SUBDIR}/*_broadRes.pdf" ]; then
+    mkdir -p old
+    mv "${PLOTDIR}/${SUBDIR}/*_broadRes.pdf" old/
+fi
+if [ -f "${PLOTDIR}/${SUBDIR}/*_fineRes.pdf" ]; then
+    mkdir -p old
+    mv "${PLOTDIR}/${SUBDIR}/*_fineRes.pdf" old/
+fi
+
 id3=$(sbatch --parsable --dependency=afterok:$id2 01_compute_cor.sh)
-#sbatch 01_compute_cor.sh
 echo "Running dependency array job: ${id3}"
 
 
