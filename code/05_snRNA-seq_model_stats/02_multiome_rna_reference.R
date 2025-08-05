@@ -56,6 +56,20 @@ levels(SeuratOBJ)
 # [37] "C.35.DD_Excit.Thal" "C.37.DD_Thal"       "C.38.DD_Inhib.Thal"
 # [40] "C.39.DD_Inhib.Thal" "C.41.DD_Microglia"  "C.42.no-match"   
 
+#table(grepl("Hb", levels(SeuratOBJ)))
+hb_df <- table(grep("Hb", SeuratOBJ@meta.data$cluster_ann, value = TRUE)) |>
+    as.data.frame() |>
+    setNames(c("Hb_cluster", "n_cells")) |>
+    arrange(desc(n_cells))
+
+total_hb_cells <- sum(grepl("Hb", SeuratOBJ@meta.data$cluster_ann)) 
+total_hb_perc <- sum(grepl("Hb", SeuratOBJ@meta.data$cluster_ann)) * 100 / length(Cells(SeuratOBJ))
+
+message("Total Hb clusters: ===================================================")
+print(hb_df)
+message("\nTotal Hb cells: ", total_hb_cells)
+message("\nTotal Hb percent: ", total_hb_perc)
+message("======================================================================")
 
 colnames(SeuratOBJ@meta.data)
 unique(SeuratOBJ@meta.data$cluster_ann)
