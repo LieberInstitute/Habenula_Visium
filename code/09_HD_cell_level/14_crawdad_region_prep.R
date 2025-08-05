@@ -137,19 +137,19 @@ cell_df = tibble(
         )
     )
 
-#   Keep combinations of cell type and region that consitute at least 1% of the
-#   region's cells
+#   Signal to drop combinations of cell type and region that consitute less than
+#   1% of the region's cells
 cell_counts_df = cell_df |>
     group_by(region_anno, cell_type) |>
     summarize(n = n()) |>
     group_by(region_anno) |>
-    filter(n >= sum(n) * 0.01) |>
+    mutate(drop = n < sum(n) * 0.01) |>
     ungroup()
 
-#   Clean up, filter very rare cell types, and export
-cell_counts_df |>
-    left_join(cell_df, by = c('region_anno', 'cell_type')) |>
-    select(x, y, sample_id, region_anno, cell_type) |>
+#   Clean up and export
+cell_df |>
+    left_join(cell_counts_df, by = c('region_anno', 'cell_type')) |>
+    select(key, x, y, sample_id, region_anno, cell_type, drop) |>
     write_csv(out_path)
 
 message('Memory usage:')

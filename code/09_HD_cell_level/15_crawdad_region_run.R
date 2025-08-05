@@ -35,7 +35,7 @@ num_cores = as.integer(Sys.getenv("SLURM_CPUS_ON_NODE"))
 dir.create(dirname(out_path), showWarnings = FALSE)
 
 cell_df = read_csv(in_path, show_col_types = FALSE) |>
-    filter(sample_id == opt$sample_id, region_anno == opt$region) |>
+    filter(sample_id == opt$sample_id, region_anno == opt$region, !drop) |>
     as.data.frame()
 
 pos_df = toSF(pos = select(cell_df, c(x, y)), cellTypes = cell_df$cell_type)
