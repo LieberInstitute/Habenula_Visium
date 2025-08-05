@@ -9,9 +9,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
+<meta name="author" content="Cynthia SC" />
 
+<meta name="date" content="2025-06-12" />
 
-<title>README</title>
+<title>Readme</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -348,84 +350,93 @@ display: none;
 
 
 
+<h1 class="title toc-ignore">Readme</h1>
+<h4 class="author">Cynthia SC</h4>
+<h4 class="date">2025-06-12</h4>
 
 </div>
 
 
-<div id="habenula_visium" class="section level1">
-<h1>Habenula_Visium</h1>
-</div>
-<div id="internal" class="section level1">
-<h1>Internal</h1>
-<p>JHPCE location:
-<code>/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium</code></p>
+<div id="habenula-multiome" class="section level1">
+<h1>Habenula multiome</h1>
 <p><br></p>
-<div id="public-available-resources" class="section level3">
-<h3>Public available resources</h3>
+<div id="notes" class="section level3">
+<h3>Notes:</h3>
+<p><strong>R environment</strong>: Make sure to run your script with
+<em>R v4.3.x</em> (not a newer version), as upgrading has been observed
+to corrupt the chromatin assay in multiome Seurat objects. To avoid
+unexpected results, ensure you load the appropriate module in your bash
+scripts:</p>
+<pre class="bash"><code># Load the specific R module to safely save/load Seurat v5 chromatin integrity
+module load conda_R/4.3.x</code></pre>
 <p><br><br></p>
+<p><strong>clustering directory</strong>: most notable clustering
+results</p>
+<pre><code>## [1] &quot;/private/var/folders/p7/p0fgz9bd4x567cvq710rbmhh0000gn/T/fz3temp-2/processed-data/05_Clustering_ARCr/01_clustering_std_method&quot;</code></pre>
 <table>
-<colgroup>
-<col width="43%" />
-<col width="56%" />
-</colgroup>
+<caption>Clustering Output Files (.rds)</caption>
 <thead>
 <tr class="header">
-<th align="left">File name</th>
-<th align="left">Description</th>
+<th align="left">RDS.File</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left"><a href="https://libd.shinyapps.io/Habenula_Visium_raw/" class="uri">https://libd.shinyapps.io/Habenula_Visium_raw/</a></td>
-<td align="left">Shiny app version with 12 Habenula samples, featuring
-both in-tissue and out-of-tissue spots with quality controls.</td>
-</tr>
-<tr class="even">
-<td align="left"><a href="https://libd.shinyapps.io/Habenula_Visium_Sp09/" class="uri">https://libd.shinyapps.io/Habenula_Visium_Sp09/</a></td>
-<td align="left">Shiny app version with 12 Habenula samples, featuring
-only in-tissue spots after standard quality control, manual annotations
-and Layer-level data for pseudobulk BayesSpace k=9</td>
-</tr>
 </tbody>
 </table>
-<p><br></p>
-</div>
-<div id="jhpce-paths" class="section level3">
-<h3>JHPCE paths</h3>
 <p><br><br></p>
+<p><strong>Best WNN clustering result</strong>: <strong>Best WNN
+clustering result</strong>:
+<mark>seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2.rds</mark></p>
+<pre><code>## [1] &quot;/private/var/folders/p7/p0fgz9bd4x567cvq710rbmhh0000gn/T/fz3temp-2/processed-data/05_Clustering_ARCr/01_clustering_std_method/seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2.rds&quot;</code></pre>
+<p>After evaluating the clustering results, we found that this
+configuration provides the most representative clusters for habenula. It
+captures the medial and lateral sub cell-types than other clustering
+settings, making it the most suitable choice for downstream analyses.
+This is an object of class Seurat containing: 299552 features across
+<mark>55702</mark> samples (cells) within 2 assays Active assay: RNA
+(36601 features, 2000 variable features) <br> We have <mark>42
+clusters</mark>, having <mark>13 of these with Habenula markers</mark>
+<br><br></p>
+<p><strong>Habenula gene markers references</strong>: (not styled)
+<!-- ## code/04_DiffExpr_Clustering_seurat/remote_DGE_marker_gene_lists.R --></p>
+<p><mark>Literature-Based + Data-Driven</mark>:</p>
+<p>[1] “DD_Astrocyte” “DD_Endo”<br />
+[3] “DD_Excit.Thal” “DD_Inhib.Thal”<br />
+[5] “DD_LHb” “DD_MHb”<br />
+[7] “DD_Microglia” “DD_Oligo”<br />
+[9] “DD_OPC” “LB_neuron”<br />
+[11] “LB_excitatory_neuron” “LB_inhibitory_neuron”<br />
+[13] “LB_Hb neuron specific” “LB_MHB neuron specific”<br />
+[15] “LB_LHB neuron specific” “LB_oligodendrocyte”<br />
+[17] “LB_oligodendrocyte_precursor” “LB_microglia”<br />
+[19] “LB_astrocyte” “LB_Endo/CP”<br />
+[21] “LB_Thalamus broad” “LB_Thalamus/MDm/Endo”<br />
+[23] “LB_Thalamus/MDm/Endo-” “LB_Thalamus/MDm”</p>
+<p>Total genes used: 469</p>
+<p><br><br></p>
+<p><strong>Habenula cell-types directory</strong>: All DGE for all
+clusters directory:
+processed-data/05_Clustering_ARCr/01_clustering_std_method/cvs_files/seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2_markers.csv
+DGE test: <mark>Wilcox test</mark> Filtering steps: <mark>top 50
+genes</mark> with <mark>FDR&lt;0.05)</mark> Top 50 DGE csv directory:
+processed-data/05_Clustering_ARCr/02_Hb_celltypes_from_seurat_reanalyze_v3/cvs_files_markers/WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2_cellTypes_integrated_top50.csv”</p>
+<pre><code>## [1] &quot;/private/var/folders/p7/p0fgz9bd4x567cvq710rbmhh0000gn/T/fz3temp-2/processed-data/05_Clustering_ARCr/01_clustering_std_method/seurat.norm_counts_CRr_WNN_rnaHarm_atacHarm_k30_C.leiden_lsi_r2.rds&quot;</code></pre>
 <table>
-<colgroup>
-<col width="35%" />
-<col width="64%" />
-</colgroup>
+<caption>Cell Types Files (.csv)</caption>
 <thead>
 <tr class="header">
-<th align="left">Description</th>
-<th align="left">JHPCE path</th>
+<th align="left">RDS.File</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">Multiome t-stats enrichment data</td>
-<td align="left"><span style="color:red"><code>~/processed-data/05_snRNA-seq_model_stats/enrichment_snRNA-multiome.rds</code></span>
-<br> (old version, clusters with Hb, even those with some other mixed
-cells)</td>
-</tr>
-<tr class="even">
-<td align="left">Multiome t-stats enrichment data</td>
-<td align="left"><span style="color:red"><code>~/processed-data/05_snRNA-seq_model_stats/enrichment_snRNA-multiome_v2.rds</code></span>
-<br> (polished version, clusters with Hb 50%+1 celltypes)</td>
-</tr>
-<tr class="odd">
-<td align="left">snRNAseq t-stats enrichment data “FINE”</td>
-<td align="left"><span style="color:red"><code>~/processed-data/05_snRNA-seq_model_stats/enrichment_final_Annotations.rds</code></span></td>
-</tr>
-<tr class="even">
-<td align="left">Visium modeling-results</td>
-<td align="left"><span style="color:red"><code>~/processed-data/05_brain_area_differential_expression/modeling_results_BS/</code></span></td>
-</tr>
 </tbody>
 </table>
+<p><br><br></p>
+<p><strong>Seurat with cell-types annotated</strong>: include all the
+clusters in the rna modality with labels with percentages of cells by
+cluster</p>
+<pre><code>## character(0)</code></pre>
+<p><br><br></p>
 </div>
 </div>
 
