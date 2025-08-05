@@ -39,7 +39,7 @@ echo "Processed dir: ${PROCESSEDIR}"
 echo "Plot dir: ${PLOTDIR}"
 
 
-## Build enrichment stats objects fro
+## Build enrichment stats objects
 SUBDIR="05_snRNA-seq_model_stats"
 cd ${CODEDIR}/${SUBDIR}
 echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
@@ -49,14 +49,19 @@ echo "https://github.com/LieberInstitute/Habenula_Pilot ####################### 
 rm -f logs/01_pseudobulk_reference.txt
 rm -f ${PROCESSEDIR}/${SUBDIR}/pseudobulk_final_*.rds
 rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_final_*.rds
-Rscript 01_pseudobulk_reference.R
+
+id=$(sbatch --parsable 01_pseudobulk_reference.sh)
+#ls -1t "${PROCESSEDIR}/${SUBDIR}/"
+sbatch --dependency=afterok:$id --wrap="ls -1 \"${PROCESSEDIR}/${SUBDIR}/\""
+
 
 echo "Build multiome-RNA reference with final annotations from: "
 echo "https://github.com/LieberInstitute/Hb_multiome ######################### "
-rm -f logs/02_multiome_rna_reference.txt
-#rm -f ${PROCESSEDIR}/${SUBDIR}/
+mv logs/02_multiome_rna_reference.txt logs/old/ 2>/dev/null || true
 rm -f ${PROCESSEDIR}/${SUBDIR}/enrichment_snRNA-multiome*.rds
 sbatch 02_multiome_rna_reference.sh
+#ls -1t "${PROCESSEDIR}/${SUBDIR}/"
+
 
 echo "Build multiome-RNA reference with final annotations from: "
 echo "https://github.com/LieberInstitute/Hb_multiome ######################### "
