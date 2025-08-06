@@ -15,8 +15,14 @@ in_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
     'input_cells.csv.gz'
 )
+spe_dir = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+)
 plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region')
 regions = c('habenula', 'thalamus')
+cell_type_colors = c(
+    Astrocyte = "#2F97FF", MHb.2 = "#FFA239", Other = "#DFE1DD"
+)
 
 dir.create(file.path(plot_dir, 'spatial_plots'), showWarnings = FALSE)
 
@@ -141,5 +147,40 @@ p = do.call(rbind, result_list) |>
 pdf(file.path(plot_dir, 'z_scores_MHb2_astro.pdf'), width = 10, height = 5)
 print(p)
 dev.off()
+
+cell_df = read_csv(in_path, show_col_types = FALSE) |>
+    filter(region_anno == 'habenula') |>
+    mutate(
+        cell_type = ifelse(
+            cell_type %in% c('MHb.2', 'Astrocyte'), cell_type, 'Other'
+        )
+    ) |>
+    select(key, cell_type)
+
+spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = spe[, spe$key %in% cell_df$key]
+
+spe$cell_type = tibble(key = spe$key) |>
+    left_join(cell_df, by = 'key') |>
+    pull(cell_type)
+
+#   Plot the cell-type pair spatially (only habenula) in each sample
+for (sample_id in sample_ids) {
+    #   Run twice to overcome a bug with different behavior on the first plot
+    for (i in seq_len(2)) {
+        p = vis_clus(
+                spe, sampleid = sample_id, clustervar = 'cell_type',
+                is_stitched = TRUE, point_size = 20, spatial = FALSE,
+                colors = cell_type_colors
+            ) +
+                guides(fill = guide_legend(override.aes = list(size = 8)))
+    }
+    png(
+        file.path(plot_dir, 'spatial_plots', sprintf('%s.png', sample_id)),
+        width = 1500, height = 1500
+    )
+    print(p)
+    dev.off()
+}
 
 session_info()
