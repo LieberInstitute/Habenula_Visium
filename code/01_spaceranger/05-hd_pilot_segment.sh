@@ -24,9 +24,9 @@ module load spaceranger/4.0.1
 module list
 
 repo_dir=$(git rev-parse --show-toplevel)
-SAMPLE=$(cat 03-hd-sample-list.txt 04-hd-sample-list-250110.txt | awk 'BEGIN {FS="\t"} {print $1}' | awk "NR==${SLURM_ARRAY_TASK_ID}")
-IMG_PATH=$repo_dir/raw-data/images/vis-hd/${SAMPLE}.tif
-OUT_DIR=$repo_dir/processed-data/01_spaceranger/probe_fix/segmentation/${SAMPLE}
+SAMPLE=$(awk "NR==${SLURM_ARRAY_TASK_ID}" pilot_samples.txt)
+IMG_PATH=$repo_dir/raw-data/images/vis-hd/pilot/${SAMPLE}.tif
+OUT_DIR=$repo_dir/processed-data/01_spaceranger/probe_fix/segmentation/pilot/${SAMPLE}
 
 mkdir -p ${OUT_DIR}
 
