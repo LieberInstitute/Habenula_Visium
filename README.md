@@ -25,8 +25,11 @@ JHPCE location: `/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium
 
 | Description                              | JHPCE Directory                                                                 |
 |:-----------------------------------------|:---------------------------------------------------------------------------|
-| Multiome and snRNAseq enrichment t-stat objects | <span style="color:red">`~/processed-data/05_snRNA-seq_model_stats/`</span> |
-| Visium Bayes-Space modeling-results                  | <span style="color:red">`~/processed-data/05_brain_area_differential_expression/modeling_results_BS/`</span> |
+| snRNAseq enrichment t-stat objects | <span style="color:red">`~/processed-data/05_snRNA-seq_model_stats/`</span> |
+| Multiome enrichment t-stat objects | <span style="color:red">`~/processed-data/05_snRNA-seq_model_stats/` (Symbolic link: Hb_multiome/processed-data/08_spatial_registration_vs_multiome_snRNA-seq/ </span> |
+| Visium Bayes-Space modeling-results | <span style="color:red">`~/processed-data/05_brain_area_differential_expression/modeling_results_BS/`</span> |
+
+<br>
 
 
 | Description                              | JHPCE Directory                                                                 |
