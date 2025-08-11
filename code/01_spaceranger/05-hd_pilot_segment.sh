@@ -5,7 +5,7 @@
 #SBATCH --job-name=05-hd_pilot_segment
 #SBATCH -o logs/05-hd_pilot_segment_%a.txt
 #SBATCH -e logs/05-hd_pilot_segment_%a.txt
-#SBATCH --array=1-5%2
+#SBATCH --array=6-9%2
 
 echo "**** Job starts ****"
 date
