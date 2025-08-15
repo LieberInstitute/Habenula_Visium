@@ -5,11 +5,8 @@
 
 library(here)
 library(tidyverse)
-library(SpatialExperiment)
-library(HDF5Array)
 library(sessioninfo)
 library(spatialLIBD)
-library(data.table)
 
 ref_names = c('snRNAseq_fine', 'snRNAseq_broad')
 
@@ -17,11 +14,20 @@ ref_names = c('snRNAseq_fine', 'snRNAseq_broad')
 task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 ref_name = ref_names[task_id]
 
-out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'registration',"cor_rds","cleaning_y",sprintf('cor_vs_%s.rds', ref_name)
+in_path = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
+    'lambda0_2', sprintf('cor_vs_%s_subset.rds', ref_name)
 )
-this_cor = readRDS(out_path)
+out_path = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
+    'lambda0_2', 'ranking', sprintf('%s.csv', ref_name)
+)
+
+dir.create(dirname(out_path), showWarnings = FALSE)
+
+minmax_scale = function(x) (x - min(x)) / (max(x) - min(x))
+
+this_cor = readRDS(in_path)
 
 #   Annotate clusters
 annotated_clusters = lapply(
@@ -29,95 +35,114 @@ annotated_clusters = lapply(
 )
 
 # N of cell type covered
-filtered_clusters <- lapply(annotated_clusters, function(df) {
-  # filter layer_confidence is good and multiple clusters matching one cell type
-  df_good <- df[df$layer_confidence == "good", ]
-  df_good <- df_good[!grepl("/", df_good$layer_label), ]  
-  return(df_good)
-})
-
-original_cluster_counts <- sapply(annotated_clusters, function(df) {
-  length(unique(df$cluster))
-})
-
-filtered_cell_type_counts <- sapply(filtered_clusters, function(df) {
-  length(unique(df$layer_label))
-})
-
-# N of habenula cell type covered
-
-mhb_lhb_counts <- sapply(filtered_clusters, function(df) {
-  length(unique(df$layer_label[grepl("MHb|LHb", df$layer_label)]))
-})
-
-# N of one-to-one
-
-filtered_clusters_one<- lapply(annotated_clusters, function(df) {
-  # filter layer_confidence is good
-  df <- df %>% separate_rows(layer_label, sep = "/", convert = FALSE)
-  df_good <- df[df$layer_confidence == "good", ]
-
-  #find duplicated layer_label and cluster
-  dup_labels <- df_good$layer_label[duplicated(df_good$layer_label) | duplicated(df_good$layer_label, fromLast = TRUE)]
-  dup_clusters <- df_good$cluster[duplicated(df_good$cluster)|duplicated(df_good$cluster, fromLast = TRUE)]
-
-  #remove duplicated layer_label or cluster
-  df_unique <- df_good[!(df_good$layer_label %in% dup_labels) & !(df_good$cluster %in% dup_clusters), ]
-  
-  return(df_unique)
-})
-
-filtered_cell_type_counts_one <- sapply(filtered_clusters_one, function(df) {
-  length(unique(df$layer_label))
-})
-
-# N of mhb_lhb_counts (clusters mapped to all mhb/lhb are also included)
-
-filtered_clusters_pure<- lapply(annotated_clusters, function(df) {
-  # filter layer_confidence is good
-  df <- df %>% separate_rows(layer_label, sep = "/", convert = FALSE)
-  df_good <- df[df$layer_confidence == "good", ]
-
-  # for each cluster, only keep all the labels are MHb or LHb specifically
-  df_pure <- df_good %>%
-    group_by(cluster) %>%
-    filter(
-      all(grepl("MHb", layer_label)) |
-      all(grepl("LHb", layer_label))
-    ) %>%
-    ungroup()
-  
-  return(df_pure)
-})
-
-filtered_cell_type_pure <- sapply(filtered_clusters_pure, function(df) {
-  length(unique(df$layer_label))
-})
-
-# summary
-cell_type_summary <- data.frame(
-  original_cluster_count = original_cluster_counts,
-  unique_cell_type_count = filtered_cell_type_counts,
-  unique_mhb_lhb_counts = mhb_lhb_counts,
-  one_to_one_cell_type_count = filtered_cell_type_counts_one,
-  multiple_mhb_lhb_counts = filtered_cell_type_pure
+filtered_clusters = lapply(
+    annotated_clusters,
+    function(df) {
+        # filter layer_confidence is good and multiple clusters matching one
+        # cell type
+        df_good <- df[df$layer_confidence == "good", ]
+        df_good <- df_good[!grepl("/", df_good$layer_label), ]  
+        return(df_good)
+    }
+)
+filtered_cell_type_counts = sapply(
+    filtered_clusters, function(df) length(unique(df$layer_label))
 )
 
-minmax_scale <- function(x) {
-  (x - min(x)) / (max(x) - min(x))
-}
+original_cluster_counts = sapply(
+    annotated_clusters, function(df) length(unique(df$cluster))
+)
+
+# N of habenula cell type covered
+mhb_lhb_counts = sapply(
+    filtered_clusters,
+    function(df) {
+        length(unique(df$layer_label[grepl("MHb|LHb", df$layer_label)]))
+    }
+)
+
+# N of one-to-one
+filtered_clusters_one = lapply(
+    annotated_clusters,
+    function(df) {
+        # filter layer_confidence is good
+        df = df |> separate_rows(layer_label, sep = "/", convert = FALSE)
+        df_good = df[df$layer_confidence == "good", ]
+
+        # find duplicated layer_label and cluster
+        dup_labels = df_good$layer_label[
+            duplicated(df_good$layer_label) |
+            duplicated(df_good$layer_label, fromLast = TRUE)
+        ]
+        dup_clusters = df_good$cluster[
+            duplicated(df_good$cluster) |
+            duplicated(df_good$cluster, fromLast = TRUE)
+        ]
+
+        # remove duplicated layer_label or cluster
+        df_unique = df_good[
+            !(df_good$layer_label %in% dup_labels) & 
+            !(df_good$cluster %in% dup_clusters),
+        ]
+
+        return(df_unique)
+    }
+)
+
+filtered_cell_type_counts_one = sapply(
+    filtered_clusters_one, function(df) length(unique(df$layer_label))
+)
+
+# N of mhb_lhb_counts (clusters mapped to all mhb/lhb are also included)
+filtered_clusters_pure = lapply(
+    annotated_clusters,
+    function(df) {
+        # filter layer_confidence is good
+        df = df |> separate_rows(layer_label, sep = "/", convert = FALSE)
+        df_good = df[df$layer_confidence == "good", ]
+
+        # for each cluster, only keep all the labels are MHb or LHb
+        # specifically
+        df_pure = df_good |>
+            group_by(cluster) |>
+            filter(
+                all(grepl("MHb", layer_label)) |
+                all(grepl("LHb", layer_label))
+            ) |>
+            ungroup()
+
+        return(df_pure)
+    }
+)
+
+filtered_cell_type_pure = sapply(
+    filtered_clusters_pure,
+    function(df) length(unique(df$layer_label))
+)
+
+# summary
+cell_type_summary = tibble(
+    original_cluster_count = original_cluster_counts,
+    unique_cell_type_count = filtered_cell_type_counts,
+    unique_mhb_lhb_counts = mhb_lhb_counts,
+    one_to_one_cell_type_count = filtered_cell_type_counts_one,
+    multiple_mhb_lhb_counts = filtered_cell_type_pure
+)
 
 score_unique <- minmax_scale(cell_type_summary$unique_cell_type_count)
 score_mhb_lhb <- minmax_scale(cell_type_summary$unique_mhb_lhb_counts)
 score_one_to_one <- minmax_scale(cell_type_summary$one_to_one_cell_type_count)
-score_multiple_mhb_lhb <- minmax_scale(cell_type_summary$multiple_mhb_lhb_counts)
+score_multiple_mhb_lhb <- minmax_scale(
+    cell_type_summary$multiple_mhb_lhb_counts
+)
 
-cell_type_summary$score_total <- score_unique + score_mhb_lhb + score_one_to_one + score_multiple_mhb_lhb
-cell_type_summary$score_total_scaled <- minmax_scale(cell_type_summary$score_total)
+cell_type_summary$score_total <- score_unique + score_mhb_lhb +
+    score_one_to_one + score_multiple_mhb_lhb
+cell_type_summary$score_total_scaled <- minmax_scale(
+    cell_type_summary$score_total
+)
 cell_type_summary <- cell_type_summary[order(-cell_type_summary$score_total), ]
 
-write_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'registration',"sum_score","cleany", sprintf('heatmap_score_%s.csv', ref_name))
+write_csv(cell_type_summary, out_path)
 
-write.csv(as.data.frame(cell_type_summary),write_path, row.names = FALSE)
+session_info()
