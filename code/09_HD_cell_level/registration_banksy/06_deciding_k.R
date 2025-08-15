@@ -22,6 +22,7 @@ out_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
     'lambda0_2', 'ranking', sprintf('%s_subset.csv', ref_name)
 )
+resolution = c(seq_len(20) / 10, 4, 8)
 
 dir.create(dirname(out_path), showWarnings = FALSE)
 
@@ -122,6 +123,7 @@ filtered_cell_type_pure = sapply(
 
 # summary
 cell_type_summary = tibble(
+    resolution = resolution,
     original_cluster_count = original_cluster_counts,
     unique_cell_type_count = filtered_cell_type_counts,
     unique_mhb_lhb_counts = mhb_lhb_counts,
