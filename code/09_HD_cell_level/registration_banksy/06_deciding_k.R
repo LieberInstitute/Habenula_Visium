@@ -11,10 +11,7 @@ library(sessioninfo)
 library(spatialLIBD)
 library(data.table)
 
-ref_names = c(
-    'snRNAseq_fine', 'snRNAseq_broad', 'multiome',
-    sprintf('Visium_BayesSpace_k%02d', 2:28)
-)
+ref_names = c('snRNAseq_fine', 'snRNAseq_broad')
 
 #   Get the reference data for this task
 task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
@@ -46,8 +43,6 @@ original_cluster_counts <- sapply(annotated_clusters, function(df) {
 filtered_cell_type_counts <- sapply(filtered_clusters, function(df) {
   length(unique(df$layer_label))
 })
-
-if (task_id %in% 1:3){
 
 # N of habenula cell type covered
 
@@ -126,48 +121,3 @@ write_path = here(
     'registration',"sum_score","cleany", sprintf('heatmap_score_%s.csv', ref_name))
 
 write.csv(as.data.frame(cell_type_summary),write_path, row.names = FALSE)
-}
-
-if (task_id > 3){
-  
-  filtered_clusters_one<- lapply(annotated_clusters, function(df) {
-  # filter layer_confidence is good
-  df_good <- df[df$layer_confidence == "good", ]
-  df_good <- df_good[!grepl("/", df_good$layer_label), ]
-
-  #find duplicated layer_label and cluster
-  dup_labels <- df_good$layer_label[duplicated(df_good$layer_label) | duplicated(df_good$layer_label, fromLast = TRUE)]
-
-  #remove duplicated layer_label or cluster
-  df_unique <- df_good[!(df_good$layer_label %in% dup_labels), ]
-  
-  return(df_unique)
-})
-
-filtered_cell_type_counts_one <- sapply(filtered_clusters_one, function(df) {
-  length(unique(df$layer_label))
-})
-
-# summary
-cell_type_summary <- data.frame(
-  original_cluster_count = original_cluster_counts,
-  unique_cell_type_count = filtered_cell_type_counts,
-  one_to_one_cell_type_count = filtered_cell_type_counts_one)
-
-minmax_scale <- function(x) {
-  (x - min(x)) / (max(x) - min(x))
-}
-
-score_unique <- cell_type_summary$unique_cell_type_count/max(cell_type_summary$unique_cell_type_count)
-score_one_to_one <- cell_type_summary$one_to_one_cell_type_count/max(cell_type_summary$unique_cell_type_count)
-
-cell_type_summary$score_total <- score_unique + score_one_to_one
-cell_type_summary$score_total_scaled <- minmax_scale(cell_type_summary$score_total)
-cell_type_summary <- cell_type_summary[order(-cell_type_summary$score_total), ]
-
-write_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'registration',"sum_score","cleany", sprintf('heatmap_score_%s.csv', ref_name))
-
-write.csv(as.data.frame(cell_type_summary),write_path, row.names = FALSE)
-}

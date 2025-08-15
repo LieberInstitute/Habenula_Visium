@@ -4,8 +4,9 @@
 #SBATCH --job-name=06_deciding_k
 #SBATCH -c 1
 #SBATCH -t 1:00:00
-#SBATCH -o ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/06_deciding_k.txt
-#SBATCH -e ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/06_deciding_k.txt
+#SBATCH -o ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/06_deciding_k_%a.txt
+#SBATCH -e ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/06_deciding_k_%a.txt
+#SBATCH --array=1-2%2
 
 set -e
 
