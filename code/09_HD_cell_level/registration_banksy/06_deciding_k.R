@@ -20,7 +20,7 @@ in_path = here(
 )
 out_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
-    'lambda0_2', 'ranking', sprintf('%s.csv', ref_name)
+    'lambda0_2', 'ranking', sprintf('%s_subset.csv', ref_name)
 )
 
 dir.create(dirname(out_path), showWarnings = FALSE)
