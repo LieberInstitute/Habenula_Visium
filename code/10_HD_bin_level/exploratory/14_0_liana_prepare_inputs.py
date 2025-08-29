@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+import pandas as pd
 import scanpy as sc
 import os
 from pyhere import here
@@ -7,15 +7,19 @@ import bin2cell as b2c
 import datetime
 import anndata as ad
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-with open(sample_id_path, 'r') as f:
-    all_samples = f.read().splitlines()[:3]
-
 ad_in_paths = here(
     'processed-data', '09_HD_cell_level', 'probe_fix',
     '{}.h5ad'
 )
+hb_anno_path = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
+    'habenula_shiny_annotations.csv.gz'
+)
 out_dir = here('processed-data', '10_HD_bin_level', 'LIANA', 'adata')
+
+sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
+with open(sample_id_path, 'r') as f:
+    all_samples = f.read().splitlines()[:3]
 
 adata_list = []
 for sample_id in all_samples:
@@ -40,5 +44,10 @@ adata = adata[
     (adata.obsm['spatial'][:,0] <= 34223),
     :
 ]
+
+#   Annotate cells as habenula or not
+hb_anno = pd.read_csv(hb_anno_path, index_col='spot_name')
+adata.obs['region'] = hb_anno['ManualAnnotation']
+adata.obs['region'] = adata.obs['region'].fillna('other').astype('category')
 
 sc.write(os.path.join(out_dir, 'cellular.h5ad'), adata)
