@@ -5,6 +5,7 @@ from pyhere import here
 import session_info
 import bin2cell as b2c
 import anndata as ad
+import matplotlib.pyplot as plt
 
 import sys
 sys.path.append(str(here('code', '10_HD_bin_level', 'cell_environment')))
@@ -22,9 +23,15 @@ hb_anno_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
     'habenula_shiny_annotations.csv.gz'
 )
-out_dir = here('processed-data', '10_HD_bin_level', 'LIANA', 'adata')
+out_dir = here(
+    'processed-data', '09_HD_cell_level', 'probe_fix', 'LIANA', 'adata'
+)
+plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'LIANA')
 min_bins_per_cell = 4
 expansion_distance = 5
+
+os.makedirs(plot_dir, exist_ok=True)
+os.makedirs(out_dir, exist_ok=True)
 
 ################################################################################
 #   Ordinary cell-level data
@@ -154,6 +161,12 @@ adata = adata[
 
 adata.obs['region'] = hb_anno['ManualAnnotation']
 adata.obs['region'] = adata.obs['region'].fillna('other').astype('category')
+
+#   For one sample, visually validate habenula region labels
+small_adata = adata[adata.obs['sample_id'] == 'H1-MVPY9BW_A1_8433']
+sc.pl.spatial(small_adata, color=["region"], basis="spatial_cropped_150_buffer")
+plt.savefig(os.path.join(plot_dir, 'H1-MVPY9BW_A1_8433_hb_cells.png'))
+plt.close('all')
 
 sc.write(os.path.join(out_dir, 'extracellular.h5ad'), adata)
 
