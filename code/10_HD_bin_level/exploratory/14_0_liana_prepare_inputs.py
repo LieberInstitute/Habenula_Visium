@@ -141,7 +141,9 @@ for sample_id in all_samples:
     #   Add sample ID and label cells with original labels
     adata.obs['sample_id'] = sample_id
     adata.obs['key'] = adata.obs['labels_joint'].astype(str) + '_' + adata.obs['sample_id']
-    adata.obs.index = adata.obs['key']
+    adata.obs.set_index('key', inplace=True)
+
+    adata_list.append(adata)
 
 adata = ad.concat(adata_list, axis=0)
 
@@ -164,7 +166,10 @@ adata.obs['region'] = adata.obs['region'].fillna('other').astype('category')
 
 #   For one sample, visually validate habenula region labels
 small_adata = adata[adata.obs['sample_id'] == 'H1-MVPY9BW_A1_8433']
-sc.pl.spatial(small_adata, color=["region"], basis="spatial_cropped_150_buffer")
+sc.pl.spatial(
+    small_adata, color=["region"], basis="spatial_cropped_150_buffer",
+    spot_size=200.0
+)
 plt.savefig(os.path.join(plot_dir, 'H1-MVPY9BW_A1_8433_hb_cells.png'))
 plt.close('all')
 
