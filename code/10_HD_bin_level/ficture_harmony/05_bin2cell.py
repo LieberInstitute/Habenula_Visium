@@ -1,3 +1,7 @@
+#   Use bin2cell to aggregate FICTURE cluster probabilities across 2um bins
+#   belonging to the same cell. This is a way of establishing FICTURE results
+#   at the cell level (normalized results)
+
 import scanpy as sc
 import os
 from pyhere import here

@@ -8,6 +8,10 @@
 #SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/03_ficture_plot_cleany_%a.txt
 #SBATCH --array=4-40,70,100%20
 
+#   Default plots produced by 'ficture run_together' have too much empty
+#   (black) space. Reproduce these plots with visually preferable settings
+#   (for cleaningY batch-corrected results)
+
 set -e
 
 echo "**** Job starts ****"

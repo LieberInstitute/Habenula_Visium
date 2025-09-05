@@ -6,7 +6,9 @@
 #SBATCH -t 2-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/03_ficture_run_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/03_ficture_run_%a.txt
-#SBATCH --array=3-39:2%10
+#SBATCH --array=3-40,70,100%10
+
+#   The main step to run FICTURE on library-size normalized inputs
 
 set -e
 

@@ -1,3 +1,7 @@
+#   Deprecated script: begin spatial registration of cell-level FICTURE results.
+#   We later determined registration could be directly performed with 2um
+#   bin-level results, which is what we opted with going forward
+
 library(here)
 library(spatialLIBD)
 library(HDF5Array)

@@ -1,3 +1,6 @@
+#   Build a basic 2um QC'd bin-level SpatialExperiment object, which downstream
+#   will eventually become used as input for FICTURE
+
 library(here)
 library(tidyverse)
 library(scran)
@@ -37,7 +40,7 @@ spe <- read10xVisium(
     type = "sparse",
     data = "raw",
     images = "lowres",
-    load = FALSE
+    load = TRUE
 )
 
 #   Drop problematic tissue regions found in the 8um bin-level QC, other than

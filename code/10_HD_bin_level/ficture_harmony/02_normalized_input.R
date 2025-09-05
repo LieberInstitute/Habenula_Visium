@@ -1,3 +1,6 @@
+#   Library-size normalize counts and export required files directly usable by
+#   FICTURE
+
 library(sessioninfo)
 library(here)
 library(SpatialExperiment)
