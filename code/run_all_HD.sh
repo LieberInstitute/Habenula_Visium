@@ -26,12 +26,36 @@ repo_dir=$(git rev-parse --show-toplevel)
 ################################################################################
 
 cd $repo_dir/code/10_HD_bin_level/ficture_harmony
+
+#-------------------------------------------------------------------------------
+#   Main steps to run FICTURE
+#-------------------------------------------------------------------------------
+
 job_id_1_1=$(sbatch --parsable 01_build_spe.sh)
 job_id_1_2=$(sbatch --dependency=afterok:${job_id_1_1} --parsable 02_normalized_input.sh)
 job_id_1_3=$(sbatch --dependency=afterok:${job_id_1_2} --parsable 03_ficture_run.sh)
 job_id_1_4=$(sbatch --dependency=afterok:${job_id_1_3} --parsable 04_spatula_join.sh)
-job_id_1_5=$(sbatch --dependency=afterok:${job_id_1_4} --parsable 05_bin2cell.sh)
-job_id_1_6=$(sbatch --dependency=afterok:${job_id_1_5} --parsable 06_merge_and_plot.sh)
+job_id_1_5=$(sbatch --dependency=afterok:${job_id_1_4} --parsable 09_bin_level_merge_norm.sh)
+
+#-------------------------------------------------------------------------------
+#   Spatial registration
+#-------------------------------------------------------------------------------
+
+job_id_1_6=$(sbatch --dependency=afterok:${job_id_1_5} --parsable 10_registration_wrapper_norm.sh)
+job_id_1_7=$(sbatch --dependency=afterok:${job_id_1_6} --parsable 11_cor_heatmap_norm.sh)
+
+################################################################################
+#   FICTURE with cleaningY batch-corrected inputs
+################################################################################
+
+#-------------------------------------------------------------------------------
+#   Main steps to run FICTURE
+#-------------------------------------------------------------------------------
+
+job_id_2_1=$(sbatch --dependency=afterok:${job_id_1_1} --parsable 08_batcheffect_lm.sh)
+job_id_2_2=$(sbatch --dependency=afterok:${job_id_2_1} --parsable 08_batcheffect_com.sh)
+job_id_2_3=$(sbatch --dependency=afterok:${job_id_2_2} --parsable 08_reprepareinput_ficture.sh)
+job_id_2_4=$(sbatch --dependency=afterok:${job_id_2_3} --parsable 08_rerun_ficture.sh)
 
 ################################################################################
 #   Create SpatialExperiments
@@ -72,10 +96,6 @@ job_id_3_5=$(sbatch --dependency=afterok:${job_id_3_4} --parsable 06_banksy_clus
 cd $repo_dir/code/09_HD_cell_level/registration_banksy
 job_id_4_1=$(sbatch --dependency=afterok:${job_id_3_5} --parsable 01_registration_wrapper.sh)
 job_id_4_2=$(sbatch --dependency=afterok:${job_id_4_1} --parsable 02_cor_heatmap.sh)
-
-#   FICTURE
-cd $repo_dir/code/10_HD_bin_level/ficture_harmony
-job_id_4_3=$(sbatch --dependency=afterok:${job_id_4_2} --parsable 07_registration_wrapper.sh)
 
 echo "**** Job ends ****"
 date

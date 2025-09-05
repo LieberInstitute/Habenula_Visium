@@ -1,12 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=100G
-#SBATCH --job-name=08_batcheffect_lm
+#SBATCH --job-name=08_batcheffect_com
 #SBATCH -c 1
-#SBATCH -t 96:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/08_batcheffect_lm_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/08_batcheffect_lm_%a.txt
-#SBATCH --array=1-10%10
+#SBATCH -t 1-0:00:00
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/08_batcheffect_com.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/08_batcheffect_com.txt
 
 set -e
 
@@ -26,7 +25,7 @@ module load conda_R/4.4.x
 ## List current modules for reproducibility
 module list
 
-Rscript 08_batcheffect_lm.R
+Rscript 08_batcheffect_com.R
 
 echo "**** Job ends ****"
 date
