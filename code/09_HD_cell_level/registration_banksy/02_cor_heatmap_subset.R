@@ -1,3 +1,6 @@
+#   Generate correlation heatmaps for spatial registration against snRNA-seq,
+#   multiome, and Visium BayesSpace reference datasets
+
 library(here)
 library(tidyverse)
 library(SpatialExperiment)

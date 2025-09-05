@@ -1,3 +1,5 @@
+#   For each HD sample, run bin2cell to produce AnnDatas of cell-level data
+
 import matplotlib.pyplot as plt
 import scanpy as sc
 import os

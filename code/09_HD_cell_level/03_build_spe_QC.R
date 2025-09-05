@@ -1,3 +1,6 @@
+#   Using QC info collected on the 8um bin-level data, filter out problematic
+#   cells and log normalize counts. Save a final SpatialExperiment
+
 library(here)
 library(tidyverse)
 library(SpatialExperiment)

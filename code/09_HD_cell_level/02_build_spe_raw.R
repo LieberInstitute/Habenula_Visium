@@ -1,3 +1,6 @@
+#   Take the sample-specific AnnDatas from bin2cell and produce a basic
+#   dataset-wide SpatialExperiment (bring into R and merge)
+
 library(Giotto)
 library(here)
 library(tidyverse)

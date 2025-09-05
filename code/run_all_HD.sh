@@ -96,17 +96,13 @@ job_id_4_3=$(sbatch --dependency=afterok:${job_id_4_2} --parsable 05_gather_vari
 
 #   Running Banksy
 cd $repo_dir/code/09_HD_cell_level
-job_id_4_4=$(sbatch --dependency=afterok:${job_id_4_3} --parsable 05_banksy_embedding.sh)
-job_id_4_5=$(sbatch --dependency=afterok:${job_id_4_4} --parsable 06_banksy_clustering.sh)
+job_id_4_4=$(sbatch --dependency=afterok:${job_id_4_3} --parsable 05_banksy_embedding_subset.sh)
+job_id_4_5=$(sbatch --dependency=afterok:${job_id_4_4} --parsable 06_banksy_clustering_subset.sh)
 
-################################################################################
 #   Spatial registration
-################################################################################
-
-#   Banksy
 cd $repo_dir/code/09_HD_cell_level/registration_banksy
-job_id_5_1=$(sbatch --dependency=afterok:${job_id_4_5} --parsable 01_registration_wrapper.sh)
-job_id_5_2=$(sbatch --dependency=afterok:${job_id_5_1} --parsable 02_cor_heatmap.sh)
+job_id_4_6=$(sbatch --dependency=afterok:${job_id_4_5} --parsable 01_registration_wrapper_subset.sh)
+job_id_4_7=$(sbatch --dependency=afterok:${job_id_4_6} --parsable 02_cor_heatmap_subset.sh)
 
 echo "**** Job ends ****"
 date

@@ -1,3 +1,6 @@
+#   Begin spatial registration process of Banksy clusters by running
+#   registration_wrapper()
+
 library(here)
 library(spatialLIBD)
 library(HDF5Array)
