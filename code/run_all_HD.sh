@@ -65,8 +65,8 @@ job_id_2_7=$(sbatch --dependency=afterok:${job_id_2_6} --parsable 09_bin_level_m
 #   Spatial registration
 #-------------------------------------------------------------------------------
 
-job_id_2_6=$(sbatch --dependency=afterok:${job_id_2_5} --parsable 10_registration_wrapper_cleany.sh)
-job_id_2_7=$(sbatch --dependency=afterok:${job_id_2_6} --parsable 11_cor_heatmap_cleany.sh)
+job_id_2_8=$(sbatch --dependency=afterok:${job_id_2_7} --parsable 10_registration_wrapper_cleany.sh)
+job_id_2_9=$(sbatch --dependency=afterok:${job_id_2_8} --parsable 11_cor_heatmap_cleany.sh)
 
 ################################################################################
 #   Create SpatialExperiments
@@ -74,15 +74,15 @@ job_id_2_7=$(sbatch --dependency=afterok:${job_id_2_6} --parsable 11_cor_heatmap
 
 #   Bin-level
 cd $repo_dir/code/10_HD_bin_level
-job_id_2_1=$(sbatch --parsable 01_build_spe.sh)
-job_id_2_2=$(sbatch --dependency=afterok:${job_id_2_1} --parsable 02_QC.sh)
+job_id_3_1=$(sbatch --parsable 01_build_spe.sh)
+job_id_3_2=$(sbatch --dependency=afterok:${job_id_3_1} --parsable 02_QC.sh)
 
 #   Cell-level
 cd $repo_dir/code/09_HD_cell_level
-job_id_2_3=$(sbatch --parsable 01_bin2cell.sh)
-job_id_2_4=$(sbatch --dependency=afterok:${job_id_2_3} --parsable 02_build_spe_raw.sh)
-job_id_2_5=$(sbatch --dependency=afterok:${job_id_2_4} --parsable 03_build_spe_QC.sh)
-job_id_2_6=$(sbatch --dependency=afterok:${job_id_2_5} --parsable 04_HVG.sh)
+job_id_3_3=$(sbatch --parsable 01_bin2cell.sh)
+job_id_3_4=$(sbatch --dependency=afterok:${job_id_3_3} --parsable 02_build_spe_raw.sh)
+job_id_3_5=$(sbatch --dependency=afterok:${job_id_3_4} --parsable 03_build_spe_QC.sh)
+job_id_3_6=$(sbatch --dependency=afterok:${job_id_3_5} --parsable 04_HVG.sh)
 
 ################################################################################
 #   Banksy
@@ -90,14 +90,14 @@ job_id_2_6=$(sbatch --dependency=afterok:${job_id_2_5} --parsable 04_HVG.sh)
 
 #   Finding SVGs
 cd $repo_dir/code/10_HD_bin_level
-job_id_3_1=$(sbatch --dependency=afterok:${job_id_2_6} --parsable 03_rasterize.sh)
-job_id_3_2=$(sbatch --dependency=afterok:${job_id_3_1} --parsable 04_nnSVG.sh)
-job_id_3_3=$(sbatch --dependency=afterok:${job_id_3_2} --parsable 05_gather_variable_genes.sh)
+job_id_4_1=$(sbatch --dependency=afterok:${job_id_3_6} --parsable 03_rasterize.sh)
+job_id_4_2=$(sbatch --dependency=afterok:${job_id_4_1} --parsable 04_nnSVG.sh)
+job_id_4_3=$(sbatch --dependency=afterok:${job_id_4_2} --parsable 05_gather_variable_genes.sh)
 
 #   Running Banksy
 cd $repo_dir/code/09_HD_cell_level
-job_id_3_4=$(sbatch --dependency=afterok:${job_id_3_3} --parsable 05_banksy_embedding.sh)
-job_id_3_5=$(sbatch --dependency=afterok:${job_id_3_4} --parsable 06_banksy_clustering.sh)
+job_id_4_4=$(sbatch --dependency=afterok:${job_id_4_3} --parsable 05_banksy_embedding.sh)
+job_id_4_5=$(sbatch --dependency=afterok:${job_id_4_4} --parsable 06_banksy_clustering.sh)
 
 ################################################################################
 #   Spatial registration
@@ -105,8 +105,8 @@ job_id_3_5=$(sbatch --dependency=afterok:${job_id_3_4} --parsable 06_banksy_clus
 
 #   Banksy
 cd $repo_dir/code/09_HD_cell_level/registration_banksy
-job_id_4_1=$(sbatch --dependency=afterok:${job_id_3_5} --parsable 01_registration_wrapper.sh)
-job_id_4_2=$(sbatch --dependency=afterok:${job_id_4_1} --parsable 02_cor_heatmap.sh)
+job_id_5_1=$(sbatch --dependency=afterok:${job_id_4_5} --parsable 01_registration_wrapper.sh)
+job_id_5_2=$(sbatch --dependency=afterok:${job_id_5_1} --parsable 02_cor_heatmap.sh)
 
 echo "**** Job ends ****"
 date
