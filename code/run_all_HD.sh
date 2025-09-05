@@ -56,6 +56,14 @@ job_id_2_1=$(sbatch --dependency=afterok:${job_id_1_1} --parsable 08_batcheffect
 job_id_2_2=$(sbatch --dependency=afterok:${job_id_2_1} --parsable 08_batcheffect_com.sh)
 job_id_2_3=$(sbatch --dependency=afterok:${job_id_2_2} --parsable 08_reprepareinput_ficture.sh)
 job_id_2_4=$(sbatch --dependency=afterok:${job_id_2_3} --parsable 08_rerun_ficture.sh)
+job_id_2_5=$(sbatch --dependency=afterok:${job_id_2_4} --parsable 09_bin_level_merge_cleany.sh)
+
+#-------------------------------------------------------------------------------
+#   Spatial registration
+#-------------------------------------------------------------------------------
+
+job_id_2_6=$(sbatch --dependency=afterok:${job_id_2_5} --parsable 10_registration_wrapper_cleany.sh)
+job_id_2_7=$(sbatch --dependency=afterok:${job_id_2_6} --parsable 11_cor_heatmap_cleany.sh)
 
 ################################################################################
 #   Create SpatialExperiments

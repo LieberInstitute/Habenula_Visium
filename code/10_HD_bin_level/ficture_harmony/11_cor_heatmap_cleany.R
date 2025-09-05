@@ -8,7 +8,7 @@ library(spatialLIBD)
 model_paths = here(
     'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
     'registration', 'modeling_results', 'cleaning_y',
-    sprintf('%d.rds', c(5:50,60,70,80,90,100))
+    sprintf('%d.rds', c(seq(3, 40), 70, 100))
 )
 plot_dir = here(
     'plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony', 'registration'
