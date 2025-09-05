@@ -104,24 +104,6 @@ for sample_id in all_samples:
         adata, min_bins_per_cell = min_bins_per_cell
     )
 
-    #   Since some originally secondary cells are dropped, numbering is thrown
-    #   off relative to the cells we already have annotated. Create a map from
-    #   microenvironment cell labels to the original cell labels
-    cell_map = (
-        adata.obs
-            #   Since 'primary' comes before 'secondary', this makes it so
-            #   originally secondary cells aren't later labeled with a primary
-            #   label that "takes over" through expansion
-            .sort_values(by = 'microenvironment_joint_source', ascending=False)
-            .loc[
-                adata.obs['labels_joint'] != 0,
-                ['microenvironment_joint', 'labels_joint']
-            ]
-            .drop_duplicates(subset = 'microenvironment_joint', keep = 'first')
-            .set_index('microenvironment_joint')
-    )
-    cell_map.index = cell_map.index.astype(str)
-
     #   Drop intracellular bins
     adata = adata[
         adata.obs['cell_component'].isin(
@@ -134,13 +116,9 @@ for sample_id in all_samples:
         spatial_keys=["spatial", "spatial_cropped_150_buffer"]
     )
 
-    #   Bring in original cell labels
-    adata.obs['labels_joint'] = cell_map['labels_joint']
-    assert all(~adata.obs['labels_joint'].isna())
-
-    #   Add sample ID and label cells with original labels
+    #   Add sample ID and label cells uniquely
     adata.obs['sample_id'] = sample_id
-    adata.obs['key'] = adata.obs['labels_joint'].astype(str) + '_' + adata.obs['sample_id']
+    adata.obs['key'] = adata.obs.index + '_' + adata.obs['sample_id']
     adata.obs.set_index('key', inplace=True)
 
     adata_list.append(adata)
