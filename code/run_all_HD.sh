@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=2G
-#SBATCH --job-name=run_all
+#SBATCH --job-name=run_all_HD
 #SBATCH -c 1
 #SBATCH -t 10:00
-#SBATCH -o ../run_all_hd.txt
-#SBATCH -e ../run_all_hd.txt
+#SBATCH -o ../run_all_HD.txt
+#SBATCH -e ../run_all_HD.txt
 
 set -e
 
@@ -34,15 +34,16 @@ cd $repo_dir/code/10_HD_bin_level/ficture_harmony
 job_id_1_1=$(sbatch --parsable 01_build_spe.sh)
 job_id_1_2=$(sbatch --dependency=afterok:${job_id_1_1} --parsable 02_normalized_input.sh)
 job_id_1_3=$(sbatch --dependency=afterok:${job_id_1_2} --parsable 03_ficture_run.sh)
-job_id_1_4=$(sbatch --dependency=afterok:${job_id_1_3} --parsable 04_spatula_join.sh)
-job_id_1_5=$(sbatch --dependency=afterok:${job_id_1_4} --parsable 09_bin_level_merge_norm.sh)
+job_id_1_4=$(sbatch --dependency=afterok:${job_id_1_3} --parsable 03_ficture_plot.sh)
+job_id_1_5=$(sbatch --dependency=afterok:${job_id_1_4} --parsable 04_spatula_join.sh)
+job_id_1_6=$(sbatch --dependency=afterok:${job_id_1_5} --parsable 09_bin_level_merge_norm.sh)
 
 #-------------------------------------------------------------------------------
 #   Spatial registration
 #-------------------------------------------------------------------------------
 
-job_id_1_6=$(sbatch --dependency=afterok:${job_id_1_5} --parsable 10_registration_wrapper_norm.sh)
-job_id_1_7=$(sbatch --dependency=afterok:${job_id_1_6} --parsable 11_cor_heatmap_norm.sh)
+job_id_1_7=$(sbatch --dependency=afterok:${job_id_1_6} --parsable 10_registration_wrapper_norm.sh)
+job_id_1_8=$(sbatch --dependency=afterok:${job_id_1_7} --parsable 11_cor_heatmap_norm.sh)
 
 ################################################################################
 #   FICTURE with cleaningY batch-corrected inputs
@@ -56,7 +57,9 @@ job_id_2_1=$(sbatch --dependency=afterok:${job_id_1_1} --parsable 08_batcheffect
 job_id_2_2=$(sbatch --dependency=afterok:${job_id_2_1} --parsable 08_batcheffect_com.sh)
 job_id_2_3=$(sbatch --dependency=afterok:${job_id_2_2} --parsable 08_reprepareinput_ficture.sh)
 job_id_2_4=$(sbatch --dependency=afterok:${job_id_2_3} --parsable 08_rerun_ficture.sh)
-job_id_2_5=$(sbatch --dependency=afterok:${job_id_2_4} --parsable 09_bin_level_merge_cleany.sh)
+job_id_2_5=$(sbatch --dependency=afterok:${job_id_2_4} --parsable 03_ficture_plot_cleany.sh)
+job_id_2_6=$(sbatch --dependency=afterok:${job_id_2_5} --parsable 09_get_ficture_clusters.sh)
+job_id_2_7=$(sbatch --dependency=afterok:${job_id_2_6} --parsable 09_bin_level_merge_cleany.sh)
 
 #-------------------------------------------------------------------------------
 #   Spatial registration
