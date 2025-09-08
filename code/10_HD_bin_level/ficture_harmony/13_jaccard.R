@@ -1,6 +1,6 @@
-#   Explore how clustering results line up before and after filtering normalized
-#   probes. One problematic cluster (composed of many normalized probes) was very
-#   spatially scattered-- is this true after filtering normalized probes?
+#   Compare similarity of clustering results between cleaningY and library-size-
+#   normalized data by generating a heatmap of Jaccard indices between pairs of
+#   clusters
 
 library(here)
 library(tidyverse)
