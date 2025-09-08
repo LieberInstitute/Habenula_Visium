@@ -1,3 +1,8 @@
+#   Check how sample-specific Banksy clusters are as a function of k. This
+#   script is no longer used; instead
+#   code/10_HD_bin_level/ficture_harmony/12_sample_specificity.R
+#   is used.
+
 library(tidyverse)
 library(here)
 library(sessioninfo)
