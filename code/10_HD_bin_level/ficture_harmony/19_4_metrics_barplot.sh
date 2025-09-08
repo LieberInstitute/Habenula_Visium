@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=100G
-#SBATCH --job-name=13_jaccard
+#SBATCH --mem=10G
+#SBATCH --job-name=19_4_metrics_barplot
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/13_jaccard.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/13_jaccard.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/19_4_metrics_barplot.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/19_4_metrics_barplot.txt
 
 set -e
 
@@ -25,7 +25,7 @@ module load conda_R/4.4.x
 ## List current modules for reproducibility
 module list
 
-Rscript 13_jaccard.R
+Rscript 19_4_metrics_barplot.R
 
 echo "**** Job ends ****"
 date

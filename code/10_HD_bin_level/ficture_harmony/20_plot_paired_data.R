@@ -80,9 +80,9 @@ t.test_results <- summary_score_fine %>%
     p_value = t.test(cleany, normalized, paired = TRUE)$p.value
   )
 
-  type                       t_statistic p_value
-  <fct>                            <dbl>   <dbl>
-1 Unique Cell Type Count            1.49  0.145 
-2 One to One Cell Type Count        1.54  0.132 
-3 Multiple MHB LHB Counts           1.99  0.0535
-4 Unique MHB LHB Counts             1.28  0.208 
+#   type                       t_statistic p_value
+#   <fct>                            <dbl>   <dbl>
+# 1 Unique Cell Type Count            1.49  0.145 
+# 2 One to One Cell Type Count        1.54  0.132 
+# 3 Multiple MHB LHB Counts           1.99  0.0535
+# 4 Unique MHB LHB Counts             1.28  0.208
