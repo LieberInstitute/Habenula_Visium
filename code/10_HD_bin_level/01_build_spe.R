@@ -1,3 +1,6 @@
+#   Build a 8um bin-level SpatialExperiment object with basic expression
+#   filtering and library-size normalization
+
 library(here)
 library(tidyverse)
 library(scran)

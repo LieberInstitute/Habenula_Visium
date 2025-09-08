@@ -125,7 +125,6 @@ job_id_5_4=$(sbatch --dependency=afterok:${job_id_5_3} --parsable 16_crawdad_reg
 ################################################################################
 
 cd $repo_dir/code/10_HD_bin_level/ficture_harmony
-
 job_id_6_1=$(sbatch --dependency=afterok:${job_id_4_8} --parsable 12_sample_specificity.sh)
 job_id_6_2=$(sbatch --dependency=afterok:${job_id_6_1} --parsable 13_jaccard.sh)
 job_id_6_3=$(sbatch --dependency=afterok:${job_id_6_2} --parsable 14_batch_sum.sh)
@@ -136,6 +135,9 @@ job_id_6_7=$(sbatch --dependency=afterok:${job_id_6_6} --parsable 18_sum_plot.sh
 job_id_6_8=$(sbatch --dependency=afterok:${job_id_6_7} --parsable 19_4_metrics_barplot.sh)
 job_id_6_9=$(sbatch --dependency=afterok:${job_id_6_8} --parsable 19_4_metrics_lineplot.sh)
 job_id_6_10=$(sbatch --dependency=afterok:${job_id_6_9} --parsable 20_plot_paired_data.sh)
+
+cd $repo_dir/code/10_HD_bin_level
+job_id_6_11=$(sbatch --dependency=afterok:${job_id_3_6} --parsable 06_plot_markers.sh)
 
 echo "**** Job ends ****"
 date

@@ -1,3 +1,6 @@
+#   Drop problematic bins from the 8um bin-level data to form a final QC'd
+#   object
+
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
