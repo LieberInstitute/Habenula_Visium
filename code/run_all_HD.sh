@@ -120,6 +120,22 @@ job_id_5_2=$(sbatch --dependency=afterok:${job_id_4_8} --parsable 14_crawdad_reg
 job_id_5_3=$(sbatch --dependency=afterok:${job_id_5_2} --parsable 15_crawdad_region_run.sh)
 job_id_5_4=$(sbatch --dependency=afterok:${job_id_5_3} --parsable 16_crawdad_region_plot.sh)
 
+################################################################################
+#   Other bin-level analyses
+################################################################################
+
+cd $repo_dir/code/10_HD_bin_level/ficture_harmony
+
+job_id_6_1=$(sbatch --dependency=afterok:${job_id_4_8} --parsable 12_sample_specificity.sh)
+job_id_6_2=$(sbatch --dependency=afterok:${job_id_6_1} --parsable 13_jaccard.sh)
+job_id_6_3=$(sbatch --dependency=afterok:${job_id_6_2} --parsable 14_batch_sum.sh)
+job_id_6_4=$(sbatch --dependency=afterok:${job_id_6_3} --parsable 15_libsize_sum.sh)
+job_id_6_5=$(sbatch --dependency=afterok:${job_id_6_4} --parsable 16_libsize_batch.sh)
+job_id_6_6=$(sbatch --dependency=afterok:${job_id_6_5} --parsable 17_habenula_spot_plots.sh)
+job_id_6_7=$(sbatch --dependency=afterok:${job_id_6_6} --parsable 18_sum_plot.sh)
+job_id_6_8=$(sbatch --dependency=afterok:${job_id_6_7} --parsable 19_4_metrics_barplot.sh)
+job_id_6_9=$(sbatch --dependency=afterok:${job_id_6_8} --parsable 19_4_metrics_lineplot.sh)
+job_id_6_10=$(sbatch --dependency=afterok:${job_id_6_9} --parsable 20_plot_paired_data.sh)
 
 echo "**** Job ends ****"
 date
