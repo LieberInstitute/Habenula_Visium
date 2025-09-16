@@ -21,7 +21,7 @@ spe_dir = here(
 plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region')
 regions = c('habenula', 'thalamus')
 cell_type_colors = c(
-    Astrocyte = "#2F97FF", MHb.2 = "#FFA239", Other = "#DFE1DD"
+    Astrocyte = "#2F97FF", placeholder = "#FFA239", Other = "#DFE1DD"
 )
 
 dir.create(file.path(plot_dir, 'spatial_plots'), showWarnings = FALSE)
@@ -118,69 +118,83 @@ for (region_name in regions) {
         )
 }
 
-#   Plot Z-scores vs scale for a particularly interesting cell-type pair
-p = do.call(rbind, result_list) |>
-    #   Average Z-scores across permutations
-    group_by(region, sample_id, neighbor, scale, reference) |>
-    summarize(Z = mean(Z)) |>
-    ungroup() |>
-    #   Improve plot appearance
-    mutate(
-        sample_id = paste0('Br', str_extract(sample_id, '[0-9]{4}$')),
-        facet_anno = sprintf("Ref: %s\nNeighbor: %s", reference, neighbor)
-    ) |>
-    #   Focus on a particular pair (and its reverse)
-    filter(
-        region == 'habenula',
-        ((neighbor == 'MHb.2') & (reference == 'Astrocyte')) |
-        ((neighbor == 'Astrocyte') & (reference == 'MHb.2'))
-    ) |>
-    ggplot(aes(x = scale, y = Z, color = sample_id, group = sample_id)) +
-        geom_line() +
-        geom_point() +
-        geom_hline(yintercept = z_sig, linetype = 'dashed') +
-        geom_hline(yintercept = -1 * z_sig, linetype = 'dashed') +
-        facet_wrap(~ facet_anno, nrow = 1) +
-        theme_bw(base_size = 20) +
-        labs(x = 'Scale (Microns)', color = 'Sample ID')
+for (hb_subtype in c('MHb.2', 'LHb.7')) {
+    #   Plot Z-scores vs scale for a particularly interesting cell-type pair
+    p = do.call(rbind, result_list) |>
+        #   Average Z-scores across permutations
+        group_by(region, sample_id, neighbor, scale, reference) |>
+        summarize(Z = mean(Z)) |>
+        ungroup() |>
+        #   Improve plot appearance
+        mutate(
+            sample_id = paste0('Br', str_extract(sample_id, '[0-9]{4}$')),
+            facet_anno = sprintf("Ref: %s\nNeighbor: %s", reference, neighbor)
+        ) |>
+        #   Focus on a particular pair (and its reverse)
+        filter(
+            region == 'habenula',
+            ((neighbor == hb_subtype) & (reference == 'Astrocyte')) |
+            ((neighbor == 'Astrocyte') & (reference == hb_subtype))
+        ) |>
+        ggplot(aes(x = scale, y = Z, color = sample_id, group = sample_id)) +
+            geom_line() +
+            geom_point() +
+            geom_hline(yintercept = z_sig, linetype = 'dashed') +
+            geom_hline(yintercept = -1 * z_sig, linetype = 'dashed') +
+            facet_wrap(~ facet_anno, nrow = 1) +
+            theme_bw(base_size = 20) +
+            labs(x = 'Scale (Microns)', color = 'Sample ID')
 
-pdf(file.path(plot_dir, 'z_scores_MHb2_astro.pdf'), width = 10, height = 5)
-print(p)
-dev.off()
-
-cell_df = read_csv(in_path, show_col_types = FALSE) |>
-    filter(region_anno == 'habenula') |>
-    mutate(
-        cell_type = ifelse(
-            cell_type %in% c('MHb.2', 'Astrocyte'), cell_type, 'Other'
-        )
-    ) |>
-    select(key, cell_type)
-
-spe = loadHDF5SummarizedExperiment(spe_dir)
-spe = spe[, spe$key %in% cell_df$key]
-
-spe$cell_type = tibble(key = spe$key) |>
-    left_join(cell_df, by = 'key') |>
-    pull(cell_type)
-
-#   Plot the cell-type pair spatially (only habenula) in each sample
-for (sample_id in sample_ids) {
-    #   Run twice to overcome a bug with different behavior on the first plot
-    for (i in seq_len(2)) {
-        p = vis_clus(
-                spe, sampleid = sample_id, clustervar = 'cell_type',
-                is_stitched = TRUE, point_size = 20, spatial = FALSE,
-                colors = cell_type_colors
-            ) +
-                guides(fill = guide_legend(override.aes = list(size = 8)))
-    }
-    png(
-        file.path(plot_dir, 'spatial_plots', sprintf('%s.png', sample_id)),
-        width = 1500, height = 1500
+    pdf(
+        file.path(plot_dir, sprintf('z_scores_%s_astro.pdf', hb_subtype)),
+        width = 10, height = 5
     )
     print(p)
     dev.off()
+
+    cell_df = read_csv(in_path, show_col_types = FALSE) |>
+        filter(region_anno == 'habenula') |>
+        mutate(
+            cell_type = ifelse(
+                cell_type %in% c(hb_subtype, 'Astrocyte'), cell_type, 'Other'
+            )
+        ) |>
+        select(key, cell_type)
+
+    spe = loadHDF5SummarizedExperiment(spe_dir)
+    spe = spe[, spe$key %in% cell_df$key]
+
+    spe$cell_type = tibble(key = spe$key) |>
+        left_join(cell_df, by = 'key') |>
+        pull(cell_type)
+
+    #   Plot the cell-type pair spatially (only habenula) in each sample
+    names(cell_type_colors) = c('Astrocyte', hb_subtype, 'Other')
+    dir.create(
+        file.path(plot_dir, 'spatial_plots', sprintf('%s_astro', hb_subtype)),
+        showWarnings = FALSE
+    )
+    for (sample_id in sample_ids) {
+        #   Run twice to overcome a bug with different behavior on the first
+        #   plot
+        for (i in seq_len(2)) {
+            p = vis_clus(
+                    spe, sampleid = sample_id, clustervar = 'cell_type',
+                    is_stitched = TRUE, point_size = 20, spatial = FALSE,
+                    colors = cell_type_colors
+                ) +
+                guides(fill = guide_legend(override.aes = list(size = 8)))
+        }
+        png(
+            file.path(
+                plot_dir, 'spatial_plots', sprintf('%s_astro', hb_subtype),
+                sprintf('%s.png', sample_id)
+            ),
+            width = 1500, height = 1500
+        )
+        print(p)
+        dev.off()
+    }
 }
 
 session_info()
