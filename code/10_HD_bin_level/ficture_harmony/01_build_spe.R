@@ -8,16 +8,15 @@ library(spatialLIBD)
 library(sessioninfo)
 library(HDF5Array)
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-sample_ids = readLines(sample_id_path)
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+sample_info = read_csv(sample_info_path, show_col_types = FALSE)
 
 spe_out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'spe_raw.rds'
 )
 sr_out_dirs = here(
-    'processed-data', '01_spaceranger', 'probe_fix', sample_ids, 'outs',
-    'binned_outputs', 'square_002um'
+    sample_info$spaceranger_dir, 'outs', 'binned_outputs', 'square_002um'
 )
 
 #   Hack around 'read10xVisium's requirement for the 'outs' directory to be the
