@@ -10,23 +10,24 @@ library(scran)
 #   Number of times more bins than a Visium experiment (per dimension)
 res_scalar = 1
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-sample_id = readLines(sample_id_path)[
-    as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-]
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+sample_info = read_csv(sample_info_path)
+task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+sample_id = sample_info$sample_id[task_id]
+spaceranger_dir = sample_info$spaceranger_dir[task_id]
+
 spe_norm_dir = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'spe_norm_filtered'
+    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered'
 )
 spe_out_dir = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'rasterized',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'rasterized',
     sprintf('spe_%s_lowres', sample_id)
 )
 json_path = here(
-    'processed-data', '01_spaceranger', 'probe_fix', sample_id, 'outs',
-    'binned_outputs', 'square_008um', 'spatial', 'scalefactors_json.json'
+    spaceranger_dir, 'outs', 'binned_outputs', 'square_008um', 'spatial', 'scalefactors_json.json'
 )
 plot_path = here(
-    'plots', '10_HD_bin_level', 'probe_fix', 'rasterized',
+    'plots', '10_HD_bin_level', 'new_samples', 'rasterized',
     sprintf('WM_%s.pdf', sample_id)
 )
 markers = c("MBP", "GFAP", "PLP1", "AQP4")

@@ -6,16 +6,16 @@ library(HDF5Array)
 library(Matrix)
 library(nnSVG)
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-sample_id = readLines(sample_id_path)[
-    as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-]
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+sample_info = read_csv(sample_info_path)
+task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+sample_id = sample_info$sample_id[task_id]
 spe_dir = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'rasterized',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'rasterized',
     sprintf('spe_%s_lowres', sample_id)
 )
 out_path <- here(
-    "processed-data", '10_HD_bin_level', 'probe_fix', "nnSVG_out",
+    "processed-data", '10_HD_bin_level', 'new_samples', "nnSVG_out",
     paste0(sample_id, ".csv")
 )
 

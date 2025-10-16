@@ -5,9 +5,9 @@ library(HDF5Array)
 library(sessioninfo)
 
 spe_dir = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'spe_norm_filtered'
+    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered'
 )
-plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'marker_genes')
+plot_dir = here('plots', '10_HD_bin_level', 'new_samples', 'marker_genes')
 marker_genes = list(
     white_matter = c("MBP", "GFAP", "PLP1", "AQP4"),
     habenula = c("POU4F1", "GPR151", "CHRNB4", "HTR2C"),

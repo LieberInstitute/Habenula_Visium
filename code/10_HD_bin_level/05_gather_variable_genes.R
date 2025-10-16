@@ -9,17 +9,17 @@ library(viridis)
 library(scran)
 
 spe_dir = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'spe_norm_filtered'
+    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered'
 )
-plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'variable_genes')
+plot_dir = here('plots', '10_HD_bin_level', 'new_samples', 'variable_genes')
 svg_paths = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'nnSVG_out', '%s.csv'
+    'processed-data', '10_HD_bin_level', 'new_samples', 'nnSVG_out', '%s.csv'
 )
 svg_path_out = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'nnSVG_out',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'nnSVG_out',
     'merged_SVGs.txt'
 )
-hvg_path = here('processed-data', '09_HD_cell_level', 'probe_fix', 'HVGs.txt')
+hvg_path = here('processed-data', '09_HD_cell_level', 'new_samples', 'HVGs.txt')
 
 num_svg = 1000
 top_n = 12

@@ -8,16 +8,16 @@ library(spatialLIBD)
 library(sessioninfo)
 library(HDF5Array)
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-spe_raw_dir = here('processed-data', '10_HD_bin_level', 'probe_fix', 'spe_raw')
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+spe_raw_dir = here('processed-data', '10_HD_bin_level', 'new_samples', 'spe_raw')
 spe_norm_dir = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'spe_norm'
+    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm'
 )
 
-sample_ids = readLines(sample_id_path)
+sample_info = read_csv(sample_info_path)
+sample_ids = sample_info$sample_id
 sr_out_dirs = here(
-    'processed-data', '01_spaceranger', 'probe_fix', sample_ids, 'outs',
-    'binned_outputs', 'square_008um'
+    sample_info$spaceranger_dir, 'outs', 'binned_outputs', 'square_008um'
 )
 reference_gtf = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2020-A/genes/genes.gtf'
 
