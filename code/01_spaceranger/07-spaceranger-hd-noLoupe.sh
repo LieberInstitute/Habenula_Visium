@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --mem=80G
-#SBATCH -n 8
-#SBATCH --job-name=Hb-HD-spaceranger
-#SBATCH -o logs/Hb-spaceranger-251010_%a.o.txt
-#SBATCH --array=1-2
-
-# -9
+#SBATCH -c 8
+#SBATCH -p katun
+#SBATCH --job-name=07-spaceranger-hd-noLoupe
+#SBATCH -o logs/07-spaceranger-hd-noLoupe.txt
+#SBATCH -e logs/07-spaceranger-hd-noLoupe.txt
+#SBATCH --array=1-5%5
 
 echo "**** Job starts ****"
 date
@@ -24,9 +24,9 @@ module load spaceranger/4.0.1
 module list
 
 ## Locate file
-SAMPLE=$(awk 'BEGIN {FS="\t"} {print $1}' 08-hd-sample-list-2510.txt | awk "NR==${SLURM_ARRAY_TASK_ID}")
-IMGCYT=$(awk 'BEGIN {FS="\t"} {print $2}' 08-hd-sample-list-2510.txt | awk "NR==${SLURM_ARRAY_TASK_ID}")
-# SAMPLE=$(awk "NR==${SLURM_ARRAY_TASK_ID}" 03_24-09_samples-list.txt)
+repo_dir=$(git rev-parse --show-toplevel)
+SAMPLE=$(awk 'BEGIN {FS="\t"} {print $1}' all_hd_samples_10_2025.txt | awk "NR==${SLURM_ARRAY_TASK_ID}")
+IMGCYT=$(awk 'BEGIN {FS="\t"} {print $2}' all_hd_samples_10_2025.txt | awk "NR==${SLURM_ARRAY_TASK_ID}")
 echo "Processing sample ${SAMPLE}"
 date
 
@@ -37,7 +37,7 @@ SAM=$(paste <(echo ${SLIDE}) <(echo "-") <(echo ${CAPTUREAREA}) -d '')
 echo "Slide: ${SLIDE}, capture area: ${CAPTUREAREA}"
 
 ## Find FASTQ file path
-FASTQPATH=$(ls -d /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/raw-data/fastqs/${SAMPLE}/)
+FASTQPATH=$(ls -d ${repo_dir}/raw-data/fastqs/${SAMPLE}/)
 
 ## Hank from 10x Genomics recommended setting this environment
 export NUMBA_NUM_THREADS=1
@@ -55,12 +55,11 @@ spaceranger count \
     --localcores=8 \
     --localmem=64 
 
-
 ## Move output
 echo "Moving results to new location"
 date
-mkdir -p /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/01_spaceranger/
-mv ${SAMPLE} /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/01_spaceranger/
+mkdir -p ${repo_dir}/processed-data/01_spaceranger/five_samples_10_2025/
+mv ${SAMPLE} ${repo_dir}/processed-data/01_spaceranger/five_samples_10_2025/
 
 echo "**** Job ends ****"
 date
