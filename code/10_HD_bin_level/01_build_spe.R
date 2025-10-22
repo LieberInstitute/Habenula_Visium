@@ -9,9 +9,11 @@ library(sessioninfo)
 library(HDF5Array)
 
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
-spe_raw_dir = here('processed-data', '10_HD_bin_level', 'new_samples', 'spe_raw')
-spe_norm_dir = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm'
+spe_raw_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_raw.rds'
+)
+spe_norm_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm.rds'
 )
 
 sample_info = read_csv(sample_info_path)
@@ -19,7 +21,7 @@ sample_ids = sample_info$sample_id
 sr_out_dirs = here(
     sample_info$spaceranger_dir, 'outs', 'binned_outputs', 'square_008um'
 )
-reference_gtf = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2020-A/genes/genes.gtf'
+reference_gtf = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2024-A/genes/genes.gtf.gz'
 
 #   Hack around 'read10xVisium's requirement for the 'outs' directory to be the
 #   immediate parent to 'spatial' directory and other outputs (create a symlink
@@ -49,9 +51,7 @@ spe <- read10xVisiumWrapper(
 )
 
 message(Sys.time(), " | Saving raw SPE")
-spe <- saveHDF5SummarizedExperiment(
-    spe, dir = spe_raw_dir, replace = TRUE, as.sparse = TRUE
-)
+saveRDS(spe, spe_raw_path)
 
 #   Filter raw SPE: take only bins in tissue, drop bins with 0 counts for all
 #   genes, and drop genes with 0 counts in every bin
@@ -68,8 +68,6 @@ spe = computeLibraryFactors(spe)
 spe = logNormCounts(spe)
 
 message(Sys.time(), " | Saving normalized SPE")
-spe <- saveHDF5SummarizedExperiment(
-    spe, dir = spe_norm_dir, replace = TRUE, as.sparse = TRUE
-)
+saveRDS(spe, spe_norm_path)
 
 session_info()
