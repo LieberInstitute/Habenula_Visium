@@ -11,12 +11,12 @@ library(cowplot)
 library(scran)
 
 plot_dir = here('plots', '10_HD_bin_level', 'new_samples', 'QC')
-spe_in_dir = here('processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm')
-spe_out_dir = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered'
+spe_in_path = here('processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm.rds')
+spe_out_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered.rds'
 )
 
-spe = loadHDF5SummarizedExperiment(spe_in_dir)
+spe = readRDS(spe_in_path)
 spe$exclude_overlapping = FALSE
 
 dir.create(
@@ -172,146 +172,12 @@ message(
 spe = spe[, (spe$sample_id != 'H1-MVPY9BW_A1_8433') | (spe$array_col <= 793)]
 
 ################################################################################
-#   Remove artifacts in H1-XQQD7C7_A1_8518
-################################################################################
-
-small_spe = spe[, spe$sample_id == 'H1-XQQD7C7_A1_8518']
-
-#-------------------------------------------------------------------------------
-#   Remove the array-row-related artifact (horizontal)
-#-------------------------------------------------------------------------------
-
-p = colData(small_spe) |>
-    as_tibble() |>
-    select(array_row, sum_umi_capped) |>
-    dplyr::rename(array_coord = array_row) |>
-    scan_window(740:780, window = 1) |>
-    ggplot(aes(x = lower_threshold, y = mean_umi)) +
-        geom_line() +
-        theme_bw(base_size = 25) +
-        geom_vline(xintercept = 764) +
-        labs(x = "Window Start", y = "Mean UMI in Window")
-
-pdf(
-    file.path(
-        plot_dir, 'artifacts', 'H1-XQQD7C7_A1_8518_array_QC_horizontal.pdf'
-    )
-)
-print(p)
-dev.off()
-
-#   Array row and pixel row move in the same direction
-stopifnot(
-    abs(1 - cor(small_spe$array_row, spatialCoords(small_spe)[, 'pxl_row_in_fullres']))
-    < 1e-3
-)
-
-#   Find the pixel row of the boundary (since there's a direct correspondence
-#   with array row) and print in the log for use in the cell-level script
-spe_boundary = small_spe[, small_spe$array_row == 764]
-message(
-    sprintf(
-        "The artifact in 'H1-XQQD7C7_A1_8518' occurs at values of 'pxl_row_in_fullres' above %s",
-        round(median(spatialCoords(spe_boundary)[, 'pxl_row_in_fullres']))
-    )
-)
-
-#   Filter out the artifact
-spe = spe[, (spe$sample_id != 'H1-XQQD7C7_A1_8518') | (spe$array_row <= 764)]
-
-#-------------------------------------------------------------------------------
-#   Remove the artifact on the right and an edge-related low-UMI strip
-#-------------------------------------------------------------------------------
-
-#   Considering UMI counts below the median, check the distribution. It's
-#   clearly bimodal, and a cutoff of 5 UMI separates out the problematic bins
-lower_umi = small_spe$sum_umi_capped[
-    small_spe$sum_umi_capped < max(small_spe$sum_umi_capped)
-]
-p = ggplot(tibble(lower_umi = lower_umi), aes(x = lower_umi)) +
-    geom_density() +
-    geom_vline(xintercept = 5) +
-    theme_bw(base_size = 15) +
-    labs(x = "Total UMI Among Lower Half")
-pdf(file.path(plot_dir, 'artifacts', 'H1-XQQD7C7_A1_8518_umi_cutoff.pdf'))
-print(p)
-dev.off()
-
-#   Plot which bins are filtered out by the cutoff
-spe$low_umi = spe$sum_umi < 5
-p = vis_clus(
-    spe, sampleid = 'H1-XQQD7C7_A1_8518', clustervar = 'low_umi',
-    is_stitched = TRUE, point_size = 1, spatial = TRUE
-)
-
-png(
-    file.path(plot_dir, 'artifacts', 'H1-XQQD7C7_A1_8518_low_umi.png'),
-    width = 1000, height = 1000
-)
-print(p)
-dev.off()
-
-#   Filter out the artifacts
-spe = spe[, (spe$sample_id != 'H1-XQQD7C7_A1_8518') | !spe$low_umi]
-spe$low_umi = NULL
-
-#-------------------------------------------------------------------------------
-#   Remove the array-row-related artifact (vertical)
-#-------------------------------------------------------------------------------
-
-#   This artifact is trickier, because it actually can be defined by higher
-#   average UMI, particularly at the top of the tissue (though the artifact
-#   is present for the full range)
-
-small_spe = spe[, spe$sample_id == 'H1-XQQD7C7_A1_8518']
-
-p = colData(small_spe) |>
-    as_tibble() |>
-    #   Grab the very top of the tissue, where the artifact is most prominent
-    filter(array_row < 200) |>
-    select(array_col, sum_umi_capped) |>
-    dplyr::rename(array_coord = array_col) |>
-    scan_window(125:165, window = 5) |>
-    ggplot(aes(x = lower_threshold, y = mean_umi)) +
-        geom_line() +
-        theme_bw(base_size = 25) +
-        geom_vline(xintercept = 137) +
-        labs(x = "Window Start", y = "Mean UMI in Window")
-
-pdf(
-    file.path(plot_dir, 'artifacts', 'H1-XQQD7C7_A1_8518_array_QC_vertical.pdf')
-)
-print(p)
-dev.off()
-
-#   Array col and pixel col move in the opposite direction
-stopifnot(
-    abs(-1 - cor(small_spe$array_col, spatialCoords(small_spe)[, 'pxl_col_in_fullres']))
-    < 1e-3
-)
-
-#   Find the pixel col of the boundary (since there's a direct correspondence
-#   with array col) and print in the log for use in the cell-level script
-spe_boundary = small_spe[, small_spe$array_col == 142]
-message(
-    sprintf(
-        "The artifact in 'H1-XQQD7C7_A1_8518' occurs at values of 'pxl_col_in_fullres' above %s",
-        round(median(spatialCoords(spe_boundary)[, 'pxl_col_in_fullres']))
-    )
-)
-
-#   Filter out the artifact
-spe = spe[, (spe$sample_id != 'H1-XQQD7C7_A1_8518') | (spe$array_col > 142)]
-
-################################################################################
 #   Save object with problematic bins removed
 ################################################################################
 
 #   Save QC plots of several metrics after filtering
 spatial_qc_plots(spe, file.path(plot_dir, 'after'))
 
-saveHDF5SummarizedExperiment(
-    spe, dir = spe_out_dir, replace = TRUE, as.sparse = TRUE
-)
+saveRDS(spe, spe_out_path)
 
 session_info()

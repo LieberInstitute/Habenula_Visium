@@ -10,9 +10,9 @@ sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 sample_info = read_csv(sample_info_path)
 task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 sample_id = sample_info$sample_id[task_id]
-spe_dir = here(
+spe_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples', 'rasterized',
-    sprintf('spe_%s_lowres', sample_id)
+    sprintf('spe_%s_lowres.rds', sample_id)
 )
 out_path <- here(
     "processed-data", '10_HD_bin_level', 'new_samples', "nnSVG_out",
@@ -24,16 +24,12 @@ set.seed(0)
 dir.create(dirname(out_path), showWarnings = FALSE)
 
 #-------------------------------------------------------------------------------
-#   Subset to this sample and bring into memory for speed
+#   Subset to this sample
 #-------------------------------------------------------------------------------
 
 message(Sys.time(), " | Loading, subsetting, and bringing assays into memory")
-spe <- loadHDF5SummarizedExperiment(spe_dir)
+spe <- readRDS(spe_path)
 spe <- spe[, spe$sample_id == sample_id]
-assays(spe) <- list(
-    counts = as(assays(spe)$counts, "dgCMatrix"),
-    logcounts = as(assays(spe)$logcounts, "dgCMatrix")
-)
 
 #-------------------------------------------------------------------------------
 #   Filter lowly expressed and mitochondrial genes, and low-count spots

@@ -2,7 +2,6 @@ library(here)
 library(tidyverse)
 library(spatialLIBD)
 library(sessioninfo)
-library(HDF5Array)
 library(SEraster)
 library(rjson)
 library(scran)
@@ -16,12 +15,12 @@ task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 sample_id = sample_info$sample_id[task_id]
 spaceranger_dir = sample_info$spaceranger_dir[task_id]
 
-spe_norm_dir = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered'
+spe_norm_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered.rds'
 )
-spe_out_dir = here(
+spe_out_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples', 'rasterized',
-    sprintf('spe_%s_lowres', sample_id)
+    sprintf('spe_%s_lowres.rds', sample_id)
 )
 json_path = here(
     spaceranger_dir, 'outs', 'binned_outputs', 'square_008um', 'spatial', 'scalefactors_json.json'
@@ -33,7 +32,7 @@ plot_path = here(
 markers = c("MBP", "GFAP", "PLP1", "AQP4")
 
 num_cores = as.integer(Sys.getenv("SLURM_CPUS_ON_NODE"))
-dir.create(dirname(spe_out_dir), showWarnings = FALSE)
+dir.create(dirname(spe_out_path), showWarnings = FALSE)
 dir.create(dirname(plot_path), showWarnings = FALSE)
 
 #   Calculate the appropriate SEraster resolution (measured in pixels). The
@@ -44,11 +43,8 @@ res = round(
 
 #   Load and subset to this sample
 message(Sys.time(), ' | Loading this sample and bringing into memory')
-spe = loadHDF5SummarizedExperiment(spe_norm_dir)
+spe = readRDS(spe_norm_path)
 spe = spe[, spe$sample_id == sample_id]
-
-#   Bring into memory to speed up computations
-assays(spe)$counts = as(assays(spe)$counts, "dgCMatrix")
 
 #   Rasterize
 message(
@@ -90,9 +86,7 @@ dev.off()
 
 #   Save
 message(Sys.time(), ' | Saving rasterized SPE')
-spe_raster <- saveHDF5SummarizedExperiment(
-    spe_raster, dir = spe_out_dir, replace = TRUE, as.sparse = TRUE
-)
+saveRDS(spe_raster, spe_out_path)
 
 session_info()
 

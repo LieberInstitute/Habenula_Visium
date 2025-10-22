@@ -4,8 +4,8 @@ library(spatialLIBD)
 library(HDF5Array)
 library(sessioninfo)
 
-spe_dir = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered'
+spe_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered.rds'
 )
 plot_dir = here('plots', '10_HD_bin_level', 'new_samples', 'marker_genes')
 marker_genes = list(
@@ -18,7 +18,7 @@ marker_genes = list(
 
 dir.create(plot_dir, showWarnings = FALSE)
 
-spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_path)
 spe$exclude_overlapping = FALSE
 
 #   All markers should be measured

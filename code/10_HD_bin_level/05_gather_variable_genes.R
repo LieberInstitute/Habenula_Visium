@@ -8,8 +8,8 @@ library(cowplot)
 library(viridis)
 library(scran)
 
-spe_dir = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered'
+spe_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered.rds'
 )
 plot_dir = here('plots', '10_HD_bin_level', 'new_samples', 'variable_genes')
 svg_paths = here(
@@ -95,7 +95,7 @@ plot_VGs = function(spe, genes, plot_str, percentile = 0.98) {
 #   Read in HVGs and calculate SVGs
 ################################################################################
 
-spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_path)
 spe$exclude_overlapping = FALSE
 
 hvg = readLines(hvg_path)
