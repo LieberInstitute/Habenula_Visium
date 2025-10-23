@@ -1,12 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=10G
-#SBATCH --job-name=14_2_LIANA+_preprocess
+#SBATCH --job-name=19_GO_enrichment
 #SBATCH -c 1
 #SBATCH -t 2:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/logs/14_2_LIANA+_preprocess_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/logs/14_2_LIANA+_preprocess_%a.txt
-#SBATCH --array=1-3%3
+#SBATCH -o ../../../processed-data/10_HD_bin_level/logs/19_GO_enrichment.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/logs/19_GO_enrichment.txt
 
 set -e
 
@@ -21,12 +20,12 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load visium_hd/1.0
+module load conda_R/4.4
 
 ## List current modules for reproducibility
 module list
 
-python3 14_2_LIANA+_preprocess_cell.py
+Rscript 19_GO_enrichment.R
 
 echo "**** Job ends ****"
 date

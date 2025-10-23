@@ -1,3 +1,7 @@
+# Data preprocessing for LIANA
+# 1. Create a cell dataframe with x, y coordinates and cell types
+# 2. Save the dataframe as a CSV file for LIANA input
+
 library(here)
 library(tidyverse)
 library(SpatialExperiment)

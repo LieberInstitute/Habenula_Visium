@@ -1,3 +1,7 @@
+# This script matches single-cell RNA-seq data to spatial transcriptomics data using nearest neighbor search.
+# It reads in spatial data and cell annotations, finds the nearest spatial spot for each cell, and merges the data.
+# Finally, it saves the merged AnnData object for further analysis.
+# Here I used bin level data to match with cell level data
 import scanpy as sc
 import os
 import pandas as pd
