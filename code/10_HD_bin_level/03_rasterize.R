@@ -23,7 +23,8 @@ spe_out_path = here(
     sprintf('spe_%s_lowres.rds', sample_id)
 )
 json_path = here(
-    spaceranger_dir, 'outs', 'binned_outputs', 'square_008um', 'spatial', 'scalefactors_json.json'
+    spaceranger_dir, 'outs', 'binned_outputs', 'square_008um', 'spatial',
+    'scalefactors_json.json'
 )
 plot_path = here(
     'plots', '10_HD_bin_level', 'new_samples', 'rasterized',
