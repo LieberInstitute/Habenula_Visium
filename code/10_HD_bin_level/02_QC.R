@@ -4,14 +4,15 @@
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
-library(HDF5Array)
 library(spatialLIBD)
 library(sessioninfo)
 library(cowplot)
 library(scran)
 
 plot_dir = here('plots', '10_HD_bin_level', 'new_samples', 'QC')
-spe_in_path = here('processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm.rds')
+spe_in_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm.rds'
+)
 spe_out_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered.rds'
 )
