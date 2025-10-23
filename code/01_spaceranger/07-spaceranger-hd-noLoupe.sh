@@ -3,8 +3,8 @@
 #SBATCH -c 8
 #SBATCH -p katun
 #SBATCH --job-name=07-spaceranger-hd-noLoupe
-#SBATCH -o logs/07-spaceranger-hd-noLoupe.txt
-#SBATCH -e logs/07-spaceranger-hd-noLoupe.txt
+#SBATCH -o logs/07-spaceranger-hd-noLoupe_%a.txt
+#SBATCH -e logs/07-spaceranger-hd-noLoupe_%a.txt
 #SBATCH --array=1-5%5
 
 echo "**** Job starts ****"
