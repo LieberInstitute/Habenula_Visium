@@ -2,7 +2,6 @@ library(SpatialExperiment)
 library(here)
 library(tidyverse)
 library(sessioninfo)
-library(HDF5Array)
 library(Matrix)
 library(nnSVG)
 
