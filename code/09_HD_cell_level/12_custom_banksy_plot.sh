@@ -4,8 +4,8 @@
 #SBATCH --job-name=12_custom_banksy_plot
 #SBATCH -c 1
 #SBATCH -t 1:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/probe_fix/logs/12_custom_banksy_plot.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/probe_fix/logs/12_custom_banksy_plot.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples/logs/12_custom_banksy_plot.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples/logs/12_custom_banksy_plot.txt
 
 set -e
 

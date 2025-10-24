@@ -16,7 +16,7 @@ all_region=(habenula thalamus)
 region=${all_region[$(( $SLURM_ARRAY_TASK_ID / 1 % 2 ))]}
 
 ## Explicitly pipe script output to a log
-log_path=../../processed-data/09_HD_cell_level/probe_fix/logs/15_crawdad_region_run_${sample_id}_${region}_${SLURM_ARRAY_TASK_ID}.txt
+log_path=../../processed-data/09_HD_cell_level/new_samples/logs/15_crawdad_region_run_${sample_id}_${region}_${SLURM_ARRAY_TASK_ID}.txt
 
 {
 set -e

@@ -4,8 +4,8 @@
 #SBATCH --job-name=02_build_spe_raw
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/probe_fix/logs/02_build_spe_raw.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/probe_fix/logs/02_build_spe_raw.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples/logs/02_build_spe_raw.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples/logs/02_build_spe_raw.txt
 
 set -e
 

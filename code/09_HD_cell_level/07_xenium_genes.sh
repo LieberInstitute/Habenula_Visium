@@ -4,8 +4,8 @@
 #SBATCH --job-name=07_xenium_genes
 #SBATCH -c 1
 #SBATCH -t 2:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/probe_fix/logs/07_xenium_genes.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/probe_fix/logs/07_xenium_genes.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples/logs/07_xenium_genes.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples/logs/07_xenium_genes.txt
 
 set -e
 

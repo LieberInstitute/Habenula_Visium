@@ -4,8 +4,8 @@
 #SBATCH --job-name=10_crawdad
 #SBATCH -c 4
 #SBATCH -t 2-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/probe_fix/logs/10_crawdad_%a.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/probe_fix/logs/10_crawdad_%a.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples/logs/10_crawdad_%a.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples/logs/10_crawdad_%a.txt
 #SBATCH --array=1-3%3
 
 set -e
