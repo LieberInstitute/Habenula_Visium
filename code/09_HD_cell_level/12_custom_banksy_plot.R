@@ -5,7 +5,6 @@
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
-library(HDF5Array)
 library(spatialLIBD)
 library(sessioninfo)
 
@@ -66,7 +65,7 @@ vis_banksy = function(spe, clustervar, colors, plot_path) {
 ################################################################################
 
 #   Load just the sample we're using to disambiguate
-spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_path)
 spe = spe[, spe$sample_id == sample_id]
 
 #   Merge in Banksy clusters to SPE

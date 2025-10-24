@@ -6,7 +6,6 @@ library(here)
 library(tidyverse)
 library(SpatialExperiment)
 library(spatialLIBD)
-library(HDF5Array)
 library(crawdad)
 library(rjson)
 library(sessioninfo)
@@ -35,7 +34,7 @@ habenula_anno_path = here(
     'habenula_shiny_annotations.csv.gz'
 )
 thalamus_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
     'thalamus_shiny_annotations.csv.gz'
 )
 cor_index = 13

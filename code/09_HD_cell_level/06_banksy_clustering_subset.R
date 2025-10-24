@@ -1,7 +1,6 @@
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
-library(HDF5Array)
 library(spatialLIBD)
 library(sessioninfo)
 library(Banksy)
@@ -13,19 +12,19 @@ lambda_neat = 'lambda0_2'
 res = c(seq_len(20) / 10, 4, 8)[as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))]
 res_neat = paste0('res', sub('\\.', '_', as.character(res)))
 
-spe_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix',
-    sprintf('spe_banksy_%s_subset', lambda_neat)
+spe_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples',
+    sprintf('spe_banksy_%s_subset.rds', lambda_neat)
 )
-spe_orig_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+spe_orig_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
 )
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', lambda_neat,
+    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', lambda_neat,
     sprintf('leiden_%s_subset.csv', res_neat)
 )
 plot_dir = here(
-    'plots', '09_HD_cell_level', 'probe_fix', 'banksy', lambda_neat,
+    'plots', '09_HD_cell_level', 'new_samples', 'banksy', lambda_neat,
     sprintf('leiden_%s', res_neat)
 )
 random_seed = 0
@@ -33,7 +32,7 @@ random_seed = 0
 dir.create(dirname(out_path), showWarnings = FALSE, recursive = TRUE)
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 
-spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_path)
 
 message(Sys.time(), ' | Performing clustering')
 spe = clusterBanksy(
@@ -50,7 +49,7 @@ rd_name = reducedDimNames(spe)[
 ]
 
 #   Fix spatial coordinates (unstagger) for plotting
-spe_orig = loadHDF5SummarizedExperiment(spe_orig_dir)
+spe_orig = readRDS(spe_orig_path)
 spatialCoords(spe) = spatialCoords(spe_orig[, spe$key])
 rm(spe_orig)
 gc()

@@ -4,18 +4,17 @@
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
-library(HDF5Array)
 library(spatialLIBD)
 library(sessioninfo)
 
-spe_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+spe_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
 )
 xenium_path = here(
     'processed-data', '09_HD_cell_level',
     'XeniumPrimeHuman5Kpan_tissue_pathways_metadata.csv'
 )
-plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'QC')
+plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'QC')
 
 ################################################################################
 #   Functions
@@ -58,7 +57,7 @@ get_exp_genes = function(spe, num_points = 200) {
 #   Main
 ################################################################################
 
-spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_path)
 
 xenium = read_csv(xenium_path)$gene_id
 stopifnot(length(xenium) == 5001)

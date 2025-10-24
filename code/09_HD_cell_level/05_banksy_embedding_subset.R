@@ -4,7 +4,6 @@
 
 library(here)
 library(SpatialExperiment)
-library(HDF5Array)
 library(sessioninfo)
 library(Banksy)
 library(harmony)
@@ -15,19 +14,19 @@ library(getopt)
 
 lambda = 0.2
 
-spe_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+spe_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
 )
-out_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix',
-    sprintf('spe_banksy_lambda%s_subset', sub('\\.', '_', as.character(lambda)))
+out_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples',
+    sprintf('spe_banksy_lambda%s_subset.rds', sub('\\.', '_', as.character(lambda)))
 )
 svg_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'nnSVG_out',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'nnSVG_out',
     'merged_SVGs.txt'
 )
 plot_dir = here(
-    'plots', '09_HD_cell_level', 'probe_fix', 'banksy',
+    'plots', '09_HD_cell_level', 'new_samples', 'banksy',
     paste0('lambda', sub('\\.', '_', as.character(lambda)))
 )
 good_samples = c(
@@ -44,7 +43,7 @@ set.seed(random_seed)
 #   of rows in a data table created internally. See
 #   https://github.com/prabhakarlab/Banksy/issues/38#issuecomment-2310220881 and
 #   https://github.com/prabhakarlab/Banksy_py/issues/12#issuecomment-2268114768
-spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_path)
 spe = spe[readLines(svg_path),]
 spe$exclude_overlapping = FALSE
 
@@ -188,8 +187,6 @@ print(p)
 dev.off()
 
 message(Sys.time(), ' | Saving full SPE object')
-saveHDF5SummarizedExperiment(
-    spe, dir = out_dir, replace = TRUE, as.sparse = TRUE
-)
+saveRDS(spe, file = out_path)
 
 session_info()

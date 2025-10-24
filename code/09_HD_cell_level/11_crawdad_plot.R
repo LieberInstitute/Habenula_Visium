@@ -2,7 +2,6 @@ library(here)
 library(tidyverse)
 library(crawdad)
 library(spatialLIBD)
-library(HDF5Array)
 library(scales)
 library(sessioninfo)
 
@@ -144,7 +143,7 @@ dev.off()
 #   Spatial distribution of particular cell types
 ################################################################################
 
-spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_path)
 spe = spe[, spe$sample_id %in% sample_ids]
 
 #   Compute a reference table matching clusters to fine cell types

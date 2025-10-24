@@ -21,11 +21,11 @@ message("Using the following parameters:")
 print(opt)
 
 in_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
     'input_cells.csv.gz'
 )
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
     'output', sprintf('%s_%s_results.csv', opt$sample_id, opt$region)
 )
 scales = c(100, 200, 500, 1000, 5000)

@@ -1,6 +1,5 @@
 library(sessioninfo)
 library(here)
-library(HDF5Array)
 library(SpatialExperiment)
 library(scran)
 library(scater)

@@ -2,7 +2,6 @@ library(here)
 library(tidyverse)
 library(crawdad)
 library(spatialLIBD)
-library(HDF5Array)
 library(scales)
 library(sessioninfo)
 
@@ -162,7 +161,7 @@ for (hb_subtype in c('MHb.2', 'LHb.7')) {
         ) |>
         select(key, cell_type)
 
-    spe = loadHDF5SummarizedExperiment(spe_dir)
+    spe = readRDS(spe_path)
     spe = spe[, spe$key %in% cell_df$key]
 
     spe$cell_type = tibble(key = spe$key) |>
