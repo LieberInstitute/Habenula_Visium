@@ -6,19 +6,19 @@ library(HDF5Array)
 library(scales)
 library(sessioninfo)
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 result_paths = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
     'output', '%s_%s_results.csv'
 )
 in_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
     'input_cells.csv.gz'
 )
-spe_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+spe_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
 )
-plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region')
+plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'crawdad', 'region')
 regions = c('habenula', 'thalamus')
 cell_type_colors = c(
     Astrocyte = "#2F97FF", placeholder = "#FFA239", Other = "#DFE1DD"
@@ -63,7 +63,8 @@ custom_dotplot = function(result_df, z_sig, cell_types, filename) {
 #   CRAWDAD-specific plots
 ################################################################################
 
-sample_ids = readLines(sample_id_path)[1:3]
+sample_info = read_csv(sample_info_path)
+sample_ids = sample_info$sample_id[1:3]
 
 result_list = list()
 for (sample_id in sample_ids) {

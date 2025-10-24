@@ -9,11 +9,11 @@ library(scran)
 library(sessioninfo)
 library(spatialLIBD)
 
-spe_raw_dir = here('processed-data', '09_HD_cell_level', 'probe_fix', 'spe_raw')
-spe_norm_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+spe_raw_path = here('processed-data', '09_HD_cell_level', 'new_samples', 'spe_raw.rds')
+spe_norm_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
 )
-plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'QC')
+plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'QC')
 min_umi_cutoff = 10
 H1_MVPY9BW_A1_8433_artifact = 34223
 H1_XQQD7C7_A1_8518_horizontal_artifact = 28588
@@ -69,7 +69,7 @@ spatial_qc_plots = function(spe, plot_dir) {
 ################################################################################
 
 message(Sys.time(), " | Loading and computing QC metrics")
-spe = loadHDF5SummarizedExperiment(spe_raw_dir)
+spe = readRDS(spe_raw_path)
 spe$exclude_overlapping = FALSE
 
 #   Calculate a version of 'sum_umi' and 'sum_gene' that's capped at the
@@ -153,8 +153,6 @@ spatial_qc_plots(spe, file.path(plot_dir, 'after'))
 
 #   Save normalized object
 message(Sys.time(), " | Saving normalized and QCd SPE")
-spe <- saveHDF5SummarizedExperiment(
-    spe, dir = spe_norm_dir, replace = TRUE, as.sparse = TRUE
-)
+saveRDS(spe, spe_norm_path)
 
 session_info()

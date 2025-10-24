@@ -8,30 +8,31 @@ import session_info
 import bin2cell as b2c
 import datetime
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-with open(sample_id_path, 'r') as f:
-    all_samples = f.read().splitlines()
-sample_id = all_samples[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
+import pandas as pd
+
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+sample_info = pd.read_csv(sample_info_path)
+task_id = int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1
+sample_id = sample_info.iloc[task_id]['sample_id']
+spaceranger_dir = sample_info.iloc[task_id]['spaceranger_dir']
 
 stardist_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'stardist'
+    'processed-data', '09_HD_cell_level', 'new_samples', 'stardist'
 )
 final_out_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', f'{sample_id}.h5ad'
+    'processed-data', '09_HD_cell_level', 'new_samples', f'{sample_id}.h5ad'
 )
 pre_out_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix',
+    'processed-data', '09_HD_cell_level', 'new_samples',
     f'{sample_id}_pre_bin2cell.h5ad'
 )
 sr_dir = here(
-    'processed-data', '01_spaceranger', 'probe_fix', sample_id, 'outs',
-    'binned_outputs', 'square_002um'
+    spaceranger_dir, 'outs', 'binned_outputs', 'square_002um'
 )
 sr_spatial_dir = here(
-    'processed-data', '01_spaceranger', 'probe_fix', sample_id, 'outs',
-    'spatial'
+    spaceranger_dir, 'outs', 'spatial'
 )
-plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'bin2cell')
+plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'bin2cell')
 raw_image_path = here('raw-data', 'images', 'vis-hd', f'{sample_id}.tif')
 mpp = 0.3
 

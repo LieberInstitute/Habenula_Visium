@@ -10,27 +10,27 @@ library(spatialLIBD)
 library(sessioninfo)
 
 sample_id = "H1-MVPY9BW_A1_8433"
-spe_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+spe_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
 )
 cluster_1_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
     'leiden_res1_4_subset.csv'
 )
 cluster_3_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
     'leiden_res1_7_subset.csv'
 )
 plot_1_path = here(
-    'plots', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
+    'plots', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
     'leiden_res1_4', sprintf('clusters_%s_subset_custom_1.png', sample_id)
 )
 plot_2_path = here(
-    'plots', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
+    'plots', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
     'leiden_res1_4', sprintf('clusters_%s_subset_custom_2.png', sample_id)
 )
 plot_3_path = here(
-    'plots', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
+    'plots', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
     'leiden_res1_7', sprintf('clusters_%s_subset_custom_1.png', sample_id)
 )
 cluster_colors_1 = c(

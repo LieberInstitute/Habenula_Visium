@@ -13,25 +13,21 @@ library(crawdad)
 library(rjson)
 library(sessioninfo)
 
-spe_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+spe_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
 )
 banksy_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
     'leiden_res1_3_subset.csv'
 )
 cor_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'registration_banksy',
     'lambda0_2', 'cor_vs_snRNAseq_fine_subset.rds'
 )
-scalefactors_path = here(
-    'processed-data', '01_spaceranger', 'probe_fix', '%s', 'outs',
-    'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
-)
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'crawdad')
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'crawdad')
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad',
     'combined_results.csv'
 )
 scales = c(100, 200, 500, 1000, 5000)
@@ -77,9 +73,10 @@ custom_dotplot = function(result_df, z_sig, filename, color_var = 'Z') {
 #   Main
 ################################################################################
 
-sample_ids = readLines(sample_id_path)[1:3]
+sample_info = read_csv(sample_info_path)
+sample_ids = sample_info$sample_id[1:3]
 
-spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_path)
 
 #   Compute a reference table matching clusters to fine cell types
 anno_df = readRDS(cor_path)[[cor_index]] |>
@@ -96,9 +93,11 @@ cell_df_list = list()
 for (sample_id in sample_ids) {
     #   Ultimately, we'll be converting spatial coordinates to units of microns,
     #   which is more interpretable than pixels
-    micron_per_px = fromJSON(
-            file = sprintf(scalefactors_path, sample_id)
-        )[['microns_per_pixel']]
+    spaceranger_dir = sample_info$spaceranger_dir[sample_info$sample_id == sample_id]
+    scalefactors_path = here(
+        spaceranger_dir, 'outs', 'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
+    )
+    micron_per_px = fromJSON(file = scalefactors_path)[['microns_per_pixel']]
 
     small_spe = spe[, spe$sample_id == sample_id]
 

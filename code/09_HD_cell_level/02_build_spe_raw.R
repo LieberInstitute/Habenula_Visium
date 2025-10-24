@@ -10,15 +10,16 @@ library(BiocParallel)
 library(scran)
 library(sessioninfo)
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-sample_ids = readLines(sample_id_path)
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+sample_info = read_csv(sample_info_path)
+sample_ids = sample_info$sample_id
 
 ad_in_paths = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix',
+    'processed-data', '09_HD_cell_level', 'new_samples',
     sprintf('%s.h5ad', sample_ids)
 )
-spe_bin_dir = here('processed-data', '10_HD_bin_level', 'probe_fix', 'spe_raw')
-spe_raw_dir = here('processed-data', '09_HD_cell_level', 'probe_fix', 'spe_raw')
+spe_bin_path = here('processed-data', '10_HD_bin_level', 'new_samples', 'spe_raw.rds')
+spe_raw_path = here('processed-data', '09_HD_cell_level', 'new_samples', 'spe_raw.rds')
 
 ################################################################################
 #   Functions
@@ -102,7 +103,7 @@ anndata_to_spe = function(sample_id, ad_in_path, spe_bin) {
 #   Main
 ################################################################################
 
-spe_bin = loadHDF5SummarizedExperiment(spe_bin_dir)
+spe_bin = readRDS(spe_bin_path)
 stopifnot(setequal(sample_ids, unique(spe_bin$sample_id)))
 
 #   Individually build single-sample SPEs from the individual AnnDatas, then
@@ -122,9 +123,7 @@ spe = do.call(cbind, spe_list)
 
 #   Save
 message(Sys.time(), " - Saving raw SPE")
-spe <- saveHDF5SummarizedExperiment(
-    spe, dir = spe_raw_dir, replace = TRUE, as.sparse = TRUE
-)
+saveRDS(spe, spe_raw_path)
 
 message("Memory usage:")
 gc()

@@ -6,26 +6,26 @@ library(HDF5Array)
 library(scales)
 library(sessioninfo)
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 result_paths = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad',
     '%s_results.csv'
 )
-spe_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+spe_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
 )
 banksy_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
     'leiden_res1_3_subset.csv'
 )
 cor_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'registration_banksy',
     'lambda0_2', 'cor_vs_snRNAseq_fine_subset.rds'
 )
 cell_type_colors = c(
     Astrocyte = "#2F97FF", MHb.2 = "#FFA239", Other = "#DFE1DD"
 )
-plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'crawdad')
+plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'crawdad')
 cor_index = 13
 
 dir.create(file.path(plot_dir, 'spatial_plots'), showWarnings = FALSE)
@@ -65,7 +65,8 @@ custom_dotplot = function(result_df, z_sig, filename) {
 #   CRAWDAD-specific plots
 ################################################################################
 
-sample_ids = readLines(sample_id_path)[1:3]
+sample_info = read_csv(sample_info_path)
+sample_ids = sample_info$sample_id[1:3]
 
 result_list = list()
 for (sample_id in sample_ids) {

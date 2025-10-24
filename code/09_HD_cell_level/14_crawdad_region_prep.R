@@ -11,31 +11,27 @@ library(crawdad)
 library(rjson)
 library(sessioninfo)
 
-spe_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+spe_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
 )
 plot_dir = here(
-    'plots', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region', 'region_anno'
+    'plots', '09_HD_cell_level', 'new_samples', 'crawdad', 'region', 'region_anno'
 )
 banksy_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
     'leiden_res1_3_subset.csv'
 )
 cor_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'registration_banksy',
     'lambda0_2', 'cor_vs_snRNAseq_fine_subset.rds'
 )
-scalefactors_path = here(
-    'processed-data', '01_spaceranger', 'probe_fix', '%s', 'outs',
-    'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
-)
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
     'input_cells.csv.gz'
 )
 habenula_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
     'habenula_shiny_annotations.csv.gz'
 )
 thalamus_anno_path = here(
@@ -50,18 +46,23 @@ region_colors = c(
 dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(dirname(out_path), showWarnings = FALSE)
 
-sample_ids = readLines(sample_id_path)[1:3]
+sample_info = read_csv(sample_info_path)
+sample_ids = sample_info$sample_id[1:3]
 
-spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_path)
 spe = spe[, spe$sample_id %in% sample_ids]
 
 #   Ultimately, we'll be converting spatial coordinates to units of microns,
 #   which is more interpretable than pixels
 micron_per_px = c()
 for (sample_id in sample_ids) {
+    spaceranger_dir = sample_info$spaceranger_dir[sample_info$sample_id == sample_id]
+    scalefactors_path = here(
+        spaceranger_dir, 'outs', 'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
+    )
     micron_per_px = c(
         micron_per_px,
-        fromJSON(file = sprintf(scalefactors_path, sample_id))[['microns_per_pixel']]
+        fromJSON(file = scalefactors_path)[['microns_per_pixel']]
     )
 }
 scale_df = tibble(

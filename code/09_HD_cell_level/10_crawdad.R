@@ -7,27 +7,23 @@ library(crawdad)
 library(rjson)
 library(sessioninfo)
 
-spe_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+spe_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
 )
 banksy_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
     'leiden_res1_3_subset.csv'
 )
 cor_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'registration_banksy',
     'lambda0_2', 'cor_vs_snRNAseq_fine_subset.rds'
 )
-scalefactors_path = here(
-    'processed-data', '01_spaceranger', 'probe_fix', '%s', 'outs',
-    'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
-)
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 plot_path = here(
-    'plots', '09_HD_cell_level', 'probe_fix', 'crawdad', 'dot_plot_%s.pdf'
+    'plots', '09_HD_cell_level', 'new_samples', 'crawdad', 'dot_plot_%s.pdf'
 )
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad',
     '%s_results.csv'
 )
 scales = c(100, 200, 500, 1000, 5000)
@@ -38,16 +34,20 @@ num_cores = as.integer(Sys.getenv("SLURM_CPUS_ON_NODE"))
 dir.create(dirname(plot_path), showWarnings = FALSE)
 dir.create(dirname(out_path), showWarnings = FALSE)
 
-sample_id = readLines(sample_id_path)[
-    as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
-]
+sample_info = read_csv(sample_info_path)
+task_id = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
+sample_id = sample_info$sample_id[task_id]
+spaceranger_dir = sample_info$spaceranger_dir[task_id]
 
-spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_path)
 spe = spe[, spe$sample_id == sample_id]
 
 #   Ultimately, we'll be converting spatial coordinates to units of microns,
 #   which is more interpretable than pixels
-micron_per_px = fromJSON(file = sprintf(scalefactors_path, sample_id))[['microns_per_pixel']]
+scalefactors_path = here(
+    spaceranger_dir, 'outs', 'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
+)
+micron_per_px = fromJSON(file = scalefactors_path)[['microns_per_pixel']]
 
 #   Compute a reference table matching clusters to fine cell types
 anno_df = readRDS(cor_path)[[cor_index]] |>
