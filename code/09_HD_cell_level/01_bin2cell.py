@@ -186,9 +186,8 @@ b2c.salvage_secondary_labels(
 #   Plot primary and secondary cells
 #-------------------------------------------------------------------------------
 
-#   Plot 2 different subregions to get a representative idea
-for i in range(2):
-    #   Region for plots
+#   Plot 3 different subregions to get a representative idea
+for i in range(3):
     #   Region for plots
     mask = (
         (adata.obs['array_row'] >= 1000 + 500 * i) & 
@@ -200,7 +199,7 @@ for i in range(2):
     #   If the region has no cells, try to iterate over other regions until
     #   cells are found
     offset = 150
-    while not any(mask) and offset < 1000:
+    while ((adata[mask].obs['labels_he'] == 0).sum() < 10) and (offset < 1000):
         mask = (
             (adata.obs['array_row'] >= 1000 + 500 * i + offset) & 
             (adata.obs['array_row'] <= 1050 + 500 * i + offset) & 
@@ -208,7 +207,7 @@ for i in range(2):
             (adata.obs['array_col'] <= 1050 + 500 * i + offset)
         )
         offset += 150
-    assert any(mask), "Failed to find a region with cells for plotting"
+    assert (adata[mask].obs['labels_he'] == 0).sum() >= 10, "Failed to find a region with cells for plotting"
     
     #   Plot union of cell labels
     bdata = adata[mask]
