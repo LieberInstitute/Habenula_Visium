@@ -1,7 +1,3 @@
-#   In contrast to the other 05_banksy_embedding.R script, here we try running
-#   Banksy on just the samples with good H&E images, with the hypothesis that
-#   clusters will refer more closely to cell types without the noisy samples
-
 library(here)
 library(SpatialExperiment)
 library(sessioninfo)
@@ -25,12 +21,10 @@ svg_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples', 'nnSVG_out',
     'merged_SVGs.txt'
 )
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 plot_dir = here(
     'plots', '09_HD_cell_level', 'new_samples', 'banksy',
     paste0('lambda', sub('\\.', '_', as.character(lambda)))
-)
-good_samples = c(
-    "H1-W369TJK_D1_9090", "H1-MVPY9BW_A1_8433", "H1-MVPY9BW_D1_8667"
 )
 
 random_seed = 0
@@ -46,10 +40,6 @@ set.seed(random_seed)
 spe = readRDS(spe_path)
 spe = spe[readLines(svg_path),]
 spe$exclude_overlapping = FALSE
-
-#   Subset to samples with good H&E images (i.e. where we can trust the cell
-#   segmentations)
-spe = spe[, spe$sample_id %in% good_samples]
 
 ################################################################################
 #   Stagger spatial coordinates to fit each sample in a unique range
@@ -74,7 +64,7 @@ x_size = (1 + buffer_prop) * x_size
 spatialCoords(spe) = coords |>
     group_by(sample_id) |>
     mutate(
-        sdimx = sdimx - min(sdimx) + x_size * (match(cur_group()$sample_id, good_samples) - 1),
+        sdimx = sdimx - min(sdimx) + x_size * (match(cur_group()$sample_id, unique(spe$sample_id)) - 1),
         sdimy = sdimy - min(sdimy)
     ) |>
     ungroup() |>
@@ -123,12 +113,16 @@ spe = runBanksyUMAP(
 #   Explore effect of Harmony on UMAP
 ################################################################################
 
-spe$lot = ifelse(
-    spe$sample_id == 'H1-W369TJK_D1_9090', 'Lot 1', 'Lot 2'
+sample_info = read_csv(sample_info_path, show_col_types = FALSE)
+spe$batch_num = paste(
+    'Batch',
+    sample_info$batch_num[
+        match(spe$sample_id, sample_info$sample_id)
+    ]
 )
 
-#   All samples together, colored by sample ID and lot (separate plots)
-for (color_var in c('sample_id', 'lot')) {
+#   All samples together, colored by sample ID and batch number (separate plots)
+for (color_var in c('sample_id', 'batch_num')) {
     p = plot_grid(
         plotReducedDim(
                 spe, sprintf("UMAP_M1_lam%s", lambda), point_size = 0.6,
@@ -149,7 +143,7 @@ for (color_var in c('sample_id', 'lot')) {
     )
     png(
         file.path(
-            plot_dir, sprintf('harmony_umap_%s_together_subset.png', color_var)
+            plot_dir, sprintf('harmony_umap_%s_together.png', color_var)
         ),
         width = 1200, height = 600
     )
@@ -180,7 +174,7 @@ p = plot_grid(
         nrow = 2
 )
 png(
-    file.path(plot_dir, 'harmony_umap_apart_subset.png'),
+    file.path(plot_dir, 'harmony_umap_apart.png'),
     width = 1500, height = 750
 )
 print(p)
