@@ -4,8 +4,8 @@
 #SBATCH --job-name=03_ficture_plot
 #SBATCH -c 1
 #SBATCH -t 1:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/03_ficture_plot_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/03_ficture_plot_%a.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/03_ficture_plot_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/03_ficture_plot_%a.txt
 #SBATCH --array=4-40:2,70,100%15
 
 #   Default plots produced by 'ficture run_together' have too much empty (black)
@@ -27,8 +27,8 @@ echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 module load visium_hd/1.0
 
 repo_dir=$(git rev-parse --show-toplevel)
-out_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_outputs/normalized/k_${SLURM_ARRAY_TASK_ID}
-plot_dir=$repo_dir/plots/10_HD_bin_level/probe_fix/ficture_harmony/normalized
+out_dir=$repo_dir/processed-data/10_HD_bin_level/new_samples/ficture_harmony/ficture_outputs/normalized/k_${SLURM_ARRAY_TASK_ID}
+plot_dir=$repo_dir/plots/10_HD_bin_level/new_samples/ficture_harmony/normalized
 
 mkdir -p $plot_dir
 

@@ -6,14 +6,13 @@ library(tidyverse)
 library(scran)
 library(spatialLIBD)
 library(sessioninfo)
-library(HDF5Array)
 library(Matrix)
 
 #   Get k from array task ID
 k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 
 #spe <- readRDS("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture_harmony/spe_raw.rds")
-spe <- readRDS("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/spe_raw.rds")
+spe <- readRDS("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/ficture_harmony/spe_raw.rds")
 
 original_row_names <- rownames(spe)
 original_col_names <- colnames(spe)
@@ -99,7 +98,7 @@ if (length(negative_df_list) > 0) {
 message(Sys.time(), ' | Merging all chunks...')
 final_result <- do.call(rbind, result_list)
 #saveRDS(final_result,paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/ficture_harmony/spe/count_cleaned_",k,".rds"))
-saveRDS(final_result,paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/spe/count_cleaned_",k,".rds"))
+saveRDS(final_result,paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/ficture_harmony/spe/count_cleaned_",k,".rds"))
 
 session_info()
 

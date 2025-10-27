@@ -4,8 +4,8 @@
 #SBATCH --job-name=08_batcheffect_com
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/08_batcheffect_com.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/08_batcheffect_com.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/08_batcheffect_com.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/08_batcheffect_com.txt
 
 set -e
 
@@ -20,7 +20,7 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.4.x
+module load conda_R/4.5
 
 ## List current modules for reproducibility
 module list

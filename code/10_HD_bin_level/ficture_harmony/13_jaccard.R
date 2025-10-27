@@ -5,23 +5,22 @@
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
-library(HDF5Array)
 library(sessioninfo)
 library(data.table)
 
-spe_cleany_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/spe/y_clean_spe.rds"
-# spe_normalized_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/probe_fix/spe_norm"
+spe_cleany_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/ficture_harmony/spe/y_clean_spe.rds"
+# spe_normalized_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/spe_norm"
 
 cluster_cleany_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'bin_level_clusters_batch.csv.gz'
 )
 cluster_normalized_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'bin_level_clusters_normalized.csv.gz'
 )
 
-plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/plots/10_HD_bin_level/probe_fix/ficture_harmony"
+plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/plots/10_HD_bin_level/new_samples/ficture_harmony"
 
 get_coord_df <- function(spe) {
   tibble(

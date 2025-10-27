@@ -2,7 +2,6 @@
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
-library(HDF5Array)
 library(sessioninfo)
 library(spatialLIBD)
 library(data.table)
@@ -18,12 +17,12 @@ ref_name = ref_names[task_id]
 
 
 cleany_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'registration',"sum_score","cleany", sprintf('heatmap_score_%s.csv', ref_name))
 cleany = read.csv(cleany_path)
 
 normalized_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'registration',"sum_score","normalized", sprintf('heatmap_score_%s.csv', ref_name))
 
 normalized = read.csv(normalized_path)
@@ -39,7 +38,7 @@ merged_sorted$normalized_rank<-order(-merged_sorted$score_total_scaled_normalize
 cor=cor(merged_sorted$cleany_rank,merged_sorted$normalized_rank)
 
 com_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'registration',"sum_score","cleany_normalized", sprintf('heatmap_score_%s_cor%s.csv', ref_name, round(cor,2)))
 
 

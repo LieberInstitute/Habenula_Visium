@@ -6,12 +6,12 @@ library(ggpubr)
 
 # Broad plot
 plot_path = here(
-    'plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'plots', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'summary_score_4-metric_lineplot_broad.png'
 )
 summary_score_broad_batch = read_csv(
     here(
-        'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+        'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
         'registration','sum_score', 'cleany',
         'heatmap_score_snRNAseq_broad.csv'
     ),
@@ -39,7 +39,7 @@ summary_score_broad_batch <- summary_score_broad_batch %>%
 
 summary_score_broad_libsize = read_csv(
     here(
-        'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+        'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
         'registration','sum_score', 'normalized',
         'heatmap_score_snRNAseq_broad.csv'
     ),
@@ -91,13 +91,13 @@ dev.off()
 
  # Fine plot
  plot_path = here(
-    'plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'plots', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'summary_score_4-metric_lineplot_fine.png'
 )
 
 summary_score_fine_batch = read_csv(
     here(
-        'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+        'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
         'registration','sum_score', 'cleany',
         'heatmap_score_snRNAseq_fine.csv'
     ),
@@ -125,7 +125,7 @@ summary_score_fine_batch <- summary_score_fine_batch %>%
 
 summary_score_fine_libsize = read_csv(
     here(
-        'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+        'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
         'registration','sum_score', 'normalized',
         'heatmap_score_snRNAseq_fine.csv'
     ),

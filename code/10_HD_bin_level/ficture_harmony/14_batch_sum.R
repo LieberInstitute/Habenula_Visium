@@ -1,7 +1,6 @@
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
-library(HDF5Array)
 library(sessioninfo)
 library(spatialLIBD)
 library(data.table)
@@ -16,7 +15,7 @@ task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 ref_name = ref_names[task_id]
 
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'registration',"cor_rds","cleaning_y",sprintf('cor_vs_%s.rds', ref_name)
 )
 this_cor = readRDS(out_path)
@@ -117,7 +116,7 @@ cell_type_summary$score_total_scaled <- minmax_scale(cell_type_summary$score_tot
 cell_type_summary <- cell_type_summary[order(-cell_type_summary$score_total), ]
 
 write_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'registration',"sum_score","cleany", sprintf('heatmap_score_%s.csv', ref_name))
 
 write.csv(as.data.frame(cell_type_summary),write_path, row.names = FALSE)
@@ -161,7 +160,7 @@ cell_type_summary$score_total_scaled <- minmax_scale(cell_type_summary$score_tot
 cell_type_summary <- cell_type_summary[order(-cell_type_summary$score_total), ]
 
 write_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'registration',"sum_score","cleany", sprintf('heatmap_score_%s.csv', ref_name))
 
 write.csv(as.data.frame(cell_type_summary),write_path, row.names = FALSE)

@@ -4,8 +4,8 @@
 #SBATCH --job-name=09_get_ficture_clusters
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/09_get_ficture_clusters_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/09_get_ficture_clusters_%a.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/09_get_ficture_clusters_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/09_get_ficture_clusters_%a.txt
 #SBATCH --array=3-40,70,100%10
 
 echo "**** Job starts ****"
@@ -23,8 +23,8 @@ ml spatula/f0e9936
 a=$SLURM_ARRAY_TASK_ID
 #rerun the join-pixel-tsv
 repo_dir=/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium
-out_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_outputs/cleany/k_${a}/analysis/nF${a}.d_12
-in_tsv=$repo_dir/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_inputs/cleany/input.tsv.gz
+out_dir=$repo_dir/processed-data/10_HD_bin_level/new_samples/ficture_harmony/ficture_outputs/cleany/k_${a}/analysis/nF${a}.d_12
+in_tsv=$repo_dir/processed-data/10_HD_bin_level/new_samples/ficture_harmony/ficture_inputs/cleany/input.tsv.gz
 
 #   Sort FICTURE output by major axis
 (gzip -cd $out_dir/nF${a}.d_12.decode.prj_12.r_4_5.pixel.sorted.tsv.gz \

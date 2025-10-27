@@ -9,16 +9,16 @@ library(SpatialExperiment)
 library(sessioninfo)
 
 ficture_input_paths = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'ficture_outputs', 'cleany', 'k_%d', 'analysis', 'nF%d.d_12',
     'transcripts_ficture_joined.tsv.gz'
 )
 spe_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony', 'spe',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony', 'spe',
     'y_clean_spe.rds'
 )
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'bin_level_clusters_batch.csv.gz'
 )
 k_values = c(seq(3, 40), 70, 100)

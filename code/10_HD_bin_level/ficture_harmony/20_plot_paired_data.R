@@ -8,13 +8,13 @@ library(ggpubr)
 
 
 plot_path = here(
-    'plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'plots', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'summary_score_4-metric_paired_plot.png'
 )
 
 summary_score_fine_batch = read_csv(
     here(
-        'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+        'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
         'registration','sum_score', 'cleany_normalized',
         'heatmap_score_snRNAseq_fine_cor0.37.csv'
     ),

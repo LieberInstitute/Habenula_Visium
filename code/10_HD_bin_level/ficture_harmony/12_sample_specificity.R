@@ -7,18 +7,18 @@ library(spatialLIBD)
 library(sessioninfo)
 
 ficture_cluster_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'bin_level_clusters_normalized.csv.gz'
 )
 ficture_cleany_cluster_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'bin_level_clusters_batch.csv.gz'
 )
 banksy_cluster_paths = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', '%s',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', '%s',
     'leiden_res%s.csv'
 )
-plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony')
+plot_dir = here('plots', '10_HD_bin_level', 'new_samples', 'ficture_harmony')
 
 all_banksy_res = c(seq_len(20) / 10, 4, 8)
 all_banksy_lambda = c(0.2, 0.8)

@@ -17,12 +17,12 @@ axis.title = element_text(size = 14, face = "bold"), axis.line = element_line(li
 # Panel b: Summary score line plot
     # Broad plot
 plot_path = here(
-    'plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'plots', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'summary_score_line_plot.png'
 )
 summary_score_broad_batch = read_csv(
     here(
-        'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+        'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
         'registration','sum_score', 'cleany',
         'heatmap_score_snRNAseq_broad.csv'
     ),
@@ -30,7 +30,7 @@ summary_score_broad_batch = read_csv(
 )
 summary_score_broad_libsize = read_csv(
     here(
-        'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+        'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
         'registration','sum_score', 'normalized',
         'heatmap_score_snRNAseq_broad.csv'
     ),
@@ -55,7 +55,7 @@ summary_score_broad <- summary_score_broad_batch %>%
 # Read the fine summary score
 summary_score_fine_batch = read_csv(
     here(
-        'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+        'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
         'registration','sum_score', 'cleany',
         'heatmap_score_snRNAseq_fine.csv'
     ),
@@ -63,7 +63,7 @@ summary_score_fine_batch = read_csv(
 )
 summary_score_fine_libsize = read_csv(
     here(
-        'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+        'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
         'registration','sum_score', 'normalized',
         'heatmap_score_snRNAseq_fine.csv'
     ),

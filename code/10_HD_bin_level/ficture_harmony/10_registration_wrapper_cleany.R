@@ -1,7 +1,6 @@
 #   Run registration_wrapper() on bin-level FICTURE clusters
 library(here)
 library(spatialLIBD)
-library(HDF5Array)
 library(sessioninfo)
 library(tidyverse)
 library(rtracklayer)
@@ -12,19 +11,19 @@ options(stringsAsFactors = TRUE)
 k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 
 spe_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony','spe',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony','spe',
     'y_clean_spe.rds'
 )
 cluster_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'bin_level_clusters_batch.csv.gz'
 )
 pseudo_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'registration', 'pseudobulk_spe', 'cleaning_y', sprintf('%d.rds', k)
 )
 model_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'registration', 'modeling_results', 'cleaning_y', sprintf('%d.rds', k)
 )
 gtf_path = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2020-A/genes/genes.gtf'

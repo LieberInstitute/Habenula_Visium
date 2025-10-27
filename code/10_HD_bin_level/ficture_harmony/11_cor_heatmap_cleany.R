@@ -1,17 +1,16 @@
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
-library(HDF5Array)
 library(sessioninfo)
 library(spatialLIBD)
 
 model_paths = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'registration', 'modeling_results', 'cleaning_y',
     sprintf('%d.rds', c(seq(3, 40), 70, 100))
 )
 plot_dir = here(
-    'plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony', 'registration'
+    'plots', '10_HD_bin_level', 'new_samples', 'ficture_harmony', 'registration'
 )
 
 #   List all paths and names for reference data
@@ -47,7 +46,7 @@ ref_path = ref_paths[task_id]
 ref_name = ref_names[task_id]
 
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'registration', 'cor_rds', 'cleaning_y', sprintf('cor_vs_%s.rds', ref_name)
 )
 

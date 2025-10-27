@@ -6,7 +6,6 @@ library(tidyverse)
 library(scran)
 library(spatialLIBD)
 library(sessioninfo)
-library(HDF5Array)
 
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 sample_info = read_csv(sample_info_path, show_col_types = FALSE)
@@ -23,7 +22,7 @@ sr_out_dirs = here(
 #   immediate parent to 'spatial' directory and other outputs (create a symlink
 #   named 'outs'). Note we already handled the other required workaround: create
 #   a tissue_positions.csv file (not parquet format)
-temp_sr_dirs = file.path(tempdir(), sample_ids, 'outs')
+temp_sr_dirs = file.path(tempdir(), sample_info$sample_id, 'outs')
 for (this_dir in temp_sr_dirs) {
     dir.create(dirname(this_dir))
 }
@@ -35,7 +34,7 @@ file.symlink(sr_out_dirs, temp_sr_dirs) |>
 message(Sys.time(), ' | Building SpatialExperiment...')
 spe <- read10xVisium(
     samples = temp_sr_dirs,
-    sample_id = sample_ids,
+    sample_id = sample_info$sample_id,
     type = "sparse",
     data = "raw",
     images = "lowres",
@@ -48,9 +47,9 @@ spe <- read10xVisium(
 #   interactive test, I showed that the same tissue regions are dropped at 2um
 #   when array coordinates are multiplied by 4 relative to 8um
 message(Sys.time(), ' | Filtering bins according to 8um bin-level QC...')
-spe = spe[, (spe$sample_id != 'H1-MVPY9BW_A1_8433') | (spe$array_col <= 793 * 4)]
-spe = spe[, (spe$sample_id != 'H1-XQQD7C7_A1_8518') | (spe$array_row <= 764 * 4)]
-spe = spe[, (spe$sample_id != 'H1-XQQD7C7_A1_8518') | (spe$array_col > 142 * 4)]
+spe = spe[
+    , (spe$sample_id != 'H1-MVPY9BW_A1_8433') | (spe$array_col <= 793 * 4)
+]
 
 message(Sys.time(), " | Saving raw SPE")
 saveRDS(spe, spe_out_path)

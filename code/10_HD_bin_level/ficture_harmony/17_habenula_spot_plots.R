@@ -3,19 +3,18 @@
   
 library(here)
 library(spatialLIBD)
-library(HDF5Array)
 library(sessioninfo)
 library(tidyverse)
 
-spe_dir = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony','spe','y_clean_spe.rds'
+spe_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony','spe','y_clean_spe.rds'
 )
 cluster_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
     'bin_level_clusters_batch.csv.gz'
 )
 plot_path = here(
-    'plots', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',"cleany",
+    'plots', '10_HD_bin_level', 'new_samples', 'ficture_harmony',"cleany",
     'habenula_spot_plot.png'
 )
 
@@ -24,7 +23,7 @@ habenula_clusters = c(2, 11)
 cluster_colors = c('2' = '#0150B8', '11' = '#C23853', 'Other' = '#ACB3B6')
 
 #   Load and subset to a good-looking sample
-spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_path)
 spe = spe[, spe$sample_id == sample_id]
 
 #   Add in cluster assignments to 'spe'

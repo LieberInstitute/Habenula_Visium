@@ -4,8 +4,8 @@
 #SBATCH --job-name=03_ficture_run
 #SBATCH -c 1
 #SBATCH -t 2-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/03_ficture_run_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/ficture_harmony/logs/03_ficture_run_%a.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/03_ficture_run_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/03_ficture_run_%a.txt
 #SBATCH --array=3-40,70,100%10
 
 #   The main step to run FICTURE on library-size normalized inputs
@@ -26,8 +26,8 @@ module load visium_hd/1.0
 
 #   Path definitions
 repo_dir=$(git rev-parse --show-toplevel)
-in_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_inputs/normalized
-out_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/ficture_harmony/ficture_outputs/normalized/k_${SLURM_ARRAY_TASK_ID}
+in_dir=$repo_dir/processed-data/10_HD_bin_level/new_samples/ficture_harmony/ficture_inputs/normalized
+out_dir=$repo_dir/processed-data/10_HD_bin_level/new_samples/ficture_harmony/ficture_outputs/normalized/k_${SLURM_ARRAY_TASK_ID}
 
 mkdir -p $out_dir
 
