@@ -15,7 +15,7 @@ spe_path = here(
 )
 out_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples',
-    sprintf('spe_banksy_lambda%s_subset.rds', sub('\\.', '_', as.character(lambda)))
+    sprintf('spe_banksy_lambda%s.rds', sub('\\.', '_', as.character(lambda)))
 )
 svg_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples', 'nnSVG_out',
@@ -97,7 +97,7 @@ spe = runBanksyUMAP(
 message(Sys.time(), " | Running Harmony...")
 reducedDims(spe)$PCA = reducedDims(spe)[[sprintf('PCA_M1_lam%s', lambda)]]
 reducedDims(spe)[[sprintf('PCA_M1_lam%s', lambda)]] = NULL
-pdf(file.path(plot_dir, "harmony_convergence_subset.pdf"))
+pdf(file.path(plot_dir, "harmony_convergence.pdf"))
 spe = RunHarmony(
     spe, group.by.vars = "sample_id", plot_convergence = TRUE
 )

@@ -96,8 +96,8 @@ job_id_4_3=$(sbatch --dependency=afterok:${job_id_4_2} --parsable 05_gather_vari
 
 #   Running Banksy
 cd $repo_dir/code/09_HD_cell_level
-job_id_4_4=$(sbatch --dependency=afterok:${job_id_4_3} --parsable 05_banksy_embedding_subset.sh)
-job_id_4_5=$(sbatch --dependency=afterok:${job_id_4_4} --parsable 06_banksy_clustering_subset.sh)
+job_id_4_4=$(sbatch --dependency=afterok:${job_id_4_3} --parsable 05_banksy_embedding.sh)
+job_id_4_5=$(sbatch --dependency=afterok:${job_id_4_4} --parsable 06_banksy_clustering.sh)
 
 #   Spatial registration
 cd $repo_dir/code/09_HD_cell_level/registration_banksy

@@ -14,14 +14,14 @@ res_neat = paste0('res', sub('\\.', '_', as.character(res)))
 
 spe_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples',
-    sprintf('spe_banksy_%s_subset.rds', lambda_neat)
+    sprintf('spe_banksy_%s.rds', lambda_neat)
 )
 spe_orig_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
 )
 out_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', lambda_neat,
-    sprintf('leiden_%s_subset.csv', res_neat)
+    sprintf('leiden_%s.csv', res_neat)
 )
 plot_dir = here(
     'plots', '09_HD_cell_level', 'new_samples', 'banksy', lambda_neat,
@@ -64,7 +64,7 @@ for (sample_id in unique(spe$sample_id)) {
             ) +
             guides(fill = guide_legend(override.aes = list(size = 8)))
         png(
-            file.path(plot_dir, sprintf('clusters_%s_subset.png', sample_id)),
+            file.path(plot_dir, sprintf('clusters_%s.png', sample_id)),
             width = 1500, height = 1500
         )
         print(p)
@@ -79,7 +79,7 @@ for (sample_id in unique(spe$sample_id)) {
         theme_bw(base_size = 20) +
         guides(color = guide_legend(override.aes = list(size = 4)))
     png(
-        file.path(plot_dir, sprintf('UMAP_%s_subset.png', sample_id)),
+        file.path(plot_dir, sprintf('UMAP_%s.png', sample_id)),
         width = 1500, height = 1500
     )
     print(p)

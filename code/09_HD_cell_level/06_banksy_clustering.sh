@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=20G
-#SBATCH --job-name=06_banksy_clustering_subset
+#SBATCH --job-name=06_banksy_clustering
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples/logs/06_banksy_clustering_subset_%a.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples/logs/06_banksy_clustering_subset_%a.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples/logs/06_banksy_clustering_%a.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples/logs/06_banksy_clustering_%a.txt
 #SBATCH --array=1-22%15
 
 set -e
@@ -26,7 +26,7 @@ module load conda_R/4.5
 ## List current modules for reproducibility
 module list
 
-Rscript 06_banksy_clustering_subset.R
+Rscript 06_banksy_clustering.R
 
 echo "**** Job ends ****"
 date
