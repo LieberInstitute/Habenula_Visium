@@ -111,6 +111,18 @@ colData(spe) |>
 spatial_qc_plots(spe, file.path(plot_dir, 'before'))
 
 ################################################################################
+#   Filter out problematic cells
+################################################################################
+
+#   Filter out the artifact in H1-MVPY9BW_A1_8433 using info gained in bin-level
+#   QC
+spe = spe[
+    ,
+    (spe$sample_id != 'H1-MVPY9BW_A1_8433') |
+    (spatialCoords(spe)[, 'pxl_col_in_fullres'] <= H1_MVPY9BW_A1_8433_artifact)
+]
+
+################################################################################
 #   Log normalize and perform basic filtering
 ################################################################################
 
@@ -124,18 +136,6 @@ spe <- spe[rowSums(assays(spe)$counts) > 0, spe$sum_umi >= min_umi_cutoff]
 message(Sys.time(), ' | Performing log normalization...')
 spe = computeLibraryFactors(spe)
 spe = logNormCounts(spe)
-
-################################################################################
-#   Filter out problematic cells
-################################################################################
-
-#   Filter out the artifact in H1-MVPY9BW_A1_8433 using info gained in bin-level
-#   QC
-spe = spe[
-    ,
-    (spe$sample_id != 'H1-MVPY9BW_A1_8433') |
-    (spatialCoords(spe)[, 'pxl_col_in_fullres'] <= H1_MVPY9BW_A1_8433_artifact)
-]
 
 spatial_qc_plots(spe, file.path(plot_dir, 'after'))
 
