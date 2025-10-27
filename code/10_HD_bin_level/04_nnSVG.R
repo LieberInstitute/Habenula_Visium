@@ -6,9 +6,10 @@ library(Matrix)
 library(nnSVG)
 
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
-sample_info = read_csv(sample_info_path)
+sample_info = read_csv(sample_info_path, show_col_types = FALSE)
 task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 sample_id = sample_info$sample_id[task_id]
+
 spe_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples', 'rasterized',
     sprintf('spe_%s_lowres.rds', sample_id)
@@ -38,7 +39,7 @@ message(Sys.time(), " | Filtering genes and spots")
 spe <- filter_genes(
     spe,
     filter_genes_ncounts = 3,
-    filter_genes_pcspots = 0.5,
+    filter_genes_pcspots = 5,
     filter_mito = TRUE
 )
 
