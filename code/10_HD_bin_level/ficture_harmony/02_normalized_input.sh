@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=64G
+#SBATCH --mem=128G
 #SBATCH --job-name=02_normalized_input
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
