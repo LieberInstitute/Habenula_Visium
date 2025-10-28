@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../processed-data/09_HD_cell_level/new_samples/logs/06_banksy_clustering_%a.txt
 #SBATCH -e ../../processed-data/09_HD_cell_level/new_samples/logs/06_banksy_clustering_%a.txt
-#SBATCH --array=1-22%15
+#SBATCH --array=1-22%10
 
 set -e
 

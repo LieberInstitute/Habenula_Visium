@@ -16,15 +16,15 @@ spe_dir = here(
 )
 cluster_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', lambda_neat,
-    sprintf('leiden_res%s_subset.csv', res_neat)
+    sprintf('leiden_res%s.csv', res_neat)
 )
 pseudo_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
-    'pseudobulk_spe', lambda_neat, sprintf('%s_subset.rds', res_neat)
+    'pseudobulk_spe', lambda_neat, sprintf('%s.rds', res_neat)
 )
 model_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
-    'modeling_results', lambda_neat, sprintf('%s_subset.rds', res_neat)
+    'modeling_results', lambda_neat, sprintf('%s.rds', res_neat)
 )
 good_samples = c(
     "H1-W369TJK_D1_9090", "H1-MVPY9BW_A1_8433", "H1-MVPY9BW_D1_8667"

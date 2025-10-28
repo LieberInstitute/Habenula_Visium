@@ -17,7 +17,7 @@ model_paths = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
     'modeling_results', lambda_neat,
     sprintf(
-        '%s_subset.rds',
+        '%s.rds',
         c(sub('\\.', '_', as.character(seq_len(20) / 10)), 4, 8)
     )
 )
@@ -56,7 +56,7 @@ ref_name = ref_names[array_task]
 
 out_path = here(
     'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
-    lambda_neat, sprintf('cor_vs_%s_subset.rds', ref_name)
+    lambda_neat, sprintf('cor_vs_%s.rds', ref_name)
 )
 
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)

@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=10G
-#SBATCH --job-name=02_cor_heatmap_subset
+#SBATCH --job-name=02_cor_heatmap
 #SBATCH -c 1
 #SBATCH -t 8:00:00
-#SBATCH -o ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/02_cor_heatmap_subset_%a.txt
-#SBATCH -e ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/02_cor_heatmap_subset_%a.txt
+#SBATCH -o ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/02_cor_heatmap_%a.txt
+#SBATCH -e ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/02_cor_heatmap_%a.txt
 #SBATCH --array=1-30%10
 
 set -e
@@ -26,7 +26,7 @@ module load conda_R/4.4.x
 ## List current modules for reproducibility
 module list
 
-Rscript 02_cor_heatmap_subset.R
+Rscript 02_cor_heatmap.R
 
 echo "**** Job ends ****"
 date

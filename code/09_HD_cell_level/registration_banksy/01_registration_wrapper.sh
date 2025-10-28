@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=20G
-#SBATCH --job-name=01_registration_wrapper_subset
+#SBATCH --job-name=01_registration_wrapper
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/01_registration_wrapper_subset_%a.txt
-#SBATCH -e ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/01_registration_wrapper_subset_%a.txt
+#SBATCH -o ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/01_registration_wrapper_%a.txt
+#SBATCH -e ../../../processed-data/09_HD_cell_level/probe_fix/registration_banksy/logs/01_registration_wrapper_%a.txt
 #SBATCH --array=1-22%15
 
 set -e
@@ -26,7 +26,7 @@ module load conda_R/4.4.x
 ## List current modules for reproducibility
 module list
 
-Rscript 01_registration_wrapper_subset.R
+Rscript 01_registration_wrapper.R
 
 echo "**** Job ends ****"
 date
