@@ -122,7 +122,8 @@ job_id_5_6=$(sbatch --dependency=afterok:${job_id_5_4} --parsable 15_1_LIANA+_ex
 job_id_5_7=$(sbatch --dependency=afterok:${job_id_5_5},${job_id_5_6} --parsable 16_LIANA+_cell_multidonor.sh)
 job_id_5_8=$(sbatch --dependency=afterok:${job_id_5_7} --parsable 16_LIANA+_cell_multidonor_extracell.sh)
 job_id_5_9=$(sbatch --dependency=afterok:${job_id_5_8} --parsable 17_LIANA+_cell_type_spcific.sh)
-job_id_5_10=$(sbatch --dependency=afterok:${job_id_5_9} --parsable 19_GO_enrichment.sh)
+job_id_5_10=$(sbatch --dependency=afterok:${job_id_5_9} --parsable 18_LIANA+_NMF.sh)
+job_id_5_11=$(sbatch --dependency=afterok:${job_id_5_10} --parsable 19_GO_enrichment.sh)
 
 echo "**** Job ends ****"
 date

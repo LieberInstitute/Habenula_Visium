@@ -17,15 +17,28 @@ import session_info
 from plotnine import *
 import anndata as ad
 
+task_id = int(os.getenv('SLURM_ARRAY_TASK_ID'))
+
 #   Read input files
 in_dir = here(
     'processed-data', '10_HD_bin_level', 'LIANA'
 )
-plot_dir="/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/NMF"
-os.makedirs(plot_dir, exist_ok=True)
 
 in_files = [ os.path.join(in_dir, f) for f in os.listdir(in_dir) if re.compile(r'.*\.h5ad$').match(f) ]
-in_files = [f for f in in_files if "extracellular" not in f]
+
+if task_id == 1:
+    in_files = [f for f in in_files if "extracellular" not in f]
+    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/NMF"
+    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/NMF"
+    data_suffix = ""
+else:
+    in_files = [f for f in in_files if "extracellular" in f]
+    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/NMF_extracellular"
+    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/NMF_extracellular"
+    data_suffix = "_extracellular"
+
+os.makedirs(plot_dir, exist_ok=True)
+os.makedirs(table_dir, exist_ok=True)
 
 # read the three files
 adatas = [sc.read_h5ad(f) for f in in_files]
@@ -38,7 +51,7 @@ for i, a in enumerate(adatas):
 adata_merged = ad.concat(adatas, join="inner", label="batch", keys=[os.path.basename(f) for f in in_files])
 
 # save the merged object
-out_file = os.path.join(in_dir, "merged_three_files.h5ad")
+out_file = os.path.join(in_dir, f"merged_three_files{data_suffix}.h5ad")
 adata_merged.write(out_file)
 
 print(f"Merged AnnData saved to {out_file}")
@@ -68,7 +81,7 @@ li.multi.nmf(adata_merged, n_components=None, inplace=True, random_state=0, max_
 # Extract the variable loadings
 lr_loadings = li.ut.get_variable_loadings(adata_merged, varm_key='NMF_H').set_index('index')
 
-lr_loadings.to_csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/NMF/NMF_H_loadings.csv")
+lr_loadings.to_csv(os.path.join(table_dir, f"NMF_H_loadings{data_suffix}.csv"))
 
 
 # Extract the factor scores
@@ -82,7 +95,7 @@ nmf = sc.AnnData(X=adata_merged.obsm['NMF_W'],
 
 sc.pl.spatial(nmf, color=[*nmf.var.index, None], spot_size=80, size=1, ncols=2, show=False)
 
-plt.savefig(os.path.join(plot_dir, "overall_Intercellular_Patterns.png"),
+plt.savefig(os.path.join(plot_dir, f"overall_Intercellular_Patterns{data_suffix}.png"),
             dpi=300, bbox_inches='tight')
 plt.close()
 
@@ -92,14 +105,14 @@ pairs = adata_merged.var.index.tolist()
 ligands = [p.split("^")[0] for p in pairs]
 receptors = [p.split("^")[1] for p in pairs]
 all_genes = sorted(set(ligands + receptors))
-pd.Series(all_genes, name="gene").to_csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/universe_genes2.txt", index=False, header=False)
+pd.Series(all_genes, name="gene").to_csv(os.path.join(table_dir, f"universe_genes2{data_suffix}.txt"), index=False, header=False)
 
 adata_merged_outer = ad.concat(adatas, join="outer", label="batch", keys=[os.path.basename(f) for f in in_files])
 pairs = adata_merged_outer.var.index.tolist()
 ligands = [p.split("^")[0] for p in pairs]
 receptors = [p.split("^")[1] for p in pairs]
 all_genes = sorted(set(ligands + receptors))
-pd.Series(all_genes, name="gene").to_csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/universe_genes.txt", index=False, header=False)
+pd.Series(all_genes, name="gene").to_csv(os.path.join(table_dir, f"universe_genes{data_suffix}.txt"), index=False, header=False)
 
 
 # ===================================== 
@@ -139,7 +152,7 @@ plt.title("Average Factor Scores by Cell Type")
 plt.yticks(rotation=0)     
 plt.tight_layout()
 
-plt.savefig(os.path.join(plot_dir,"celltype_factor_heatmap.pdf"), dpi=300, bbox_inches="tight")
+plt.savefig(os.path.join(plot_dir, f"celltype_factor_heatmap{data_suffix}.pdf"), dpi=300, bbox_inches="tight")
 
 # =============================================================
 # Cell type specific NMF: Perform NMF analysis for each cell type separately.
@@ -156,7 +169,7 @@ for cell_type in cell_types:
     # Extract the variable loadings
     lr_loadings_ct = li.ut.get_variable_loadings(adata_ct, varm_key='NMF_H').set_index('index')
     safe_ct = re.sub(r'[\\/:"*?<>|]+', "_", str(cell_type)) 
-    lr_loadings_ct.to_csv(os.path.join("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/NMF", f"NMF_H_loadings_{safe_ct}.csv"))
+    lr_loadings_ct.to_csv(os.path.join(table_dir, f"NMF_H_loadings_{safe_ct}{data_suffix}.csv"))
     
     # Extract the factor scores
     factor_scores_ct = li.ut.get_factor_scores(adata_ct, obsm_key='NMF_W')
@@ -169,7 +182,7 @@ for cell_type in cell_types:
     
     sc.pl.spatial(nmf_ct, color=[*nmf_ct.var.index, None], spot_size=80, size=1, ncols=2, show=False)
     
-    plt.savefig(os.path.join(plot_dir, f"{safe_ct}_Intercellular_Patterns.png"),
+    plt.savefig(os.path.join(plot_dir, f"{safe_ct}_Intercellular_Patterns{data_suffix}.png"),
                 dpi=300, bbox_inches='tight')
     plt.close()
 
@@ -183,7 +196,7 @@ for cell_type in ["OPC"]:
     # Extract the variable loadings
     lr_loadings_ct = li.ut.get_variable_loadings(adata_ct, varm_key='NMF_H').set_index('index')
     safe_ct = re.sub(r'[\\/:"*?<>|]+', "_", str(cell_type)) 
-    lr_loadings_ct.to_csv(os.path.join("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/NMF", f"NMF_H_loadings_{safe_ct}.csv"))
+    lr_loadings_ct.to_csv(os.path.join(table_dir, f"NMF_H_loadings_{safe_ct}{data_suffix}.csv"))
     
     # Extract the factor scores
     factor_scores_ct = li.ut.get_factor_scores(adata_ct, obsm_key='NMF_W')
@@ -196,7 +209,7 @@ for cell_type in ["OPC"]:
     
     sc.pl.spatial(nmf_ct, color=[*nmf_ct.var.index, None], spot_size=80, size=1, ncols=2, show=False)
     
-    plt.savefig(os.path.join(plot_dir, f"{safe_ct}_Intercellular_Patterns.png"),
+    plt.savefig(os.path.join(plot_dir, f"{safe_ct}_Intercellular_Patterns{data_suffix}.png"),
                 dpi=300, bbox_inches='tight')
     plt.close()
 
@@ -233,7 +246,7 @@ if nrows*ncols > n:
         fig.delaxes(axes[j // ncols][j % ncols])
 
 fig.tight_layout(pad=1.5)
-fig.savefig(os.path.join(plot_dir,"NMF_top10_pairs_per_factor.pdf"), bbox_inches="tight", dpi=300)
+fig.savefig(os.path.join(plot_dir, f"NMF_top10_pairs_per_factor{data_suffix}.pdf"), bbox_inches="tight", dpi=300)
 plt.close(fig)
 print("✅ Saved: NMF_top10_pairs_per_factor.pdf")
 

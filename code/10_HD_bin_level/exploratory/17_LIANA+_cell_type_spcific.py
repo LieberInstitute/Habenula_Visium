@@ -30,18 +30,23 @@ os.makedirs(plot_dir, exist_ok=True)
 
 in_files = [ os.path.join(in_dir, f) for f in os.listdir(in_dir) if re.compile(r'.*\.h5ad$').match(f) ]
 
+base_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula"
 if task_id == 1:
     in_files = [f for f in in_files if "extracellular" not in f]
     output_dir1 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_files"
     output_dir2 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_specific_interactions"
     plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/celltype_specific_interactions"
-    base_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula"
+    global_dir = os.path.join(base_dir, "spatial_top_pairs_global")
+    specific_dir = os.path.join(base_dir, "spatial_top_pairs_specific")
+
 else:
     in_files = [f for f in in_files if "extracellular" in f]
     output_dir1 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_files_extracellular"
     output_dir2 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_specific_interactions_extracellular"
     plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/celltype_specific_interactions_extracellular"
     base_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula_extracellular"
+    global_dir = os.path.join(base_dir, "spatial_top_pairs_global_extracellular")
+    specific_dir = os.path.join(base_dir, "spatial_top_pairs_specific_extracellular")
 
 # ===================================================================
 
@@ -299,9 +304,6 @@ for ct, sub in top10_per_ct.groupby('cell_type'):
 # =======================================================
 # Visualize top ligand-receptor pairs in spatial context
 
-# ==== paths ====
-global_dir = os.path.join(base_dir, "spatial_top_pairs_global")
-specific_dir = os.path.join(base_dir, "spatial_top_pairs_specific")
 os.makedirs(global_dir, exist_ok=True)
 os.makedirs(specific_dir, exist_ok=True)
 
