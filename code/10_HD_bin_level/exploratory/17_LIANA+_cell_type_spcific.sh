@@ -4,8 +4,9 @@
 #SBATCH --job-name=17_LIANA+_cell_type_spcific
 #SBATCH -c 1
 #SBATCH -t 2:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/logs/17_LIANA+_cell_type_spcific.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/logs/17_LIANA+_cell_type_spcific.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/logs/17_LIANA+_cell_type_spcific_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/logs/17_LIANA+_cell_type_spcific_%a.txt
+#SBATCH --array=1-2%2
 
 set -e
 

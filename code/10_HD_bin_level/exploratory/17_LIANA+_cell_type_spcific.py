@@ -17,6 +17,8 @@ from plotnine import *
 from scipy import sparse
 from pathlib import Path
 
+task_id = int(os.getenv('SLURM_ARRAY_TASK_ID'))
+
 #   Read input files
 in_dir = here(
     'processed-data', '10_HD_bin_level', 'LIANA'
@@ -27,7 +29,19 @@ plot_dir= here(
 os.makedirs(plot_dir, exist_ok=True)
 
 in_files = [ os.path.join(in_dir, f) for f in os.listdir(in_dir) if re.compile(r'.*\.h5ad$').match(f) ]
-in_files = [f for f in in_files if "extracellular" not in f]
+
+if task_id == 1:
+    in_files = [f for f in in_files if "extracellular" not in f]
+    output_dir1 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_files"
+    output_dir2 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_specific_interactions"
+    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/celltype_specific_interactions"
+    base_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula"
+else:
+    in_files = [f for f in in_files if "extracellular" in f]
+    output_dir1 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_files_extracellular"
+    output_dir2 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_specific_interactions_extracellular"
+    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/celltype_specific_interactions_extracellular"
+    base_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula_extracellular"
 
 # ===================================================================
 
@@ -155,8 +169,7 @@ avg_top10 = (
 cell_types = combined_long["cell_type"].unique()
 
 # output directory
-output_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_files"
-os.makedirs(output_dir, exist_ok=True)
+os.makedirs(output_dir1, exist_ok=True)
 
 # loop over cell types
 for ct in cell_types:
@@ -173,7 +186,7 @@ for ct in cell_types:
     pivot_df = pivot_df.sort_values("Mean", ascending=False)
     safe_ct = re.sub(r'[\\/:"*?<>|]+', "_", str(ct))
     # output file path
-    out_path = os.path.join(output_dir, f"{safe_ct}_interactions.csv")
+    out_path = os.path.join(output_dir1, f"{safe_ct}_interactions.csv")
     pivot_df.to_csv(out_path)
 
 # =======================================================
@@ -226,15 +239,13 @@ top10_per_ct = (
 )[['cell_type','interaction','ct_mean','others_mean','others_std','z_spec','abs_z']]
 
 # 6) save the top pairs per cell type
-output_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_specific_interactions"
-os.makedirs(output_dir, exist_ok=True)
+os.makedirs(output_dir2, exist_ok=True)
 
-df_sorted.to_csv(os.path.join(output_dir, "celltype_specific_interactions_all.csv"), index=False)
-top10_per_ct.to_csv(os.path.join(output_dir, "celltype_specific_interactions_top10.csv"), index=False)
+df_sorted.to_csv(os.path.join(output_dir2, "celltype_specific_interactions_all.csv"), index=False)
+top10_per_ct.to_csv(os.path.join(output_dir2, "celltype_specific_interactions_top10.csv"), index=False)
 
 # =======================================================
 # Plot top pairs across donors
-plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/celltype_specific_interactions"
 os.makedirs(plot_dir, exist_ok=True)
 
 import matplotlib.pyplot as plt
@@ -289,7 +300,6 @@ for ct, sub in top10_per_ct.groupby('cell_type'):
 # Visualize top ligand-receptor pairs in spatial context
 
 # ==== paths ====
-base_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula"
 global_dir = os.path.join(base_dir, "spatial_top_pairs_global")
 specific_dir = os.path.join(base_dir, "spatial_top_pairs_specific")
 os.makedirs(global_dir, exist_ok=True)
@@ -420,5 +430,3 @@ for ct, sub in top10_per_ct.groupby('cell_type'):
         print("[saved]", out)
 
 session_info.show()
-
-
