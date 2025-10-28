@@ -45,11 +45,13 @@ spe <- read10xVisium(
 #   one UMI-based filter (the used cutoff of 5 at 8um is so low that there is no
 #   good equivalent at 2um; FICTURE should drop this region anyway). In an
 #   interactive test, I showed that the same tissue regions are dropped at 2um
-#   when array coordinates are multiplied by 4 relative to 8um
+#   when array coordinates are multiplied by 4 relative to 8um. Also drop
+#   out-of-tissue bins
 message(Sys.time(), ' | Filtering bins according to 8um bin-level QC...')
 spe = spe[
     , (spe$sample_id != 'H1-MVPY9BW_A1_8433') | (spe$array_col <= 793 * 4)
 ]
+spe = spe[, spe$in_tissue]
 
 message(Sys.time(), " | Saving raw SPE")
 saveRDS(spe, spe_out_path)
