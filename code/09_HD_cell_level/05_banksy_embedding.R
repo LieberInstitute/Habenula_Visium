@@ -151,11 +151,11 @@ for (color_var in c('sample_id', 'batch_num')) {
     dev.off()
 }
 
-#   Faceted by sample, colored by lot
+#   Faceted by sample, colored by batch number
 p = plot_grid(
     plotReducedDim(
             spe, sprintf("UMAP_M1_lam%s", lambda), point_size = 0.6,
-            point_alpha = 0.5, color_by = 'lot'
+            point_alpha = 0.5, color_by = 'batch_num'
         ) +
         facet_wrap(~ spe$sample_id, nrow = 1) +
         theme_bw(base_size = 18) +
@@ -164,7 +164,7 @@ p = plot_grid(
         ),
     plotReducedDim(
             spe, "UMAP_HARMONY", point_size = 0.6, point_alpha = 0.5,
-            color_by = 'lot'
+            color_by = 'batch_num'
         ) +
         facet_wrap(~ spe$sample_id, nrow = 1) +
         theme_bw(base_size = 18) +
