@@ -35,9 +35,9 @@ plot_VGs = function(spe, genes, plot_str, percentile = 0.98) {
     #   Cutoff expression at the top to make the color range more dynamic
     vg_exp = as.matrix(assays(spe)$logcounts[genes,])
     for (this_gene in genes) {
-        cutoff = sort(vg_exp[this_gene,])[
-            as.integer(round(percentile * ncol(spe)))
-        ]
+        cutoff = quantile(vg_exp[this_gene,], percentile)
+        cutoff = ifelse(cutoff == 0, max(vg_exp[this_gene,]), cutoff)
+        
         vg_exp[this_gene,] = pmin(vg_exp[this_gene,], cutoff)
     }
 
