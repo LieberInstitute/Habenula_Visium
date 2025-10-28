@@ -10,11 +10,11 @@ library(sessioninfo)
 lambda_neat = 'lambda0_2'
 
 plot_dir = here(
-    'plots', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
-    lambda_neat, 'subset'
+    'plots', '09_HD_cell_level', 'new_samples', 'registration_banksy',
+    lambda_neat
 )
 model_paths = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'registration_banksy',
     'modeling_results', lambda_neat,
     sprintf(
         '%s.rds',
@@ -55,7 +55,7 @@ ref_path = ref_paths[array_task]
 ref_name = ref_names[array_task]
 
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'registration_banksy',
     lambda_neat, sprintf('cor_vs_%s.rds', ref_name)
 )
 
