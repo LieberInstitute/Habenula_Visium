@@ -35,7 +35,8 @@ cd $repo_dir/code/09_HD_cell_level
 job_id_1_3=$(sbatch --parsable 01_bin2cell.sh)
 job_id_1_4=$(sbatch --dependency=afterok:${job_id_1_3} --parsable 02_build_spe_raw.sh)
 job_id_1_5=$(sbatch --dependency=afterok:${job_id_1_4} --parsable 03_build_spe_QC.sh)
-job_id_1_6=$(sbatch --dependency=afterok:${job_id_1_5} --parsable 04_HVG.sh)
+job_id_1_6=$(sbatch --dependency=afterok:${job_id_1_5} --parsable 03_new_sample_report.R)
+job_id_1_7=$(sbatch --dependency=afterok:${job_id_1_6} --parsable 04_HVG.sh)
 
 ################################################################################
 #   FICTURE with library-size-normalized inputs
