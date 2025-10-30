@@ -29,11 +29,7 @@ model_path = here(
 dir.create(dirname(pseudo_path), showWarnings = FALSE, recursive = TRUE)
 dir.create(dirname(model_path), showWarnings = FALSE, recursive = TRUE)
 
-#   Load and bring counts into memory to speed up computations. Despite the huge
-#   size of the data, the memory footprint is manageable due to the extreme
-#   sparsity of the data
 spe = readRDS(spe_path)
-assays(spe)$counts = as(assays(spe)$counts, "dgCMatrix")
 
 #   Add in cluster assignments to 'spe'
 cluster_df = read_csv(cluster_path, show_col_types = FALSE)
