@@ -4,7 +4,6 @@ library(here)
 library(tidyverse)
 library(SpatialExperiment)
 library(sessioninfo)
-library(spatialLIBD)
 
 spe_cell_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
@@ -30,6 +29,11 @@ names(sample_colors) = paste0(
     'Br', str_extract(names(sample_colors), '[0-9]{4}$')
 )
 
+################################################################################
+#   Boxplots of QC metrics across cells, by sample
+################################################################################
+
+#   Boxplots of each metric by sample
 p = colData(spe_cell)[, c('sample_id', metric_names)] |>
     as_tibble() |>
     pivot_longer(
@@ -62,3 +66,58 @@ p = colData(spe_cell)[, c('sample_id', metric_names)] |>
 pdf(file.path(plot_dir, 'metrics_by_sample.pdf'), width = 9, height = 5)
 print(p)
 dev.off()
+
+################################################################################
+#   Barplots of number of cells by sample
+################################################################################
+
+metric_df = colData(spe_cell)[, c('sample_id', 'labels_joint_source')] |>
+    as_tibble() |>
+    group_by(sample_id, labels_joint_source) |>
+    summarize(n_cells = n())
+
+metric_df = rbind(
+        metric_df,
+        metric_df |>
+            group_by(sample_id) |>
+            summarize(n_cells = sum(n_cells)) |>
+            mutate(labels_joint_source = 'total')
+    ) |>
+    ungroup() |>
+    dplyr::rename(seg_type = labels_joint_source) |>
+    left_join(
+        tibble(sample_id = spe_bin$sample_id) |>
+            group_by(sample_id) |>
+            summarize(n_bins = n()),
+        by = 'sample_id'
+    ) |>
+    mutate(
+        n_cells_scaled = n_cells / n_bins,
+        sample_id = factor(
+            paste0('Br', str_extract(sample_id, '[0-9]{4}$')),
+            levels = c('Br9090', 'Br8433', 'Br8667', 'Br3942', 'Br9902')
+        )
+    )
+
+for (metric_name in c('n_cells', 'n_cells_scaled')) {
+    p = metric_df |>
+        ggplot(aes(x = sample_id, y = .data[[metric_name]], fill = sample_id)) +
+            geom_bar(stat = "identity") +
+            facet_wrap(~ seg_type, scales = 'free_y') +
+            scale_fill_manual(values = sample_colors) +
+            theme_bw(base_size = 20) +
+            theme(
+                legend.position = 'none',
+                axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+            ) +
+            labs(x = 'Sample ID', y = metric_name, fill = 'Segmentation Type')
+    pdf(
+        file.path(plot_dir, paste0(metric_name, '_by_sample.pdf')),
+        width = 9,
+        height = 5
+    )
+    print(p)
+    dev.off()
+}
+
+session_info()
