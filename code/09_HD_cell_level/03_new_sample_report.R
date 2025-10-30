@@ -26,6 +26,9 @@ spe_cell = readRDS(spe_cell_path)
 spe_bin = readRDS(spe_bin_path)
 
 stopifnot(setequal(spe_cell$sample_id, names(sample_colors)))
+names(sample_colors) = paste0(
+    'Br', str_extract(names(sample_colors), '[0-9]{4}$')
+)
 
 p = colData(spe_cell)[, c('sample_id', metric_names)] |>
     as_tibble() |>
@@ -34,6 +37,18 @@ p = colData(spe_cell)[, c('sample_id', metric_names)] |>
         names_to = 'metric',
         values_to = 'value'
     ) |>
+    mutate(
+        sample_id = factor(
+            paste0('Br', str_extract(sample_id, '[0-9]{4}$')),
+            levels = c('Br9090', 'Br8433', 'Br8667', 'Br3942', 'Br9902')
+        )
+    ) |>
+    #   While this throws off the boxplot components (e.g. the median), there
+    #   appears to be no way to limit extreme values in a data-driven way in a
+    #   faceted plot using ggplot2!
+    group_by(metric) |>
+    filter(value < quantile(value, 0.98)) |>
+    ungroup() |>
     ggplot(aes(x = sample_id, y = value, fill = sample_id)) +
         geom_boxplot(outlier.shape = NA) +
         scale_fill_manual(values = sample_colors) +
@@ -44,6 +59,6 @@ p = colData(spe_cell)[, c('sample_id', metric_names)] |>
             axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
         ) +
         labs(x = 'Sample ID', y = 'Value')
-pdf(file.path(plot_dir, 'metrics_by_sample.pdf'))
+pdf(file.path(plot_dir, 'metrics_by_sample.pdf'), width = 9, height = 5)
 print(p)
 dev.off()
