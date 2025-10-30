@@ -23,8 +23,7 @@ plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'QC')
 get_exp_genes = function(spe, num_points = 200) {
     stopifnot(length(unique(spe$sample_id)) == 1)
 
-    #   For speed, bring into memory
-    a = as(assays(spe)$counts, "dgCMatrix")
+    a = assays(spe)$counts
 
     #   Ensure we don't have more than one point per integer UMI threshold,
     #   which causes step-like line plots

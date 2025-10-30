@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=10G
+#SBATCH --mem=20G
 #SBATCH --job-name=07_xenium_genes
 #SBATCH -c 1
 #SBATCH -t 2:00:00
