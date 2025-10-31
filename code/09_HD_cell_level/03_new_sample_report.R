@@ -56,7 +56,7 @@ p = colData(spe_cell)[, c('sample_id', metric_names)] |>
     ggplot(aes(x = sample_id, y = value, fill = sample_id)) +
         geom_boxplot(outlier.shape = NA) +
         scale_fill_manual(values = sample_colors) +
-        facet_wrap(~ metric, scales = 'free_y') +
+        facet_wrap(~ metric, scales = 'free_y', nrow = 1) +
         theme_bw(base_size = 20) +
         theme(
             legend.position = 'none',
@@ -103,7 +103,7 @@ for (metric_name in c('n_cells', 'n_cells_scaled')) {
     p = metric_df |>
         ggplot(aes(x = sample_id, y = .data[[metric_name]], fill = sample_id)) +
             geom_bar(stat = "identity") +
-            facet_wrap(~ seg_type, scales = 'free_y') +
+            facet_wrap(~ seg_type, scales = 'free_y', nrow = 1) +
             scale_fill_manual(values = sample_colors) +
             theme_bw(base_size = 20) +
             theme(
