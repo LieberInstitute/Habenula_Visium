@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/04_spatula_join_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/04_spatula_join_%a.txt
-#SBATCH --array=3-40,70,100%10
+#SBATCH --array=3-40,70%10
 
 #   FICTURE results aren't immediately bin level. Join (library-size-normalized)
 #   FICTURE results with 2um bins for each k value separately
