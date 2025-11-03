@@ -13,8 +13,8 @@ spe_in_path = here(
     'y_clean_spe.rds'
 )
 scalefactors_path = here(
-    'processed-data', '01_spaceranger', 'new_samples', '%s', 'outs',
-    'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
+    sample_info$spaceranger_dir, 'outs', 'binned_outputs', 'square_002um',
+    'spatial', 'scalefactors_json.json'
 )
 counts_out_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
@@ -51,7 +51,7 @@ counts_df = tibble(
 
 #   Convert units of spatial coords to microns
 for (sample_id in sample_ids) {
-    micron_per_px = fromJSON(file = sprintf(scalefactors_path, sample_id))[['microns_per_pixel']]
+    micron_per_px = fromJSON(file = scalefactors_path[grep(sample_id, scalefactors_path)])[['microns_per_pixel']]
     counts_df[counts_df$sample_id == sample_id, 'X'] = counts_df[counts_df$sample_id == sample_id, 'X'] * micron_per_px
     counts_df[counts_df$sample_id == sample_id, 'Y'] = counts_df[counts_df$sample_id == sample_id, 'Y'] * micron_per_px
 }
@@ -86,4 +86,3 @@ counts_df |>
     write_tsv(minmax_out_path, col_names = FALSE)
 
 session_info()
-print("1")
