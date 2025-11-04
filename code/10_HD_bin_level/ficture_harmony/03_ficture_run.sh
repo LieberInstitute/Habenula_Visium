@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=200G
+#SBATCH --mem=450G
 #SBATCH --job-name=03_ficture_run
 #SBATCH -c 1
 #SBATCH -t 4-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/03_ficture_run_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/03_ficture_run_%a.txt
-#SBATCH --array=3-7%5
+#SBATCH --array=100
 
 #   The main step to run FICTURE on library-size normalized inputs
 
