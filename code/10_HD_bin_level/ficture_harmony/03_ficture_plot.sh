@@ -6,7 +6,7 @@
 #SBATCH -t 1:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/03_ficture_plot_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/03_ficture_plot_%a.txt
-#SBATCH --array=3-40,70%20
+#SBATCH --array=100
 
 #   Default plots produced by 'ficture run_together' have too much empty (black)
 #   space. Reproduce these plots with visually preferable settings (for
