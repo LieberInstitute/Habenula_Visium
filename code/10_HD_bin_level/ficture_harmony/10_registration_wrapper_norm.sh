@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=20G
+#SBATCH --mem=45G
 #SBATCH --job-name=10_registration_wrapper_norm
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/10_registration_wrapper_norm_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/10_registration_wrapper_norm_%a.txt
-#SBATCH --array=3-40,70,100%10
+#SBATCH --array=4,5,7-12,15,17,18,20,25,27,29-37,40,70,100%10
 
 set -e
 
