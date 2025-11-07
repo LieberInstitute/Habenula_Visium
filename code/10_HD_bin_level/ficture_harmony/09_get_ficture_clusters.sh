@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=50G
+#SBATCH --mem=30G
 #SBATCH --job-name=09_get_ficture_clusters
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/09_get_ficture_clusters_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/09_get_ficture_clusters_%a.txt
-#SBATCH --array=3-40,70,100%10
+#SBATCH --array=3-29%10
 
 echo "**** Job starts ****"
 date
@@ -22,7 +22,7 @@ ml spatula/f0e9936
 
 a=$SLURM_ARRAY_TASK_ID
 #rerun the join-pixel-tsv
-repo_dir=/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium
+repo_dir=$(git rev-parse --show-toplevel)
 out_dir=$repo_dir/processed-data/10_HD_bin_level/new_samples/ficture_harmony/ficture_outputs/cleany/k_${a}/analysis/nF${a}.d_12
 in_tsv=$repo_dir/processed-data/10_HD_bin_level/new_samples/ficture_harmony/ficture_inputs/cleany/input.tsv.gz
 
@@ -38,8 +38,6 @@ spatula join-pixel-tsv \
     --mol-tsv $in_tsv \
     --pix-prefix-tsv factor_,$out_dir/nF${a}.d_12.decode.prj_12.r_4_5.pixel.sorted_by_major_axis.tsv.gz \
     --out-prefix $out_dir/transcripts_ficture_joined \
-    --max-dist-um 2 \
-    --bin-um 4 \
     --out-max-k 3 \
     --out-max-p 3 \
     --mu-scale 1
