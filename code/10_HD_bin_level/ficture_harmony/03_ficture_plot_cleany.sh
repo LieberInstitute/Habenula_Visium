@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=20G
+#SBATCH --mem=5G
 #SBATCH --job-name=03_ficture_plot
 #SBATCH -c 1
 #SBATCH -t 1:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/03_ficture_plot_cleany_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/03_ficture_plot_cleany_%a.txt
-#SBATCH --array=4-40,70,100%20
+#SBATCH --array=100
 
 #   Default plots produced by 'ficture run_together' have too much empty
 #   (black) space. Reproduce these plots with visually preferable settings
