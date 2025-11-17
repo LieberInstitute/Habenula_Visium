@@ -6,7 +6,8 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/10_registration_wrapper_cleany_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/10_registration_wrapper_cleany_%a.txt
-#SBATCH --array=3-40,70,100%10
+#SBATCH --array=30-32,100%4
+#SBATCH --exclude=compute-168,compute-169
 
 set -e
 

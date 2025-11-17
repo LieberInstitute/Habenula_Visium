@@ -32,6 +32,7 @@ dir.create(dirname(pseudo_path), showWarnings = FALSE, recursive = TRUE)
 dir.create(dirname(model_path), showWarnings = FALSE, recursive = TRUE)
 
 spe = readRDS(spe_path)
+spe = spe[rowSums(assays(spe)$counts) > 0, ]
 
 #   Join in FICTURE results for this k
 colData(spe) = colData(spe) |>
