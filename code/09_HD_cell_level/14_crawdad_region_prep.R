@@ -18,46 +18,42 @@ plot_dir = here(
 )
 banksy_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
-    'leiden_res1_3_subset.csv'
+    'leiden_res1_4.csv'
 )
 cor_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples', 'registration_banksy',
-    'lambda0_2', 'cor_vs_snRNAseq_fine_subset.rds'
+    'lambda0_2', 'cor_vs_snRNAseq_fine.rds'
 )
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 out_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
     'input_cells.csv.gz'
 )
-habenula_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
-    'habenula_shiny_annotations.csv.gz'
+hb_thal_anno_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples',
+    'hb_thal_manual_anno.csv.gz'
 )
-thalamus_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
-    'thalamus_shiny_annotations.csv.gz'
-)
-cor_index = 13
+cor_index = 14
 region_colors = c(
     habenula = "#B1092D", thalamus = "#0B52C4", other = "#DFE1DD"
 )
 
 dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
-dir.create(dirname(out_path), showWarnings = FALSE)
+dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
 
 sample_info = read_csv(sample_info_path)
-sample_ids = sample_info$sample_id[1:3]
-
 spe = readRDS(spe_path)
-spe = spe[, spe$sample_id %in% sample_ids]
 
 #   Ultimately, we'll be converting spatial coordinates to units of microns,
 #   which is more interpretable than pixels
 micron_per_px = c()
-for (sample_id in sample_ids) {
-    spaceranger_dir = sample_info$spaceranger_dir[sample_info$sample_id == sample_id]
+for (sample_id in sample_info$sample_id) {
+    spaceranger_dir = sample_info$spaceranger_dir[
+        sample_info$sample_id == sample_id
+    ]
     scalefactors_path = here(
-        spaceranger_dir, 'outs', 'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
+        spaceranger_dir, 'outs', 'binned_outputs', 'square_002um', 'spatial',
+        'scalefactors_json.json'
     )
     micron_per_px = c(
         micron_per_px,
@@ -65,7 +61,7 @@ for (sample_id in sample_ids) {
     )
 }
 scale_df = tibble(
-    sample_id = sample_ids,
+    sample_id = sample_info$sample_id,
     micron_per_px = micron_per_px
 )
 
@@ -81,10 +77,7 @@ anno_df = readRDS(cor_path)[[cor_index]] |>
 
 #   Read in Shiny annotations of habenula and thalamus regions and attach to
 #   the SpatialExperiment object
-region_df = rbind(
-        read_csv(habenula_anno_path, show_col_types = FALSE),
-        read_csv(thalamus_anno_path, show_col_types = FALSE)
-    ) |>
+region_df = read_csv(hb_thal_anno_path, show_col_types = FALSE) |>
     dplyr::rename(key = spot_name) |>
     #   It's possible for a cell to be annotated as habenula and thalamus. In
     #   this case, call it habenula
@@ -99,7 +92,7 @@ spe$region_anno = tibble(key = spe$key) |>
     replace_na('other')
 
 #   Plot the region annotation on each sample to make sure it worked
-for (sample_id in sample_ids) {
+for (sample_id in sample_info$sample_id) {
     #   Run twice to overcome a bug with different behavior on the first plot
     for (i in seq_len(2)) {
         p = vis_clus(
@@ -124,10 +117,10 @@ cell_df = tibble(
         sample_id = spe$sample_id,
         region_anno = spe$region_anno,
         x = spatialCoords(spe)[, 'pxl_col_in_fullres'] * scale_df$micron_per_px[
-            match(sample_id, sample_ids)
+            match(sample_id, sample_info$sample_id)
         ],
         y = spatialCoords(spe)[, 'pxl_row_in_fullres'] * scale_df$micron_per_px[
-            match(sample_id, sample_ids)
+            match(sample_id, sample_info$sample_id)
         ]
     ) |>
     left_join(read_csv(banksy_path, show_col_types = FALSE), by = 'key') |>
