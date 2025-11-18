@@ -13,27 +13,26 @@ from sklearn.neighbors import KDTree
 from scipy.spatial import cKDTree
 import matplotlib.pyplot as plt
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-with open(sample_id_path, 'r') as f:
-    all_samples = f.read().splitlines()
-    sample_id = all_samples[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+sample_info = pd.read_csv(sample_info_path)
+sample_id = sample_info['sample_id'].iloc[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
 
 hb_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
-    'habenula_shiny_annotations.csv.gz'
+    'processed-data', '09_HD_cell_level', 'new_samples',
+    'hb_thal_manual_anno.csv.gz'
 )
 extra_bins_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'cell_environment',
     'extracellular_bins.csv.gz'
 )
 
-adata = sc.read_h5ad("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/probe_fix/LIANA/adata/cellular.h5ad")
+adata = sc.read_h5ad("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/new_samples/liana/adata/cellular.h5ad")
 
 cell_df_path = here(
-    'processed-data', '10_HD_bin_level', 'LIANA','adata'
+    'processed-data', '10_HD_bin_level', 'liana','adata'
 )
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'LIANA','adata'
+    'processed-data', '10_HD_bin_level', 'liana','adata'
 )
 cell_df = pd.read_csv(os.path.join(cell_df_path, "cell_df.csv"))
 

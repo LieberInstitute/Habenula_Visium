@@ -10,16 +10,15 @@ import matplotlib.pyplot as plt
 import json
 
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'LIANA'
+    'processed-data', '10_HD_bin_level', 'new_samples', 'liana'
 )
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-with open(sample_id_path, 'r') as f:
-    all_samples = f.read().splitlines()
-    sample_id = all_samples[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+sample_info = pd.read_csv(sample_info_path)
+sample_id = sample_info['sample_id'].iloc[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
 
 scale_json = here(
-    'processed-data', '01_spaceranger', 'probe_fix', sample_id,
+    'processed-data', '01_spaceranger', 'new_samples', sample_id,
     'outs', 'binned_outputs', 'square_008um', 'spatial',
     'scalefactors_json.json'
 )
@@ -36,7 +35,7 @@ adata = adata[:, ~adata.var_names.str.startswith("DEPRECATED_")].copy()
 adata.var_names = adata.var_names.astype(str)
 adata.var_names_make_unique()
 
-###### run LIANA+ ######
+###### run liana+ ######
 
 # adata.layers['counts'] = adata.X.copy()
 # sc.pp.normalize_total(adata, target_sum=1e4)
@@ -77,7 +76,7 @@ hit_lig = len(genes & x_vals)
 hit_rec = len(genes & y_vals)
 print(f"[PRECHECK] ligand hitting: {hit_lig}, receptor hitting: {hit_rec}")
 
-# check numbers in LIANA 
+# check numbers in liana 
 print("ligand number:", len(x_vals))
 print("receptor number:", len(y_vals))
 

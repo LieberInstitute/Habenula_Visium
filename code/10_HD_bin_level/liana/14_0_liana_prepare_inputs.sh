@@ -4,8 +4,8 @@
 #SBATCH --job-name=14_0_liana_prepare_inputs
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/09_HD_cell_level/probe_fix/logs/14_0_liana_prepare_inputs.txt
-#SBATCH -e ../../../processed-data/09_HD_cell_level/probe_fix/logs/14_0_liana_prepare_inputs.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/liana/logs/14_0_liana_prepare_inputs.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/liana/logs/14_0_liana_prepare_inputs.txt
 
 set -e
 

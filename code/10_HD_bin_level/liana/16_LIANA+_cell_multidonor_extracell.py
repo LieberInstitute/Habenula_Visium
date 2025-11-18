@@ -17,10 +17,10 @@ from plotnine import *
 
 #   Read input files
 in_dir = here(
-    'processed-data', '10_HD_bin_level', 'LIANA'
+    'processed-data', '10_HD_bin_level', 'new_samples', 'liana'
 )
 plot_dir= here(
-    'processed-data', '10_HD_bin_level', 'LIANA', 'figure','habenula'
+    'processed-data', '10_HD_bin_level', 'new_samples', 'liana', 'figure', 'habenula'
 )
 os.makedirs(plot_dir, exist_ok=True)
 
@@ -148,7 +148,7 @@ for spine in ["top", "right"]:
     axes[1].spines[spine].set_visible(False)
 
 plt.tight_layout()
-plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/Top20_LR_mean_morans_exc.pdf", bbox_inches="tight")
+plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/figure/habenula/Top20_LR_mean_morans_exc.pdf", bbox_inches="tight")
 plt.close()
 
 print("✅ Figure saved as: Top20_LR_mean_morans.pdf")
@@ -168,7 +168,7 @@ plt.xlabel("Mean", fontsize=14)
 plt.ylabel("Moran’s I", fontsize=14)
 plt.grid(False)
 plt.tight_layout()
-plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/Mean_vs_Morans_scatter.pdf", bbox_inches="tight")
+plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/figure/habenula/Mean_vs_Morans_scatter.pdf", bbox_inches="tight")
 plt.close()
 print("✅ Figure saved as: Mean_vs_Morans_scatter.pdf")
 

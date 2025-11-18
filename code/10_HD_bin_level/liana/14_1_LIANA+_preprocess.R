@@ -6,27 +6,26 @@ library(here)
 library(tidyverse)
 library(SpatialExperiment)
 library(spatialLIBD)
-library(HDF5Array)
 library(rjson)
 library(sessioninfo)
 library(zellkonverter)
 
-spe_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'spe_norm_filtered'
+spe_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
 )
 banksy_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'banksy', 'lambda0_2',
-    'leiden_res1_5_subset.csv'
+    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
+    'leiden_res1_5.csv'
 )
 cor_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'registration_banksy',
-    'lambda0_2', 'cor_vs_snRNAseq_fine_subset.rds'
+    'processed-data', '09_HD_cell_level', 'new_samples', 'registration_banksy',
+    'lambda0_2', 'cor_vs_snRNAseq_fine.rds'
 )
 scalefactors_path = here(
-    'processed-data', '01_spaceranger', 'probe_fix', '%s', 'outs',
+    'processed-data', '01_spaceranger', 'new_samples', '%s', 'outs',
     'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
 )
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 out_path = here(
     'processed-data', '10_HD_bin_level', 'LIANA'
 )
@@ -45,11 +44,14 @@ anno_df = readRDS(cor_path)[[cor_index]] |>
         )
     )
 
-cell_df_list <- vector("list", 3)
+cell_df_list <- vector("list", 5)
 
-for(i in 1:3){
-sample_id = readLines(sample_id_path)[i]
-spe = loadHDF5SummarizedExperiment(spe_dir)
+sample_info = read_csv(sample_info_path, show_col_types = FALSE)
+sample_ids = sample_info$sample_id
+
+for(i in 1:5){
+sample_id = sample_ids[i]
+spe = readRDS(spe_path)
 spe = spe[, spe$sample_id == sample_id]
 micron_per_px = fromJSON(file = sprintf(scalefactors_path, sample_id))[['microns_per_pixel']]
 
@@ -74,7 +76,7 @@ cell_df_list[[i]] <- cell_df
 }
 cell_df_merged <- do.call(rbind, cell_df_list)
 
-spe = loadHDF5SummarizedExperiment(spe_dir)
+spe = readRDS(spe_path)
 cell_df_merged <- left_join(cell_df_merged,
     as.data.frame(colData(spe)[,c("key","array_row","array_col")]),
     by = 'key'

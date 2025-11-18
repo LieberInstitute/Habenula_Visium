@@ -6,32 +6,31 @@ from pyhere import here
 import bin2cell as b2c
 import numpy as np
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-with open(sample_id_path, 'r') as f:
-    all_samples = f.read().splitlines()
-sample_id = all_samples[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+sample_info = pd.read_csv(sample_info_path)
+sample_id = sample_info['sample_id'].iloc[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
 
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'nest','input_habenula',
+    'processed-data', '10_HD_bin_level', 'liana', 'input_habenula',
     f'{sample_id}.h5ad'
 )
 
 sr_dir = here(
-    'processed-data', '01_spaceranger', 'probe_fix', sample_id, 'outs',
+    'processed-data', '01_spaceranger', 'new_samples', sample_id, 'outs',
     'binned_outputs', 'square_002um'
 )
 sr_spatial_dir = here(
-    'processed-data', '01_spaceranger', 'probe_fix', sample_id, 'outs',
+    'processed-data', '01_spaceranger', 'new_samples', sample_id, 'outs',
     'spatial'
 )
 raw_image_path = here('raw-data', 'images', 'vis-hd', f'{sample_id}.tif')
 
 hb_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
-    'habenula_shiny_annotations.csv.gz'
+    'processed-data', '09_HD_cell_level', 'new_samples',
+    'hb_thal_manual_anno.csv.gz'
 )
 extra_bins_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'cell_environment',
     'extracellular_bins.csv.gz'
 )
 

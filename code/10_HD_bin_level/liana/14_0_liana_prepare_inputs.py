@@ -12,21 +12,21 @@ sys.path.append(str(here('code', '10_HD_bin_level', 'cell_environment')))
 import extracellular_bins_functions as ebf
 
 ad_in_paths = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix',
+    'processed-data', '09_HD_cell_level', 'new_samples',
     '{}.h5ad'
 )
 ad_pre_in_paths = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix',
+    'processed-data', '09_HD_cell_level', 'new_samples',
     '{}_pre_bin2cell.h5ad'
 )
 hb_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
     'habenula_shiny_annotations.csv.gz'
 )
 out_dir = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix', 'LIANA', 'adata'
+    'processed-data', '09_HD_cell_level', 'new_samples', 'liana', 'adata'
 )
-plot_dir = here('plots', '09_HD_cell_level', 'probe_fix', 'LIANA')
+plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'liana')
 min_bins_per_cell = 4
 expansion_distance = 5
 
@@ -37,9 +37,9 @@ os.makedirs(out_dir, exist_ok=True)
 #   Ordinary cell-level data
 ################################################################################
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-with open(sample_id_path, 'r') as f:
-    all_samples = f.read().splitlines()[:3]
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+sample_info = pd.read_csv(sample_info_path)
+all_samples = sample_info['sample_id'].iloc[:3].tolist()
 
 adata_list = []
 for sample_id in all_samples:

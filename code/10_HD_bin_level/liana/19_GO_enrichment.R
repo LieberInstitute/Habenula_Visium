@@ -12,8 +12,8 @@ library(tibble)
 library(readr)
 library(ggplot2)
 
-overall_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/overall_mean_morans_across_donors.csv")
-sce <- readLines("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/universe_genes.txt")
+overall_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/liana/table/overall_mean_morans_across_donors.csv")
+sce <- readLines("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/universe_genes.txt")
 
 
 overall_long <- rbind(
@@ -34,7 +34,7 @@ top_morans_genes <- overall_long |>
   dplyr::pull(gene)|> unique()
 
 fdr_cutoff <- 0.05
-plot_dir<-"/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/GO"
+plot_dir<-"/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/GO"
 dir.create(plot_dir, showWarnings = FALSE)
 
 for (ont_type in c("BP", "MF", "CC")) {
@@ -102,7 +102,7 @@ for (ont_type in c("BP", "MF", "CC")) {
 # ======================================================================
 # cell-type specific top ligand–receptor pairs
 
-cell_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_specific_interactions/celltype_specific_interactions_all.csv")
+cell_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/celltype_specific_interactions/celltype_specific_interactions_all.csv")
 
 cell_top_pairs$cell_type <- factor(cell_top_pairs$cell_type, levels = c("LHb.2","LHb.3","LHb.4","MHb.1","MHb.2","Excit.Thal","Astrocyte","Oligo","OPC","Microglia","Endo","Endo/Microglia","C19"))
 
@@ -223,7 +223,7 @@ for (ont_type in c("BP", "MF", "CC")) {
 
 # ======================================================================
 # NMF
-NMF_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/NMF/NMF_H_loadings.csv")
+NMF_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/NMF/NMF_H_loadings.csv")
 
 # distinct pairs for each factor
 weights <- as.matrix(NMF_top_pairs[, -1])
@@ -363,7 +363,7 @@ cell_types<-unique(cell_top_pairs$cell_type)
 cell_types[4]<-"Endo_Microglia"
 
 for (cell_type in cell_types){
-        data<-read.csv(paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/NMF/NMF_H_loadings_",cell_type,".csv"))
+        data<-read.csv(paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/NMF/NMF_H_loadings_",cell_type,".csv"))
         
         # distinct pairs for each factor
         weights <- as.matrix(data[, -1])
@@ -442,7 +442,7 @@ for (ont_type in c("BP", "MF", "CC")) {
 
 
 for (cell_type in cell_types){
-        data<-read.csv(paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/NMF/NMF_H_loadings_",cell_type,".csv"))
+        data<-read.csv(paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/NMF/NMF_H_loadings_",cell_type,".csv"))
         
         # distinct pairs for each factor
         weights <- as.matrix(data[, -1])

@@ -21,20 +21,20 @@ task_id = int(os.getenv('SLURM_ARRAY_TASK_ID'))
 
 #   Read input files
 in_dir = here(
-    'processed-data', '10_HD_bin_level', 'LIANA'
+    'processed-data', '10_HD_bin_level', 'new_samples', 'liana'
 )
 
 in_files = [ os.path.join(in_dir, f) for f in os.listdir(in_dir) if re.compile(r'.*\.h5ad$').match(f) ]
 
 if task_id == 1:
-    in_files = [f for f in in_files if "extracellular" not in f and "lrdata" in f]
-    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/NMF"
-    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/NMF"
+    in_files = [f for f in in_files if "extracellular" not in f]
+    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/figure/habenula/NMF"
+    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/NMF"
     data_suffix = ""
 else:
     in_files = [f for f in in_files if "extracellular" in f and "lrdata" in f]
-    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/NMF_extracellular"
-    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/NMF_extracellular"
+    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/figure/habenula/NMF_extracellular"
+    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/NMF_extracellular"
     data_suffix = "_extracellular"
 
 os.makedirs(plot_dir, exist_ok=True)

@@ -4,8 +4,8 @@
 #SBATCH --job-name=16_LIANA+_cell_multidonor_extracell
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/logs/16_LIANA+_cell_multidonor_extracell.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/logs/16_LIANA+_cell_multidonor_extracell.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/liana/logs/16_LIANA+_cell_multidonor_extracell.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/liana/logs/16_LIANA+_cell_multidonor_extracell.txt
 
 set -e
 
