@@ -3,7 +3,7 @@
 #SBATCH --mem=10G
 #SBATCH --job-name=14_3_LIANA+_preprocss_extracellular
 #SBATCH -c 1
-#SBATCH -t 2:00:00
+#SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/logs/14_3_LIANA+_preprocss_extracellular.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/logs/14_3_LIANA+_preprocss_extracellular.txt
 

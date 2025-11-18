@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=10G
+#SBATCH --mem=50G
 #SBATCH --job-name=19_GO_enrichment
 #SBATCH -c 1
-#SBATCH -t 2:00:00
+#SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/logs/19_GO_enrichment.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/logs/19_GO_enrichment.txt
 

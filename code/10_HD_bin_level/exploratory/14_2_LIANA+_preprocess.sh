@@ -3,7 +3,7 @@
 #SBATCH --mem=10G
 #SBATCH --job-name=14_2_LIANA+_preprocess
 #SBATCH -c 1
-#SBATCH -t 2:00:00
+#SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/logs/14_2_LIANA+_preprocess_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/logs/14_2_LIANA+_preprocess_%a.txt
 #SBATCH --array=1-3%3

@@ -3,7 +3,7 @@
 #SBATCH --mem=10G
 #SBATCH --job-name=15_1_LIANA+_extracell
 #SBATCH -c 1
-#SBATCH -t 2:00:00
+#SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/logs/15_1_LIANA+_extracell_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/logs/15_1_LIANA+_extracell_%a.txt
 #SBATCH --array=1-3%3

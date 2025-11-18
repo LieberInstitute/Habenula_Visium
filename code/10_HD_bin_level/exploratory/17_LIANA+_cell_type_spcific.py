@@ -32,15 +32,14 @@ in_files = [ os.path.join(in_dir, f) for f in os.listdir(in_dir) if re.compile(r
 
 base_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula"
 if task_id == 1:
-    in_files = [f for f in in_files if "extracellular" not in f]
+    in_files = [f for f in in_files if "extracellular" not in f and "lrdata" in f]
     output_dir1 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_files"
     output_dir2 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_specific_interactions"
     plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/celltype_specific_interactions"
     global_dir = os.path.join(base_dir, "spatial_top_pairs_global")
     specific_dir = os.path.join(base_dir, "spatial_top_pairs_specific")
-
 else:
-    in_files = [f for f in in_files if "extracellular" in f]
+    in_files = [f for f in in_files if "extracellular" in f and "lrdata" in f]
     output_dir1 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_files_extracellular"
     output_dir2 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/celltype_specific_interactions_extracellular"
     plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/celltype_specific_interactions_extracellular"
@@ -110,7 +109,7 @@ donor_results = []
 sources_used = []
 var_name_sets = []
 for f in files:
-    donor_id = Path(f).stem.replace('lrdata_', '')
+    donor_id = Path(f).stem.replace('lrdata_', '').replace('extracellular_', '')
     adata = sc.read(f)
     # compute
     long, wide, src = celltype_means_for_donor(adata, donor_id)

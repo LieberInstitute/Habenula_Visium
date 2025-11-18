@@ -27,12 +27,12 @@ in_dir = here(
 in_files = [ os.path.join(in_dir, f) for f in os.listdir(in_dir) if re.compile(r'.*\.h5ad$').match(f) ]
 
 if task_id == 1:
-    in_files = [f for f in in_files if "extracellular" not in f]
+    in_files = [f for f in in_files if "extracellular" not in f and "lrdata" in f]
     plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/NMF"
     table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/NMF"
     data_suffix = ""
 else:
-    in_files = [f for f in in_files if "extracellular" in f]
+    in_files = [f for f in in_files if "extracellular" in f and "lrdata" in f]
     plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/NMF_extracellular"
     table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/NMF_extracellular"
     data_suffix = "_extracellular"
@@ -113,7 +113,6 @@ ligands = [p.split("^")[0] for p in pairs]
 receptors = [p.split("^")[1] for p in pairs]
 all_genes = sorted(set(ligands + receptors))
 pd.Series(all_genes, name="gene").to_csv(os.path.join(table_dir, f"universe_genes{data_suffix}.txt"), index=False, header=False)
-
 
 # ===================================== 
 # Heatmap: Create a heatmap with factors on the y-axis, cell types on the x-axis, and fill color as the average factor scores.

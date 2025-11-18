@@ -14,6 +14,7 @@ from pyhere import here
 import re
 import session_info
 from plotnine import *
+from scipy import stats
 
 #   Read input files
 in_dir = here(
@@ -177,3 +178,51 @@ plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/pro
 plt.close()
 print("✅ Figure saved as: Mean_vs_Morans_scatter.pdf")
 
+# ---------------------------------------
+# scatter plot mean vs morans
+slope, intercept, r_value, p_value, std_err = stats.linregress(lr_mean_df["mean"], lr_mean_df["morans"])
+lr_mean_df["predicted"] = intercept + slope * lr_mean_df["mean"]
+lr_mean_df["residual"] = lr_mean_df["morans"] - lr_mean_df["predicted"]
+
+threshold = 2 * lr_mean_df["residual"].std()
+outliers = lr_mean_df[np.abs(lr_mean_df["residual"]) > threshold]
+
+plt.figure(figsize=(10, 8))
+sns.scatterplot(
+    data=lr_mean_df,
+    x="mean",
+    y="morans",
+    alpha=0.6,
+    edgecolor=None,
+    label="Data"
+)
+sns.lineplot(
+    x=lr_mean_df["mean"],
+    y=lr_mean_df["predicted"],
+    color="red",
+    linewidth=2,
+    label="Fitted line"
+)
+
+plt.scatter(outliers["mean"], outliers["morans"], color="orange", edgecolor="black", s=80, label="Outliers")
+
+for _, row in outliers.iterrows():
+    plt.text(
+        row["mean"],
+        row["morans"],
+        row["interaction"],
+        fontsize=9,
+        color="black",
+        ha="right",
+        va="bottom"
+    )
+
+plt.title("Ligand–Receptor Interactions: Mean vs Moran’s I", fontsize=18, weight="bold", pad=15)
+plt.xlabel("Mean", fontsize=14)
+plt.ylabel("Moran’s I", fontsize=14)
+plt.grid(False)
+plt.legend()
+plt.tight_layout()
+plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/figure/habenula/Mean_vs_Morans_scatter_outlier.pdf", bbox_inches="tight")
+plt.close()
+print("✅ Figure saved as: Mean_vs_Morans_scatter_outlier.pdf")
