@@ -41,7 +41,7 @@ region_colors = c(
 dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
 
-sample_info = read_csv(sample_info_path)
+sample_info = read_csv(sample_info_path, show_col_types = FALSE)
 spe = readRDS(spe_path)
 
 #   Ultimately, we'll be converting spatial coordinates to units of microns,

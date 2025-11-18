@@ -62,8 +62,8 @@ custom_dotplot = function(result_df, z_sig, cell_types, filename) {
 #   CRAWDAD-specific plots
 ################################################################################
 
-sample_info = read_csv(sample_info_path)
-sample_ids = sample_info$sample_id[1:3]
+sample_info = read_csv(sample_info_path, show_col_types = FALSE)
+sample_ids = sample_info$sample_id
 
 result_list = list()
 for (sample_id in sample_ids) {
