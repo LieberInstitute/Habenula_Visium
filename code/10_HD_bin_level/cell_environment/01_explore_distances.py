@@ -13,27 +13,29 @@ import pandas as pd
 
 import extracellular_bins_functions as ebf
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-with open(sample_id_path, 'r') as f:
-    sample_id = f.read().splitlines()[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+sample_info = pd.read_csv(sample_info_path)
+sample_id = sample_info['sample_id'].iloc[
+    int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1
+]
 
 ficture_cols = ['sample_id', 'barcode', 'FICTURE_k4']
-ficture_WM_cluster = 2
+ficture_WM_cluster = 3
 mpp = 0.3
 
 ficture_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
-    'bin_level_clusters.csv.gz'
+    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
+    'bin_level_clusters_batch.csv.gz'
 )
 pre_out_path = here(
-    'processed-data', '09_HD_cell_level', 'probe_fix',
+    'processed-data', '09_HD_cell_level', 'new_samples',
     f'{sample_id}_pre_bin2cell.h5ad'
 )
 df_out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'cell_environment',
     'occupation', f'{sample_id}.csv'
 )
-plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'cell_environment')
+plot_dir = here('plots', '10_HD_bin_level', 'new_samples', 'cell_environment')
 
 os.makedirs(plot_dir, exist_ok=True)
 os.makedirs(df_out_path.parent, exist_ok=True)
@@ -102,6 +104,15 @@ if sample_id == 'H1-W369TJK_D1_9090':
     adata.obs['FICTURE_k4'] = ficture_df['FICTURE_k4']
 
     adata = ebf.find_microenvironment(adata, expansion_distance = 6)
+
+    #   Label each bin with a cellular component
+    adata.obs['cell_component'] = 'Unlabeled'
+    adata.obs.loc[adata.obs['microenvironment_secondary'] != 0, 'cell_component'] = 'Sec. Extracellular'
+    adata.obs.loc[adata.obs['labels_gex'] != 0, 'cell_component'] = 'Sec. Cell Body'
+    adata.obs.loc[adata.obs['microenvironment_primary'] != 0, 'cell_component'] = 'Prim. Extracellular'
+    adata.obs.loc[adata.obs['labels_he_expanded'] != 0, 'cell_component'] = 'Prim. Cell Body'
+    adata.obs.loc[adata.obs['labels_he'] != 0, 'cell_component'] = 'Prim. Nucleus'
+
     adata = ebf.drop_bad_secondary_cells(adata, min_bins_per_cell = 4)
 
     ############################################################################
