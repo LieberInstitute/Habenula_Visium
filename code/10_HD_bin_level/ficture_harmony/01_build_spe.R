@@ -11,8 +11,11 @@ sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 sample_info = read_csv(sample_info_path, show_col_types = FALSE)
 
 spe_out_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
     'spe_raw.rds'
+)
+spe_old_path = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'spe_raw.rds'
 )
 sr_out_dirs = here(
     sample_info$spaceranger_dir, 'outs', 'binned_outputs', 'square_002um'
@@ -40,6 +43,23 @@ spe <- read10xVisium(
     images = "lowres",
     load = TRUE
 )
+
+spe_old = readRDS(spe_old_path)
+spe_old = spe_old[, spe_old$sample_id %in% sample_info$sample_id]
+
+#   Add key (unique columnn ID)
+stopifnot(! ('key' %in% colnames(colData(spe_old))))
+spe_old$key = paste(spe_old$sample_id, colnames(spe_old), sep = '_')
+spe$key = paste(spe$sample_id, colnames(spe), sep = '_')
+stopifnot(all(spe_old$key %in% spe$key))
+
+#   For some reason, 'in_tissue' has incorrect values in the latest spaceranger
+#   run, with some truly in-tissue regions marked FALSE. Only the samples from
+#   batch 1 and 2 were badly problematic, so we just take 'in_tissue' from the
+#   old SPE for those samples
+spe$in_tissue[match(spe_old$key, spe$key)] = spe_old$in_tissue
+rm(spe_old)
+gc()
 
 #   Drop problematic tissue regions found in the 8um bin-level QC, other than
 #   one UMI-based filter (the used cutoff of 5 at 8um is so low that there is no
