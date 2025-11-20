@@ -4,8 +4,8 @@
 #SBATCH --job-name=01_build_spe
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/10_HD_bin_level/new_samples/logs/01_build_spe.txt
-#SBATCH -e ../../processed-data/10_HD_bin_level/new_samples/logs/01_build_spe.txt
+#SBATCH -o ../../processed-data/10_HD_bin_level/new_samples2/logs/01_build_spe.txt
+#SBATCH -e ../../processed-data/10_HD_bin_level/new_samples2/logs/01_build_spe.txt
 
 set -e
 
@@ -27,7 +27,7 @@ sample_info_path=$repo_dir/raw-data/sample_info/hd_basic_info.csv
 module load visium_hd/1.0
 
 # Read the CSV file and process each sample
-tail -n +2 $sample_info_path | while IFS=',' read -r sample_id spaceranger_dir; do
+tail -n +2 $sample_info_path | while IFS=',' read -r sample_id spaceranger_dir batch_num; do
     spatial_dir=$repo_dir/$spaceranger_dir/outs/binned_outputs/square_008um/spatial
 
     if [[ ! -f $spatial_dir/tissue_positions.csv ]]; then

@@ -9,12 +9,12 @@ library(sessioninfo)
 library(cowplot)
 library(scran)
 
-plot_dir = here('plots', '10_HD_bin_level', 'new_samples', 'QC')
+plot_dir = here('plots', '10_HD_bin_level', 'new_samples2', 'QC')
 spe_in_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm.rds'
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'spe_norm.rds'
 )
 spe_out_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered.rds'
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'spe_norm_filtered.rds'
 )
 
 spe = readRDS(spe_in_path)

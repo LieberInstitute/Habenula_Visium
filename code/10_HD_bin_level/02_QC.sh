@@ -4,8 +4,8 @@
 #SBATCH --job-name=02_QC
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/10_HD_bin_level/new_samples/logs/02_QC.txt
-#SBATCH -e ../../processed-data/10_HD_bin_level/new_samples/logs/02_QC.txt
+#SBATCH -o ../../processed-data/10_HD_bin_level/new_samples2/logs/02_QC.txt
+#SBATCH -e ../../processed-data/10_HD_bin_level/new_samples2/logs/02_QC.txt
 
 set -e
 

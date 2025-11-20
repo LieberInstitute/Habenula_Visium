@@ -10,10 +10,13 @@ library(HDF5Array)
 
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 spe_raw_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_raw.rds'
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'spe_raw.rds'
+)
+spe_raw_old_path = here(
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'spe_raw.rds'
 )
 spe_norm_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm.rds'
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'spe_norm.rds'
 )
 
 sample_info = read_csv(sample_info_path)
@@ -52,6 +55,15 @@ spe <- read10xVisiumWrapper(
 
 message(Sys.time(), " | Saving raw SPE")
 saveRDS(spe, spe_raw_path)
+
+#   For some reason, 'in_tissue' has incorrect values in the latest spaceranger
+#   run, with some truly in-tissue regions marked FALSE. Only the samples from
+#   batch 1 and 2 were badly problematic, so we just take 'in_tissue' from the
+#   old SPE for those samples
+spe_old = readRDS(spe_raw_old_path)
+spe_old = spe_old[, spe_old$sample_id %in% sample_ids]
+stopifnot(all(spe_old$key %in% spe$key))
+spe$in_tissue[match(spe_old$key, spe$key)] = spe_old$in_tissue
 
 #   Filter raw SPE: take only bins in tissue, drop bins with 0 counts for all
 #   genes, and drop genes with 0 counts in every bin
