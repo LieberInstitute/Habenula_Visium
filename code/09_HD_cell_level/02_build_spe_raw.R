@@ -14,14 +14,14 @@ sample_info = read_csv(sample_info_path)
 sample_ids = sample_info$sample_id
 
 ad_in_paths = here(
-    'processed-data', '09_HD_cell_level', 'new_samples',
+    'processed-data', '09_HD_cell_level', 'new_samples2',
     sprintf('%s.h5ad', sample_ids)
 )
 spe_bin_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_raw.rds'
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'spe_raw.rds'
 )
 spe_raw_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_raw.rds'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_raw.rds'
 )
 
 ################################################################################

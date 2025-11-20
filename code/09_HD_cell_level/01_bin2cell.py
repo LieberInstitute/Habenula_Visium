@@ -15,15 +15,16 @@ sample_info = pd.read_csv(sample_info_path)
 task_id = int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1
 sample_id = sample_info.iloc[task_id]['sample_id']
 spaceranger_dir = sample_info.iloc[task_id]['spaceranger_dir']
+batch_num = sample_info.iloc[task_id]['batch_num']
 
 stardist_dir = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'stardist'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'stardist'
 )
 final_out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', f'{sample_id}.h5ad'
+    'processed-data', '09_HD_cell_level', 'new_samples2', f'{sample_id}.h5ad'
 )
 pre_out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples',
+    'processed-data', '09_HD_cell_level', 'new_samples2',
     f'{sample_id}_pre_bin2cell.h5ad'
 )
 sr_dir = here(
@@ -32,7 +33,7 @@ sr_dir = here(
 sr_spatial_dir = here(
     spaceranger_dir, 'outs', 'spatial'
 )
-plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'bin2cell')
+plot_dir = here('plots', '09_HD_cell_level', 'new_samples2', 'bin2cell')
 raw_image_path = here('raw-data', 'images', 'vis-hd', f'{sample_id}.tif')
 mpp = 0.3
 
@@ -45,6 +46,20 @@ os.makedirs(plot_dir, exist_ok=True)
 
 print(f"{datetime.datetime.now()} | Building and preprocessing AnnData")
 
+#   In the first two batches, the older 'probe_fix' spaceranger runs for some
+#   reason had much-more-accurate 'in_tissue' calls than the newer runs; so
+#   we'll read in the filtered anndata (which essentially takes in-tissue bins)
+#   from the older runs for those batches
+if batch_num < 3:
+    sr_filtered_dir = here(
+        'processed-data', '01_spaceranger', 'probe_fix', sample_id, 'outs',
+        'binned_outputs', 'square_002um'
+    )
+    print('Using the older spaceranger run to determine in-tissue bins')
+else:
+    sr_filtered_dir = sr_dir
+    print('Using the newer spaceranger run to determine in-tissue bins')
+
 #   In the tutorial at https://nbviewer.org/github/Teichlab/bin2cell/blob/main/notebooks/demo.ipynb,
 #   the filtered feature matrix, with additional gene-filtering steps, is used
 #   before using specific settings to segment the gene-expression-based image
@@ -52,7 +67,7 @@ print(f"{datetime.datetime.now()} | Building and preprocessing AnnData")
 #   (i.e. using the raw feature matrix as in 'adata'), we want similar secondary
 #   segmentation behavior as in the tutorial, hence 'adata_filtered'
 adata_filtered = b2c.read_visium(
-    sr_dir,
+    sr_filtered_dir,
     count_file = 'filtered_feature_bc_matrix.h5',
     source_image_path = raw_image_path,
     spaceranger_image_path = sr_spatial_dir

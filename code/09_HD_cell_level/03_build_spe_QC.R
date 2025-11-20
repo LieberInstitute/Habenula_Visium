@@ -9,12 +9,12 @@ library(sessioninfo)
 library(spatialLIBD)
 
 spe_raw_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_raw.rds'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_raw.rds'
 )
 spe_norm_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
 )
-plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'QC')
+plot_dir = here('plots', '09_HD_cell_level', 'new_samples2', 'QC')
 min_umi_cutoff = 10
 H1_MVPY9BW_A1_8433_artifact = 34326
 

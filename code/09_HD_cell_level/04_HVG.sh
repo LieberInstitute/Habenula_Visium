@@ -4,8 +4,8 @@
 #SBATCH --job-name=04_HVG
 #SBATCH -c 4
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples/logs/04_HVG.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples/logs/04_HVG.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples2/logs/04_HVG.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples2/logs/04_HVG.txt
 
 set -e
 

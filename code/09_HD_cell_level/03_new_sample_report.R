@@ -6,10 +6,10 @@ library(SpatialExperiment)
 library(sessioninfo)
 
 spe_cell_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
 )
 spe_bin_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'spe_norm_filtered.rds'
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'spe_norm_filtered.rds'
 )
 sample_colors = c(
     'H1-W369TJK_D1_9090' = '#FF4A1C',
@@ -19,7 +19,7 @@ sample_colors = c(
     'H1-6FX4YN3_D1_9902' = '#5FB49C'
 )
 metric_names = c('sum_umi', 'sum_gene', 'expr_chrM_ratio')
-plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'QC', 'after')
+plot_dir = here('plots', '09_HD_cell_level', 'new_samples2', 'QC', 'after')
 
 spe_cell = readRDS(spe_cell_path)
 spe_bin = readRDS(spe_bin_path)

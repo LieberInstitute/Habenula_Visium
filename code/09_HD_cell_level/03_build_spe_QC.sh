@@ -4,8 +4,8 @@
 #SBATCH --job-name=03_build_spe_QC
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples/logs/03_build_spe_QC.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples/logs/03_build_spe_QC.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples2/logs/03_build_spe_QC.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples2/logs/03_build_spe_QC.txt
 
 set -e
 

@@ -6,10 +6,10 @@ library(scater)
 library(BiocParallel)
 
 spe_in_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
 )
 hvg_out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'HVGs.txt'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'HVGs.txt'
 )
 
 num_cores = as.numeric(Sys.getenv("SLURM_CPUS_ON_NODE"))
