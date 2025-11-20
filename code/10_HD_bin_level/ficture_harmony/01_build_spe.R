@@ -15,7 +15,8 @@ spe_out_path = here(
     'spe_raw.rds'
 )
 spe_old_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'spe_raw.rds'
+    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'spe_raw.rds'
 )
 sr_out_dirs = here(
     sample_info$spaceranger_dir, 'outs', 'binned_outputs', 'square_002um'
