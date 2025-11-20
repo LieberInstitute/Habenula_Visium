@@ -12,7 +12,7 @@ library(rjson)
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 sample_info = read_csv(sample_info_path, show_col_types = FALSE)
 spe_in_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
     'spe_raw.rds'
 )
 scalefactors_path = here(
@@ -20,11 +20,11 @@ scalefactors_path = here(
     'spatial', 'scalefactors_json.json'
 )
 counts_out_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
     'ficture_inputs', 'normalized', 'input.tsv.gz'
 )
 minmax_out_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
     'ficture_inputs', 'normalized', 'minmax.tsv'
 )
 buffer_prop = 0.05
