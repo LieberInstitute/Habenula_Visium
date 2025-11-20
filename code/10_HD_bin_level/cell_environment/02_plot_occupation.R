@@ -4,13 +4,14 @@ library(segmented)
 library(sessioninfo)
 
 occupation_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'cell_environment',
     'occupation', '%s.csv'
 )
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
-plot_dir = here('plots', '10_HD_bin_level', 'probe_fix', 'cell_environment')
+sample_id_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+plot_dir = here('plots', '10_HD_bin_level', 'new_samples', 'cell_environment')
 
-sample_ids = readLines(sample_id_path)
+sample_info = read_csv(sample_id_path, show_col_types = FALSE)
+sample_ids = sample_info$sample_id
 
 occupation_df_list = list()
 for (sample_id in sample_ids) {
