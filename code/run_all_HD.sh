@@ -148,7 +148,7 @@ job_id_6_11=$(sbatch --dependency=afterok:${job_id_1_6} --parsable 06_plot_marke
 #   LIANA
 ################################################################################
 
-cd $repo_dir/code/10_HD_bin_level/exploratory
+cd $repo_dir/code/10_HD_bin_level/liana
 job_id_7_1=$(sbatch --dependency=afterok:${job_id_4_8} --parsable 12_preprocess_anndata.sh)
 job_id_7_2=$(sbatch --dependency=afterok:${job_id_7_1} --parsable 14_0_liana_prepare_inputs.sh)
 job_id_7_3=$(sbatch --dependency=afterok:${job_id_7_2} --parsable 14_2_LIANA+_preprocess.sh)
