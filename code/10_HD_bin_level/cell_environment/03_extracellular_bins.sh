@@ -2,8 +2,8 @@
 #SBATCH -p katun
 #SBATCH --mem=32G
 #SBATCH --job-name=03_extracellular_bins
-#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/cell_environment/logs/03_extracellular_bins.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/cell_environment/logs/03_extracellular_bins.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/cell_environment/logs/03_extracellular_bins.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/cell_environment/logs/03_extracellular_bins.txt
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
 
