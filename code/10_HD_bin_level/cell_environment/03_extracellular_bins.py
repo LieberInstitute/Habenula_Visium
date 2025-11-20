@@ -7,12 +7,12 @@ import pandas as pd
 
 import extracellular_bins_functions as ebf
 
-sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
+sample_id_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 plot_dir = here(
-    'plots', '10_HD_bin_level', 'probe_fix', 'cell_environment', 'random_cells'
+    'plots', '10_HD_bin_level', 'new_samples', 'cell_environment', 'random_cells'
 )
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'new_samples', 'cell_environment',
     'extracellular_bins.csv.gz'
 )
 
@@ -22,15 +22,15 @@ expansion_distance = 5
 
 os.makedirs(plot_dir, exist_ok=True)
 
-with open(sample_id_path, 'r') as f:
-    all_samples = f.read().splitlines()
+sample_info = pd.read_csv(sample_id_path)
+all_samples = sample_info['sample_id'].tolist()
 
 extracellular_df_list = []
 for sample_id in all_samples:
     print(f"{datetime.datetime.now()} | Processing sample {sample_id}")
 
     pre_out_path = here(
-        'processed-data', '09_HD_cell_level', 'probe_fix',
+        'processed-data', '09_HD_cell_level', 'new_samples',
         f'{sample_id}_pre_bin2cell.h5ad'
     )
     adata = sc.read(pre_out_path)
