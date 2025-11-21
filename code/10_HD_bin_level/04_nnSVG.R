@@ -11,11 +11,11 @@ task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 sample_id = sample_info$sample_id[task_id]
 
 spe_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'rasterized',
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'rasterized',
     sprintf('spe_%s_lowres.rds', sample_id)
 )
 out_path <- here(
-    "processed-data", '10_HD_bin_level', 'new_samples', "nnSVG_out",
+    "processed-data", '10_HD_bin_level', 'new_samples2', "nnSVG_out",
     paste0(sample_id, ".csv")
 )
 
