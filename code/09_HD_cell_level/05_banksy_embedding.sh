@@ -4,8 +4,8 @@
 #SBATCH --job-name=05_banksy_embedding
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples/logs/05_banksy_embedding.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples/logs/05_banksy_embedding.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples2/logs/05_banksy_embedding.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples2/logs/05_banksy_embedding.txt
 
 set -e
 
