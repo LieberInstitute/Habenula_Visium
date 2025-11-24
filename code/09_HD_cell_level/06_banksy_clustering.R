@@ -13,18 +13,18 @@ res = c(seq_len(20) / 10, 4, 8)[as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))]
 res_neat = paste0('res', sub('\\.', '_', as.character(res)))
 
 spe_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples',
+    'processed-data', '09_HD_cell_level', 'new_samples2',
     sprintf('spe_banksy_%s.rds', lambda_neat)
 )
 spe_orig_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
 )
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', lambda_neat,
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'banksy', lambda_neat,
     sprintf('leiden_%s.csv', res_neat)
 )
 plot_dir = here(
-    'plots', '09_HD_cell_level', 'new_samples', 'banksy', lambda_neat,
+    'plots', '09_HD_cell_level', 'new_samples2', 'banksy', lambda_neat,
     sprintf('leiden_%s', res_neat)
 )
 random_seed = 0

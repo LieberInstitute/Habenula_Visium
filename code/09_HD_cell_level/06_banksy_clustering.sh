@@ -3,10 +3,10 @@
 #SBATCH --mem=50G
 #SBATCH --job-name=06_banksy_clustering
 #SBATCH -c 1
-#SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples/logs/06_banksy_clustering_%a.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples/logs/06_banksy_clustering_%a.txt
-#SBATCH --array=3,4,5,6,7,8,10,11,12,13,14,15,16,17,19,20%10
+#SBATCH -t 2-0:00:00
+#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples2/logs/06_banksy_clustering_%a.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples2/logs/06_banksy_clustering_%a.txt
+#SBATCH --array=11
 
 set -e
 
