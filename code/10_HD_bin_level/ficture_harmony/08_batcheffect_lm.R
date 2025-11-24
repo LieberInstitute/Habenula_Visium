@@ -13,14 +13,14 @@ k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 
 out_path = sprintf(
   here(
-    "processed-data", "10_HD_bin_level", "new_samples", "ficture_harmony",
+    "processed-data", "10_HD_bin_level", "new_samples2", "ficture_harmony",
     "spe", "count_cleaned_%d.rds"
   ),
   k
 )
 spe <- readRDS(
   here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
     'spe_raw.rds'
   )
 )

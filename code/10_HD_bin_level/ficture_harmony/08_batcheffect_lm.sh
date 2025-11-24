@@ -4,8 +4,8 @@
 #SBATCH --job-name=08_batcheffect_lm
 #SBATCH -c 1
 #SBATCH -t 96:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/08_batcheffect_lm_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/08_batcheffect_lm_%a.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/08_batcheffect_lm_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/08_batcheffect_lm_%a.txt
 #SBATCH --array=1-10%10
 
 set -e
