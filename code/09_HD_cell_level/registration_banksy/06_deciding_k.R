@@ -15,11 +15,11 @@ task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 ref_name = ref_names[task_id]
 
 in_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
     'lambda0_2', sprintf('cor_vs_%s.rds', ref_name)
 )
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
     'lambda0_2', 'ranking', sprintf('%s.csv', ref_name)
 )
 resolution = c(seq_len(20) / 10, 4, 8)
