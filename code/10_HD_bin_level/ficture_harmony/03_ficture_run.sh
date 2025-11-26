@@ -1,12 +1,13 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=450G
+#SBATCH --mem=200G
 #SBATCH --job-name=03_ficture_run
 #SBATCH -c 1
 #SBATCH -t 4-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/03_ficture_run_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/03_ficture_run_%a.txt
-#SBATCH --array=100
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/03_ficture_run_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/03_ficture_run_%a.txt
+#SBATCH --array=19,30%2
+#SBATCH --exclude=compute-175
 
 #   The main step to run FICTURE on library-size normalized inputs
 
@@ -26,35 +27,21 @@ module load visium_hd/1.0
 
 #   Path definitions
 repo_dir=$(git rev-parse --show-toplevel)
-in_dir=$repo_dir/processed-data/10_HD_bin_level/new_samples/ficture_harmony/ficture_inputs/normalized
-out_dir=$repo_dir/processed-data/10_HD_bin_level/new_samples/ficture_harmony/ficture_outputs/normalized/k_${SLURM_ARRAY_TASK_ID}
+in_dir=$repo_dir/processed-data/10_HD_bin_level/new_samples2/ficture_harmony/ficture_inputs/normalized
+out_dir=$repo_dir/processed-data/10_HD_bin_level/new_samples2/ficture_harmony/ficture_outputs/normalized/k_${SLURM_ARRAY_TASK_ID}
 
 mkdir -p $out_dir
 
 #   Run full FICTURE pipeline
-if [[ $SLURM_ARRAY_TASK_ID -eq 2 ]]; then
-    #   Overwride the default of finding top 3 factors, since only 2 exist
-    ficture run_together \
-        --in-tsv $in_dir/input.tsv.gz \
-        --in-minmax $in_dir/minmax.tsv \
-        --out-dir $out_dir \
-        --mu-scale 1 \
-        --major-axis X \
-        --all \
-        --n-factor ${SLURM_ARRAY_TASK_ID} \
-        --decode-top-k 2 \
-        --fractional-count 1
-else
-    ficture run_together \
-        --in-tsv $in_dir/input.tsv.gz \
-        --in-minmax $in_dir/minmax.tsv \
-        --out-dir $out_dir \
-        --mu-scale 1 \
-        --major-axis X \
-        --all \
-        --n-factor ${SLURM_ARRAY_TASK_ID} \
-        --fractional-count 1
-fi
+ficture run_together \
+    --in-tsv $in_dir/input.tsv.gz \
+    --in-minmax $in_dir/minmax.tsv \
+    --out-dir $out_dir \
+    --mu-scale 1 \
+    --major-axis X \
+    --all \
+    --n-factor ${SLURM_ARRAY_TASK_ID} \
+    --fractional-count 1
 
 echo "**** Job ends ****"
 date
