@@ -4,12 +4,12 @@ library(here)
 library(tidyverse)
 
 spe_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
 )
 docs_dir = here('code', '09_HD_cell_level', 'quick_shiny', 'www')
 banksy_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
-    'leiden_res1_4.csv'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'banksy', 'lambda0_2',
+    'leiden_res0_1.csv'
 )
 
 ## spatialLIBD uses golem
