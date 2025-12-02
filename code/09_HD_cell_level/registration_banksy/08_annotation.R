@@ -43,6 +43,31 @@ manual_anno = c(
 region_colors = c(
     habenula = "#B1092D", thalamus = "#0B52C4", other = "#DFE1DD"
 )
+fine_colors = c(
+    OPC = '#FABC3C',
+    Oligo = '#F19143',
+    Microglia = '#F55536',
+    Astrocyte = '#A31B00',
+    Endo = '#2D2524',
+    Ambig = '#5A5752',
+    MHb.1 = '#072AC8',
+    MHb.2 = '#3EA4FD',
+    LHb.2.7 = '#2FD290',
+    LHb.1.3.4 = '#004F2D',
+    Excit.Thal = '#564592',
+    Inhib.Thal = '#946AEF'
+)
+broad_colors = c(
+    OPC = '#FABC3C',
+    Oligo = '#F19143',
+    Microglia = '#F55536',
+    Astrocyte = '#A31B00',
+    Endo = '#2D2524',
+    Ambig = '#5A5752',
+    MHb = '#072AC8',
+    LHb = '#004F2D',
+    Thal = '#564592'
+)
 
 dir.create(plot_dir, showWarnings = FALSE)
 for (subdir in c('region', 'banksy_as_is', 'banksy_C4_C27', 'anno_broad', 'anno_fine')) {
@@ -169,9 +194,14 @@ spe$anno_fine = factor(
 )
 
 for (sample_id in unique(spe$sample_id)) {
-    for (anno_level in c('anno_broad', 'anno_fine')) {
-        vis_clus_HD(spe, sample_id, anno_level, file.path(plot_dir, anno_level))
-    }
+    vis_clus_HD(
+        spe, sample_id, 'anno_broad', file.path(plot_dir, 'anno_broad'),
+        colors = broad_colors
+    )
+    vis_clus_HD(
+        spe, sample_id, 'anno_fine', file.path(plot_dir, 'anno_fine'),
+        colors = fine_colors
+    )
 }
 
 session_info()
