@@ -8,13 +8,13 @@ library(spatialLIBD)
 library(sessioninfo)
 
 spe_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
 )
 xenium_path = here(
     'processed-data', '09_HD_cell_level',
     'XeniumPrimeHuman5Kpan_tissue_pathways_metadata.csv'
 )
-plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'QC')
+plot_dir = here('plots', '09_HD_cell_level', 'new_samples2', 'QC')
 
 ################################################################################
 #   Functions
