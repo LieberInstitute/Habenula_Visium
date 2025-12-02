@@ -44,29 +44,29 @@ region_colors = c(
     habenula = "#B1092D", thalamus = "#0B52C4", other = "#DFE1DD"
 )
 fine_colors = c(
-    OPC = '#FABC3C',
-    Oligo = '#F19143',
-    Microglia = '#F55536',
-    Astrocyte = '#A31B00',
+    OPC = '#fceb00',
+    Oligo = '#c02000',
+    Microglia = '#072AC8',
+    Astrocyte = '#906139',
     Endo = '#2D2524',
-    Ambig = '#5A5752',
-    MHb.1 = '#072AC8',
+    MHb.1 = '#f38021',
     MHb.2 = '#3EA4FD',
-    LHb.2.7 = '#2FD290',
+    LHb.2.7 = '#00a900',
     LHb.1.3.4 = '#004F2D',
-    Excit.Thal = '#564592',
-    Inhib.Thal = '#946AEF'
+    Excit.Thal = '#f757c1',
+    Inhib.Thal = '#8257df',
+    Ambig = '#5A5752'
 )
 broad_colors = c(
-    OPC = '#FABC3C',
-    Oligo = '#F19143',
-    Microglia = '#F55536',
-    Astrocyte = '#A31B00',
+    OPC = '#fceb00',
+    Oligo = '#c02000',
+    Microglia = '#072AC8',
+    Astrocyte = '#906139',
     Endo = '#2D2524',
-    Ambig = '#5A5752',
-    MHb = '#072AC8',
+    MHb = '#f38021',
     LHb = '#004F2D',
-    Thal = '#564592'
+    Thal = '#f757c1',
+    Ambig = '#5A5752'
 )
 
 dir.create(plot_dir, showWarnings = FALSE)
@@ -85,7 +85,7 @@ vis_clus_HD = function(spe, sampleid, clustervar, plot_dir, ...) {
     for (i in seq_len(2)) {
         p = vis_clus(
                 spe, sampleid = sampleid, clustervar = clustervar,
-                is_stitched = TRUE, point_size = 20, spatial = FALSE, ...
+                is_stitched = TRUE, point_size = 25, spatial = FALSE, ...
             ) +
             guides(fill = guide_legend(override.aes = list(size = 8)))
     }
@@ -186,11 +186,11 @@ write_csv(anno_df, out_path)
 #   Now plot the broad and fine annotations on each sample
 spe$anno_broad = factor(
     anno_df$broad_cell_type[match(spe$banksy, anno_df$cluster)],
-    levels = unique(anno_df$broad_cell_type)
+    levels = names(broad_colors)
 )
 spe$anno_fine = factor(
     anno_df$fine_cell_type[match(spe$banksy, anno_df$cluster)],
-    levels = unique(anno_df$fine_cell_type)
+    levels = names(fine_colors)
 )
 
 for (sample_id in unique(spe$sample_id)) {
