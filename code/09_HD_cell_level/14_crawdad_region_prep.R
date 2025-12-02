@@ -11,34 +11,30 @@ library(rjson)
 library(sessioninfo)
 
 spe_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
-)
-plot_dir = here(
-    'plots', '09_HD_cell_level', 'new_samples', 'crawdad', 'region', 'region_anno'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
 )
 banksy_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
-    'leiden_res1_4.csv'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'banksy', 'lambda0_2',
+    'leiden_res1_7.csv'
 )
 cor_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
     'lambda0_2', 'cor_vs_snRNAseq_fine.rds'
 )
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'crawdad', 'region',
     'input_cells.csv.gz'
 )
 hb_thal_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples',
+    'processed-data', '09_HD_cell_level', 'new_samples2',
     'hb_thal_manual_anno.csv.gz'
 )
-cor_index = 14
-region_colors = c(
-    habenula = "#B1092D", thalamus = "#0B52C4", other = "#DFE1DD"
+ct_anno_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
+    'cluster_annotation.csv'
 )
 
-dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
 
 sample_info = read_csv(sample_info_path, show_col_types = FALSE)
@@ -65,50 +61,18 @@ scale_df = tibble(
     micron_per_px = micron_per_px
 )
 
-#   Compute a reference table matching clusters to fine cell types
-anno_df = readRDS(cor_path)[[cor_index]] |>
-    annotate_registered_clusters(cutoff_merge_ratio = 0.1) |>
-    as_tibble() |>
-    mutate(
-        layer_label = ifelse(
-            layer_confidence == 'good', layer_label, paste0('C',cluster)
-        )
-    )
+#   Mapping from clusters to cell types
+anno_df = read_csv(ct_anno_path, show_col_types = FALSE)
 
 #   Read in Shiny annotations of habenula and thalamus regions and attach to
 #   the SpatialExperiment object
 region_df = read_csv(hb_thal_anno_path, show_col_types = FALSE) |>
-    dplyr::rename(key = spot_name) |>
-    #   It's possible for a cell to be annotated as habenula and thalamus. In
-    #   this case, call it habenula
-    group_by(key) |>
-    arrange(ManualAnnotation) |>
-    slice_head(n = 1) |>
-    ungroup()
+    dplyr::rename(key = spot_name)
 
 spe$region_anno = tibble(key = spe$key) |>
     left_join(region_df, by = 'key') |>
     pull(ManualAnnotation) |>
     replace_na('other')
-
-#   Plot the region annotation on each sample to make sure it worked
-for (sample_id in sample_info$sample_id) {
-    #   Run twice to overcome a bug with different behavior on the first plot
-    for (i in seq_len(2)) {
-        p = vis_clus(
-                spe, sampleid = sample_id, clustervar = 'region_anno',
-                is_stitched = TRUE, point_size = 20, spatial = FALSE,
-                colors = region_colors
-            ) +
-                guides(fill = guide_legend(override.aes = list(size = 8)))
-    }
-    png(
-        file.path(plot_dir, sprintf('%s.png', sample_id)),
-        width = 1500, height = 1500
-    )
-    print(p)
-    dev.off()
-}
 
 #   Gather spatial coordinates, Banksy clusters, and region annotations into a
 #   single CSV for input to CRAWDAD
@@ -125,10 +89,11 @@ cell_df = tibble(
     ) |>
     left_join(read_csv(banksy_path, show_col_types = FALSE), by = 'key') |>
     mutate(
-        cell_type = factor(
-            anno_df$layer_label[match(banksy_lambda0_2, anno_df$cluster)]
-        )
-    )
+        cell_type = anno_df$fine_cell_type[
+            match(as.character(banksy_lambda0_2), anno_df$cluster)
+        ]
+    ) |>
+    filter(cell_type != 'Ambig')
 
 #   Signal to drop combinations of cell type and region that consitute less than
 #   1% of the region's cells
