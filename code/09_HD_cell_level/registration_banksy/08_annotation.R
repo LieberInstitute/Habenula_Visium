@@ -6,6 +6,7 @@ library(here)
 library(tidyverse)
 library(spatialLIBD)
 library(Polychrome)
+library(sessioninfo)
 
 cor_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
@@ -22,6 +23,10 @@ spe_path = here(
 hb_anno_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples2',
     'hb_thal_manual_anno.csv.gz'
+)
+out_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
+    'cluster_annotation.csv'
 )
 plot_dir = here(
     'plots', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
@@ -40,9 +45,33 @@ region_colors = c(
 )
 
 dir.create(plot_dir, showWarnings = FALSE)
-dir.create(file.path(plot_dir, 'region'), showWarnings = FALSE)
-dir.create(file.path(plot_dir, 'banksy_as_is'), showWarnings = FALSE)
-dir.create(file.path(plot_dir, 'banksy_C4_C27'), showWarnings = FALSE)
+for (subdir in c('region', 'banksy_as_is', 'banksy_C4_C27', 'anno_broad', 'anno_fine')) {
+    dir.create(file.path(plot_dir, subdir), showWarnings = FALSE)
+}
+
+
+################################################################################
+#   Functions
+################################################################################
+
+#   vis_clus with HD settings and saving to file
+vis_clus_HD = function(spe, sampleid, clustervar, plot_dir, ...) {
+    #   Run twice to overcome a bug with different behavior on the first plot
+    for (i in seq_len(2)) {
+        p = vis_clus(
+                spe, sampleid = sampleid, clustervar = clustervar,
+                is_stitched = TRUE, point_size = 20, spatial = FALSE, ...
+            ) +
+            guides(fill = guide_legend(override.aes = list(size = 8)))
+    }
+    
+    png(
+        file.path(plot_dir, sprintf('%s.png', sampleid)),
+        width = 1500, height = 1500
+    )
+    print(p)
+    dev.off()
+}
 
 ################################################################################
 #   Add Banksy clusters and region annotation to the SPE. Plot both
@@ -71,37 +100,18 @@ spe$region_anno = tibble(key = spe$key) |>
 
 #   Plot the region annotation on each sample to make sure it worked
 for (sample_id in unique(spe$sample_id)) {
-    #   Run twice to overcome a bug with different behavior on the first plot
-    for (i in seq_len(2)) {
-        p_region = vis_clus(
-                spe, sampleid = sample_id, clustervar = 'region_anno',
-                is_stitched = TRUE, point_size = 20, spatial = FALSE,
-                colors = region_colors
-            ) +
-                guides(fill = guide_legend(override.aes = list(size = 8)))
-        p_clus = vis_clus(
-                spe, sampleid = sample_id, clustervar = 'banksy',
-                is_stitched = TRUE, point_size = 20, spatial = FALSE,
-                colors = cluster_colors
-            ) +
-                guides(fill = guide_legend(override.aes = list(size = 8)))
-        
-    }
-    png(
-        file.path(plot_dir, 'region', sprintf('%s.png', sample_id)),
-        width = 1500, height = 1500
+    vis_clus_HD(
+        spe, sample_id, 'region_anno', file.path(plot_dir, 'region'),
+        colors = region_colors
     )
-    print(p_region)
-    dev.off()
+
     #   The reason for plotting Banksy results again is to have consistent
     #   colors across samples; some samples lack certain clusters and the
     #   default original plots improperly assigned colors to clusters
-    png(
-        file.path(plot_dir, 'banksy_as_is', sprintf('%s.png', sample_id)),
-        width = 1500, height = 1500
+    vis_clus_HD(
+        spe, sample_id, 'banksy', file.path(plot_dir, 'banksy_as_is'),
+        colors = cluster_colors
     )
-    print(p_clus)
-    dev.off()
 }
 
 ################################################################################
@@ -122,18 +132,10 @@ spe$temp = case_when(
 
 #   Check locations of clusters 4 and 27
 for (sample_id in unique(spe$sample_id)) {
-    p_clus = vis_clus(
-            spe, sampleid = sample_id, clustervar = 'temp',
-            is_stitched = TRUE, point_size = 20, spatial = FALSE,
-            colors = cluster_colors
-        ) +
-            guides(fill = guide_legend(override.aes = list(size = 8)))
-    png(
-        file.path(plot_dir, 'banksy_C4_C27', sprintf('%s.png', sample_id)),
-        width = 1500, height = 1500
+    vis_clus_HD(
+        spe, sample_id, 'temp', file.path(plot_dir, 'banksy_C4_C27'),
+        colors = cluster_colors
     )
-    print(p_clus)
-    dev.off()
 }
 
 #   Create mapping of cluster to cell type
@@ -153,3 +155,23 @@ anno_df = readRDS(cor_path)[[cor_index]] |>
     ) |>
     select(cluster, broad_cell_type, fine_cell_type) |>
     arrange(as.integer(cluster))
+
+write_csv(anno_df, out_path)
+
+#   Now plot the broad and fine annotations on each sample
+spe$anno_broad = factor(
+    anno_df$broad_cell_type[match(spe$banksy, anno_df$cluster)],
+    levels = unique(anno_df$broad_cell_type)
+)
+spe$anno_fine = factor(
+    anno_df$fine_cell_type[match(spe$banksy, anno_df$cluster)],
+    levels = unique(anno_df$fine_cell_type)
+)
+
+for (sample_id in unique(spe$sample_id)) {
+    for (anno_level in c('anno_broad', 'anno_fine')) {
+        vis_clus_HD(spe, sample_id, anno_level, file.path(plot_dir, anno_level))
+    }
+}
+
+session_info()
