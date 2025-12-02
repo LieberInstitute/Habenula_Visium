@@ -7,23 +7,25 @@ library(sessioninfo)
 
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 result_paths = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'crawdad', 'region',
     'output', '%s_%s_results.csv'
 )
 in_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'crawdad', 'region',
     'input_cells.csv.gz'
 )
 spe_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
 )
-plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'crawdad', 'region')
+plot_dir = here('plots', '09_HD_cell_level', 'new_samples2', 'crawdad', 'region')
 regions = c('habenula', 'thalamus')
 cell_type_colors = c(
     Astrocyte = "#2F97FF", placeholder = "#FFA239", Other = "#DFE1DD"
 )
 
-dir.create(file.path(plot_dir, 'spatial_plots'), showWarnings = FALSE)
+dir.create(
+    file.path(plot_dir, 'spatial_plots'), recursive = TRUE, showWarnings = FALSE
+)
 
 ################################################################################
 #   Functions
@@ -118,7 +120,7 @@ for (region_name in regions) {
         )
 }
 
-for (hb_subtype in c('MHb.2', 'LHb.7')) {
+for (hb_subtype in c('Astrocyte', 'LHb.2.7')) {
     #   Plot Z-scores vs scale for a particularly interesting cell-type pair
     p = do.call(rbind, result_list) |>
         #   Average Z-scores across permutations
@@ -133,8 +135,8 @@ for (hb_subtype in c('MHb.2', 'LHb.7')) {
         #   Focus on a particular pair (and its reverse)
         filter(
             region == 'habenula',
-            ((neighbor == hb_subtype) & (reference == 'Astrocyte')) |
-            ((neighbor == 'Astrocyte') & (reference == hb_subtype))
+            ((neighbor == hb_subtype) & (reference == 'MHb.2')) |
+            ((neighbor == 'MHb.2') & (reference == hb_subtype))
         ) |>
         ggplot(aes(x = scale, y = Z, color = sample_id, group = sample_id)) +
             geom_line() +
@@ -146,7 +148,7 @@ for (hb_subtype in c('MHb.2', 'LHb.7')) {
             labs(x = 'Scale (Microns)', color = 'Sample ID')
 
     pdf(
-        file.path(plot_dir, sprintf('z_scores_%s_astro.pdf', hb_subtype)),
+        file.path(plot_dir, sprintf('z_scores_%s_MHb_2.pdf', hb_subtype)),
         width = 10, height = 5
     )
     print(p)
@@ -156,7 +158,7 @@ for (hb_subtype in c('MHb.2', 'LHb.7')) {
         filter(region_anno == 'habenula') |>
         mutate(
             cell_type = ifelse(
-                cell_type %in% c(hb_subtype, 'Astrocyte'), cell_type, 'Other'
+                cell_type %in% c(hb_subtype, 'MHb.2'), cell_type, 'Other'
             )
         ) |>
         select(key, cell_type)
@@ -169,9 +171,9 @@ for (hb_subtype in c('MHb.2', 'LHb.7')) {
         pull(cell_type)
 
     #   Plot the cell-type pair spatially (only habenula) in each sample
-    names(cell_type_colors) = c('Astrocyte', hb_subtype, 'Other')
+    names(cell_type_colors) = c('MHb.2', hb_subtype, 'Other')
     dir.create(
-        file.path(plot_dir, 'spatial_plots', sprintf('%s_astro', hb_subtype)),
+        file.path(plot_dir, 'spatial_plots', sprintf('%s_MHb_2', hb_subtype)),
         showWarnings = FALSE
     )
     for (sample_id in sample_ids) {
@@ -187,7 +189,7 @@ for (hb_subtype in c('MHb.2', 'LHb.7')) {
         }
         png(
             file.path(
-                plot_dir, 'spatial_plots', sprintf('%s_astro', hb_subtype),
+                plot_dir, 'spatial_plots', sprintf('%s_MHb_2', hb_subtype),
                 sprintf('%s.png', sample_id)
             ),
             width = 1500, height = 1500
