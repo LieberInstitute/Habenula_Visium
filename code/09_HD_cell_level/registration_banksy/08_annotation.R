@@ -30,7 +30,10 @@ plot_dir = here(
 manual_anno = c(
     '18' = 'Astrocyte', # From mapping to multiome 'C.20.Astrocyte'
     '24' = 'Oligo',     # From mapping to multiome 'C.02.Oligo'
-    '12' = 'TODO'       # Need to check manual hb/thal anno in HD (referencing multiome would be circular!)
+    # From manual hb/thal anno in HD (referencing multiome would be circular!)
+    '12' = 'Excit.Thal',
+    '16' = 'LHb.2.7',   # Just rewriting HD results ('LHb.7/LHb.2')
+    '22' = 'LHb.1.3.4'  # Same here
 )
 region_colors = c(
     habenula = "#B1092D", thalamus = "#0B52C4", other = "#DFE1DD"
@@ -39,6 +42,7 @@ region_colors = c(
 dir.create(plot_dir, showWarnings = FALSE)
 dir.create(file.path(plot_dir, 'region'), showWarnings = FALSE)
 dir.create(file.path(plot_dir, 'banksy_as_is'), showWarnings = FALSE)
+dir.create(file.path(plot_dir, 'banksy_C4_C27'), showWarnings = FALSE)
 
 ################################################################################
 #   Add Banksy clusters and region annotation to the SPE. Plot both
@@ -89,6 +93,9 @@ for (sample_id in unique(spe$sample_id)) {
     )
     print(p_region)
     dev.off()
+    #   The reason for plotting Banksy results again is to have consistent
+    #   colors across samples; some samples lack certain clusters and the
+    #   default original plots improperly assigned colors to clusters
     png(
         file.path(plot_dir, 'banksy_as_is', sprintf('%s.png', sample_id)),
         width = 1500, height = 1500
@@ -101,6 +108,48 @@ for (sample_id in unique(spe$sample_id)) {
 #   Annotate clusters with cell types
 ################################################################################
 
+message('Cluster 12 locates in thalamus based on manual annotation:')
+table(spe$region_anno[spe$banksy == '12'])
+
+#   These clusters registered with poor layer confidence and look ambiguous.
+#   Where are they located?
+cluster_colors = region_colors
+names(cluster_colors) = c('4', '27', 'other')
+spe$temp = case_when(
+    spe$banksy %in% c('4', '27') ~ spe$banksy,
+    TRUE ~ 'other'
+)
+
+#   Check locations of clusters 4 and 27
+for (sample_id in unique(spe$sample_id)) {
+    p_clus = vis_clus(
+            spe, sampleid = sample_id, clustervar = 'temp',
+            is_stitched = TRUE, point_size = 20, spatial = FALSE,
+            colors = cluster_colors
+        ) +
+            guides(fill = guide_legend(override.aes = list(size = 8)))
+    png(
+        file.path(plot_dir, 'banksy_C4_C27', sprintf('%s.png', sample_id)),
+        width = 1500, height = 1500
+    )
+    print(p_clus)
+    dev.off()
+}
+
+#   Create mapping of cluster to cell type
 anno_df = readRDS(cor_path)[[cor_index]] |>
     annotate_registered_clusters(cutoff_merge_ratio = 0.1) |>
-    as_tibble()
+    as_tibble() |>
+    mutate(
+        fine_cell_type = case_when(
+            cluster %in% names(manual_anno) ~ manual_anno[cluster],
+            layer_confidence == 'poor' ~ 'Ambig',
+            cluster == '12' ~ 'Excit.Thal',
+            TRUE ~ layer_label
+        ),
+        broad_cell_type = str_replace(
+            fine_cell_type, '(\\..*$|Excit\\.|Inhib\\.)', ''
+        )
+    ) |>
+    select(cluster, broad_cell_type, fine_cell_type) |>
+    arrange(as.integer(cluster))
