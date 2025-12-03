@@ -1,7 +1,8 @@
-#   Since there are a huge number of spatial registration results to comb
-#   through, this script intends to automate selecting interesting results.
-#   Use Chunyu's code to rank Banksy results by 4 metrics, largely based on
-#   "clean" matches against the snRNA-seq data
+#   This script provides a data-driven method for ranking spatial registration
+#   results across all tested resolutions, ultimately deciding upon an optimal
+#   clustering resolution from Banksy. It ultimately uses the Yalcinbas
+#   snRNA-seq reference data, favors covering many cell types (especially
+#   uniquely) and penalizes ambiguously mapped clusters
 
 library(here)
 library(tidyverse)
@@ -23,128 +24,76 @@ out_path = here(
     'lambda0_2', 'ranking', sprintf('%s.csv', ref_name)
 )
 resolution = c(seq_len(20) / 10, 4, 8)
+max_ambig_clusters = 10
 
 dir.create(dirname(out_path), showWarnings = FALSE)
 
-minmax_scale = function(x) (x - min(x)) / (max(x) - min(x))
-
 this_cor = readRDS(in_path)
 
-#   Annotate clusters
-annotated_clusters = lapply(
-    this_cor, annotate_registered_clusters, cutoff_merge_ratio = 0.1
-)
+#   Gather registration info across all resolutions in a single tibble
+anno_df_list = list()
+for (i in seq_len(length(this_cor))) {
+    anno_df_list[[i]] = this_cor[[i]] |>
+        annotate_registered_clusters(cutoff_merge_ratio = 0.1) |>
+        as_tibble() |>
+        mutate(res = resolution[i])
+}
+anno_df = bind_rows(anno_df_list)
 
-# N of cell type covered
-filtered_clusters = lapply(
-    annotated_clusters,
-    function(df) {
-        # filter layer_confidence is good and multiple clusters matching one
-        # cell type
-        df_good <- df[df$layer_confidence == "good", ]
-        df_good <- df_good[!grepl("/", df_good$layer_label), ]  
-        return(df_good)
-    }
-)
-filtered_cell_type_counts = sapply(
-    filtered_clusters, function(df) length(unique(df$layer_label))
-)
+#   Count fraction of habenula and non-habenula cell types covered uniquely by
+#   at least one cluster (by resolution)
+unique_df = anno_df |>
+    filter(layer_confidence == 'good', !grepl('/', layer_label)) |>
+    group_by(res) |>
+    summarize(
+        frac_unique_non_hb = length(
+            unique(layer_label[!grepl("^[ML]Hb", layer_label)])
+        ) / 7,
+        frac_unique_hb = length(
+            unique(layer_label[grepl("^[ML]Hb", layer_label)])
+        ) / 10
+    )
 
-original_cluster_counts = sapply(
-    annotated_clusters, function(df) length(unique(df$cluster))
-)
+#   Count fraction of habenula and non-habenula cell types covered in any way by
+#   at least one cluster (by resolution)
+shared_df = anno_df |>
+    filter(layer_confidence == 'good') |>
+    separate_longer_delim(layer_label, delim = '/') |>
+    group_by(res, cluster) |>
+    filter(all(grepl('^MHb', layer_label)) | all(grepl('^LHb', layer_label))) |>
+    group_by(res) |>
+    summarize(frac_shared_hb = length(unique(layer_label)) / 10)
 
-# N of habenula cell type covered
-mhb_lhb_counts = sapply(
-    filtered_clusters,
-    function(df) {
-        length(unique(df$layer_label[grepl("MHb|LHb", df$layer_label)]))
-    }
-)
-
-# N of one-to-one
-filtered_clusters_one = lapply(
-    annotated_clusters,
-    function(df) {
-        # filter layer_confidence is good
-        df = df |> separate_rows(layer_label, sep = "/", convert = FALSE)
-        df_good = df[df$layer_confidence == "good", ]
-
-        # find duplicated layer_label and cluster
-        dup_labels = df_good$layer_label[
-            duplicated(df_good$layer_label) |
-            duplicated(df_good$layer_label, fromLast = TRUE)
-        ]
-        dup_clusters = df_good$cluster[
-            duplicated(df_good$cluster) |
-            duplicated(df_good$cluster, fromLast = TRUE)
-        ]
-
-        # remove duplicated layer_label or cluster
-        df_unique = df_good[
-            !(df_good$layer_label %in% dup_labels) & 
-            !(df_good$cluster %in% dup_clusters),
-        ]
-
-        return(df_unique)
-    }
-)
-
-filtered_cell_type_counts_one = sapply(
-    filtered_clusters_one, function(df) length(unique(df$layer_label))
-)
-
-# N of mhb_lhb_counts (clusters mapped to all mhb/lhb are also included)
-filtered_clusters_pure = lapply(
-    annotated_clusters,
-    function(df) {
-        # filter layer_confidence is good
-        df = df |> separate_rows(layer_label, sep = "/", convert = FALSE)
-        df_good = df[df$layer_confidence == "good", ]
-
-        # for each cluster, only keep all the labels are MHb or LHb
-        # specifically
-        df_pure = df_good |>
-            group_by(cluster) |>
-            filter(
-                all(grepl("MHb", layer_label)) |
-                all(grepl("LHb", layer_label))
-            ) |>
-            ungroup()
-
-        return(df_pure)
-    }
-)
-
-filtered_cell_type_pure = sapply(
-    filtered_clusters_pure,
-    function(df) length(unique(df$layer_label))
-)
-
-# summary
-cell_type_summary = tibble(
-    resolution = resolution,
-    original_cluster_count = original_cluster_counts,
-    unique_cell_type_count = filtered_cell_type_counts,
-    unique_mhb_lhb_counts = mhb_lhb_counts,
-    one_to_one_cell_type_count = filtered_cell_type_counts_one,
-    multiple_mhb_lhb_counts = filtered_cell_type_pure
-)
-
-score_unique <- minmax_scale(cell_type_summary$unique_cell_type_count)
-score_mhb_lhb <- minmax_scale(cell_type_summary$unique_mhb_lhb_counts)
-score_one_to_one <- minmax_scale(cell_type_summary$one_to_one_cell_type_count)
-score_multiple_mhb_lhb <- minmax_scale(
-    cell_type_summary$multiple_mhb_lhb_counts
-)
-
-cell_type_summary$score_total <- score_unique + score_mhb_lhb +
-    score_one_to_one + score_multiple_mhb_lhb
-cell_type_summary$score_total_scaled <- minmax_scale(
-    cell_type_summary$score_total
-)
-cell_type_summary <- cell_type_summary[order(-cell_type_summary$score_total), ]
-
-write_csv(cell_type_summary, out_path)
+#   Calculate fraction of ambiguous mappings, join with other metrics, and score
+anno_df |>
+    group_by(res) |>
+    summarize(
+        num_clusters = n(),
+        #   Fraction of clusters considered to map ambiguously
+        frac_ambig = mean(
+            (layer_confidence == 'poor') |
+            !(
+                #   Either it's split across 1+ MHb clusters
+                grepl('^(MHb\\.[1-3]/*)+$', layer_label) |
+                #   Or 1+ LHb clusters
+                grepl('^(LHb\\.[1-7]/*)+$', layer_label) |
+                #   Or 1 cluster of any type
+                !grepl('/', layer_label)
+            )
+        )
+    ) |>
+    left_join(unique_df, by = "res") |>
+    left_join(shared_df, by = "res") |>
+    mutate(
+        #   Weight all 3 metrics equally, except don't even consider resolutions
+        #   with too many ambiguous clusters
+        final_score = ifelse(
+            round(num_clusters * frac_ambig) > max_ambig_clusters,
+            0,
+            (frac_unique_non_hb + frac_unique_hb + frac_shared_hb) / 3
+        )
+    ) |>
+    arrange(desc(final_score), frac_ambig) |>
+    write_csv(out_path)
 
 session_info()

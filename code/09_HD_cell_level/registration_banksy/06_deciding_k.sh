@@ -1,13 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=10G
+#SBATCH --mem=5G
 #SBATCH --job-name=06_deciding_k
 #SBATCH -c 1
 #SBATCH -t 1:00:00
 #SBATCH -o ../../../processed-data/09_HD_cell_level/new_samples2/registration_banksy/logs/06_deciding_k_%a.txt
 #SBATCH -e ../../../processed-data/09_HD_cell_level/new_samples2/registration_banksy/logs/06_deciding_k_%a.txt
 #SBATCH --array=1-2%2
-#SBATCH --exclude=compute-175
 
 set -e
 
