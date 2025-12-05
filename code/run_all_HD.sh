@@ -108,6 +108,7 @@ cd $repo_dir/code/09_HD_cell_level/registration_banksy
 job_id_4_6=$(sbatch --dependency=afterok:${job_id_4_5} --parsable 01_registration_wrapper.sh)
 job_id_4_7=$(sbatch --dependency=afterok:${job_id_4_6} --parsable 02_cor_heatmap.sh)
 job_id_4_8=$(sbatch --dependency=afterok:${job_id_4_7} --parsable 06_deciding_k.sh)
+job_id_4_9=$(sbatch --dependency=afterok:${job_id_4_8} --parsable 08_annotation.sh)
 
 
 ################################################################################
@@ -115,13 +116,13 @@ job_id_4_8=$(sbatch --dependency=afterok:${job_id_4_7} --parsable 06_deciding_k.
 ################################################################################
 
 cd $repo_dir/code/09_HD_cell_level
-job_id_5_1=$(sbatch --dependency=afterok:${job_id_4_8} --parsable 07_xenium_genes.sh)
+job_id_5_1=$(sbatch --dependency=afterok:${job_id_4_9} --parsable 07_xenium_genes.sh)
 
 cd $repo_dir/code/09_HD_cell_level/quick_shiny
 #   Now locally run 01_app.R, exporting CSV of habenula and thalamus annotations
 
 cd $repo_dir/code/09_HD_cell_level
-job_id_5_2=$(sbatch --dependency=afterok:${job_id_4_8} --parsable 14_crawdad_region_prep.sh)
+job_id_5_2=$(sbatch --dependency=afterok:${job_id_4_9} --parsable 14_crawdad_region_prep.sh)
 job_id_5_3=$(sbatch --dependency=afterok:${job_id_5_2} --parsable 15_crawdad_region_run.sh)
 job_id_5_4=$(sbatch --dependency=afterok:${job_id_5_3} --parsable 16_crawdad_region_plot.sh)
 
@@ -149,7 +150,7 @@ job_id_6_11=$(sbatch --dependency=afterok:${job_id_1_6} --parsable 06_plot_marke
 ################################################################################
 
 cd $repo_dir/code/10_HD_bin_level/liana
-job_id_7_1=$(sbatch --dependency=afterok:${job_id_4_8} --parsable 12_preprocess_anndata.sh)
+job_id_7_1=$(sbatch --dependency=afterok:${job_id_4_9} --parsable 12_preprocess_anndata.sh)
 job_id_7_2=$(sbatch --dependency=afterok:${job_id_7_1} --parsable 14_0_liana_prepare_inputs.sh)
 job_id_7_3=$(sbatch --dependency=afterok:${job_id_7_2} --parsable 14_2_LIANA+_preprocess.sh)
 job_id_7_4=$(sbatch --dependency=afterok:${job_id_7_3} --parsable 14_3_LIANA+_preprocss_extracellular.sh)
