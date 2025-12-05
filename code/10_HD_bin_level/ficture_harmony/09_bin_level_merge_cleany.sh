@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=64G
+#SBATCH --mem=50G
 #SBATCH --job-name=09_bin_level_merge_cleany
-#SBATCH -c 1
+#SBATCH -c 8
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/09_bin_level_merge_cleany.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/09_bin_level_merge_cleany.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/09_bin_level_merge_cleany.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/09_bin_level_merge_cleany.txt
 
 set -e
 
