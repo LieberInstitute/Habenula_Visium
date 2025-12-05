@@ -4,9 +4,9 @@
 #SBATCH --job-name=11_cor_heatmap_norm
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/11_cor_heatmap_norm_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/11_cor_heatmap_norm_%a.txt
-#SBATCH --array=3
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/11_cor_heatmap_norm_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/11_cor_heatmap_norm_%a.txt
+#SBATCH --array=1-30%10
 
 set -e
 
