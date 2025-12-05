@@ -5,12 +5,13 @@ library(sessioninfo)
 library(spatialLIBD)
 
 model_paths = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
     'registration', 'modeling_results', 'cleaning_y',
     sprintf('%d.rds', c(seq(3, 40), 70, 100))
 )
 plot_dir = here(
-    'plots', '10_HD_bin_level', 'new_samples', 'ficture_harmony', 'registration'
+    'plots', '10_HD_bin_level', 'new_samples2', 'ficture_harmony', 'registration',
+    'cleaning_y'
 )
 
 #   List all paths and names for reference data
@@ -26,7 +27,7 @@ ref_paths = c(
     #   Multiome data
     here(
         'processed-data', '05_snRNA-seq_model_stats',
-        'enrichment_snRNA-multiome_v2.rds'
+        'enrichment_snRNA-multiome_v5.rds'
     ),
     #    Visium BayesSpace clusters (k 2 through 28)
     here(
@@ -46,7 +47,7 @@ ref_path = ref_paths[task_id]
 ref_name = ref_names[task_id]
 
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
     'registration', 'cor_rds', 'cleaning_y', sprintf('cor_vs_%s.rds', ref_name)
 )
 
