@@ -10,37 +10,23 @@ library(sessioninfo)
 
 sample_id = "H1-MVPY9BW_A1_8433"
 spe_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'spe_norm_filtered.rds'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
 )
-cluster_1_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
-    'leiden_res1_4_subset.csv'
+cluster_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'banksy', 'lambda0_2',
+    'leiden_res1_2.csv'
 )
-cluster_3_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
-    'leiden_res1_7_subset.csv'
+plot_path = here(
+    'plots', '09_HD_cell_level', 'new_samples2', 'banksy', 'lambda0_2',
+    'leiden_res1_2', sprintf('clusters_%s_custom.png', sample_id)
 )
-plot_1_path = here(
-    'plots', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
-    'leiden_res1_4', sprintf('clusters_%s_subset_custom_1.png', sample_id)
-)
-plot_2_path = here(
-    'plots', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
-    'leiden_res1_4', sprintf('clusters_%s_subset_custom_2.png', sample_id)
-)
-plot_3_path = here(
-    'plots', '09_HD_cell_level', 'new_samples', 'banksy', 'lambda0_2',
-    'leiden_res1_7', sprintf('clusters_%s_subset_custom_1.png', sample_id)
-)
-cluster_colors_1 = c(
-    "2" = "#35B42B",
-    "3" = "#2F97FF",
-    "9" = "#583E23",
-    "11" = "#FFA239",
+cluster_colors = c(
+    "5" = "#35B42B",
+    "13" = "#2F97FF",
+    "14" = "#583E23",
+    "18" = "#FFA239",
     "other" = "#DFE1DD"
 )
-cluster_colors_2 = c("17" = "#001DAF", "other" = "#DFE1DD")
-cluster_colors_3 = c("5" = "#001DAF", "other" = "#DFE1DD")
 
 ################################################################################
 #   Functions
@@ -73,50 +59,24 @@ temp = colnames(spe)
 colData(spe) = colData(spe) |>
     as_tibble() |>
     left_join(
-        read_csv(cluster_1_path, show_col_types = FALSE) |>
-            dplyr::rename(banksy_1_4 = banksy_lambda0_2),
-        by = 'key'
-    ) |>
-    left_join(
-        read_csv(cluster_3_path, show_col_types = FALSE) |>
-            dplyr::rename(banksy_1_7 = banksy_lambda0_2),
+        read_csv(cluster_path, show_col_types = FALSE) |>
+            dplyr::rename(banksy = banksy_lambda0_2),
         by = 'key'
     ) |>
     mutate(
-        banksy_1 = factor(
+        banksy = factor(
             ifelse(
-                as.character(banksy_1_4) %in% names(cluster_colors_1),
-                as.character(banksy_1_4),
+                as.character(banksy) %in% names(cluster_colors),
+                as.character(banksy),
                 "other"
             ),
-            levels = names(cluster_colors_1)
-        ),
-        banksy_2 = factor(
-            ifelse(
-                as.character(banksy_1_4) %in% names(cluster_colors_2),
-                as.character(banksy_1_4),
-                "other"
-            ),
-            levels = names(cluster_colors_2)
-        ),
-        banksy_3 = factor(
-            ifelse(
-                as.character(banksy_1_7) %in% names(cluster_colors_3),
-                as.character(banksy_1_7),
-                "other"
-            ),
-            levels = names(cluster_colors_3)
+            levels = names(cluster_colors)
         )
     ) |>
     DataFrame()
 colnames(spe) = temp
-stopifnot(!any(is.na(spe$banksy_1)))
-stopifnot(!any(is.na(spe$banksy_2)))
-stopifnot(!any(is.na(spe$banksy_3)))
+stopifnot(!any(is.na(spe$banksy)))
 
-#   Plot each custom plot
-vis_banksy(spe, 'banksy_1', cluster_colors_1, plot_1_path)
-vis_banksy(spe, 'banksy_2', cluster_colors_2, plot_2_path)
-vis_banksy(spe, 'banksy_3', cluster_colors_3, plot_3_path)
+vis_banksy(spe, 'banksy', cluster_colors, plot_path)
 
 session_info()
