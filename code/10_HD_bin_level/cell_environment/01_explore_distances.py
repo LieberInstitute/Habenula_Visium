@@ -24,18 +24,18 @@ ficture_WM_cluster = 3
 mpp = 0.3
 
 ficture_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
     'bin_level_clusters_batch.csv.gz'
 )
 pre_out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples',
+    'processed-data', '09_HD_cell_level', 'new_samples2',
     f'{sample_id}_pre_bin2cell.h5ad'
 )
 df_out_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'cell_environment',
     'occupation', f'{sample_id}.csv'
 )
-plot_dir = here('plots', '10_HD_bin_level', 'new_samples', 'cell_environment')
+plot_dir = here('plots', '10_HD_bin_level', 'new_samples2', 'cell_environment')
 
 os.makedirs(plot_dir, exist_ok=True)
 os.makedirs(df_out_path.parent, exist_ok=True)
