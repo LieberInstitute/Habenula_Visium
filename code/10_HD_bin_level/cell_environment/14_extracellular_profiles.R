@@ -2,6 +2,7 @@ library(tidyverse)
 library(here)
 library(spatialLIBD)
 library(duckdb)
+library(ggrepel)
 library(sessioninfo)
 
 spe_path = here(
@@ -24,6 +25,9 @@ ct_anno_path = here(
     'cluster_annotation.csv'
 )
 ficture_colnames = c('sample_id', 'barcode', 'FICTURE_k23')
+plot_dir = here('plots', '10_HD_bin_level', 'new_samples2', 'cell_environment')
+
+dir.create(plot_dir, showWarnings = FALSE)
 
 spe = readRDS(spe_path)
 
@@ -45,17 +49,8 @@ col_data = tibble(
 )
 duckdb_register(con, "col_data", col_data)
 
-bin_df = fread(extra_path) |>
-    as_tibble() |>
-    dplyr::rename(barcode = bin_id) |>
-    mutate(cell_id = paste(cell_id, sample_id, sep = '_')) |>
-    left_join(col_data, by = 'cell_id') |>
-    left_join(
-        fread(ficture_path, select = ficture_colnames) |>
-            as_tibble(),
-        by = c('sample_id', 'barcode')
-    )
-
+#   Form a 2um bin-level tibble of extracellular bins with info about the
+#   associated cell type, FICTURE cluster, and cellular size
 sql_query = sprintf(
     "
     SELECT 
@@ -66,13 +61,51 @@ sql_query = sprintf(
         col_data.bins_per_cell,
         ficture.FICTURE_k23
     FROM read_csv_auto('%s') AS extra
-    LEFT JOIN col_data 
+    INNER JOIN col_data 
         ON extra.cell_id || '_' || extra.sample_id = col_data.cell_id
     LEFT JOIN read_csv_auto('%s') AS ficture
         ON extra.sample_id = ficture.sample_id AND extra.bin_id = ficture.barcode
     ",
     extra_path, ficture_path
 )
-
 bin_df = dbGetQuery(con, sql_query) |>
     as_tibble()
+duckdb_register(con, "bin_df", bin_df)
+
+#   By cell type, summarize average info about number of cellular and
+#   extracellular bins
+cell_df = dbGetQuery(
+        con,
+        "
+        SELECT
+            cell_id,
+            cell_type,
+            bins_per_cell AS num_cellular_bins,
+            COUNT(*) AS num_extra_bins
+        FROM bin_df
+        GROUP BY cell_id, cell_type, bins_per_cell
+        "
+    ) |>
+    as_tibble() |>
+    group_by(cell_type) |>
+    summarize(
+        mean_cellular_bins = mean(num_cellular_bins),
+        mean_extra_bins = mean(num_extra_bins)
+    )
+
+#   Examine how different cell types compare in terms of number of cellular and
+#   extracellular bins. Done as a scatterplot with a regression line as a means
+#   of indirectly showing which cell types are in relatively more-dense areas
+#   (i.e. deviating downward from the regression line)
+p = cell_df |>
+    filter(cell_type != 'Ambig') |>
+    ggplot(aes(x = mean_cellular_bins, y = mean_extra_bins, label = cell_type)) +
+        geom_point() +
+        geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+        geom_smooth(method = "lm", se = FALSE, linetype = "dotted", color = "blue") +
+        geom_text_repel(size = 5) +
+        labs(x = "Mean Cellular Bins", y = "Mean Extracellular Bins") +
+        theme_bw(base_size = 20)
+pdf(file.path(plot_dir, "cell_sizes_scatter.pdf"))
+print(p)
+dev.off()
