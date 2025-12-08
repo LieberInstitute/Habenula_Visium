@@ -2,8 +2,8 @@
 #SBATCH -p katun
 #SBATCH --mem=5G
 #SBATCH --job-name=02_plot_occupation
-#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/cell_environment/logs/02_plot_occupation.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/cell_environment/logs/02_plot_occupation.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/cell_environment/logs/02_plot_occupation.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/cell_environment/logs/02_plot_occupation.txt
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
 

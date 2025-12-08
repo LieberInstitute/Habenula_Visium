@@ -1,0 +1,138 @@
+**** Job starts ****
+Mon Dec  8 01:37:41 PM EST 2025
+**** JHPCE info ****
+User: neagles
+Job id: 25483011
+Job name: 02_plot_occupation
+Node name: compute-168
+Task id: 
+
+Currently Loaded Modules:
+  1) JHPCE_ROCKY9_DEFAULT_ENV   2) JHPCE_tools/3.0
+
+ 
+
+Loading conda_R/4.5
+here() starts at /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium
+── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.5.2     ✔ tibble    3.3.0
+✔ lubridate 1.9.4     ✔ tidyr     1.3.1
+✔ purrr     1.1.0     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+Loading required package: MASS
+
+Attaching package: ‘MASS’
+
+The following object is masked from ‘package:dplyr’:
+
+    select
+
+Loading required package: nlme
+
+Attaching package: ‘nlme’
+
+The following object is masked from ‘package:dplyr’:
+
+    collapse
+
+null device 
+          1 
+null device 
+          1 
+Segmented model summary (occupation fraction vs. expansion distance):
+
+	***Regression Model with Segmented Relationship(s)***
+
+Call: 
+segmented.lm(obj = model, seg.Z = ~expansion_distance, psi = list(expansion_distance = 6))
+
+Estimated Break-Point(s):
+                          Est. St.Err
+psi1.expansion_distance 4.614  0.476
+
+Coefficients of the linear terms:
+                       Estimate Std. Error t value Pr(>|t|)    
+(Intercept)            0.080310   0.006726  11.940 8.03e-07 ***
+expansion_distance     0.021438   0.002746   7.807 2.69e-05 ***
+U1.expansion_distance -0.019740   0.002821  -6.997       NA    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.008683 on 9 degrees of freedom
+Multiple R-Squared: 0.964,  Adjusted R-squared: 0.952 
+
+Boot restarting based on 7 samples. Last fit:
+Convergence attained in 2 iterations (rel. change 1.6229e-13)
+─ Session info ───────────────────────────────────────────────────────────────
+ setting  value
+ version  R version 4.5.0 Patched (2025-05-21 r88220)
+ os       Rocky Linux 9.4 (Blue Onyx)
+ system   x86_64, linux-gnu
+ ui       X11
+ language (EN)
+ collate  en_US.UTF-8
+ ctype    en_US.UTF-8
+ tz       US/Eastern
+ date     2025-12-08
+ pandoc   3.7.0.1 @ /jhpce/shared/community/core/conda_R/4.5/bin/pandoc
+ quarto   NA
+
+─ Packages ───────────────────────────────────────────────────────────────────
+ package      * version date (UTC) lib source
+ bit            4.6.0   2025-03-06 [2] CRAN (R 4.5.0)
+ bit64          4.6.0-1 2025-01-16 [2] CRAN (R 4.5.0)
+ cli            3.6.5   2025-04-23 [1] CRAN (R 4.5.0)
+ crayon         1.5.3   2024-06-20 [1] CRAN (R 4.5.0)
+ dichromat      2.0-0.1 2022-05-02 [2] CRAN (R 4.5.0)
+ dplyr        * 1.1.4   2023-11-17 [1] CRAN (R 4.5.0)
+ farver         2.1.2   2024-05-13 [1] CRAN (R 4.5.0)
+ forcats      * 1.0.0   2023-01-29 [2] CRAN (R 4.5.0)
+ generics       0.1.4   2025-05-09 [1] CRAN (R 4.5.0)
+ ggplot2      * 3.5.2   2025-04-09 [1] CRAN (R 4.5.0)
+ glue           1.8.0   2024-09-30 [1] CRAN (R 4.5.0)
+ gtable         0.3.6   2024-10-25 [1] CRAN (R 4.5.0)
+ here         * 1.0.1   2020-12-13 [1] CRAN (R 4.5.0)
+ hms            1.1.3   2023-03-21 [2] CRAN (R 4.5.0)
+ labeling       0.4.3   2023-08-29 [1] CRAN (R 4.5.0)
+ lattice        0.22-7  2025-04-02 [3] CRAN (R 4.5.0)
+ lifecycle      1.0.4   2023-11-07 [1] CRAN (R 4.5.0)
+ lubridate    * 1.9.4   2024-12-08 [2] CRAN (R 4.5.0)
+ magrittr       2.0.3   2022-03-30 [1] CRAN (R 4.5.0)
+ MASS         * 7.3-65  2025-02-28 [3] CRAN (R 4.5.0)
+ nlme         * 3.1-168 2025-03-31 [3] CRAN (R 4.5.0)
+ pillar         1.11.0  2025-07-04 [1] CRAN (R 4.5.0)
+ pkgconfig      2.0.3   2019-09-22 [1] CRAN (R 4.5.0)
+ purrr        * 1.1.0   2025-07-10 [1] CRAN (R 4.5.0)
+ R6             2.6.1   2025-02-15 [1] CRAN (R 4.5.0)
+ RColorBrewer   1.1-3   2022-04-03 [1] CRAN (R 4.5.0)
+ readr        * 2.1.5   2024-01-10 [2] CRAN (R 4.5.0)
+ rlang          1.1.6   2025-04-11 [1] CRAN (R 4.5.0)
+ rprojroot      2.1.0   2025-07-12 [1] CRAN (R 4.5.0)
+ scales         1.4.0   2025-04-24 [1] CRAN (R 4.5.0)
+ segmented    * 2.1-4   2025-02-28 [1] CRAN (R 4.5.0)
+ sessioninfo  * 1.2.3   2025-02-05 [2] CRAN (R 4.5.0)
+ stringi        1.8.7   2025-03-27 [1] CRAN (R 4.5.0)
+ stringr      * 1.5.1   2023-11-14 [1] CRAN (R 4.5.0)
+ tibble       * 3.3.0   2025-06-08 [1] CRAN (R 4.5.0)
+ tidyr        * 1.3.1   2024-01-24 [1] CRAN (R 4.5.0)
+ tidyselect     1.2.1   2024-03-11 [1] CRAN (R 4.5.0)
+ tidyverse    * 2.0.0   2023-02-22 [2] CRAN (R 4.5.0)
+ timechange     0.3.0   2024-01-18 [2] CRAN (R 4.5.0)
+ tzdb           0.5.0   2025-03-15 [2] CRAN (R 4.5.0)
+ vctrs          0.6.5   2023-12-01 [1] CRAN (R 4.5.0)
+ vroom          1.6.5   2023-12-05 [2] CRAN (R 4.5.0)
+ withr          3.0.2   2024-10-28 [1] CRAN (R 4.5.0)
+
+ [1] /users/neagles/R/4.5
+ [2] /jhpce/shared/community/core/conda_R/4.5/R/lib64/R/site-library
+ [3] /jhpce/shared/community/core/conda_R/4.5/R/lib64/R/library
+ * ── Packages attached to the search path.
+
+──────────────────────────────────────────────────────────────────────────────
+**** Job ends ****
+Mon Dec  8 01:37:45 PM EST 2025
