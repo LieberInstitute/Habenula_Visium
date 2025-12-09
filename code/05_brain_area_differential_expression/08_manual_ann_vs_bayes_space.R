@@ -205,10 +205,6 @@ for (SpD in all_domains) {
     # Mark Matches and Non-Matches by sample
     df_domain_labeled <- df_domain|>
         mutate(match_status = ifelse(spot_name_ann2 %in% df_manual_annotations$spot_name2, "Habenula", "No-Habenula"))
-        # left_join(
-        #     df_manual_annotations[, "spot_name2", drop = FALSE],
-        #     by = c("spot_name_ann2" = "spot_name2")
-        # )
     
     df_plot <- df_domain_labeled |>
         group_by(brain_id, sample_id, !!sym(SpD), match_status) |>
@@ -231,7 +227,10 @@ for (SpD in all_domains) {
     # plot stacked bar with proportions by cluster in the x-axis
     plt1 <- ggplot(df_plot2, aes(x = SpD_label, y = prop, fill = match_status)) +
         geom_bar(position = "fill", stat = "identity") +
-        scale_y_continuous(labels = scales::percent) +
+        scale_y_continuous(
+            breaks = seq(0, 1, by = 0.25),   
+            labels = scales::number_format(accuracy = 0.01)
+        ) +
         labs(
             title = paste0("Habenula vs No-Habenula: ", SpD),
             x = NULL,
@@ -240,9 +239,11 @@ for (SpD in all_domains) {
         ) +
         theme_minimal() +
         theme(
-            axis.text.x = element_text(angle = 45, hjust = 1),
-            # panel.grid.major.x = element_blank(),
-            # panel.grid.minor.x = element_blank(),
+            axis.text.x = element_text(size = 12, angle = 45),
+            axis.text.y = element_text(size = 12),
+            plot.title   = element_text(size = 14, face = "bold", colour = "black"),
+            legend.title = element_text(colour = "black"),
+            legend.text  = element_text(size = 12, colour = "black"),
             legend.position = "bottom"
         ) 
     print(plt1)
