@@ -24,8 +24,14 @@ ct_anno_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
     'cluster_annotation.csv'
 )
-ficture_colnames = c('sample_id', 'barcode', 'FICTURE_k23')
+ficture_k = 10
+ficture_colnames = c('sample_id', 'barcode', sprintf('FICTURE_k%d', ficture_k))
 plot_dir = here('plots', '10_HD_bin_level', 'new_samples2', 'cell_environment')
+cell_type_colors = c(
+    MHb.2 = '#942911',
+    LHb.2.7 = '#0987AD',
+    Other = '#848484'
+)
 
 dir.create(plot_dir, showWarnings = FALSE)
 
@@ -59,14 +65,14 @@ sql_query = sprintf(
         extra.cell_id || '_' || extra.sample_id AS cell_id,
         col_data.cell_type,
         col_data.bins_per_cell,
-        ficture.FICTURE_k23
+        ficture.FICTURE_k%d as ficture_cluster
     FROM read_csv_auto('%s') AS extra
     INNER JOIN col_data 
         ON extra.cell_id || '_' || extra.sample_id = col_data.cell_id
     LEFT JOIN read_csv_auto('%s') AS ficture
         ON extra.sample_id = ficture.sample_id AND extra.bin_id = ficture.barcode
     ",
-    extra_path, ficture_path
+    ficture_k, extra_path, ficture_path
 )
 bin_df = dbGetQuery(con, sql_query) |>
     as_tibble()
@@ -107,5 +113,38 @@ p = cell_df |>
         labs(x = "Mean Cellular Bins", y = "Mean Extracellular Bins") +
         theme_bw(base_size = 20)
 pdf(file.path(plot_dir, "cell_sizes_scatter.pdf"))
+print(p)
+dev.off()
+
+#   For select cell types, examine proportions of FICTURE clusters present among
+#   their extracellular bins
+p = bin_df |>
+    filter(ficture_cluster != "NA") |>
+    mutate(
+        cell_type = ifelse(
+            cell_type %in% c('MHb.2', 'LHb.2.7'), cell_type, 'Other'
+        )
+    ) |>
+    group_by(cell_type, ficture_cluster) |>
+    summarize(num_bins = n()) |>
+    group_by(cell_type) |>
+    mutate(prop_bins = num_bins / sum(num_bins)) |>
+    ungroup() |>
+    mutate(
+        ficture_cluster = factor(
+            ficture_cluster,
+            levels = as.character(sort(unique(as.integer(ficture_cluster))))
+        )
+    ) |>
+    ggplot(aes(x = ficture_cluster, y = prop_bins, fill = cell_type)) +
+        geom_bar(stat = "identity", position = "dodge") +
+        scale_fill_manual(values = cell_type_colors) +
+        labs(
+            x = "FICTURE Cluster",
+            y = "Proportion of Extracellular Bins",
+            fill = "Cell Type"
+        ) +
+        theme_bw(base_size = 20)
+pdf(file.path(plot_dir, "extracellular_profile_k10.pdf"), width = 8, height = 6)
 print(p)
 dev.off()
