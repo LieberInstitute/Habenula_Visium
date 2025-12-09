@@ -5,6 +5,7 @@ library(duckdb)
 library(ggrepel)
 library(sessioninfo)
 
+ficture_k = 10
 spe_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
 )
@@ -24,7 +25,11 @@ ct_anno_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
     'cluster_annotation.csv'
 )
-ficture_k = 10
+model_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
+    'registration', 'modeling_results', 'cleaning_y',
+    sprintf('%d.rds', ficture_k)
+)
 ficture_colnames = c('sample_id', 'barcode', sprintf('FICTURE_k%d', ficture_k))
 plot_dir = here('plots', '10_HD_bin_level', 'new_samples2', 'cell_environment')
 cell_type_colors = c(
@@ -148,3 +153,23 @@ p = bin_df |>
 pdf(file.path(plot_dir, "extracellular_profile_k10.pdf"), width = 8, height = 6)
 print(p)
 dev.off()
+
+#   Mhb.2 is distinguished by FICTURE cluster 0, and LHb.2.7 by FICTURE cluster
+#   3. Check top enriched genes for these two clusters (by significance)
+message("Top enriched genes for FICTURE clusters 0 and 3:")
+readRDS(model_path)$enrichment |>
+    as_tibble() |>
+    dplyr::rename(gene_id = ensembl, gene_name = gene) |>
+    select(gene_id, gene_name, fdr_X0, fdr_X3) |>
+    pivot_longer(
+        cols = matches("^fdr_X[03]$"),
+        names_to = "ficture_cluster",
+        values_to = "fdr"
+    ) |>
+    mutate(ficture_cluster = str_remove(ficture_cluster, "^fdr_X")) |>
+    group_by(ficture_cluster) |>
+    arrange(fdr) |>
+    slice_head(n = 5) |>
+    print(n = 10)
+
+session_info()
