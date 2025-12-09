@@ -128,19 +128,6 @@ for (SpD in all_domains) {
         group_by(brain_id, sample_id, !!sym(SpD), match_status) |>
         summarise(count = n(), .groups = "drop") # plot absolute counts
     #head(df_plot)
-
-    # # Plot #spots by brain_id
-    # ggplot(df_plot, aes(x = as.factor(!!sym(SpD)), y = count, fill = match_status)) +
-    #     geom_bar(stat = "identity", position = "stack") +
-    #     facet_wrap(~ brain_id) +
-    #     labs(
-    #         title = paste0("Habenula vs No-Habenula by ", SpD, " and Sample"),
-    #         x = SpD,
-    #         y = "Number of Spots",
-    #         fill = "Match Status"
-    #     ) +
-    #     theme_minimal() +
-    #     theme(axis.text.x = element_text(angle = 45, hjust = 1))
     
     # Combine sample and cluster in x-axis
     df_plot <- df_plot |>
@@ -203,7 +190,7 @@ pdf(file = file.path(dir_plots, paste0("stacked_bar_manual-vs-BS_by_clusters.pdf
 
 for (SpD in all_domains) {
     
-    # SpD = all_domains[12]
+    # SpD = all_domains[10]
     message("Searching matching spots between manual annotations and ", SpD)
     
     # select columns to use
@@ -217,47 +204,47 @@ for (SpD in all_domains) {
     
     # Mark Matches and Non-Matches by sample
     df_domain_labeled <- df_domain|>
-        mutate(match_status = ifelse(spot_name_ann2 %in% df_manual_annotations$spot_name2, "Habenula", "No-Habenula")) |>
-        left_join(
-            df_manual_annotations[, "spot_name2", drop = FALSE],
-            by = c("spot_name_ann2" = "spot_name2")
-        )
-
-    # compute proportions
+        mutate(match_status = ifelse(spot_name_ann2 %in% df_manual_annotations$spot_name2, "Habenula", "No-Habenula"))
+        # left_join(
+        #     df_manual_annotations[, "spot_name2", drop = FALSE],
+        #     by = c("spot_name_ann2" = "spot_name2")
+        # )
+    
     df_plot <- df_domain_labeled |>
         group_by(brain_id, sample_id, !!sym(SpD), match_status) |>
         summarise(count = n(), .groups = "drop") |>
         group_by(brain_id, sample_id, !!sym(SpD)) |>
         mutate(prop = count / sum(count)) |>
         ungroup()
-    #head(df_plot)
-    # Add prefix and set ordered factor 
-    df_plot[[SpD]] <- paste0("SpD", df_plot[[SpD]])
-    df_plot[[SpD]] <- factor(df_plot[[SpD]], levels = unique(df_plot[[SpD]]))
+
+    # aggregate
+    df_plot2 <- df_plot |>
+        group_by(!!sym(SpD), match_status) |>
+        summarise(prop = mean(prop), .groups = "drop") |>
+        ungroup()
+    
+    df_plot2 <- df_plot2 |>
+        mutate(
+            SpD_label = paste0("SpD", stringr::str_pad(.data[[SpD]], width = 2, pad = "0"))
+        )
     
     # plot stacked bar with proportions by cluster in the x-axis
-    plt1 <- ggplot(df_plot, aes(x = .data[[SpD]], y = prop, fill = match_status)) +
-        geom_bar(stat = "identity") +
+    plt1 <- ggplot(df_plot2, aes(x = SpD_label, y = prop, fill = match_status)) +
+        geom_bar(position = "fill", stat = "identity") +
+        scale_y_continuous(labels = scales::percent) +
         labs(
             title = paste0("Habenula vs No-Habenula: ", SpD),
-            x = SpD,
-            y = "Proportion of Spots",
+            x = NULL,
+            y = "Proportion of Hb Spots",
             fill = "Match Status"
         ) +
         theme_minimal() +
         theme(
             axis.text.x = element_text(angle = 45, hjust = 1),
-            panel.grid.major.x = element_blank(),
-            panel.grid.minor.x = element_blank(),
-            legend.position = "top"
-        ) #+
-    # geom_text(
-    #     aes(label = scales::percent(prop, accuracy = 1)),
-    #     position = position_stack(vjust = 0.5),
-    #     size = 3,
-    #     color = "black"
-    # )
-    
+            # panel.grid.major.x = element_blank(),
+            # panel.grid.minor.x = element_blank(),
+            legend.position = "bottom"
+        ) 
     print(plt1)
     
 }
@@ -392,7 +379,7 @@ for (k in k_list) {
     
     # Set PDF for combine plot by sample and cluster in x-axis
     pdf(file = file.path(dir_plots, paste0("Habenula_BS_k", k, "_histogram_bar_manual-vs-BS_by_clusters-sample.pdf")))
-    print(plt1)
+    #print(plt1)
     dev.off() 
     
     message("Habenula Histogram done!")
