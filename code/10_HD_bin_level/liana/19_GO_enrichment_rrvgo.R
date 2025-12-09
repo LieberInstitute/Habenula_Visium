@@ -18,6 +18,7 @@ semData_CC <- godata('org.Hs.eg.db', ont = "CC")
 semData_MF <- godata('org.Hs.eg.db', ont = "MF")
 
 fdr_cutoff <- 0.05
+num_go_terms <- 20
 task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 if(task_id==1){
@@ -69,6 +70,8 @@ for (ont_type in c("BP", "MF", "CC")) {
   )
     go_res <- as.data.frame(go_obj) %>%
     filter(p.adjust < fdr_cutoff) %>%
+    arrange(p.adjust) %>%
+    slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
 
   if (nrow(go_res) > 0) {
@@ -123,6 +126,8 @@ for (ont_type in c("BP", "MF", "CC")) {
   )
     go_res <- as.data.frame(go_obj) %>%
     filter(p.adjust < fdr_cutoff) %>%
+    arrange(p.adjust) %>%
+    slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
 
   if (nrow(go_res) > 0) {
@@ -196,6 +201,8 @@ for (ont_type in c("BP", "MF", "CC")) {
   for (cluster in names(gene_list)) { 
     go_res <- as.data.frame(go_obj) %>%
     filter(p.adjust < fdr_cutoff, ONTOLOGY == ont_type, Cluster == cluster) %>%
+    arrange(p.adjust) %>%
+    slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
 
     if (nrow(go_res) > 0) {
@@ -296,6 +303,8 @@ for (ont_type in c("BP", "MF", "CC")) {
     message(sprintf("Cluster: %s, Ontology: %s", cluster, ont_type))
   go_res <- as.data.frame(go_obj) %>%
     filter(p.adjust < fdr_cutoff, ONTOLOGY == ont_type, Cluster == cluster) %>%
+    arrange(p.adjust) %>%
+    slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
 
     if (nrow(go_res) > 0) {
@@ -399,6 +408,8 @@ for (ont_type in c("BP", "MF", "CC")) {
   
   go_res <- as.data.frame(go_obj) %>%
     filter(p.adjust < fdr_cutoff, ONTOLOGY == ont_type, CLuster == cluster) %>%
+    arrange(p.adjust) %>%
+    slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
 
     if (nrow(go_res) > 0) {
@@ -496,6 +507,8 @@ for (ont_type in c("BP", "MF", "CC")) {
   
   go_res <- as.data.frame(go_obj) %>%
     filter(p.adjust < fdr_cutoff, ONTOLOGY == ont_type, CLuster == cluster) %>%
+    arrange(p.adjust) %>%
+    slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
 
     if (nrow(go_res) > 0) {
