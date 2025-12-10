@@ -407,7 +407,7 @@ for (ont_type in c("BP", "MF", "CC")) {
     message(sprintf("Cell type: %s, Factor: %s, Ontology: %s", cell_type, cluster, ont_type))
   
   go_res <- as.data.frame(go_obj) %>%
-    filter(p.adjust < fdr_cutoff, ONTOLOGY == ont_type, CLuster == cluster) %>%
+    filter(p.adjust < fdr_cutoff, ONTOLOGY == ont_type, Cluster == cluster) %>%
     arrange(p.adjust) %>%
     slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
@@ -506,7 +506,7 @@ for (ont_type in c("BP", "MF", "CC")) {
     message(sprintf("Cell type: %s, Factor: %s, Ontology: %s", cell_type, cluster, ont_type))
   
   go_res <- as.data.frame(go_obj) %>%
-    filter(p.adjust < fdr_cutoff, ONTOLOGY == ont_type, CLuster == cluster) %>%
+    filter(p.adjust < fdr_cutoff, ONTOLOGY == ont_type, Cluster == cluster) %>%
     arrange(p.adjust) %>%
     slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
