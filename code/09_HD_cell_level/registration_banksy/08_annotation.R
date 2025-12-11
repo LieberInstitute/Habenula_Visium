@@ -68,9 +68,15 @@ broad_colors = c(
     Thal = '#f757c1',
     Ambig = '#5A5752'
 )
+ambig_colors = c(
+    '4' = '#BF0505',
+    '12' = '#477BF4',
+    '27' = '#FCB036',
+    'Other' = '#DFE1DD'
+)
 
 dir.create(plot_dir, showWarnings = FALSE)
-for (subdir in c('region', 'banksy_as_is', 'banksy_C4_C27', 'anno_broad', 'anno_fine')) {
+for (subdir in c('region', 'banksy_as_is', 'banksy_ambig', 'anno_broad', 'anno_fine')) {
     dir.create(file.path(plot_dir, subdir), showWarnings = FALSE)
 }
 
@@ -148,18 +154,19 @@ table(spe$region_anno[spe$banksy == '12'])
 
 #   These clusters registered with poor layer confidence and look ambiguous.
 #   Where are they located?
-cluster_colors = region_colors
-names(cluster_colors) = c('4', '27', 'other')
-spe$temp = case_when(
-    spe$banksy %in% c('4', '27') ~ spe$banksy,
-    TRUE ~ 'other'
+spe$temp = factor(
+    case_when(
+        spe$banksy %in% c('4', '12', '27') ~ spe$banksy,
+        TRUE ~ 'Other'
+    ),
+    levels = names(ambig_colors)
 )
 
-#   Check locations of clusters 4 and 27
+#   Check locations of ambiguous clusters
 for (sample_id in unique(spe$sample_id)) {
     vis_clus_HD(
-        spe, sample_id, 'temp', file.path(plot_dir, 'banksy_C4_C27'),
-        colors = cluster_colors
+        spe, sample_id, 'temp', file.path(plot_dir, 'banksy_ambig'),
+        colors = ambig_colors
     )
 }
 
