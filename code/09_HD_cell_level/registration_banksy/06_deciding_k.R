@@ -8,6 +8,8 @@ library(here)
 library(tidyverse)
 library(sessioninfo)
 library(spatialLIBD)
+library(ComplexHeatmap)
+library(viridis)
 
 ref_names = c('snRNAseq_fine', 'snRNAseq_broad')
 
@@ -23,11 +25,14 @@ out_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
     'lambda0_2', 'ranking', sprintf('%s.csv', ref_name)
 )
+plot_dir = here(
+    'plots', '09_HD_cell_level', 'new_samples2', 'registration_banksy'
+)
 resolution = c(seq_len(20) / 10, 4, 8)
 max_ambig_clusters = 10
 
 dir.create(dirname(out_path), showWarnings = FALSE)
-
+dir.create(plot_dir, showWarnings = FALSE)
 this_cor = readRDS(in_path)
 
 #   Gather registration info across all resolutions in a single tibble
@@ -65,7 +70,7 @@ shared_df = anno_df |>
     summarize(frac_shared_hb = length(unique(layer_label)) / 10)
 
 #   Calculate fraction of ambiguous mappings, join with other metrics, and score
-anno_df |>
+metric_df = anno_df |>
     group_by(res) |>
     summarize(
         num_clusters = n(),
@@ -93,7 +98,40 @@ anno_df |>
             (frac_unique_non_hb + frac_unique_hb + frac_shared_hb) / 3
         )
     ) |>
-    arrange(desc(final_score), frac_ambig) |>
-    write_csv(out_path)
+    arrange(desc(final_score), frac_ambig)
+
+write_csv(metric_df, out_path)
+
+heatmap_mat = metric_df |>
+    select(
+        res, frac_unique_non_hb, frac_unique_hb, frac_shared_hb, final_score
+    ) |>
+    dplyr::rename(
+        'Unique Non-Hb' = frac_unique_non_hb,
+        'Unique Hb' = frac_unique_hb,
+        'Shared Hb' = frac_shared_hb,
+        'Final Score' = final_score
+    ) |>
+    column_to_rownames(var = 'res') |>
+    as.matrix()
+
+p = Heatmap(
+    heatmap_mat,
+    name = 'Score',
+    row_title = 'Banksy Resolution',
+    column_title = 'Metric',
+    col = viridis(100),
+    show_row_names = TRUE,
+    show_column_names = TRUE,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    cell_fun = function(j, i, x, y, width, height, fill) {
+        grid.text(sprintf("%.2f", heatmap_mat[i, j]), x, y,
+        gp = gpar(fontsize = 10))
+    }
+)
+pdf(file.path(plot_dir, sprintf('%s_top_results.pdf', ref_name)))
+draw(p)
+dev.off()
 
 session_info()
