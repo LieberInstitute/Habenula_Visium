@@ -130,7 +130,7 @@ p = Heatmap(
         gp = gpar(fontsize = 10))
     }
 )
-pdf(file.path(plot_dir, sprintf('%s_top_results.pdf', ref_name)))
+pdf(file.path(plot_dir, sprintf('%s_top_results.pdf', ref_name)), width = 5)
 draw(p)
 dev.off()
 
