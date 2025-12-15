@@ -29,3 +29,27 @@ spe$banksy = factor(
     as.character(cluster_df$banksy_lambda0_2[match(spe$key, cluster_df$key)]),
     levels = as.character(sort(unique(cluster_df$banksy_lambda0_2)))
 )
+
+gs_list <- gene_sets_prepare(db_, "Brain")
+
+es.max <- sctype_score(scRNAseqData = as.matrix(logcounts(sce)), 
+                       scaled = TRUE, 
+                       gs = gs_list$gs_positive)
+
+## compile scores
+cL_results <- purrr::map_dfr(clusters, function(cluster){
+    cluster_index = sce[[cl_col]] == cluster
+    
+    es.max.cl = sort(rowSums(es.max[,cluster_index]), decreasing = !0)
+    cL_resutls <- head(tibble(cluster = cluster, 
+                              type = names(es.max.cl), 
+                              scores = es.max.cl, 
+                              ncells = sum(cluster_index)
+    ),10)
+    return(cL_resutls)
+})
+
+sctype_scores <-  cL_results |> 
+    group_by(cluster) |> 
+    top_n(n = 1, wt = scores)  |>
+    mutate(confident = scores >= (ncells/4))
