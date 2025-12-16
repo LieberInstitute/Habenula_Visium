@@ -27,8 +27,8 @@ module list
 
 this_sample=H1-W369TJK_D1_9090
 repo_dir=$(git rev-parse --show-toplevel)
-in_dir=$repo_dir/processed-data/10_HD_bin_level/nest/input_habenula/${this_sample}.h5ad
-out_dir=$repo_dir/processed-data/10_HD_bin_level/nest
+in_dir=$repo_dir/processed-data/10_HD_bin_level/liana/input_habenula/${this_sample}.h5ad
+out_dir=$repo_dir/processed-data/10_HD_bin_level/liana
 
 module load singularity
 # navigate to the directory that has CellNEST repository

@@ -21,21 +21,23 @@ task_id = int(os.getenv('SLURM_ARRAY_TASK_ID'))
 
 #   Read input files
 in_dir = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'liana'
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'liana'
 )
 
 in_files = [ os.path.join(in_dir, f) for f in os.listdir(in_dir) if re.compile(r'.*\.h5ad$').match(f) ]
 
 if task_id == 1:
     in_files = [f for f in in_files if "extracellular" not in f]
-    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/figure/habenula/NMF"
-    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/NMF"
+    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula/NMF"
+    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/NMF"
     data_suffix = ""
+    out_file = os.path.join(in_dir, f"merged_five_files.h5ad")
 else:
     in_files = [f for f in in_files if "extracellular" in f and "lrdata" in f]
-    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/figure/habenula/NMF_extracellular"
-    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/NMF_extracellular"
-    data_suffix = "_extracellular"
+    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula_extracellular/NMF"
+    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/NMF_extracellular"
+    data_suffix = ""
+    out_file = os.path.join(in_dir, f"merged_five_files_extracellular.h5ad")
 
 os.makedirs(plot_dir, exist_ok=True)
 os.makedirs(table_dir, exist_ok=True)
@@ -47,12 +49,11 @@ adatas = [sc.read_h5ad(f) for f in in_files]
 for i, a in enumerate(adatas):
     print(f"{os.path.basename(in_files[i])}: {a.shape}")
 
-# merge the three objects
+# merge the five objects
 adata_merged = ad.concat(adatas, join="inner", label="batch", keys=[os.path.basename(f) for f in in_files])
 
 # save the merged object
-out_file = os.path.join(in_dir, f"merged_three_files{data_suffix}.h5ad")
-adata_merged.write(out_file)
+# adata_merged.write(out_file)
 
 print(f"Merged AnnData saved to {out_file}")
 
@@ -61,28 +62,27 @@ print(f"Merged AnnData saved to {out_file}")
 batches = adata_merged.obs["batch"].unique()
 
 x_offset = 0
-gap = 100  # gap between samples
+gap = 300  # gap between samples
 
 for b in batches:
     idx = adata_merged.obs["batch"] == b
-    coords = adata_merged.obsm["spatial"][idx, :]
-    # Shift the x-coordinates
-    adata_merged.obsm["spatial"][idx, 0] = coords[:, 0] + x_offset
-    # Calculate the width of the current sample to determine the next offset
-    width = coords[:, 0].max() - coords[:, 0].min()
-    x_offset += width + gap  # update offset for next sample
+    coords = adata_merged.obsm["spatial"][idx, :].copy()
+    coords[:, 0] = coords[:, 0] - coords[:, 0].min()
+    width = coords[:, 0].max()
+    coords[:, 0] = coords[:, 0] + x_offset
+    adata_merged.obsm["spatial"][idx, :] = coords
+    x_offset += width + gap
 
 print("✅ Spatial coordinates shifted successfully.")
 
 # Perform NMF analysis on the merged data
 #   Read in DataFrames of ligand-receptor stats for each donor and concatenate
-li.multi.nmf(adata_merged, n_components=None, inplace=True, random_state=0, max_iter=200, verbose=True)
+li.multi.nmf(adata_merged, n_components=None, inplace=True, random_state=0, max_iter=300, verbose=True)
 
 # Extract the variable loadings
 lr_loadings = li.ut.get_variable_loadings(adata_merged, varm_key='NMF_H').set_index('index')
 
 lr_loadings.to_csv(os.path.join(table_dir, f"NMF_H_loadings{data_suffix}.csv"))
-
 
 # Extract the factor scores
 factor_scores = li.ut.get_factor_scores(adata_merged, obsm_key='NMF_W')
@@ -124,9 +124,11 @@ cell_type_df.rename(columns={'__obs_name__': '__obs_name__'}, inplace=True)
 factor_scores_annot = factor_scores.merge(cell_type_df, on='__obs_name__', how='left')
 
 # Calculate average factor scores for each cell type
+factor_cols = [c for c in factor_scores_annot.columns if c.startswith("Factor")]
+
 factor_means = (
     factor_scores_annot
-    .groupby('cell_type')[['Factor1', 'Factor2', 'Factor3', 'Factor4']]
+    .groupby("cell_type")[factor_cols]
     .mean()
     .reset_index()
 )
@@ -156,7 +158,6 @@ plt.savefig(os.path.join(plot_dir, f"celltype_factor_heatmap{data_suffix}.pdf"),
 # =============================================================
 # Cell type specific NMF: Perform NMF analysis for each cell type separately.
 cell_types = adata_merged.obs['cell_type'].unique()
-cell_types = cell_types.remove_categories(['OPC'])
 
 for cell_type in cell_types:
     adata_ct = adata_merged[adata_merged.obs['cell_type'] == cell_type].copy()
@@ -164,7 +165,7 @@ for cell_type in cell_types:
         print(f"Skipping cell type {cell_type} due to insufficient observations ({adata_ct.n_obs})")
         continue
     print(f"Performing NMF for cell type: {cell_type} with {adata_ct.n_obs} observations")
-    li.multi.nmf(adata_ct, n_components=None, inplace=True, random_state=0, max_iter=200, verbose=True)    
+    li.multi.nmf(adata_ct, n_components=None, inplace=True, random_state=0, max_iter=300, verbose=True)    
     # Extract the variable loadings
     lr_loadings_ct = li.ut.get_variable_loadings(adata_ct, varm_key='NMF_H').set_index('index')
     safe_ct = re.sub(r'[\\/:"*?<>|]+', "_", str(cell_type)) 
@@ -185,32 +186,32 @@ for cell_type in cell_types:
                 dpi=300, bbox_inches='tight')
     plt.close()
 
-for cell_type in ["OPC"]:
-    adata_ct = adata_merged[adata_merged.obs['cell_type'] == cell_type].copy()
-    if adata_ct.n_obs < 10:
-        print(f"Skipping cell type {cell_type} due to insufficient observations ({adata_ct.n_obs})")
-        continue
-    print(f"Performing NMF for cell type: {cell_type} with {adata_ct.n_obs} observations")
-    li.multi.nmf(adata_ct, n_components=5, inplace=True, random_state=0, max_iter=200, verbose=True)    
-    # Extract the variable loadings
-    lr_loadings_ct = li.ut.get_variable_loadings(adata_ct, varm_key='NMF_H').set_index('index')
-    safe_ct = re.sub(r'[\\/:"*?<>|]+', "_", str(cell_type)) 
-    lr_loadings_ct.to_csv(os.path.join(table_dir, f"NMF_H_loadings_{safe_ct}{data_suffix}.csv"))
+# for cell_type in ["OPC"]:
+#     adata_ct = adata_merged[adata_merged.obs['cell_type'] == cell_type].copy()
+#     if adata_ct.n_obs < 10:
+#         print(f"Skipping cell type {cell_type} due to insufficient observations ({adata_ct.n_obs})")
+#         continue
+#     print(f"Performing NMF for cell type: {cell_type} with {adata_ct.n_obs} observations")
+#     li.multi.nmf(adata_ct, n_components=5, inplace=True, random_state=0, max_iter=200, verbose=True)    
+#     # Extract the variable loadings
+#     lr_loadings_ct = li.ut.get_variable_loadings(adata_ct, varm_key='NMF_H').set_index('index')
+#     safe_ct = re.sub(r'[\\/:"*?<>|]+', "_", str(cell_type)) 
+#     lr_loadings_ct.to_csv(os.path.join(table_dir, f"NMF_H_loadings_{safe_ct}{data_suffix}.csv"))
     
-    # Extract the factor scores
-    factor_scores_ct = li.ut.get_factor_scores(adata_ct, obsm_key='NMF_W')
+#     # Extract the factor scores
+#     factor_scores_ct = li.ut.get_factor_scores(adata_ct, obsm_key='NMF_W')
     
-    nmf_ct = sc.AnnData(X=adata_ct.obsm['NMF_W'],
-                        obs=adata_ct.obs,
-                        var=pd.DataFrame(index=lr_loadings_ct.columns),
-                        uns=adata_ct.uns,
-                        obsm=adata_ct.obsm)
+#     nmf_ct = sc.AnnData(X=adata_ct.obsm['NMF_W'],
+#                         obs=adata_ct.obs,
+#                         var=pd.DataFrame(index=lr_loadings_ct.columns),
+#                         uns=adata_ct.uns,
+#                         obsm=adata_ct.obsm)
     
-    sc.pl.spatial(nmf_ct, color=[*nmf_ct.var.index, None], spot_size=80, size=1, ncols=2, show=False)
+#     sc.pl.spatial(nmf_ct, color=[*nmf_ct.var.index, None], spot_size=80, size=1, ncols=2, show=False)
     
-    plt.savefig(os.path.join(plot_dir, f"{safe_ct}_Intercellular_Patterns{data_suffix}.png"),
-                dpi=300, bbox_inches='tight')
-    plt.close()
+#     plt.savefig(os.path.join(plot_dir, f"{safe_ct}_Intercellular_Patterns{data_suffix}.png"),
+#                 dpi=300, bbox_inches='tight')
+#     plt.close()
 
 
 # ====================================

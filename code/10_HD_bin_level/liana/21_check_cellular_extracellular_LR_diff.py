@@ -9,10 +9,10 @@ from scipy import stats
 # -----------------------
 # 1) Load and merge (cellular vs extracellular)
 # -----------------------
-plots = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/figure"
+plots = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure"
 
-cell_path = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/overall_mean_morans_across_donors.csv"
-extra_path = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/overall_mean_morans_across_donors_extracellular.csv"
+cell_path = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/overall_mean_morans_across_donors.csv"
+extra_path = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/overall_mean_morans_across_donors_extracellular.csv"
 
 df_cell = pd.read_csv(cell_path)
 df_extra = pd.read_csv(extra_path)

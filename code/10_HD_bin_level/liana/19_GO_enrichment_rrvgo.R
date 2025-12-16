@@ -13,29 +13,29 @@ library(readr)
 library(ggplot2)
 library(rrvgo)
 library(GOSemSim)
-semData_BP <- godata('org.Hs.eg.db', ont = "BP")
-semData_CC <- godata('org.Hs.eg.db', ont = "CC")
-semData_MF <- godata('org.Hs.eg.db', ont = "MF")
+semData_BP <- godata(annoDb = "org.Hs.eg.db", ont = "BP")
+semData_CC <- godata(annoDb = "org.Hs.eg.db", ont = "CC")
+semData_MF <- godata(annoDb = "org.Hs.eg.db", ont = "MF")
 
 fdr_cutoff <- 0.05
-num_go_terms <- 20
+num_go_terms <- 30
 task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 if(task_id==1){
-plot_dir<-"/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/GO/cellular"
+plot_dir<-"/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/GO/cellular"
 dir.create(plot_dir, showWarnings = FALSE)
-overall_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/overall_mean_morans_across_donors.csv")
-cell_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/celltype_specific_interactions/celltype_specific_interactions_all.csv")
-NMF_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/NMF/NMF_H_loadings.csv")
-sce <- readLines("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/NMF/universe_genes.txt")
+overall_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/overall_mean_morans_across_donors.csv")
+cell_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/celltype_specific_interactions/celltype_specific_interactions_all.csv")
+NMF_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/NMF/NMF_H_loadings.csv")
+sce <- readLines("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/NMF/universe_genes.txt")
 
 } else{
-plot_dir<-"/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/GO/extracellular"
+plot_dir<-"/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/GO/extracellular"
 dir.create(plot_dir, showWarnings = FALSE)
-overall_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/overall_mean_morans_across_donors_extracellular.csv")
-cell_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/celltype_specific_interactions_extracellular/celltype_specific_interactions_all.csv")
-NMF_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/NMF_extracellular/NMF_H_loadings.csv")
-sce <- readLines("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/NMF_extracellular/universe_genes.txt")
+overall_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/overall_mean_morans_across_donors_extracellular.csv")
+cell_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/celltype_specific_interactions_extracellular/celltype_specific_interactions_all.csv")
+NMF_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/NMF_extracellular/NMF_H_loadings.csv")
+sce <- readLines("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/NMF_extracellular/universe_genes.txt")
 }
 
 
@@ -74,7 +74,7 @@ for (ont_type in c("BP", "MF", "CC")) {
     slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
 
-  if (nrow(go_res) > 0) {
+  if (nrow(go_res) >=2) {
     scores <- setNames(-log10(go_res$p.adjust), go_res$ID)
     simMatrix <- calculateSimMatrix(
       go_res$ID,
@@ -101,9 +101,7 @@ for (ont_type in c("BP", "MF", "CC")) {
       file = file.path(
         plot_dir,
         sprintf("overall_means_GO_%s_treemap.pdf", ont_type)
-      ),
-      height = 10,
-      width = 8
+      )
     )
     invisible(treemapPlot(reducedTerms))
     dev.off()
@@ -130,7 +128,7 @@ for (ont_type in c("BP", "MF", "CC")) {
     slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
 
-  if (nrow(go_res) > 0) {
+  if (nrow(go_res) >=2) {
     scores <- setNames(-log10(go_res$p.adjust), go_res$ID)
     simMatrix <- calculateSimMatrix(
       go_res$ID,
@@ -157,9 +155,7 @@ for (ont_type in c("BP", "MF", "CC")) {
       file = file.path(
         plot_dir,
         sprintf("overall_morans_GO_%s_treemap.pdf", ont_type)
-      ),
-      height = 10,
-      width = 8
+      )
     )
     invisible(treemapPlot(reducedTerms))
     dev.off()
@@ -192,7 +188,7 @@ str(gene_list, max.level = 1)
 sapply(gene_list, length)
 
 go_obj = compareCluster(
-        gene_list, fun = "enrichGO", universe = rownames(sce),
+        gene_list, fun = "enrichGO", universe = sce,
         OrgDb = org.Hs.eg.db, ont = "ALL", pAdjustMethod = "BH",
         pvalueCutoff = 1, qvalueCutoff = 1, readable = TRUE, keyType = "SYMBOL"
     )
@@ -205,7 +201,7 @@ for (ont_type in c("BP", "MF", "CC")) {
     slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
 
-    if (nrow(go_res) > 0) {
+    if (nrow(go_res) >=2) {
     scores <- setNames(-log10(go_res$p.adjust), go_res$ID)
     simMatrix <- calculateSimMatrix(
       go_res$ID,
@@ -232,9 +228,7 @@ for (ont_type in c("BP", "MF", "CC")) {
       file = file.path(
         plot_dir,
         sprintf("GO_cell_type_%s_z2_%s_treemap.pdf", ont_type, cluster)
-      ),
-      height = 20,
-      width = 10
+      )
     )
     invisible(treemapPlot(reducedTerms))
     dev.off()
@@ -293,7 +287,7 @@ sapply(gene_list, length)
 head(gene_list$Factor1)
 
 go_obj = compareCluster(
-        gene_list, fun = "enrichGO", universe = rownames(sce),
+        gene_list, fun = "enrichGO", universe = sce,
         OrgDb = org.Hs.eg.db, ont = "ALL", pAdjustMethod = "BH",
         pvalueCutoff = 1, qvalueCutoff = 1, readable = TRUE, keyType = "SYMBOL"
     )
@@ -307,7 +301,7 @@ for (ont_type in c("BP", "MF", "CC")) {
     slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
 
-    if (nrow(go_res) > 0) {
+    if (nrow(go_res) >=2) {
     scores <- setNames(-log10(go_res$p.adjust), go_res$ID)
     simMatrix <- calculateSimMatrix(
       go_res$ID,
@@ -335,9 +329,7 @@ for (ont_type in c("BP", "MF", "CC")) {
           file = file.path(
             plot_dir,
             sprintf("GO_NMF_%s_z2_%s_treemap.pdf", ont_type, cluster)
-          ),
-          height = 20,
-          width = 10
+          )
         )
         invisible(treemapPlot(reducedTerms))
         dev.off()
@@ -354,7 +346,7 @@ cell_types<-unique(cell_top_pairs$cell_type)
 
 if (task_id==1){
 for (cell_type in cell_types){
-        data<-read.csv(paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/NMF/NMF_H_loadings_",cell_type,".csv"))
+        data<-read.csv(paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/NMF/NMF_H_loadings_",cell_type,".csv"))
         
         # distinct pairs for each factor
         weights <- as.matrix(data[, -1])
@@ -397,7 +389,7 @@ for (cell_type in cell_types){
         deframe()
 
     go_obj = compareCluster(
-        gene_list, fun = "enrichGO", universe = rownames(sce),
+        gene_list, fun = "enrichGO", universe = sce,
         OrgDb = org.Hs.eg.db, ont = "ALL", pAdjustMethod = "BH",
         pvalueCutoff = 1, qvalueCutoff = 1, readable = TRUE, keyType = "SYMBOL"
     )
@@ -412,7 +404,7 @@ for (ont_type in c("BP", "MF", "CC")) {
     slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
 
-    if (nrow(go_res) > 0) {
+    if (nrow(go_res) >=2) {
     scores <- setNames(-log10(go_res$p.adjust), go_res$ID)
     simMatrix <- calculateSimMatrix(
       go_res$ID,
@@ -441,9 +433,7 @@ for (ont_type in c("BP", "MF", "CC")) {
           file = file.path(
             plot_dir,
             sprintf("GO_NMF_%s_%s_z2_%s_treemap.pdf", cell_type, ont_type, cluster)
-          ),
-          height = 20,
-          width = 10
+          )
         )
         invisible(treemapPlot(reducedTerms))
         dev.off()
@@ -453,7 +443,7 @@ for (ont_type in c("BP", "MF", "CC")) {
     }
 }}} else{
   for (cell_type in cell_types){
-        data<-read.csv(paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/NMF_extracellular/NMF_H_loadings_",cell_type,".csv"))
+        data<-read.csv(paste0("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/NMF_extracellular/NMF_H_loadings_",cell_type,".csv"))
         
         # distinct pairs for each factor
         weights <- as.matrix(data[, -1])
@@ -496,7 +486,7 @@ for (ont_type in c("BP", "MF", "CC")) {
         deframe()
 
     go_obj = compareCluster(
-        gene_list, fun = "enrichGO", universe = rownames(sce),
+        gene_list, fun = "enrichGO", universe = sce,
         OrgDb = org.Hs.eg.db, ont = "ALL", pAdjustMethod = "BH",
         pvalueCutoff = 1, qvalueCutoff = 1, readable = TRUE, keyType = "SYMBOL"
     )
@@ -511,7 +501,7 @@ for (ont_type in c("BP", "MF", "CC")) {
     slice_head(n = num_go_terms) %>%
     select(ID, Description, p.adjust)
 
-    if (nrow(go_res) > 0) {
+    if (nrow(go_res) >=2) {
     scores <- setNames(-log10(go_res$p.adjust), go_res$ID)
     simMatrix <- calculateSimMatrix(
       go_res$ID,
@@ -540,9 +530,7 @@ for (ont_type in c("BP", "MF", "CC")) {
           file = file.path(
             plot_dir,
             sprintf("GO_NMF_%s_%s_z2_%s_treemap.pdf", cell_type, ont_type, cluster)
-          ),
-          height = 20,
-          width = 10
+          )
         )
         invisible(treemapPlot(reducedTerms))
         dev.off()

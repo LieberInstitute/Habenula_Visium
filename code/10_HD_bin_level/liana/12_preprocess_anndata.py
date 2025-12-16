@@ -11,26 +11,27 @@ sample_info = pd.read_csv(sample_info_path)
 sample_id = sample_info['sample_id'].iloc[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
 
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'liana', 'input_habenula',
+    'processed-data', '10_HD_bin_level', "new_samples2",'liana', 'input_habenula',
     f'{sample_id}.h5ad'
 )
 
 sr_dir = here(
-    'processed-data', '01_spaceranger', 'new_samples', sample_id, 'outs',
+    'processed-data', '01_spaceranger', "five_samples_10_2025", sample_id, 'outs',
     'binned_outputs', 'square_002um'
 )
 sr_spatial_dir = here(
-    'processed-data', '01_spaceranger', 'new_samples', sample_id, 'outs',
+    'processed-data', '01_spaceranger', "five_samples_10_2025", sample_id, 'outs',
     'spatial'
 )
+
 raw_image_path = here('raw-data', 'images', 'vis-hd', f'{sample_id}.tif')
 
 hb_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples',
+    'processed-data', '09_HD_cell_level', 'new_samples2',
     'hb_thal_manual_anno.csv.gz'
 )
 extra_bins_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'cell_environment',
     'extracellular_bins.csv.gz'
 )
 
@@ -84,6 +85,7 @@ extra_bins.set_index('bin_id', inplace=True)
 # --- 2. Read in habenula-associated bins for this sample ---
 hb_anno = pd.read_csv(hb_anno_path)
 hb_anno = hb_anno[hb_anno['sample_id'] == sample_id].copy()
+hb_anno = hb_anno[hb_anno['ManualAnnotation'] == 'habenula']
 
 # --- 3. Annotate each bin with a cell via map ---
 adata.obs['spot_name'] = adata.obs_names.map(

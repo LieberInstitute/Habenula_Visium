@@ -18,10 +18,10 @@ from scipy import stats
 
 #   Read input files
 in_dir = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'liana'
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'liana'
 )
 plot_dir= here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'liana', 'figure','habenula'
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'liana', 'figure','habenula'
 )
 os.makedirs(plot_dir, exist_ok=True)
 
@@ -38,7 +38,7 @@ for f in in_files:
 
 lr_df = pd.concat(lr_df_list, axis=0, ignore_index=True)
 
-min_num_donors=3
+min_num_donors=5
 #   Require a pair to be present in some minimum number of donors
 lr_df = lr_df[
     lr_df.groupby(['ligand', 'receptor'], observed=True)['ligand'].transform('count') >= min_num_donors
@@ -51,7 +51,7 @@ lr_mean_df = (
         .agg({'mean': 'mean', 'morans': 'mean'})
 )
 
-lr_mean_df.to_csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/table/overall_mean_morans_across_donors.csv", index=False)
+lr_mean_df.to_csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/overall_mean_morans_across_donors.csv", index=False)
 
 lr_mean_df_morans = lr_mean_df.sort_values("morans", ascending=False)
 lr_mean_df_mean = lr_mean_df.sort_values("mean", ascending=False)
@@ -154,7 +154,7 @@ for spine in ["top", "right"]:
     axes[1].spines[spine].set_visible(False)
 
 plt.tight_layout()
-plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/figure/habenula/Top20_LR_mean_morans.pdf", bbox_inches="tight")
+plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula/Top20_LR_mean_morans.pdf", bbox_inches="tight")
 plt.close()
 
 print("✅ Figure saved as: Top20_LR_mean_morans.pdf")
@@ -174,7 +174,7 @@ plt.xlabel("Mean", fontsize=14)
 plt.ylabel("Moran’s I", fontsize=14)
 plt.grid(False)
 plt.tight_layout()
-plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/figure/habenula/Mean_vs_Morans_scatter.pdf", bbox_inches="tight")
+plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula/Mean_vs_Morans_scatter.pdf", bbox_inches="tight")
 plt.close()
 print("✅ Figure saved as: Mean_vs_Morans_scatter.pdf")
 
@@ -223,6 +223,6 @@ plt.ylabel("Moran’s I", fontsize=14)
 plt.grid(False)
 plt.legend()
 plt.tight_layout()
-plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/figure/habenula/Mean_vs_Morans_scatter_outlier.pdf", bbox_inches="tight")
+plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula/Mean_vs_Morans_scatter_outlier.pdf", bbox_inches="tight")
 plt.close()
 print("✅ Figure saved as: Mean_vs_Morans_scatter_outlier.pdf")

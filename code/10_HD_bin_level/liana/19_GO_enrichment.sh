@@ -4,8 +4,8 @@
 #SBATCH --job-name=19_GO_enrichment
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/liana/logs/19_GO_enrichment.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/liana/logs/19_GO_enrichment.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/liana/logs/19_GO_enrichment.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/liana/logs/19_GO_enrichment.txt
 
 set -e
 

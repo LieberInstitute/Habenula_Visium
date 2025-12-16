@@ -12,21 +12,21 @@ sys.path.append(str(here('code', '10_HD_bin_level', 'cell_environment')))
 import extracellular_bins_functions as ebf
 
 ad_in_paths = here(
-    'processed-data', '09_HD_cell_level', 'new_samples',
+    'processed-data', '09_HD_cell_level', 'new_samples2',
     '{}.h5ad'
 )
 ad_pre_in_paths = here(
-    'processed-data', '09_HD_cell_level', 'new_samples',
+    'processed-data', '09_HD_cell_level', 'new_samples2',
     '{}_pre_bin2cell.h5ad'
 )
 hb_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
-    'habenula_shiny_annotations.csv.gz'
+    'processed-data', '09_HD_cell_level', 'new_samples2',
+    'hb_thal_manual_anno.csv.gz'
 )
 out_dir = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'liana', 'adata'
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'liana', 'adata'
 )
-plot_dir = here('plots', '09_HD_cell_level', 'new_samples', 'liana')
+plot_dir = here('plots', '09_HD_cell_level', 'new_samples2', 'liana')
 min_bins_per_cell = 4
 expansion_distance = 5
 
@@ -39,7 +39,7 @@ os.makedirs(out_dir, exist_ok=True)
 
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 sample_info = pd.read_csv(sample_info_path)
-all_samples = sample_info['sample_id'].iloc[:3].tolist()
+all_samples = sample_info['sample_id'].iloc[:5].tolist()
 
 adata_list = []
 for sample_id in all_samples:
@@ -67,6 +67,7 @@ adata = adata[
 
 #   Annotate cells as habenula or not
 hb_anno = pd.read_csv(hb_anno_path, index_col='spot_name')
+
 adata.obs['region'] = hb_anno['ManualAnnotation']
 adata.obs['region'] = adata.obs['region'].fillna('other').astype('category')
 

@@ -4,8 +4,8 @@
 #SBATCH --job-name=18_LIANA+_NMF
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/liana/logs/18_LIANA+_NMF_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/liana/logs/18_LIANA+_NMF_%a.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/liana/logs/18_LIANA+_NMF_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/liana/logs/18_LIANA+_NMF_%a.txt
 #SBATCH --array=1-2%2
 
 set -e

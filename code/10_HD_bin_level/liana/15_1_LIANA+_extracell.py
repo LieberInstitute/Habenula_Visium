@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import json
 
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'liana'
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'liana'
 )
 
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
@@ -18,13 +18,14 @@ sample_info = pd.read_csv(sample_info_path)
 sample_id = sample_info['sample_id'].iloc[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
 
 scale_json = here(
-    'processed-data', '01_spaceranger', 'new_samples', sample_id,
+    'processed-data', '01_spaceranger', "five_samples_10_2025", sample_id,
     'outs', 'binned_outputs', 'square_008um', 'spatial',
     'scalefactors_json.json'
 )
 
 file_path = os.path.join(out_path, f"adata/adata_extracellular_withcelltype.h5ad")
 adata = sc.read(file_path)
+adata = adata[adata.obs['region'] == 'habenula', :].copy()
 adata.var.index.name = None
 
 ###### run separately for each sample ######
@@ -43,14 +44,14 @@ adata.var_names_make_unique()
 
 # figure
 sc.pl.spatial(adata, color=['cell_type'], spot_size=80, palette="tab20")
-plt.savefig(os.path.join(out_path, "figure","habenula","extracellular", f"{sample_id}_Spot_clusters.png"), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(out_path, "figure","habenula_extracellular", f"{sample_id}_Spot_clusters.png"), dpi=300, bbox_inches='tight')
 plt.close()
 
 # Spatial Connectivity
 plot, _ = li.ut.query_bandwidth(coordinates=adata.obsm['spatial'], start=0, end=200, interval_n=2)
 plot
 plot.save(
-    os.path.join(out_path, "figure","habenula","extracellular", f"{sample_id}_Spatial_connectivity_bandwidth.png"),
+    os.path.join(out_path, "figure","habenula_extracellular", f"{sample_id}_Spatial_connectivity_bandwidth.png"),
     dpi=300,
     width=6,  
     height=4,
@@ -84,7 +85,7 @@ print("receptor number:", len(y_vals))
 li.ut.spatial_neighbors(adata, bandwidth=100, cutoff=0.1, kernel='gaussian', set_diag=True)
 fig = li.pl.connectivity(adata, idx=0, size=1, figure_size=(6, 5))
 fig.save(
-    os.path.join(out_path, "figure", "habenula","extracellular", f"{sample_id}_Spatial_connectivity.png"),
+    os.path.join(out_path, "figure", "habenula_extracellular", f"{sample_id}_Spatial_connectivity.png"),
     dpi=300,
     width=6,   
     height=5,
@@ -131,13 +132,13 @@ sc.pl.spatial(
     show=False    
 )
 
-plt.savefig(os.path.join(out_path, "figure","habenula","extracellular",f"{sample_id}_top_Ligand-Receptor_local.png"),
+plt.savefig(os.path.join(out_path, "figure","habenula_extracellular",f"{sample_id}_top_Ligand-Receptor_local.png"),
             dpi=300, bbox_inches='tight')
 plt.close()
 
 # Permutation-based
 sc.pl.spatial(lrdata, layer='pvals', color=[a, b, c], spot_size=80, cmap="magma_r")
-plt.savefig(os.path.join(out_path, "figure","habenula","extracellular", f"{sample_id}_top_Ligand-Receptor_permutation.png"),
+plt.savefig(os.path.join(out_path, "figure","habenula_extracellular", f"{sample_id}_top_Ligand-Receptor_permutation.png"),
             dpi=300, bbox_inches='tight')
 plt.close()
 
@@ -150,7 +151,7 @@ sc.pl.spatial(
     cmap="coolwarm",
     show=False
 )
-plt.savefig(os.path.join(out_path, "figure", "habenula", "extracellular", f"{sample_id}_top_Ligand-Receptor_local_category.png"),
+plt.savefig(os.path.join(out_path, "figure", "habenula_extracellular", f"{sample_id}_top_Ligand-Receptor_local_category.png"),
             dpi=300, bbox_inches='tight')
 plt.close()
 
@@ -171,7 +172,7 @@ nmf = sc.AnnData(X=lrdata.obsm['NMF_W'],
 
 sc.pl.spatial(nmf, color=[*nmf.var.index, None], spot_size=80, size=1, ncols=2, show=False)
 
-plt.savefig(os.path.join(out_path, "figure", "habenula", "extracellular", f"{sample_id}_Intercellular_Patterns.png"),
+plt.savefig(os.path.join(out_path, "figure", "habenula_extracellular", f"{sample_id}_Intercellular_Patterns.png"),
             dpi=300, bbox_inches='tight')
 plt.close()
 

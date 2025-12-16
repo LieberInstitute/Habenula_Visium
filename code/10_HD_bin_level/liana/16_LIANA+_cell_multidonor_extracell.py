@@ -14,13 +14,14 @@ from pyhere import here
 import re
 import session_info
 from plotnine import *
+from scipy import stats
 
 #   Read input files
 in_dir = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'liana'
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'liana'
 )
 plot_dir= here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'liana', 'figure', 'habenula'
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'liana', 'figure', "habenula_extracellular"
 )
 os.makedirs(plot_dir, exist_ok=True)
 
@@ -37,7 +38,7 @@ for f in in_files:
 
 lr_df = pd.concat(lr_df_list, axis=0, ignore_index=True)
 
-min_num_donors=3
+min_num_donors=5
 #   Require a pair to be present in some minimum number of donors
 lr_df = lr_df[
     lr_df.groupby(['ligand', 'receptor'], observed=True)['ligand'].transform('count') >= min_num_donors
@@ -50,12 +51,15 @@ lr_mean_df = (
         .agg({'mean': 'mean', 'morans': 'mean'})
 )
 
+lr_mean_df.to_csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/overall_mean_morans_across_donors_extracellular.csv", index=False)
+
 lr_top_df = pd.concat(
     [
         lr_mean_df.sort_values("morans", ascending=False).head(),
         lr_mean_df.sort_values("mean", ascending=False).head()
     ]
 )
+
 lr_top_df = lr_top_df.drop_duplicates(subset=['ligand', 'receptor'])
 
 top_pairs = list(lr_top_df['ligand'] + '^' + lr_top_df['receptor'])
@@ -148,7 +152,7 @@ for spine in ["top", "right"]:
     axes[1].spines[spine].set_visible(False)
 
 plt.tight_layout()
-plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/figure/habenula/Top20_LR_mean_morans_exc.pdf", bbox_inches="tight")
+plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula/Top20_LR_mean_morans_extracellular.pdf", bbox_inches="tight")
 plt.close()
 
 print("✅ Figure saved as: Top20_LR_mean_morans.pdf")
@@ -168,7 +172,55 @@ plt.xlabel("Mean", fontsize=14)
 plt.ylabel("Moran’s I", fontsize=14)
 plt.grid(False)
 plt.tight_layout()
-plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples/liana/figure/habenula/Mean_vs_Morans_scatter.pdf", bbox_inches="tight")
+plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula/Mean_vs_Morans_scatter_extracellular.pdf", bbox_inches="tight")
 plt.close()
 print("✅ Figure saved as: Mean_vs_Morans_scatter.pdf")
 
+# ---------------------------------------
+# scatter plot mean vs morans
+slope, intercept, r_value, p_value, std_err = stats.linregress(lr_mean_df["mean"], lr_mean_df["morans"])
+lr_mean_df["predicted"] = intercept + slope * lr_mean_df["mean"]
+lr_mean_df["residual"] = lr_mean_df["morans"] - lr_mean_df["predicted"]
+
+threshold = 2 * lr_mean_df["residual"].std()
+outliers = lr_mean_df[np.abs(lr_mean_df["residual"]) > threshold]
+
+plt.figure(figsize=(10, 8))
+sns.scatterplot(
+    data=lr_mean_df,
+    x="mean",
+    y="morans",
+    alpha=0.6,
+    edgecolor=None,
+    label="Data"
+)
+sns.lineplot(
+    x=lr_mean_df["mean"],
+    y=lr_mean_df["predicted"],
+    color="red",
+    linewidth=2,
+    label="Fitted line"
+)
+
+plt.scatter(outliers["mean"], outliers["morans"], color="orange", edgecolor="black", s=80, label="Outliers")
+
+for _, row in outliers.iterrows():
+    plt.text(
+        row["mean"],
+        row["morans"],
+        row["interaction"],
+        fontsize=9,
+        color="black",
+        ha="right",
+        va="bottom"
+    )
+
+plt.title("Ligand–Receptor Interactions: Mean vs Moran’s I", fontsize=18, weight="bold", pad=15)
+plt.xlabel("Mean", fontsize=14)
+plt.ylabel("Moran’s I", fontsize=14)
+plt.grid(False)
+plt.legend()
+plt.tight_layout()
+plt.savefig("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula/Mean_vs_Morans_scatter_outlier_extracellular.pdf", bbox_inches="tight")
+plt.close()
+print("✅ Figure saved as: Mean_vs_Morans_scatter_outlier.pdf")

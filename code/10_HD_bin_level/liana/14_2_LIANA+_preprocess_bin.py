@@ -17,21 +17,21 @@ sample_info = pd.read_csv(sample_info_path)
 sample_id = sample_info['sample_id'].iloc[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
 
 sr_dir = here(
-    'processed-data', '01_spaceranger', 'new_samples', sample_id, 'outs',
+    'processed-data', '01_spaceranger', 'five_samples_10_2025', sample_id, 'outs',
     'binned_outputs', 'square_002um'
 )
 sr_spatial_dir = here(
-    'processed-data', '01_spaceranger', 'new_samples', sample_id, 'outs',
+    'processed-data', '01_spaceranger', 'five_samples_10_2025', sample_id, 'outs',
     'spatial'
 )
 raw_image_path = here('raw-data', 'images', 'vis-hd', f'{sample_id}.tif')
 
 hb_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples', 'crawdad', 'region',
-    'habenula_shiny_annotations.csv.gz'
+    'processed-data', '09_HD_cell_level', 'new_samples2',
+    'hb_thal_manual_anno.csv.gz'
 )
 extra_bins_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'cell_environment',
     'extracellular_bins.csv.gz'
 )
 adata = b2c.read_visium(

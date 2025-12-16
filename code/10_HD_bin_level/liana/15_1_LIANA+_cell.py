@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import json
 
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples', 'liana'
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'liana'
 )
 
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
@@ -18,13 +18,14 @@ sample_info = pd.read_csv(sample_info_path)
 sample_id = sample_info['sample_id'].iloc[int(os.getenv('SLURM_ARRAY_TASK_ID')) - 1]
 
 scale_json = here(
-    'processed-data', '01_spaceranger', 'new_samples', sample_id,
+    'processed-data', '01_spaceranger', "five_samples_10_2025", sample_id,
     'outs', 'binned_outputs', 'square_008um', 'spatial',
     'scalefactors_json.json'
 )
 
 file_path = os.path.join(out_path, f"adata/adata_cellular_withcelltype.h5ad")
 adata = sc.read(file_path)
+adata = adata[adata.obs['region'] == 'habenula', :].copy()
 adata.var.index.name = None
 
 ###### run separately for each sample ######
