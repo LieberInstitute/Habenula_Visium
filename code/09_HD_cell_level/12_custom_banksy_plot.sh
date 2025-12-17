@@ -6,6 +6,7 @@
 #SBATCH -t 1:00:00
 #SBATCH -o ../../processed-data/09_HD_cell_level/new_samples2/logs/12_custom_banksy_plot.txt
 #SBATCH -e ../../processed-data/09_HD_cell_level/new_samples2/logs/12_custom_banksy_plot.txt
+#SBATCH --exclude=compute-093
 
 set -e
 
