@@ -43,6 +43,12 @@ dir_csv <- here(
     "05_brain_area_differential_expression",
     "07_hb_spot_plots_coverage"
 )
+## Set some initials for manage spot size in the plots
+var_height <- 60
+var_width <- 40
+var_point_size <- 2
+var_guide_point_size = 5
+
 dir.create(dir_plots, showWarnings = FALSE, recursive = TRUE)
 dir.create(dir_csv, showWarnings = FALSE, recursive = TRUE)
 
@@ -118,9 +124,10 @@ message("Spatial Domains after removing SpD(s) with less than 20 counts: ", len_
 ## =============================================================================
 ## subset 1 sample by donor for reference
 
-sample_ids_to_keep <- c("V13B23-280_A1", "V13B23-285_B1", "V14F07-340_A1")
-# Subset spe to include only the specified sample_ids
-spe_subset <- spe[, colData(spe)$sample_id %in% sample_ids_to_keep]
+# sample_ids_to_keep <- c("V13B23-280_A1", "V13B23-285_B1", "V14F07-340_A1")
+# # Subset spe to include only the specified sample_ids
+# spe_subset <- spe[, colData(spe)$sample_id %in% sample_ids_to_keep]
+spe_subset <- spe
 table(colData(spe_subset)$sample_id)
 levels(colData(spe_subset)$BayesSpace)
 
@@ -250,12 +257,6 @@ print(color_lists$grey_colors_SpatialReg)
 
 ## =============================================================================
 
-## Set some initials for manage spot size in the plots
-
-var_height <- 24 # 24/3=8
-var_width <- 26 # 36/4=9
-var_point_size <- 2
-var_guide_point_size = 5
 if (k > 15) { var_guide_point_size = 3 }
 
 set.seed(07112024)
@@ -277,8 +278,8 @@ p1_lst <- vis_grid_clus(
     spe = spe_subset,
     clustervar = "BayesSpace",
     #sample_order = lst_order,
-    height = var_height, # 8
-    width = var_width, # 9
+    height = var_height,
+    width = var_width,
     point_size = var_point_size,
     sort_clust = FALSE,
     guide_point_size = var_guide_point_size,
@@ -387,11 +388,11 @@ fn <- here(dir_plots, paste0("BayesSpace_k", k_nice, "_Hb_clustergrid_RNAScope_v
 
 # Combine the lists and add titles to each group
 all_plots <- grid.arrange(
-    gridExtra::arrangeGrob(grobs = p1_lst, ncol = 3, top = textGrob("All SpD(s) for one sample by donor", 
+    gridExtra::arrangeGrob(grobs = p1_lst, ncol = 4, top = textGrob("All SpD(s) for one sample by donor", 
                                                                     gp = gpar(fontsize = 24, fontface = "bold"))),
-    gridExtra::arrangeGrob(grobs = p3_lst, ncol = 3, top = textGrob("SpD(s) identified: Hb Annatomical RNAScope Annotations", 
+    gridExtra::arrangeGrob(grobs = p3_lst, ncol = 4, top = textGrob("SpD(s) identified: Hb Annatomical RNAScope Annotations", 
                                                                     gp = gpar(fontsize = 24, fontface = "bold"))),
-    gridExtra::arrangeGrob(grobs = p4_lst, ncol = 3, top = textGrob("SpD(s) identified: SpatialRegistration Correlations", 
+    gridExtra::arrangeGrob(grobs = p4_lst, ncol = 4, top = textGrob("SpD(s) identified: SpatialRegistration Correlations", 
                                                                     gp = gpar(fontsize = 24, fontface = "bold"))),
     nrow = 3,
     top = textGrob(paste("Overall SpD(s) for k=", k_nice, "\n"), gp = gpar(fontsize = 28, fontface = "bold"))

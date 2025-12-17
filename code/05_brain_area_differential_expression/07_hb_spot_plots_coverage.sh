@@ -6,8 +6,7 @@
 #SBATCH -t 1-00:00:00
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
-#SBATCH --array=1-6%6
-# SBATCH --mail-type=ALL
+#SBATCH --array=2
 
 ## Define BayesSpace k of interest
 BS_k_list=(3 11 15 20 24 28)
@@ -29,7 +28,7 @@ echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 echo "BS_k value: ${BS_k}"
 
 ## Load the R module
-module load conda_R/4.4.x
+module load conda_R/4.5
 
 ## List current modules for reproducibility
 module list
