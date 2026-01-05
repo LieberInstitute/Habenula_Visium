@@ -196,7 +196,9 @@ plt_corr_snmultiome <- function(k_lst,
             )
         draw(
             p1,
-            column_title = "Spatial-Registration: Visium vs Multiome (Fine res)",
+            column_title = sprintf(
+              "Spatial-Registration: Visium vs Multiome (%s res)", cluster_res
+            ),
             column_title_gp = gpar(fontsize = 20, fontface = "bold")
             )
     
