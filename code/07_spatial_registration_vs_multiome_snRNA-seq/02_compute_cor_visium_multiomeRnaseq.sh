@@ -1,17 +1,13 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=60G
+#SBATCH --mem=10G
 #SBATCH --job-name=02_compute_cor_visium_multiomeRnaseq
-#SBATCH -c 2
+#SBATCH -c 1
 #SBATCH -t 1-00:00:00
-#SBATCH -o /dev/null
-#SBATCH -e /dev/null
-# SBATCH --mail-type=ALL
+#SBATCH -o logs/02_compute_cor_visium_multiomeRnaseq_%a.txt
+#SBATCH -e logs/02_compute_cor_visium_multiomeRnaseq_%a.txt
+#SBATCH --array=2
 
-## Explicitly pipe script output to a log
-log_path=logs/02_compute_cor_visium_multiomeRnaseq.txt
-
-{
 set -e
 
 echo "**** Job starts ****"
@@ -25,7 +21,7 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load conda_R/4.4.x 
+module load conda_R/4.5
 
 ## List current modules for reproducibility
 module list
@@ -35,8 +31,6 @@ Rscript 02_compute_cor_visium_multiomeRnaseq.R
 
 echo "**** Job ends ****"
 date
-
-} > $log_path 2>&1
 
 ## This script was made using slurmjobs version 1.2.5
 ## available from http://research.libd.org/slurmjobs/

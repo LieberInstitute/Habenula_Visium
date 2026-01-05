@@ -18,6 +18,10 @@ library("grid") # need to print the plot, otherwise is clipped by internal funct
 library("here")
 library("sessioninfo")
 
+# Resolution of multiome clustering
+task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+cluster_res = c("fine", "mid")[task_id]
+
 ## Input dir
 dir_input <- here(
   "processed-data",
@@ -26,25 +30,23 @@ dir_input <- here(
 )
 
 ## Set up plotting
-plot_dir <- here("plots", 
-    "07_spatial_registration_vs_multiome_snRNA-seq"
+plot_dir <- here(
+  "plots", "07_spatial_registration_vs_multiome_snRNA-seq", cluster_res
 )
 data_dir <- here(
   "processed-data",
-  "07_spatial_registration_vs_multiome_snRNA-seq"
+  "07_spatial_registration_vs_multiome_snRNA-seq", cluster_res
 )
 plt_sufix <- "v5" 
 
-if (!dir.exists(plot_dir)) {
-  dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
-}
-if (!dir.exists(data_dir)) {
-  dir.create(data_dir, showWarnings = FALSE, recursive = TRUE)
-}
+dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(data_dir, showWarnings = FALSE, recursive = TRUE)
 
 ## Load enrichment data from multiome
-rds_input <- here("processed-data", "05_snRNA-seq_model_stats", paste0("enrichment_snRNA-multiome_", plt_sufix, ".rds"))
-
+rds_input <- sprintf(
+  '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/08_spatial_registration_vs_multiome_snRNA-seq/%s/enrichment_snRNA-multiome_v5.rds',
+  cluster_res
+)
 
 sn_multiome_data <- readRDS(rds_input)
 head(sn_multiome_data$enrichment[5:10])
