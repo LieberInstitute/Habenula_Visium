@@ -44,20 +44,19 @@ spe = readRDS(spe_path)
 
 #   Merge in annotated Banksy results
 anno_df = read_csv(ct_anno_path, show_col_types = FALSE)
-spe$cell_type = tibble(key = spe$key) |>
+col_data = tibble(
+        key = spe$key, bins_per_cell = spe$bin_count,
+        segmentation_type = spe$labels_joint_source
+    ) |>
     left_join(read_csv(banksy_path, show_col_types = FALSE), by = 'key') |>
     mutate(
         cell_type = anno_df$fine_cell_type[
             match(as.character(banksy_lambda0_2), anno_df$cluster)
         ]
     ) |>
-    pull(cell_type)
+    dplyr::rename(cell_id = key, banksy_cluster = banksy_lambda0_2)
 
 con = dbConnect(duckdb())
-
-col_data = tibble(
-    cell_id = spe$key, cell_type = spe$cell_type, bins_per_cell = spe$bin_count
-)
 duckdb_register(con, "col_data", col_data)
 
 #   Form a 2um bin-level tibble of extracellular bins with info about the
@@ -69,7 +68,9 @@ sql_query = sprintf(
         extra.bin_id AS barcode,
         extra.cell_id || '_' || extra.sample_id AS cell_id,
         col_data.cell_type,
+        col_data.banksy_cluster,
         col_data.bins_per_cell,
+        col_data.segmentation_type,
         ficture.FICTURE_k%d as ficture_cluster
     FROM read_csv_auto('%s') AS extra
     INNER JOIN col_data 
@@ -90,25 +91,28 @@ cell_df = dbGetQuery(
         "
         SELECT
             cell_id,
+            banksy_cluster,
+            segmentation_type,
             cell_type,
             bins_per_cell AS num_cellular_bins,
             COUNT(*) AS num_extra_bins
         FROM bin_df
-        GROUP BY cell_id, cell_type, bins_per_cell
+        GROUP BY cell_id, cell_type, banksy_cluster, bins_per_cell,
+            segmentation_type
         "
     ) |>
-    as_tibble() |>
-    group_by(cell_type) |>
-    summarize(
-        mean_cellular_bins = mean(num_cellular_bins),
-        mean_extra_bins = mean(num_extra_bins)
-    )
+    as_tibble()
 
 #   Examine how different cell types compare in terms of number of cellular and
 #   extracellular bins. Done as a scatterplot with a regression line as a means
 #   of indirectly showing which cell types are in relatively more-dense areas
 #   (i.e. deviating downward from the regression line)
 p = cell_df |>
+    group_by(cell_type) |>
+    summarize(
+        mean_cellular_bins = mean(num_cellular_bins),
+        mean_extra_bins = mean(num_extra_bins)
+    ) |>
     filter(cell_type != 'Ambig') |>
     ggplot(aes(x = mean_cellular_bins, y = mean_extra_bins, label = cell_type)) +
         geom_point() +
@@ -118,6 +122,35 @@ p = cell_df |>
         labs(x = "Mean Cellular Bins", y = "Mean Extracellular Bins") +
         theme_bw(base_size = 20)
 pdf(file.path(plot_dir, "cell_sizes_scatter.pdf"))
+print(p)
+dev.off()
+
+#   Very similar plot but do by Banksy cluster and color by proportion of
+#   secondary cells. Want to see if ambiguous clusters (4, 27) or
+#   secondary-heavy clusters differ in cell size or density
+p = cell_df |>
+    group_by(banksy_cluster) |>
+    summarize(
+        mean_cellular_bins = mean(num_cellular_bins),
+        mean_extra_bins = mean(num_extra_bins),
+        secondary_prop = mean(segmentation_type == "secondary")
+    ) |>
+    ggplot(
+            aes(
+                x = mean_cellular_bins, y = mean_extra_bins,
+                label = banksy_cluster, color = secondary_prop
+            )
+        ) +
+        geom_point() +
+        geom_smooth(method = "lm", se = FALSE, linetype = "dotted", color = "blue") +
+        geom_text_repel(size = 5) +
+        scale_color_viridis_c() +
+        labs(
+            x = "Mean Cellular Bins", y = "Mean Extracellular Bins",
+            color = "Proportion\nSecondary"
+        ) +
+        theme_bw(base_size = 20)
+pdf(file.path(plot_dir, "cell_sizes_scatter_banksy.pdf"), width = 8, height = 6)
 print(p)
 dev.off()
 
