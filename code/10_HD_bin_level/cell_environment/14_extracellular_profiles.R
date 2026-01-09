@@ -109,9 +109,15 @@ cell_df = dbGetQuery(
 #   (i.e. deviating downward from the regression line)
 p = cell_df |>
     group_by(cell_type) |>
-    summarize(
-        mean_cellular_bins = mean(num_cellular_bins),
-        mean_extra_bins = mean(num_extra_bins)
+    summarize(mean_extra_bins = mean(num_extra_bins)) |>
+    left_join(
+        #   Cell sizes can be deflated in cell_df since many secondary cells
+        #   are dropped and primary microenvironment can overwrite secondary
+        #   cell bodies. Use col_data for this instead
+        col_data |>
+            group_by(cell_type) |>
+            summarize(mean_cellular_bins = mean(bins_per_cell)),
+        by = "cell_type"
     ) |>
     filter(cell_type != 'Ambig') |>
     ggplot(aes(x = mean_cellular_bins, y = mean_extra_bins, label = cell_type)) +
@@ -130,10 +136,18 @@ dev.off()
 #   secondary-heavy clusters differ in cell size or density
 p = cell_df |>
     group_by(banksy_cluster) |>
-    summarize(
-        mean_cellular_bins = mean(num_cellular_bins),
-        mean_extra_bins = mean(num_extra_bins),
-        secondary_prop = mean(segmentation_type == "secondary")
+    summarize(mean_extra_bins = mean(num_extra_bins)) |>
+    left_join(
+        #   Cell sizes can be deflated in cell_df since many secondary cells
+        #   are dropped and primary microenvironment can overwrite secondary
+        #   cell bodies. Use col_data for this instead
+        col_data |>
+            group_by(banksy_cluster) |>
+            summarize(
+                mean_cellular_bins = mean(bins_per_cell),
+                secondary_prop = mean(segmentation_type == "secondary")
+            ),
+        by = "banksy_cluster"
     ) |>
     ggplot(
             aes(
