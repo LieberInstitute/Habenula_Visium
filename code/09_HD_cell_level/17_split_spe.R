@@ -34,8 +34,8 @@ rotate_plan = c(
     'Br9090_2' = 0,
     'Br3942_1' = 0,
     'Br3942_2' = 180,
-    'Br9902_1' = 50,
-    'Br9902_2' = 235,
+    'Br9902_1' = 45,
+    'Br9902_2' = 230,
     'Br8433_1' = 0,
     'Br8433_2' = 0,
     'Br8667_1' = 180,
@@ -56,11 +56,23 @@ mirror_plan = c(
 
 handle_Br9902 = function(spe_piece, this_sample_id) {
     #   Br9902 requires rotations that are not multiples of 90 degrees, which is
-    #   not supported by rotateObject(). I'll just rotate the coordinates;
-    #   handling the image in a meaningful way is possible but quite complex and
-    #   difficult (we probably won't plot the background images for the
-    #   manuscript)
-    radians = rotate_plan[[this_sample_id]] * pi / 180
+    #   not supported by rotateObject(). Since handling of the image in a
+    #   meaningful way is maybe possible but quite complex and
+    #   difficult, we won't do the image piece precisely. Rotate coords exactly
+    #   but rotate the image to the nearest multiple of 90 degrees (we probably
+    #   won't plot the background images for the manuscript)
+
+    if (rotate_plan[[this_sample_id]] %% 90 != 0) {
+        spe_piece = rotateObject(
+            spe_piece,
+            degrees = (
+                rotate_plan[[this_sample_id]] -
+                (rotate_plan[[this_sample_id]] %% 90)
+            )
+        )
+    }
+    
+    radians = rotate_plan[[this_sample_id]] %% 90 * pi / 180
 
     #   Determine the matrix by which left-multiplication represents
     #   rotation. Then apply rotation about the origin
@@ -82,6 +94,10 @@ handle_Br9902 = function(spe_piece, this_sample_id) {
         as.integer()
     dimnames(new_coords) = dimnames(spatialCoords(spe_piece))
     spatialCoords(spe_piece) = new_coords
+
+    if (mirror_plan[[this_sample_id]]) {
+        spe_piece = mirrorObject(spe_piece, axis = 'v')
+    }
 
     return(spe_piece)
 }
@@ -162,6 +178,7 @@ for (sample_id in unique(spe_split$sample_id)) {
     dev.off()
 }
 
+spe_split$banksy = NULL
 saveRDS(spe_split, spe_out_path)
 
 session_info()
