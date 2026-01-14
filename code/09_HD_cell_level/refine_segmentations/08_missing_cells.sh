@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=16G
-#SBATCH --job-name=08_log_image
+#SBATCH --job-name=08_missing_cells
 #SBATCH -c 1
 #SBATCH -t 8:00:00
-#SBATCH -o ../../../processed-data/09_HD_cell_level/new_samples2/refine_segmentations/logs/08_log_image_%a.txt
-#SBATCH -e ../../../processed-data/09_HD_cell_level/new_samples2/refine_segmentations/logs/08_log_image_%a.txt
+#SBATCH -o ../../../processed-data/09_HD_cell_level/new_samples2/refine_segmentations/logs/08_missing_cells_%a.txt
+#SBATCH -e ../../../processed-data/09_HD_cell_level/new_samples2/refine_segmentations/logs/08_missing_cells_%a.txt
 #SBATCH --array=1-5%5
 
 set -e
@@ -25,7 +25,7 @@ module load visium_hd/1.0
 ## List current modules for reproducibility
 module list
 
-python 08_log_image.py
+python 08_missing_cells.py
 
 echo "**** Job ends ****"
 date
