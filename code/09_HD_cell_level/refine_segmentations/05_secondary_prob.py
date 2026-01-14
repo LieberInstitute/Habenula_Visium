@@ -20,9 +20,13 @@ sample_info = pd.read_csv(sample_info_path)
 sample_id = sample_info.iloc[sample_index]['sample_id']
 spaceranger_dir = sample_info.iloc[sample_index]['spaceranger_dir']
 batch_num = sample_info.iloc[sample_index]['batch_num']
-prob_thres = 0.2 + 0.1 * prob_index
+prob_thres = round(0.2 + 0.1 * prob_index, 1)
 
-stardist_dir = here(
+stardist_new_dir = here(
+    'processed-data', '09_HD_cell_level', 'new_samples2',
+    'refine_segmentations', 'stardist'
+)
+stardist_old_dir = here(
     'processed-data', '09_HD_cell_level', 'new_samples2', 'stardist'
 )
 pre_out_path = here(
@@ -35,14 +39,14 @@ plot_dir = here(
 )
 mpp = 0.3
 
-os.makedirs(stardist_dir, exist_ok=True)
+os.makedirs(stardist_new_dir, exist_ok=True)
 os.makedirs(plot_dir, exist_ok=True)
 
 ################################################################################
 #   Build and preprocess AnnData
 ################################################################################
 
-print(f"{datetime.datetime.now()} | Building and preprocessing AnnData")
+print(f"{datetime.datetime.now()} | Loading AnnData")
 
 adata = sc.read_h5ad(pre_out_path)
 
@@ -55,10 +59,10 @@ print(f"{datetime.datetime.now()} | Performing gene-expression-based ('secondary
 #   Segment cells on the gene-count image
 b2c.stardist(
     image_path=os.path.join(
-        stardist_dir, f'gex_{sample_id}.tiff'
+        stardist_old_dir, f'gex_{sample_id}.tiff'
     ), 
     labels_npz_path = os.path.join(
-        stardist_dir, f'gex_{sample_id}.npz'
+        stardist_new_dir, f'gex_{sample_id}.npz'
     ), 
     stardist_model="2D_versatile_fluo", 
     prob_thresh=prob_thres, 
@@ -69,7 +73,7 @@ b2c.stardist(
 b2c.insert_labels(
     adata, 
     labels_npz_path = os.path.join(
-        stardist_dir, f'gex_{sample_id}.npz'
+        stardist_new_dir, f'gex_{sample_id}.npz'
     ), 
     basis="array", 
     mpp=mpp, 
@@ -120,10 +124,10 @@ for i in range(2):
     )
     rendered = b2c.view_labels(
         image_path = os.path.join(
-            stardist_dir, f'he_{sample_id}.tiff'
+            stardist_old_dir, f'he_{sample_id}.tiff'
         ),
         labels_npz_path = os.path.join(
-            stardist_dir, f'he_{sample_id}.npz'
+            stardist_old_dir, f'he_{sample_id}.npz'
         ),  
         crop = crop
     )
@@ -135,10 +139,10 @@ for i in range(2):
     crop = b2c.get_crop(adata[mask], basis="array", mpp=mpp)
     rendered = b2c.view_labels(
         image_path = os.path.join(
-            stardist_dir, f'gex_{sample_id}.tiff'
+            stardist_old_dir, f'gex_{sample_id}.tiff'
         ),
         labels_npz_path = os.path.join(
-            stardist_dir, f'gex_{sample_id}.npz'
+            stardist_new_dir, f'gex_{sample_id}.npz'
         ),  
         crop = crop,
         stardist_normalize = True
