@@ -127,14 +127,24 @@ for i, cell_index in enumerate(cell_indices):
         mpp=mpp
     )
     crop_secondary = b2c.get_crop(adata[mask], basis="array", mpp=mpp)
-    rendered = custom_view_labels(
-        image_path = os.path.join(stardist_dir, f'gex_{sample_id}.tiff'),
-        labels_npz_path = os.path.join(stardist_dir, f'he_{sample_id}.npz'),  
-        crop_image = crop_secondary, crop_labels = crop_primary,
-        stardist_normalize = True
-    )
-    plt.imshow(rendered)
-    plt.savefig(os.path.join(plot_dir, f'{sample_id}_{i+1}_secondary.png'))
-    plt.close('all')
 
+    prefices = ['original', 'log']
+    paths = [
+        os.path.join(stardist_dir, f'gex_{sample_id}.tiff'),
+        os.path.join(stardist_dir, f'gex_log_{sample_id}.tiff')
+    ]
+
+    for prefix, path in zip(prefices, paths):
+        os.makedirs(os.path.join(plot_dir, prefix), exist_ok=True)
+
+        rendered = custom_view_labels(
+            image_path = path,
+            labels_npz_path = os.path.join(stardist_dir, f'he_{sample_id}.npz'),  
+            crop_image = crop_secondary, crop_labels = crop_primary,
+            stardist_normalize = True
+        )
+        plt.imshow(rendered)
+        plt.savefig(os.path.join(plot_dir, prefix, f'{sample_id}_{i+1}.png'))
+        plt.close('all')
+        
 session_info.show()
