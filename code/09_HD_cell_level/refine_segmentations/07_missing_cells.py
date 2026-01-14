@@ -33,7 +33,7 @@ plot_dir = here(
     'missing_cells'
 )
 mpp = 0.3
-num_images = 3
+num_images = 2
 image_width = 100
 
 os.makedirs(plot_dir, exist_ok=True)
@@ -81,6 +81,8 @@ def custom_view_labels(image_path, labels_npz_path, crop_image, crop_labels, sta
         skimage.segmentation.find_boundaries(np.array(labels_sparse.todense()))
     )
     #   Not sure why the dimensions are slightly too big...
+    assert border_sparse.row.max() <= img.shape[0] * 1.05
+    assert border_sparse.col.max() <= img.shape[1] * 1.05
     border_sparse.row[border_sparse.row >= img.shape[0]] = img.shape[0] - 1
     border_sparse.col[border_sparse.col >= img.shape[1]] = img.shape[1] - 1
 
