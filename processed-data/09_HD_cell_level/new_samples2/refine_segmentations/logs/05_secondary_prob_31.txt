@@ -1,0 +1,53 @@
+**** Job starts ****
+Wed Jan 14 11:02:05 AM EST 2026
+**** JHPCE info ****
+User: neagles
+Job id: 26748623
+Job name: 05_secondary_prob
+Node name: compute-176
+Task id: 31
+Loading LIBD SLURM module for visium_hd/1.0
+Loading LIBD SLURM module for htslib/1.18
+
+Currently Loaded Modules:
+  1) JHPCE_ROCKY9_DEFAULT_ENV   3) conda/3-24.3.0   5) visium_hd/1.0
+  2) JHPCE_tools/3.0            4) htslib/1.18
+
+ 
+
+2026-01-14 11:02:46.506992: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2026-01-14 11:02:46.522017: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:485] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2026-01-14 11:02:46.534496: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:8454] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2026-01-14 11:02:46.537883: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1452] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2026-01-14 11:02:46.549729: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI AVX512_BF16 AVX512_FP16 AVX_VNNI AMX_TILE AMX_INT8 AMX_BF16 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2026-01-14 11:02:48.645503: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+2026-01-14 11:02:11.244033 | Loading AnnData
+2026-01-14 11:02:46.272621 | Performing gene-expression-based ('secondary') segmentation
+Found model '2D_versatile_fluo' for 'StarDist2D'.
+Loading network weights from 'weights_best.h5'.
+Loading thresholds from 'thresholds.json'.
+Using default values: prob_thresh=0.479071, nms_thresh=0.3.
+effective: block_size=(4096, 4096), min_overlap=(128, 128), context=(128, 128)
+functional.py (225): The structure of `inputs` doesn't match the expected structure: ['input']. Received: the structure of inputs=*
+  0%|          | 0/36 [00:00<?, ?it/s]  3%|▎         | 1/36 [00:10<05:53, 10.10s/it]  6%|▌         | 2/36 [00:21<06:17, 11.11s/it]  8%|▊         | 3/36 [00:32<06:05, 11.06s/it] 11%|█         | 4/36 [00:43<05:52, 11.03s/it] 14%|█▍        | 5/36 [00:55<05:42, 11.06s/it] 17%|█▋        | 6/36 [01:07<05:42, 11.41s/it] 19%|█▉        | 7/36 [01:16<05:13, 10.82s/it] 22%|██▏       | 8/36 [01:27<05:05, 10.91s/it] 25%|██▌       | 9/36 [01:40<05:05, 11.31s/it] 28%|██▊       | 10/36 [01:52<05:00, 11.56s/it] 31%|███       | 11/36 [02:07<05:15, 12.63s/it] 33%|███▎      | 12/36 [02:18<04:50, 12.12s/it] 36%|███▌      | 13/36 [02:28<04:23, 11.45s/it] 39%|███▉      | 14/36 [02:39<04:10, 11.37s/it] 42%|████▏     | 15/36 [02:49<03:53, 11.10s/it] 44%|████▍     | 16/36 [02:59<03:36, 10.84s/it] 47%|████▋     | 17/36 [03:11<03:29, 11.05s/it] 50%|█████     | 18/36 [03:21<03:15, 10.86s/it] 53%|█████▎    | 19/36 [03:32<03:03, 10.81s/it] 56%|█████▌    | 20/36 [03:44<02:58, 11.16s/it] 58%|█████▊    | 21/36 [03:56<02:48, 11.25s/it] 61%|██████    | 22/36 [04:08<02:41, 11.54s/it] 64%|██████▍   | 23/36 [04:21<02:37, 12.11s/it] 67%|██████▋   | 24/36 [04:34<02:28, 12.38s/it] 69%|██████▉   | 25/36 [04:45<02:10, 11.89s/it] 72%|███████▏  | 26/36 [04:58<02:01, 12.13s/it] 75%|███████▌  | 27/36 [05:10<01:50, 12.29s/it] 78%|███████▊  | 28/36 [05:23<01:39, 12.42s/it] 81%|████████  | 29/36 [05:36<01:28, 12.58s/it] 83%|████████▎ | 30/36 [05:49<01:16, 12.72s/it] 86%|████████▌ | 31/36 [06:03<01:06, 13.22s/it] 89%|████████▉ | 32/36 [06:15<00:51, 12.86s/it] 92%|█████████▏| 33/36 [06:29<00:39, 13.02s/it] 94%|█████████▍| 34/36 [06:41<00:25, 12.92s/it] 97%|█████████▋| 35/36 [06:53<00:12, 12.45s/it]100%|██████████| 36/36 [07:13<00:00, 14.73s/it]100%|██████████| 36/36 [07:13<00:00, 12.04s/it]
+Found 11313 objects
+Salvaged 2438 secondary labels
+Image 1 bounds: (1150, 1200)
+Image 2 bounds: (1650, 1700)
+Secondary proportion: 0.04
+-----
+anndata             0.10.8
+bin2cell            0.3.3
+matplotlib          3.9.2
+pandas              2.2.3
+pyhere              1.0.3
+scanpy              1.10.2
+session_info        1.0.0
+-----
+Python 3.9.20 | packaged by conda-forge | (main, Sep 30 2024, 17:49:10) [GCC 13.3.0]
+Linux-5.14.0-427.13.1.el9_4.x86_64-x86_64-with-glibc2.34
+-----
+Session information updated at 2026-01-14 11:11
+**** Job ends ****
+Wed Jan 14 11:11:05 AM EST 2026

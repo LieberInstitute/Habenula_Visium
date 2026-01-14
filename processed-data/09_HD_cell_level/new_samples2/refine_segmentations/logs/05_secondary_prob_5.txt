@@ -1,0 +1,61 @@
+**** Job starts ****
+Wed Jan 14 10:41:26 AM EST 2026
+**** JHPCE info ****
+User: neagles
+Job id: 26748334
+Job name: 05_secondary_prob
+Node name: compute-175
+Task id: 5
+Loading LIBD SLURM module for visium_hd/1.0
+Loading LIBD SLURM module for htslib/1.18
+
+Currently Loaded Modules:
+  1) JHPCE_ROCKY9_DEFAULT_ENV   3) conda/3-24.3.0   5) visium_hd/1.0
+  2) JHPCE_tools/3.0            4) htslib/1.18
+
+ 
+
+2026-01-14 10:42:00.612002: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2026-01-14 10:42:00.624842: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:485] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2026-01-14 10:42:00.637954: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:8454] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2026-01-14 10:42:00.641462: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1452] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2026-01-14 10:42:00.654554: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI AVX512_BF16 AVX512_FP16 AVX_VNNI AMX_TILE AMX_INT8 AMX_BF16 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2026-01-14 10:42:01.582195: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+2026-01-14 10:41:31.381386 | Loading AnnData
+2026-01-14 10:42:00.436422 | Performing gene-expression-based ('secondary') segmentation
+Found model '2D_versatile_fluo' for 'StarDist2D'.
+Loading network weights from 'weights_best.h5'.
+Traceback (most recent call last):
+  File "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/code/09_HD_cell_level/refine_segmentations/05_secondary_prob.py", line 60, in <module>
+    b2c.stardist(
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/bin2cell/bin2cell.py", line 124, in stardist
+    model = StarDist2D.from_pretrained(stardist_model)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/csbdeep/models/base_model.py", line 130, in from_pretrained
+    return get_model_instance(cls, name_or_alias)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/csbdeep/models/pretrained.py", line 117, in get_model_instance
+    model = cls(config=None, name=path.stem, basedir=path.parent)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/stardist/models/model2d.py", line 307, in __init__
+    super().__init__(config, name=name, basedir=basedir)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/stardist/models/base.py", line 231, in __init__
+    super().__init__(config=config, name=name, basedir=basedir)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/csbdeep/models/base_model.py", line 167, in __init__
+    self._find_and_load_weights()
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/csbdeep/models/base_model.py", line 33, in wrapper
+    return f(*args, **kwargs)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/csbdeep/models/base_model.py", line 222, in _find_and_load_weights
+    self.load_weights(weights_chosen.name)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/csbdeep/models/base_model.py", line 33, in wrapper
+    return f(*args, **kwargs)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/csbdeep/models/base_model.py", line 239, in load_weights
+    self.keras_model.load_weights(str(self.logdir/name))
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/keras/src/utils/traceback_utils.py", line 122, in error_handler
+    raise e.with_traceback(filtered_tb) from None
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/h5py/_hl/files.py", line 561, in __init__
+    fid = make_fid(name, mode, userblock_size, fapl, fcpl, swmr=swmr)
+  File "/jhpce/shared/libd/core/visium_hd/1.0/hd_env/lib/python3.9/site-packages/h5py/_hl/files.py", line 235, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 102, in h5py.h5f.open
+OSError: Unable to synchronously open file (truncated file: eof = 4194304, sblock->base_addr = 0, stored_eof = 5771480)
