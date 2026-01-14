@@ -4,3 +4,9 @@ cells than the other 3 samples, and closer inspection revealed a significant
 false-positive rate in those samples. This directory contains bin2cell tests to
 try to control false positives, particularly in nuclear (primary) segmentations
 where inspection by eye is possible.
+
+Later, this directory was used for separate tests, trying to improve secondary
+segmentations. These segmentations had huge numbers of false positives, and in
+downstream clustering, clusters of ambiguous cell type had disproportionately
+many secondary cells (suggesting poor segmentation/ not getting real cells).
+
