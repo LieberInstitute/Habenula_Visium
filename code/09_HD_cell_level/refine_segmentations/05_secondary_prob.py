@@ -33,6 +33,11 @@ pre_out_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples2',
     f'{sample_id}_pre_bin2cell.h5ad'
 )
+out_path = here(
+    'processed-data', '09_HD_cell_level', 'new_samples2',
+    'refine_segmentations', 'adata',
+    f'{sample_id}_{str(prob_thres).replace(".", "_")}.h5ad'
+)
 plot_dir = here(
     'plots', '09_HD_cell_level', 'new_samples2', 'refine_segmentations',
     str(prob_thres).replace('.', '_')
@@ -41,6 +46,7 @@ mpp = 0.3
 
 os.makedirs(stardist_new_dir, exist_ok=True)
 os.makedirs(plot_dir, exist_ok=True)
+os.makedirs(out_path.parent, exist_ok=True)
 
 ################################################################################
 #   Build and preprocess AnnData
@@ -87,6 +93,8 @@ b2c.salvage_secondary_labels(
     secondary_label="labels_gex", 
     labels_key="labels_joint"
 )
+
+sc.write(out_path, adata)
 
 ################################################################################
 #   Plot primary and secondary cells

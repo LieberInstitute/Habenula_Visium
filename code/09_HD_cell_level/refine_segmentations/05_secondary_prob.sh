@@ -6,7 +6,7 @@
 #SBATCH -t 8:00:00
 #SBATCH -o ../../../processed-data/09_HD_cell_level/new_samples2/refine_segmentations/logs/05_secondary_prob_%a.txt
 #SBATCH -e ../../../processed-data/09_HD_cell_level/new_samples2/refine_segmentations/logs/05_secondary_prob_%a.txt
-#SBATCH --array=1-40%15
+#SBATCH --array=30
 
 set -e
 
