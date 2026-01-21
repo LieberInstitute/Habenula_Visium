@@ -98,10 +98,59 @@ def custom_view_labels(image_path, labels_npz_path, crop_image, crop_labels, sta
     return img
 
 ################################################################################
-#   Plot primary segmentations over gene-expression image
+#   Main
 ################################################################################
 
 adata = sc.read_h5ad(pre_out_path)
+
+#-------------------------------------------------------------------------------
+#   Check redundancy of secondary segmentations with primary
+#-------------------------------------------------------------------------------
+
+#   Add new secondary segmentations to old object
+b2c.insert_labels(
+    adata, 
+    labels_npz_path = os.path.join(
+        stardist_new_dir, f'gex_{sample_id}.npz'
+    ), 
+    basis="array", 
+    mpp=mpp, 
+    labels_key="gex_new"
+)
+
+new_coverage = (adata.obs['labels_he_expanded'][adata.obs['gex_new'] != 0] != 0).mean()
+old_coverage = (adata.obs['labels_he_expanded'][adata.obs['labels_gex'] != 0] != 0).mean()
+print(f'Sample {sample_id} | Percentage of secondary bins captured by primary segmentations: {100 * new_coverage:.1f}% (improved); {100 * old_coverage:.1f}% (original)')
+
+#   Take the union of cell labels from both segmentation methods
+b2c.salvage_secondary_labels(
+    adata, 
+    primary_label="labels_he_expanded", 
+    secondary_label="gex_new", 
+    labels_key="labels_joint_new"
+)
+
+new_coverage = (
+    adata.obs
+        .query('gex_new != 0')
+        .groupby('gex_new')
+        .agg(captured=('labels_he_expanded', lambda x: (x != 0).any()))
+        ['captured']
+        .mean()
+)
+old_coverage = (
+    adata.obs
+        .query('labels_gex != 0')
+        .groupby('labels_gex')
+        .agg(captured=('labels_he_expanded', lambda x: (x != 0).any()))
+        ['captured']
+        .mean()
+)
+print(f'Sample {sample_id} | Percentage of secondary cells overlapping primary segmentations: {100 * new_coverage:.1f}% (improved); {100 * old_coverage:.1f}% (original)')
+
+#-------------------------------------------------------------------------------
+#   Plots
+#-------------------------------------------------------------------------------
 
 #   Sample random primary cells, which will just decide the centers of images
 #   to plot
