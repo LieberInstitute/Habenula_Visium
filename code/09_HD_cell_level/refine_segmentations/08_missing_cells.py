@@ -1,6 +1,8 @@
 #   How often does something significantly bright show up in the gene-expression
 #   image that is not captured by nuclear segmentations? In other words, is
 #   secondary segmentation even needed (and likely to not just pick up noise)?
+#   In the same random regions, plot secondary segmentations before and after
+#   improvement, along with primary segmentations
 
 import matplotlib.pyplot as plt
 import scanpy as sc
@@ -21,7 +23,11 @@ sample_info = pd.read_csv(sample_info_path)
 sample_id = sample_info.iloc[task_id]['sample_id']
 spaceranger_dir = sample_info.iloc[task_id]['spaceranger_dir']
 
-stardist_dir = here(
+stardist_new_dir = here(
+    'processed-data', '09_HD_cell_level', 'new_samples2',
+    'refine_segmentations', 'stardist'
+)
+stardist_old_dir = here(
     'processed-data', '09_HD_cell_level', 'new_samples2', 'stardist'
 )
 pre_out_path = here(
@@ -34,7 +40,7 @@ plot_dir = here(
 )
 mpp = 0.3
 num_images = 2
-image_width = 100
+image_width = 60
 
 os.makedirs(plot_dir, exist_ok=True)
 
@@ -121,7 +127,6 @@ for i, cell_index in enumerate(cell_indices):
 
     print(f'Image {i+1} bounds: array_row:({array_row_center - image_width // 2}, {array_row_center + image_width // 2}), array_col:({array_col_center - image_width // 2}, {array_col_center + image_width // 2})')
 
-    #   Plot primary segmentations over gene-expression image
     crop_primary = b2c.get_crop(
         adata[mask], basis="spatial", spatial_key="spatial_cropped_150_buffer",
         mpp=mpp
@@ -130,21 +135,58 @@ for i, cell_index in enumerate(cell_indices):
 
     prefices = ['original', 'log']
     paths = [
-        os.path.join(stardist_dir, f'gex_{sample_id}.tiff'),
-        os.path.join(stardist_dir, f'gex_log_{sample_id}.tiff')
+        os.path.join(stardist_old_dir, f'gex_{sample_id}.tiff'),
+        os.path.join(stardist_old_dir, f'gex_log_{sample_id}.tiff')
     ]
 
     for prefix, path in zip(prefices, paths):
         os.makedirs(os.path.join(plot_dir, prefix), exist_ok=True)
 
+        #   Primary segmentations over gene-expression image
         rendered = custom_view_labels(
             image_path = path,
-            labels_npz_path = os.path.join(stardist_dir, f'he_{sample_id}.npz'),  
+            labels_npz_path = os.path.join(stardist_old_dir, f'he_{sample_id}.npz'),  
             crop_image = crop_secondary, crop_labels = crop_primary,
             stardist_normalize = True
         )
         plt.imshow(rendered)
-        plt.savefig(os.path.join(plot_dir, prefix, f'{sample_id}_{i+1}.png'))
+        plt.savefig(
+            os.path.join(plot_dir, prefix, f'{sample_id}_primary_{i+1}.png')
+        )
+        plt.close('all')
+
+        #   Old (original) secondary segmentations
+        rendered = b2c.view_labels(
+            image_path = path,
+            labels_npz_path = os.path.join(
+                stardist_old_dir, f'gex_{sample_id}.npz'
+            ),
+            crop = crop_secondary,
+            stardist_normalize = True
+        )
+        plt.imshow(rendered)
+        plt.savefig(
+            os.path.join(
+                plot_dir, prefix, f'{sample_id}_secondary_old_{i+1}.png'
+            )
+        )
+        plt.close('all')
+
+        #   New/improved secondary segmentations
+        rendered = b2c.view_labels(
+            image_path = path,
+            labels_npz_path = os.path.join(
+                stardist_new_dir, f'gex_{sample_id}.npz'
+            ),
+            crop = crop_secondary,
+            stardist_normalize = True
+        )
+        plt.imshow(rendered)
+        plt.savefig(
+            os.path.join(
+                plot_dir, prefix, f'{sample_id}_secondary_new_{i+1}.png'
+            )
+        )
         plt.close('all')
         
 session_info.show()
