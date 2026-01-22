@@ -16,14 +16,14 @@ spe_in_path = here(
     'spe_norm_filtered.rds'
 )
 spe_out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2',
+    'processed-data', '09_HD_cell_level', 'no_secondary',
     'spe_norm_filtered_split.rds'
 )
 cluster_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples2', 'banksy', 'lambda0_2',
     'leiden_res1_7.csv'
 )
-plot_dir = here('plots', '09_HD_cell_level', 'new_samples2', 'split_spe')
+plot_dir = here('plots', '09_HD_cell_level', 'no_secondary', 'split_spe')
 db_scan_eps = 300 # found through trial and error
 
 #   Will apply SpatialExperiment::rotateObject() and mirrorObject(axis = 'v'),
@@ -102,7 +102,7 @@ handle_Br9902 = function(spe_piece, this_sample_id) {
     return(spe_piece)
 }
 
-dir.create(plot_dir, showWarnings = FALSE)
+dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path(plot_dir, 'section_identity'), showWarnings = FALSE)
 dir.create(file.path(plot_dir, 'final_orientation'), showWarnings = FALSE)
 
