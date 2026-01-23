@@ -2,11 +2,11 @@
 #SBATCH -p katun
 #SBATCH --mem=10G
 #SBATCH --job-name=04_nnSVG
-#SBATCH -c 4
+#SBATCH -c 2
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/10_HD_bin_level/new_samples2/logs/04_nnSVG_%a.txt
-#SBATCH -e ../../processed-data/10_HD_bin_level/new_samples2/logs/04_nnSVG_%a.txt
-#SBATCH --array=1-5%5
+#SBATCH -o ../../processed-data/10_HD_bin_level/no_secondary/logs/04_nnSVG_%a.txt
+#SBATCH -e ../../processed-data/10_HD_bin_level/no_secondary/logs/04_nnSVG_%a.txt
+#SBATCH --array=1-10%10
 
 set -e
 

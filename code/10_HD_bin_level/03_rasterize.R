@@ -12,14 +12,19 @@ res_scalar = 1
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 sample_info = read_csv(sample_info_path)
 task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-sample_id = sample_info$sample_id[task_id]
-spaceranger_dir = sample_info$spaceranger_dir[task_id]
+sample_id = sprintf(
+    'Br%s_%d',
+    str_extract(sample_info$sample_id[(task_id + 1) %/% 2], '[0-9]{4}$'),
+    (task_id - 1) %% 2 + 1
+)
+spaceranger_dir = sample_info$spaceranger_dir[(task_id + 1) %/% 2]
 
 spe_norm_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples2', 'spe_norm_filtered.rds'
+    'processed-data', '10_HD_bin_level', 'no_secondary',
+    'spe_norm_filtered_split.rds'
 )
 spe_out_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples2', 'rasterized',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'rasterized',
     sprintf('spe_%s_lowres.rds', sample_id)
 )
 json_path = here(
@@ -27,7 +32,7 @@ json_path = here(
     'scalefactors_json.json'
 )
 plot_path = here(
-    'plots', '10_HD_bin_level', 'new_samples2', 'rasterized',
+    'plots', '10_HD_bin_level', 'no_secondary', 'rasterized',
     sprintf('WM_%s.pdf', sample_id)
 )
 markers = c("MBP", "GFAP", "PLP1", "AQP4")

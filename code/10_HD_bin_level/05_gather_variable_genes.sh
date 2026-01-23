@@ -4,8 +4,8 @@
 #SBATCH --job-name=05_gather_variable_genes
 #SBATCH -c 1
 #SBATCH -t 1:00:00
-#SBATCH -o ../../processed-data/10_HD_bin_level/new_samples2/logs/05_gather_variable_genes.txt
-#SBATCH -e ../../processed-data/10_HD_bin_level/new_samples2/logs/05_gather_variable_genes.txt
+#SBATCH -o ../../processed-data/10_HD_bin_level/no_secondary/logs/05_gather_variable_genes.txt
+#SBATCH -e ../../processed-data/10_HD_bin_level/no_secondary/logs/05_gather_variable_genes.txt
 
 set -e
 

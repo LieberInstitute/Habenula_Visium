@@ -8,14 +8,18 @@ library(nnSVG)
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 sample_info = read_csv(sample_info_path, show_col_types = FALSE)
 task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-sample_id = sample_info$sample_id[task_id]
+sample_id = sprintf(
+    'Br%s_%d',
+    str_extract(sample_info$sample_id[(task_id + 1) %/% 2], '[0-9]{4}$'),
+    (task_id - 1) %% 2 + 1
+)
 
 spe_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples2', 'rasterized',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'rasterized',
     sprintf('spe_%s_lowres.rds', sample_id)
 )
 out_path <- here(
-    "processed-data", '10_HD_bin_level', 'new_samples2', "nnSVG_out",
+    "processed-data", '10_HD_bin_level', 'no_secondary', "nnSVG_out",
     paste0(sample_id, ".csv")
 )
 
