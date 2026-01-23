@@ -6,31 +6,28 @@ library(harmony)
 library(cowplot)
 library(scater)
 library(tidyverse)
-library(getopt)
-
-lambda = 0.2
 
 spe_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
+    'processed-data', '09_HD_cell_level', 'no_secondary',
+    'spe_norm_filtered_split.rds'
 )
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2',
-    sprintf('spe_banksy_lambda%s.rds', sub('\\.', '_', as.character(lambda)))
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'banksy',
+    'spe_banksy.rds'
 )
 svg_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples2', 'nnSVG_out',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'nnSVG_out',
     'merged_SVGs.txt'
 )
-sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
-plot_dir = here(
-    'plots', '09_HD_cell_level', 'new_samples2', 'banksy',
-    paste0('lambda', sub('\\.', '_', as.character(lambda)))
-)
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info_split.csv')
+plot_dir = here('plots', '09_HD_cell_level', 'no_secondary', 'banksy')
 
 random_seed = 0
 buffer_prop = 0.5
+lambda = 0.2
 
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(dirname(out_path), showWarnings = FALSE)
 set.seed(random_seed)
 
 #   Load and subset to SVGs to avoid exceeding maximum number
@@ -117,7 +114,7 @@ sample_info = read_csv(sample_info_path, show_col_types = FALSE)
 spe$batch_num = paste(
     'Batch',
     sample_info$batch_num[
-        match(spe$sample_id, sample_info$sample_id)
+        match(spe$sample_id, sample_info$tissue_id)
     ]
 )
 
