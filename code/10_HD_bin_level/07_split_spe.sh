@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=32G
+#SBATCH --mem=64G
 #SBATCH --job-name=07_split_spe
 #SBATCH -c 1
 #SBATCH -t 8:00:00
