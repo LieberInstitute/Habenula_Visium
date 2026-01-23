@@ -48,7 +48,7 @@ res = round(
 )
 
 #   Load and subset to this sample
-message(Sys.time(), ' | Loading this sample and bringing into memory')
+message(Sys.time(), ' | Loading this sample')
 spe = readRDS(spe_norm_path)
 spe = spe[, spe$sample_id == sample_id]
 
