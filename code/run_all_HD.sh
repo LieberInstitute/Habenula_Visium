@@ -29,14 +29,16 @@ repo_dir=$(git rev-parse --show-toplevel)
 cd $repo_dir/code/10_HD_bin_level
 job_id_1_1=$(sbatch --parsable 01_build_spe.sh)
 job_id_1_2=$(sbatch --dependency=afterok:${job_id_1_1} --parsable 02_QC.sh)
+job_id_1_3=$(sbatch --dependency=afterok:${job_id_1_2} --parsable 07_split_spe.sh)
 
 #   Cell-level
 cd $repo_dir/code/09_HD_cell_level
-job_id_1_3=$(sbatch --parsable 01_bin2cell.sh)
-job_id_1_4=$(sbatch --dependency=afterok:${job_id_1_3} --parsable 02_build_spe_raw.sh)
-job_id_1_5=$(sbatch --dependency=afterok:${job_id_1_4} --parsable 03_build_spe_QC.sh)
-job_id_1_6=$(sbatch --dependency=afterok:${job_id_1_5} --parsable 03_new_sample_report.R)
-job_id_1_7=$(sbatch --dependency=afterok:${job_id_1_6} --parsable 04_HVG.sh)
+job_id_1_4=$(sbatch --parsable 01_bin2cell.sh)
+job_id_1_5=$(sbatch --dependency=afterok:${job_id_1_4} --parsable 02_build_spe_raw.sh)
+job_id_1_6=$(sbatch --dependency=afterok:${job_id_1_5} --parsable 03_build_spe_QC.sh)
+job_id_1_7=$(sbatch --dependency=afterok:${job_id_1_6} --parsable 03_new_sample_report.R)
+job_id_1_8=$(sbatch --dependency=afterok:${job_id_1_7} --parsable 04_HVG.sh)
+job_id_1_9=$(sbatch --dependency=afterok:${job_id_1_8} --parsable 17_split_spe.sh)
 
 ################################################################################
 #   FICTURE with library-size-normalized inputs
@@ -91,7 +93,7 @@ job_id_3_9=$(sbatch --dependency=afterok:${job_id_3_8} --parsable 11_cor_heatmap
 
 #   Finding SVGs
 cd $repo_dir/code/10_HD_bin_level
-job_id_4_1=$(sbatch --dependency=afterok:${job_id_1_6} --parsable 03_rasterize.sh)
+job_id_4_1=$(sbatch --dependency=afterok:${job_id_1_9} --parsable 03_rasterize.sh)
 job_id_4_2=$(sbatch --dependency=afterok:${job_id_4_1} --parsable 04_nnSVG.sh)
 job_id_4_3=$(sbatch --dependency=afterok:${job_id_4_2} --parsable 05_gather_variable_genes.sh)
 
