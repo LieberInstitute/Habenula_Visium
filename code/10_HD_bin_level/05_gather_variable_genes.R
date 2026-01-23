@@ -110,16 +110,23 @@ for (sample_id in unique(spe$sample_id)) {
         mutate(sample_id = sample_id)
 }
 
-#   Quite a few genes were considered (passed expression cutoffs) in all
-#   samples, so the "filter(n() == 5)" step is not merely selecting for
-#   high-expression genes
+#   Make sure we're not merely selecting for high-expression genes
+message(
+    'Distribution of number of samples passing expression cutoffs across genes:'
+)
+do.call(rbind, svg_list) |>
+    group_by(gene_id) |>
+    summarize(n = n()) |>
+    pull(n) |>
+    summary()
+
 svg = do.call(rbind, svg_list) |>
     group_by(gene_id) |>
-    filter(n() == 5)
+    filter(n() == 10)
 
 message(
     sprintf(
-        "%s unique genes were considered as candidate SVGs in all 5 samples",
+        "%s unique genes were considered as candidate SVGs in all 10 samples",
         svg |>
             pull(gene_id) |>
             unique() |>
