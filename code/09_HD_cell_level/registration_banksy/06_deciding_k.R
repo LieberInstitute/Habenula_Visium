@@ -18,15 +18,15 @@ task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 ref_name = ref_names[task_id]
 
 in_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
-    'lambda0_2', sprintf('cor_vs_%s.rds', ref_name)
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
+    sprintf('cor_vs_%s.rds', ref_name)
 )
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
-    'lambda0_2', 'ranking', sprintf('%s.csv', ref_name)
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
+    'ranking', sprintf('%s.csv', ref_name)
 )
 plot_dir = here(
-    'plots', '09_HD_cell_level', 'new_samples2', 'registration_banksy'
+    'plots', '09_HD_cell_level', 'no_secondary', 'registration_banksy'
 )
 resolution = c(seq_len(20) / 10, 4, 8)
 max_ambig_clusters = 10

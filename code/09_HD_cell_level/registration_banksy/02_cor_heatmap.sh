@@ -4,10 +4,9 @@
 #SBATCH --job-name=02_cor_heatmap
 #SBATCH -c 1
 #SBATCH -t 8:00:00
-#SBATCH -o ../../../processed-data/09_HD_cell_level/new_samples2/registration_banksy/logs/02_cor_heatmap_%a.txt
-#SBATCH -e ../../../processed-data/09_HD_cell_level/new_samples2/registration_banksy/logs/02_cor_heatmap_%a.txt
+#SBATCH -o ../../../processed-data/09_HD_cell_level/no_secondary/registration_banksy/logs/02_cor_heatmap_%a.txt
+#SBATCH -e ../../../processed-data/09_HD_cell_level/no_secondary/registration_banksy/logs/02_cor_heatmap_%a.txt
 #SBATCH --array=1-30%10
-#SBATCH --exclude=compute-175
 
 set -e
 

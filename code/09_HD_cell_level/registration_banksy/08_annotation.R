@@ -9,27 +9,28 @@ library(Polychrome)
 library(sessioninfo)
 
 cor_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
-    'lambda0_2', 'cor_vs_snRNAseq_fine.rds'
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
+    'cor_vs_snRNAseq_fine.rds'
 )
 cor_index = 17
 cluster_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'banksy', 'lambda0_2',
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'banksy',
     'leiden_res1_7.csv'
 )
 spe_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
+    'processed-data', '09_HD_cell_level', 'no_secondary',
+    'spe_norm_filtered_split.rds'
 )
 hb_anno_path = here(
     'processed-data', '09_HD_cell_level', 'new_samples2',
     'hb_thal_manual_anno.csv.gz'
 )
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'cluster_annotation.csv'
 )
 plot_dir = here(
-    'plots', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
+    'plots', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'annotation'
 )
 manual_anno = c(
@@ -114,8 +115,8 @@ spe = readRDS(spe_path)
 cluster_df = read_csv(cluster_path, show_col_types = FALSE)
 stopifnot(setequal(spe$key, cluster_df$key))
 spe$banksy = factor(
-    as.character(cluster_df$banksy_lambda0_2[match(spe$key, cluster_df$key)]),
-    levels = as.character(sort(unique(cluster_df$banksy_lambda0_2)))
+    as.character(cluster_df$banksy[match(spe$key, cluster_df$key)]),
+    levels = as.character(sort(unique(cluster_df$banksy)))
 )
 cluster_colors = palette36.colors(length(levels(spe$banksy)))
 names(cluster_colors) = levels(spe$banksy)

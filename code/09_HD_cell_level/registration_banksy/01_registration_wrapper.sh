@@ -4,8 +4,8 @@
 #SBATCH --job-name=01_registration_wrapper
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/09_HD_cell_level/new_samples2/registration_banksy/logs/01_registration_wrapper_%a.txt
-#SBATCH -e ../../../processed-data/09_HD_cell_level/new_samples2/registration_banksy/logs/01_registration_wrapper_%a.txt
+#SBATCH -o ../../../processed-data/09_HD_cell_level/no_secondary/registration_banksy/logs/01_registration_wrapper_%a.txt
+#SBATCH -e ../../../processed-data/09_HD_cell_level/no_secondary/registration_banksy/logs/01_registration_wrapper_%a.txt
 #SBATCH --array=1-22%10
 
 set -e

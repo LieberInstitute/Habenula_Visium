@@ -7,15 +7,12 @@ library(SpatialExperiment)
 library(spatialLIBD)
 library(sessioninfo)
 
-lambda_neat = 'lambda0_2'
-
 plot_dir = here(
-    'plots', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
-    lambda_neat
+    'plots', '09_HD_cell_level', 'no_secondary', 'registration_banksy'
 )
 model_paths = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
-    'modeling_results', lambda_neat,
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
+    'modeling_results',
     sprintf(
         '%s.rds',
         c(sub('\\.', '_', as.character(seq_len(20) / 10)), 4, 8)
@@ -55,8 +52,8 @@ ref_path = ref_paths[array_task]
 ref_name = ref_names[array_task]
 
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
-    lambda_neat, sprintf('cor_vs_%s.rds', ref_name)
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
+    sprintf('cor_vs_%s.rds', ref_name)
 )
 
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
