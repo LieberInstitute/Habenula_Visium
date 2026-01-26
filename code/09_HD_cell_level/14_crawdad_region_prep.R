@@ -11,19 +11,20 @@ library(rjson)
 library(sessioninfo)
 
 spe_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
+    'processed-data', '09_HD_cell_level', 'no_secondary',
+    'spe_norm_filtered_split.rds'
 )
 banksy_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'banksy', 'lambda0_2',
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'banksy',
     'leiden_res1_7.csv'
 )
 cor_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
-    'lambda0_2', 'cor_vs_snRNAseq_fine.rds'
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
+    'cor_vs_snRNAseq_fine.rds'
 )
-sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info_split.csv')
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'crawdad', 'region',
     'input_cells.csv.gz'
 )
 hb_thal_anno_path = here(
@@ -31,7 +32,7 @@ hb_thal_anno_path = here(
     'hb_thal_manual_anno.csv.gz'
 )
 ct_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'registration_banksy',
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'cluster_annotation.csv'
 )
 
@@ -57,7 +58,7 @@ for (sample_id in sample_info$sample_id) {
     )
 }
 scale_df = tibble(
-    sample_id = sample_info$sample_id,
+    sample_id = sample_info$tissue_id,
     micron_per_px = micron_per_px
 )
 
@@ -90,7 +91,7 @@ cell_df = tibble(
     left_join(read_csv(banksy_path, show_col_types = FALSE), by = 'key') |>
     mutate(
         cell_type = anno_df$fine_cell_type[
-            match(as.character(banksy_lambda0_2), anno_df$cluster)
+            match(as.character(banksy), anno_df$cluster)
         ]
     ) |>
     filter(cell_type != 'Ambig')

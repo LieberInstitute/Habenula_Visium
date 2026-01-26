@@ -4,8 +4,8 @@
 #SBATCH --job-name=16_crawdad_region_plot
 #SBATCH -c 1
 #SBATCH -t 1:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples2/logs/16_crawdad_region_plot.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples2/logs/16_crawdad_region_plot.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/no_secondary/logs/16_crawdad_region_plot.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/no_secondary/logs/16_crawdad_region_plot.txt
 
 set -e
 

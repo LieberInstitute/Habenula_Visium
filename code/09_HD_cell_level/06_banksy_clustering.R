@@ -8,23 +8,23 @@ library(cowplot)
 library(scater)
 
 lambda = 0.2
-lambda_neat = 'lambda0_2'
 res = c(seq_len(20) / 10, 4, 8)[as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))]
 res_neat = paste0('res', sub('\\.', '_', as.character(res)))
 
 spe_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2',
-    sprintf('spe_banksy_%s.rds', lambda_neat)
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'banksy',
+    'spe_banksy.rds'
 )
 spe_orig_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
+    'processed-data', '09_HD_cell_level', 'no_secondary',
+    'spe_norm_filtered_split.rds'
 )
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'banksy', lambda_neat,
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'banksy',
     sprintf('leiden_%s.csv', res_neat)
 )
 plot_dir = here(
-    'plots', '09_HD_cell_level', 'new_samples2', 'banksy', lambda_neat,
+    'plots', '09_HD_cell_level', 'no_secondary', 'banksy',
     sprintf('leiden_%s', res_neat)
 )
 random_seed = 0
@@ -90,7 +90,7 @@ for (sample_id in unique(spe$sample_id)) {
 cluster_df = colData(spe) |>
     as_tibble() |>
     select(key, sym(cluster_name))
-colnames(cluster_df) = c('key', sprintf('banksy_%s', lambda_neat))
+colnames(cluster_df) = c('key', 'banksy')
 
 write_csv(cluster_df, out_path)
 

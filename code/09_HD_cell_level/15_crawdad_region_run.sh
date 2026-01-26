@@ -6,17 +6,17 @@
 #SBATCH -t 1-00:00:00
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
-#SBATCH --array=9
+#SBATCH --array=1-20%10
 
 ## Define loops and appropriately subset each variable for the array task ID
-all_sample_id=(H1-W369TJK_D1_9090 H1-MVPY9BW_A1_8433 H1-MVPY9BW_D1_8667 H1-6FX4YN3_A1_3942 H1-6FX4YN3_D1_9902)
-sample_id=${all_sample_id[$(( $SLURM_ARRAY_TASK_ID / 2 % 5 ))]}
+all_sample_id=(Br9090_1 Br9090_2 Br8433_1 Br8433_2 Br8667_1 Br8667_2 Br3942_1 Br3942_2 Br9902_1 Br9902_2)
+sample_id=${all_sample_id[$(( $SLURM_ARRAY_TASK_ID / 2 % 10 ))]}
 
 all_region=(habenula thalamus)
 region=${all_region[$(( $SLURM_ARRAY_TASK_ID / 1 % 2 ))]}
 
 ## Explicitly pipe script output to a log
-log_path=../../processed-data/09_HD_cell_level/new_samples2/logs/15_crawdad_region_run_${sample_id}_${region}_${SLURM_ARRAY_TASK_ID}.txt
+log_path=../../processed-data/09_HD_cell_level/no_secondary/logs/15_crawdad_region_run_${sample_id}_${region}_${SLURM_ARRAY_TASK_ID}.txt
 
 {
 set -e

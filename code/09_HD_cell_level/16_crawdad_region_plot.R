@@ -5,19 +5,22 @@ library(spatialLIBD)
 library(scales)
 library(sessioninfo)
 
-sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
+sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info_split.csv')
 result_paths = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'crawdad', 'region',
     'output', '%s_%s_results.csv'
 )
 in_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'crawdad', 'region',
     'input_cells.csv.gz'
 )
 spe_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'spe_norm_filtered.rds'
+    'processed-data', '09_HD_cell_level', 'no_secondary',
+    'spe_norm_filtered_split.rds'
 )
-plot_dir = here('plots', '09_HD_cell_level', 'new_samples2', 'crawdad', 'region')
+plot_dir = here(
+    'plots', '09_HD_cell_level', 'no_secondary', 'crawdad', 'region'
+)
 regions = c('habenula', 'thalamus')
 cell_type_colors = c(
     Astrocyte = "#2F97FF", placeholder = "#FFA239", Other = "#DFE1DD"
@@ -65,7 +68,7 @@ custom_dotplot = function(result_df, z_sig, cell_types, filename) {
 ################################################################################
 
 sample_info = read_csv(sample_info_path, show_col_types = FALSE)
-sample_ids = sample_info$sample_id
+sample_ids = sample_info$tissue_id
 
 result_list = list()
 for (sample_id in sample_ids) {

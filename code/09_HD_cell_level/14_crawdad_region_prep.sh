@@ -4,8 +4,8 @@
 #SBATCH --job-name=14_crawdad_region_prep
 #SBATCH -c 1
 #SBATCH -t 2:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples2/logs/14_crawdad_region_prep.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples2/logs/14_crawdad_region_prep.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/no_secondary/logs/14_crawdad_region_prep.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/no_secondary/logs/14_crawdad_region_prep.txt
 
 set -e
 
