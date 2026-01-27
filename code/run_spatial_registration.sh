@@ -78,8 +78,10 @@ echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 # rm -f logs/08_manual_ann_vs_bayes_space_*.txt
 # rm -f ${PLOTDIR}/${SUBDIR}/08_manual_ann_vs_bayes_space/*.pdf
 # sbatch 08_manual_ann_vs_bayes_space.sh
-# 
-# #------------------------------------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------
 
 # submit dummy Slurm jobs that do nothing but exit successfully to be able to skip the lines above
 id1=$(sbatch --parsable --wrap="echo 'Skipping 06_model_BayesSpace.sh'; sleep 1")
@@ -118,33 +120,51 @@ id3=$(sbatch --parsable --dependency=afterok:$id2 01_compute_cor.sh)
 echo "Running dependency array job: ${id3}"
 
 
-echo " Spatial Registrattion Visium vs scRNAseq human pilot with Hb clusters merged"
-## First remove old data and plots
-rm -f logs/02_compute_corr_hb_merged.*.out
-rm -f logs/02_compute_corr_hb_merged.*.err
-rm -f ${PROCESSEDIR}/${SUBDIR}/cor_BayesSpace_vs_snRNA-seq_top100_Hb_merged.Rdata
-rm -f ${PLOTDIR}/${SUBDIR}/*_broadRes_Hb_merged.pdf
-
-sbatch 02_compute_corr_hb_merged.sh
+# echo " Spatial Registrattion Visium vs scRNAseq human pilot with Hb clusters merged"
+# ## First remove old data and plots
+# rm -f logs/02_compute_corr_hb_merged.*.out
+# rm -f logs/02_compute_corr_hb_merged.*.err
+# rm -f ${PROCESSEDIR}/${SUBDIR}/cor_BayesSpace_vs_snRNA-seq_top100_Hb_merged.Rdata
+# rm -f ${PLOTDIR}/${SUBDIR}/*_broadRes_Hb_merged.pdf
+# 
+# sbatch 02_compute_corr_hb_merged.sh
 
 
 #------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------
 
-echo " Spatial Registrattion scRNAseq human pilot vs multiome-RNA human hb"
+# echo " Clustering Registrattion Multiome WNN vs scRNAseq human pilot"
+# 
+# SUBDIR="07_spatial_registration_vs_multiome_snRNA-seq"
+# cd ${CODEDIR}/${SUBDIR}
+# echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
+# 
+# ## Compute correlations
+# # Plot in both verical and horizontal formatR
+# 
+# mv logs/01_compute_cor_snRnaseq_multiomeRnaseq_*.txt logs/old/ 2>/dev/null || true
+# if [ -f "${PROCESSEDIR}/${SUBDIR}/cor_multiome_vs_snRNA-seq_top100_horizontal.Rdata" ]; then
+#     mkdir -p old
+#     mv "${PROCESSEDIR}/${SUBDIR}/cor_multiome_vs_snRNA-seq_top100_horizontal.Rdata" old/
+# fi
+# if [ -f "${PROCESSEDIR}/${SUBDIR}/cor_multiome_vs_snRNA-seq_top100_vertical.Rdata" ]; then
+#     mkdir -p old
+#     mv "${PROCESSEDIR}/${SUBDIR}/cor_multiome_vs_snRNA-seq_top100_vertical.Rdata" old/
+# fi
+# if [ -f "${PLOTDIR}/${SUBDIR}/cor_top100_registration_snMultiome_snRNAseq_v4_vertical.pdf" ]; then
+#     mkdir -p old
+#     mv "${PLOTDIR}/${SUBDIR}/cor_top100_registration_snMultiome_snRNAseq_v4_vertical.pdf" old/
+# fi
+# 
+# id3=$(sbatch --parsable --dependency=afterok:$id2 01_compute_cor_snRnaseq_multiomeRnaseq.sh)
+# echo "Running dependency array job: ${id3}
 
-SUBDIR="07_spatial_registration_vs_multiome_snRNA-seq"
-cd ${CODEDIR}/${SUBDIR}
-echo "Current code dir: ${CODEDIR}/${SUBDIR}/"
 
-## Compute correlations for visium vs snRNAseq fine and broad resolution (CSC) 
-# Plot in both verical and horizontal formatR
-rm -f logs/01_compute_cor_snRnaseq_multiomeRnaseq_*.txt
-rm -f ${PROCESSEDIR}/${SUBDIR}/cor_multiome_vs_snRNA-seq_top100_*.Rdata
-rm -f ${PLOTDIR}/${SUBDIR}/cor_top100_registration_snMultiome_snRNAseq_v2_*.pdf
-
-sbatch 01_compute_cor_snRnaseq_multiomeRnaseq.sh
+#------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------
 
 ## Compute correlations for visium vs snRNAseq fine and broad resolution (CSC)
+
 rm -f logs/02_compute_cor_visium_multiomeRnaseq.txt
 rm -f ${PROCESSEDIR}/${SUBDIR}/bayesSpace_cor_top100_*.Rdata
 rm -f ${PLOTDIR}/${SUBDIR}/cor_top100_spatial_registration_snMultiome_v2.pdf
