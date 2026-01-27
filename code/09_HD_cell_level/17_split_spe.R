@@ -1,7 +1,8 @@
-#   This script has two goals:
+#   This script has three goals:
 #       1. Break up existing capture areas into the 2 constituent tissue pieces
 #       2. Arrange constituent pieces anatomically consistently (dorsal up,
 #          medial left)
+#       3. Drop secondary segmentations
 #   Then just write a new SPE with 10 sample IDs
 
 library(here)
@@ -107,6 +108,11 @@ dir.create(file.path(plot_dir, 'section_identity'), showWarnings = FALSE)
 dir.create(file.path(plot_dir, 'final_orientation'), showWarnings = FALSE)
 
 spe = readRDS(spe_in_path)
+
+#   Drop secondary segmentations and ensure all genes have nonzero counts 
+#   (across all cells)
+spe = spe[, spe$labels_joint_source == 'primary']
+spe = spe[rowSums(assays(spe)$counts) > 0, ]
 
 spe_list = list()
 for (sample_id in unique(spe$sample_id)) {
