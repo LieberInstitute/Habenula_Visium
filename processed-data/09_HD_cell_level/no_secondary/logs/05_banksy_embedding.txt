@@ -1,10 +1,10 @@
 **** Job starts ****
-Fri Jan 23 03:01:31 PM EST 2026
+Tue Jan 27 09:54:45 AM EST 2026
 **** JHPCE info ****
 User: neagles
-Job id: 27094020
+Job id: 27118878
 Job name: 05_banksy_embedding
-Node name: compute-169
+Node name: compute-168
 Task id: 
 Unloading conda_R/4.5
 Loading conda_R/4.5
@@ -127,8 +127,8 @@ Loading required package: ggplot2
 ✖ dplyr::slice()        masks IRanges::slice()
 ✖ lubridate::stamp()    masks cowplot::stamp()
 ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
-2026-01-23 15:02:11.149034 | Staggering spatial coordinates
-2026-01-23 15:02:11.308757 | Running computeBanksy on full dataset
+2026-01-27 09:55:11.343186 | Staggering spatial coordinates
+2026-01-27 09:55:12.060624 | Running computeBanksy on full dataset
 Computing neighbors...
 Spatial mode is kNN_median
 Parameters: k_geom=15
@@ -142,15 +142,15 @@ Centering
 Done
 Warning message:
 In asMethod(object) :
-  sparse->dense coercion: allocating vector of size 4.8 GiB
-2026-01-23 15:05:53.71887 | Running PCA on embedding
+  sparse->dense coercion: allocating vector of size 2.2 GiB
+2026-01-27 09:56:42.687804 | Running PCA on embedding
 Using seed=0
 Warning message:
 In asMethod(object) :
-  sparse->dense coercion: allocating vector of size 4.8 GiB
-2026-01-23 15:12:20.690949 | Running UMAP on embedding
+  sparse->dense coercion: allocating vector of size 2.2 GiB
+2026-01-27 09:58:55.963762 | Running UMAP on embedding
 Using seed=0
-2026-01-23 15:23:28.338212 | Running Harmony...
+2026-01-27 10:03:14.112112 | Running Harmony...
 Transposing data matrix
 Initializing state using k-means centroids initialization
 Harmony 1/10
@@ -188,39 +188,22 @@ Harmony 5/10
 0%   10   20   30   40   50   60   70   80   90   100%
 [----|----|----|----|----|----|----|----|----|----|
 **************************************************|
-Harmony 6/10
-0%   10   20   30   40   50   60   70   80   90   100%
-[----|----|----|----|----|----|----|----|----|----|
-**************************************************|
-0%   10   20   30   40   50   60   70   80   90   100%
-[----|----|----|----|----|----|----|----|----|----|
-**************************************************|
-Harmony 7/10
-0%   10   20   30   40   50   60   70   80   90   100%
-[----|----|----|----|----|----|----|----|----|----|
-**************************************************|
-0%   10   20   30   40   50   60   70   80   90   100%
-[----|----|----|----|----|----|----|----|----|----|
-**************************************************|
-Harmony converged after 7 iterations
+Harmony converged after 5 iterations
 Warning messages:
-1: Quick-TRANSfer stage steps exceeded maximum (= 32131450) 
-2: Quick-TRANSfer stage steps exceeded maximum (= 32131450) 
-3: Quick-TRANSfer stage steps exceeded maximum (= 32131450) 
-4: Quick-TRANSfer stage steps exceeded maximum (= 32131450) 
-5: Quick-TRANSfer stage steps exceeded maximum (= 32131450) 
-6: Quick-TRANSfer stage steps exceeded maximum (= 32131450) 
-7: Quick-TRANSfer stage steps exceeded maximum (= 32131450) 
-8: Quick-TRANSfer stage steps exceeded maximum (= 32131450) 
-9: Quick-TRANSfer stage steps exceeded maximum (= 32131450) 
-10: Quick-TRANSfer stage steps exceeded maximum (= 32131450) 
+1: Quick-TRANSfer stage steps exceeded maximum (= 14816700) 
+2: Quick-TRANSfer stage steps exceeded maximum (= 14816700) 
+3: did not converge in 25 iterations 
+4: did not converge in 25 iterations 
+5: Quick-TRANSfer stage steps exceeded maximum (= 14816700) 
+6: Quick-TRANSfer stage steps exceeded maximum (= 14816700) 
+7: Quick-TRANSfer stage steps exceeded maximum (= 14816700) 
 null device 
           1 
-2026-01-23 15:29:07.683392 | Running UMAP on Harmony-corrected embedding
+2026-01-27 10:05:48.969277 | Running UMAP on Harmony-corrected embedding
 Using seed=0
 null device 
           1 
-2026-01-23 15:40:41.600828 | Saving full SPE object
+2026-01-27 10:10:23.869006 | Saving full SPE object
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.5.0 Patched (2025-05-21 r88220)
@@ -231,7 +214,7 @@ null device
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2026-01-23
+ date     2026-01-27
  pandoc   3.7.0.1 @ /jhpce/shared/community/core/conda_R/4.5/bin/pandoc
  quarto   1.7.32 @ /users/neagles/.positron-server/bin/3290136f699527bf01b703b390457b05ef2b858a/quarto/bin/quarto
 
@@ -340,4 +323,4 @@ null device
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Fri Jan 23 03:44:57 PM EST 2026
+Tue Jan 27 10:12:31 AM EST 2026
