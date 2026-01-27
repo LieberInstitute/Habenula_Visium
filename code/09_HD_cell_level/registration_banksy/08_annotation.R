@@ -37,27 +37,27 @@ region_colors = c(
     habenula = "#B1092D", thalamus = "#0B52C4", other = "#DFE1DD"
 )
 fine_colors = c(
-    OPC = '#fceb00',
-    Oligo = '#c02000',
-    Microglia = '#072AC8',
-    Astrocyte = '#906139',
-    Endo = '#2D2524',
-    MHb.1 = '#f38021',
-    MHb.2 = '#3EA4FD',
+    OPC = '#d3c871',
+    Oligo = '#4d5802',
+    Microglia = '#222222',
+    Astrocyte = '#8d363c',
+    Endo = '#ee6c14',
+    MHb.1 = '#FF00FF',
+    MHb.2 = '#FAA0A0',
     LHb.2.7 = '#00a900',
     LHb.1.3.4 = '#004F2D',
     LHb.4 = '#84DCC6',
-    Excit.Thal = '#f757c1'
+    Excit.Thal = '#9e4ad1'
 )
 broad_colors = c(
-    OPC = '#fceb00',
-    Oligo = '#c02000',
-    Microglia = '#072AC8',
-    Astrocyte = '#906139',
-    Endo = '#2D2524',
-    MHb = '#f38021',
+    OPC = '#d3c871',
+    Oligo = '#4d5802',
+    Microglia = '#222222',
+    Astrocyte = '#8d363c',
+    Endo = '#ee6c14',
+    MHb = '#FF00FF',
     LHb = '#004F2D',
-    Excit.Thal = '#f757c1'
+    Excit.Thal = '#9e4ad1'
 )
 
 #   Just rewriting HD results (stuff like 'LHb.7/LHb.2' => 'LHb.2.7') 
