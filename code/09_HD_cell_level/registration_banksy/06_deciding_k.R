@@ -29,7 +29,7 @@ plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'registration_banksy'
 )
 resolution = c(seq_len(20) / 10, 4, 8)
-max_ambig_clusters = 10
+max_ambig_clusters = 5
 
 dir.create(dirname(out_path), showWarnings = FALSE)
 dir.create(plot_dir, showWarnings = FALSE)
