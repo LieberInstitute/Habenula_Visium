@@ -12,10 +12,10 @@ cor_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'cor_vs_snRNAseq_fine.rds'
 )
-cor_index = 17
+cor_index = 18
 cluster_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'banksy',
-    'leiden_res1_7.csv'
+    'leiden_res1_8.csv'
 )
 spe_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary',
@@ -33,14 +33,6 @@ plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'annotation'
 )
-manual_anno = c(
-    '18' = 'Astrocyte', # From mapping to multiome 'C.20.Astrocyte'
-    '24' = 'Oligo',     # From mapping to multiome 'C.02.Oligo'
-    # From manual hb/thal anno in HD (referencing multiome would be circular!)
-    '12' = 'Excit.Thal',
-    '16' = 'LHb.2.7',   # Just rewriting HD results ('LHb.7/LHb.2')
-    '22' = 'LHb.1.3.4'  # Same here
-)
 region_colors = c(
     habenula = "#B1092D", thalamus = "#0B52C4", other = "#DFE1DD"
 )
@@ -54,9 +46,8 @@ fine_colors = c(
     MHb.2 = '#3EA4FD',
     LHb.2.7 = '#00a900',
     LHb.1.3.4 = '#004F2D',
-    Excit.Thal = '#f757c1',
-    Inhib.Thal = '#8257df',
-    Ambig = '#5A5752'
+    LHb.4 = '#84DCC6',
+    Excit.Thal = '#f757c1'
 )
 broad_colors = c(
     OPC = '#fceb00',
@@ -66,18 +57,14 @@ broad_colors = c(
     Endo = '#2D2524',
     MHb = '#f38021',
     LHb = '#004F2D',
-    Thal = '#f757c1',
-    Ambig = '#5A5752'
-)
-ambig_colors = c(
-    '4' = '#BF0505',
-    '12' = '#477BF4',
-    '27' = '#FCB036',
-    'Other' = '#DFE1DD'
+    Excit.Thal = '#f757c1'
 )
 
+#   Just rewriting HD results (stuff like 'LHb.7/LHb.2' => 'LHb.2.7') 
+manual_anno = c('19' = 'LHb.2.7', '23' = 'LHb.1.3.4')
+
 dir.create(plot_dir, showWarnings = FALSE)
-for (subdir in c('region', 'banksy_as_is', 'banksy_ambig', 'anno_broad', 'anno_fine')) {
+for (subdir in c('region', 'anno_broad', 'anno_fine')) {
     dir.create(file.path(plot_dir, subdir), showWarnings = FALSE)
 }
 
@@ -136,40 +123,11 @@ for (sample_id in unique(spe$sample_id)) {
         spe, sample_id, 'region_anno', file.path(plot_dir, 'region'),
         colors = region_colors
     )
-
-    #   The reason for plotting Banksy results again is to have consistent
-    #   colors across samples; some samples lack certain clusters and the
-    #   default original plots improperly assigned colors to clusters
-    vis_clus_HD(
-        spe, sample_id, 'banksy', file.path(plot_dir, 'banksy_as_is'),
-        colors = cluster_colors
-    )
 }
 
 ################################################################################
 #   Annotate clusters with cell types
 ################################################################################
-
-message('Cluster 12 locates in thalamus based on manual annotation:')
-table(spe$region_anno[spe$banksy == '12'])
-
-#   These clusters registered with poor layer confidence and look ambiguous.
-#   Where are they located?
-spe$temp = factor(
-    case_when(
-        spe$banksy %in% c('4', '12', '27') ~ spe$banksy,
-        TRUE ~ 'Other'
-    ),
-    levels = names(ambig_colors)
-)
-
-#   Check locations of ambiguous clusters
-for (sample_id in unique(spe$sample_id)) {
-    vis_clus_HD(
-        spe, sample_id, 'temp', file.path(plot_dir, 'banksy_ambig'),
-        colors = ambig_colors
-    )
-}
 
 #   Create mapping of cluster to cell type
 anno_df = readRDS(cor_path)[[cor_index]] |>
@@ -178,8 +136,6 @@ anno_df = readRDS(cor_path)[[cor_index]] |>
     mutate(
         fine_cell_type = case_when(
             cluster %in% names(manual_anno) ~ manual_anno[cluster],
-            layer_confidence == 'poor' ~ 'Ambig',
-            cluster == '12' ~ 'Excit.Thal',
             TRUE ~ layer_label
         ),
         broad_cell_type = str_replace(
