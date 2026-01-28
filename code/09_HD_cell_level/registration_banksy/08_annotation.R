@@ -138,9 +138,7 @@ anno_df = readRDS(cor_path)[[cor_index]] |>
             cluster %in% names(manual_anno) ~ manual_anno[cluster],
             TRUE ~ layer_label
         ),
-        broad_cell_type = str_replace(
-            fine_cell_type, '(\\..*$|Excit\\.|Inhib\\.)', ''
-        )
+        broad_cell_type = str_replace(fine_cell_type, '\\.[0-9]+.*$', '')
     ) |>
     select(cluster, broad_cell_type, fine_cell_type) |>
     arrange(as.integer(cluster))
