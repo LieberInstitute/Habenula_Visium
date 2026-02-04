@@ -16,7 +16,7 @@ spe_path = here(
 )
 banksy_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'banksy',
-    'leiden_res1_7.csv'
+    'leiden_res1_8.csv'
 )
 cor_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
@@ -44,9 +44,9 @@ spe = readRDS(spe_path)
 #   Ultimately, we'll be converting spatial coordinates to units of microns,
 #   which is more interpretable than pixels
 micron_per_px = c()
-for (sample_id in sample_info$sample_id) {
+for (tissue_id in sample_info$tissue_id) {
     spaceranger_dir = sample_info$spaceranger_dir[
-        sample_info$sample_id == sample_id
+        sample_info$tissue_id == tissue_id
     ]
     scalefactors_path = here(
         spaceranger_dir, 'outs', 'binned_outputs', 'square_002um', 'spatial',
@@ -82,10 +82,10 @@ cell_df = tibble(
         sample_id = spe$sample_id,
         region_anno = spe$region_anno,
         x = spatialCoords(spe)[, 'pxl_col_in_fullres'] * scale_df$micron_per_px[
-            match(sample_id, sample_info$sample_id)
+            match(sample_id, sample_info$tissue_id)
         ],
         y = spatialCoords(spe)[, 'pxl_row_in_fullres'] * scale_df$micron_per_px[
-            match(sample_id, sample_info$sample_id)
+            match(sample_id, sample_info$tissue_id)
         ]
     ) |>
     left_join(read_csv(banksy_path, show_col_types = FALSE), by = 'key') |>
@@ -93,8 +93,7 @@ cell_df = tibble(
         cell_type = anno_df$fine_cell_type[
             match(as.character(banksy), anno_df$cluster)
         ]
-    ) |>
-    filter(cell_type != 'Ambig')
+    )
 
 #   Signal to drop combinations of cell type and region that consitute less than
 #   1% of the region's cells
