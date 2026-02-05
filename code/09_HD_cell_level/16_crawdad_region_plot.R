@@ -25,6 +25,7 @@ regions = c('habenula', 'thalamus')
 cell_type_colors = c(
     Astrocyte = "#2F97FF", placeholder = "#FFA239", Other = "#DFE1DD"
 )
+min_num_signif = 5
 
 dir.create(
     file.path(plot_dir, 'spatial_plots'), recursive = TRUE, showWarnings = FALSE
@@ -95,11 +96,12 @@ result_df = do.call(rbind, result_list) |>
     filter(abs(Z) >= z_sig) |>
     group_by(region, sample_id, neighbor, reference) |>
     filter(scale == min(scale)) |>
-    #   Retain pairs where all samples are significant, and sign of Z scores
-    #   agree across samples
+    #   Retain pairs where all samples all signs of Z scores agree across
+    #   samples, and significance is achieved in some sufficient number of
+    #   samples 
     group_by(region, reference, neighbor) |>
     filter(all(Z > 0) | all(Z < 0)) |>
-    filter(n() == length(sample_ids)) |>
+    filter(n() >= min_num_signif) |>
     #   Take the mean Z-score and scale across samples
     group_by(region, neighbor, reference) |>
     summarize(scale = mean(scale), Z = mean(Z)) |>
