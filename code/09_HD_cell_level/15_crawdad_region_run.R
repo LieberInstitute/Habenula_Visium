@@ -21,17 +21,17 @@ message("Using the following parameters:")
 print(opt)
 
 in_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'crawdad', 'region',
     'input_cells.csv.gz'
 )
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'crawdad', 'region',
     'output', sprintf('%s_%s_results.csv', opt$sample_id, opt$region)
 )
 scales = c(100, 200, 500, 1000, 5000)
 random_seed = 0
 
-num_cores = as.integer(Sys.getenv("SLURM_CPUS_ON_NODE"))
+num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK"))
 dir.create(dirname(out_path), showWarnings = FALSE)
 
 cell_df = read_csv(in_path, show_col_types = FALSE) |>

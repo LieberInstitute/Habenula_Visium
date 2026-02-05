@@ -6,7 +6,7 @@
 #SBATCH -t 1-00:00:00
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
-#SBATCH --array=1-20%10
+#SBATCH --array=9,11%10
 
 ## Define loops and appropriately subset each variable for the array task ID
 all_sample_id=(Br9090_1 Br9090_2 Br8433_1 Br8433_2 Br8667_1 Br8667_2 Br3942_1 Br3942_2 Br9902_1 Br9902_2)
