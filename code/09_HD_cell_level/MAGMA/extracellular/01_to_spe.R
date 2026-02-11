@@ -25,6 +25,8 @@ spe_out_path = here(
     'extracellular', 'spe_raw.rds'
 )
 
+dir.create(dirname(spe_out_path), recursive = TRUE, showWarnings = FALSE)
+
 ################################################################################
 #   Functions
 ################################################################################
