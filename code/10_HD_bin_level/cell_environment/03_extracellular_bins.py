@@ -21,9 +21,9 @@ bin_out_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'extracellular_bins.csv.gz'
 )
-adata_out_path = here(
+adata_out_dir = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'extracellular_adata.h5ad'
+    'adata'
 )
 
 mpp = 0.3
@@ -35,7 +35,6 @@ sample_info = pd.read_csv(sample_id_path)
 all_samples = sample_info['sample_id'].tolist()
 
 extracellular_df_list = []
-adata_list = []
 for sample_id in all_samples:
     print(f"{datetime.datetime.now()} | Processing sample {sample_id}")
 
@@ -63,22 +62,19 @@ for sample_id in all_samples:
     adata = adata[adata.obs['cell_component'] == 'Prim. Extracellular', :]
 
     adata = b2c.bin_to_cell(
-        adata, labels_key="microenvironment_joint",
+        adata, labels_key="microenvironment_primary",
         spatial_keys=["spatial", "spatial_cropped_150_buffer"]
     )
 
     #   Add key which matches the ordinary cell-level anndata (not
     #   extracellular)
-    adata.obs['key'] = adata.obs.index + '_' + adata.obs['sample_id']
+    adata.obs['key'] = adata.obs.index + '_' + sample_id
     adata.obs.set_index('key', inplace=True)
 
-    adata_list.append(adata)
+    sc.write(os.path.join(adata_out_dir, f'{sample_id}.h5ad'), adata)
 
 print(f"{datetime.datetime.now()} | Merging and exporting")
 extracellular_df = pd.concat(extracellular_df_list, axis = 0)
 extracellular_df.to_csv(bin_out_path, index = False)
-
-adata = ad.concat(adata_list, axis=0)
-sc.write(adata_out_path, adata)
 
 session_info.show()
