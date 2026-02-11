@@ -1,9 +1,15 @@
+#   Export a CSV of extracellular bins and their associated cells; export a
+#   single dataset-wide AnnData of "cells" formed by aggregating extracellular
+#   expression
+
 import scanpy as sc
 import os
 from pyhere import here
 import session_info
 import datetime
 import pandas as pd
+import bin2cell as b2c
+import anndata as ad
 
 import extracellular_bins_functions as ebf
 
@@ -11,9 +17,13 @@ sample_id_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 plot_dir = here(
     'plots', '10_HD_bin_level', 'no_secondary', 'cell_environment', 'random_cells'
 )
-out_path = here(
+bin_out_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'extracellular_bins.csv.gz'
+)
+adata_out_path = here(
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
+    'extracellular_adata.h5ad'
 )
 
 mpp = 0.3
@@ -25,6 +35,7 @@ sample_info = pd.read_csv(sample_id_path)
 all_samples = sample_info['sample_id'].tolist()
 
 extracellular_df_list = []
+adata_list = []
 for sample_id in all_samples:
     print(f"{datetime.datetime.now()} | Processing sample {sample_id}")
 
@@ -48,8 +59,26 @@ for sample_id in all_samples:
         ebf.export_and_plot(adata, plot_dir, sample_id, mpp)
     )
 
+    #   Drop intracellular bins
+    adata = adata[adata.obs['cell_component'] == 'Prim. Extracellular', :]
+
+    adata = b2c.bin_to_cell(
+        adata, labels_key="microenvironment_joint",
+        spatial_keys=["spatial", "spatial_cropped_150_buffer"]
+    )
+
+    #   Add key which matches the ordinary cell-level anndata (not
+    #   extracellular)
+    adata.obs['key'] = adata.obs.index + '_' + adata.obs['sample_id']
+    adata.obs.set_index('key', inplace=True)
+
+    adata_list.append(adata)
+
 print(f"{datetime.datetime.now()} | Merging and exporting")
 extracellular_df = pd.concat(extracellular_df_list, axis = 0)
-extracellular_df.to_csv(out_path, index = False)
+extracellular_df.to_csv(bin_out_path, index = False)
+
+adata = ad.concat(adata_list, axis=0)
+sc.write(adata_out_path, adata)
 
 session_info.show()
