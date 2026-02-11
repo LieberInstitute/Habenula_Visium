@@ -134,7 +134,6 @@ for (hb_subtype in c('Astrocyte', 'LHb.2.7')) {
         ungroup() |>
         #   Improve plot appearance
         mutate(
-            sample_id = paste0('Br', str_extract(sample_id, '[0-9]{4}$')),
             facet_anno = sprintf("Ref: %s\nNeighbor: %s", reference, neighbor)
         ) |>
         #   Focus on a particular pair (and its reverse)
