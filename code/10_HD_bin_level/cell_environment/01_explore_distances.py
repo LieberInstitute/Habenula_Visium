@@ -61,7 +61,7 @@ expansion_distance = [0]
 occupation = [num_cells[:int(len(num_cells) / 2)].sum() / adata.shape[0]]
 
 for exp_d in list(range(1, 11)) + [15, 20]:
-    adata = ebf.find_microenvironment(adata, expansion_distance = exp_d)
+    ebf.find_microenvironment(adata, expansion_distance = exp_d)
     #   Take the combined number of bins occupied by cells in the lower 50% by
     #   size. The idea is that expansion should not increase this number past a
     #   certain point due to high density of cells
@@ -103,7 +103,7 @@ if sample_id == 'H1-W369TJK_D1_9090':
     )
     adata.obs['FICTURE_k4'] = ficture_df['FICTURE_k4']
 
-    adata = ebf.find_microenvironment(adata, expansion_distance = 6)
+    ebf.find_microenvironment(adata, expansion_distance = 7)
 
     #   Label each bin with a cellular component
     adata.obs['cell_component'] = 'Unlabeled'
