@@ -30,48 +30,13 @@ def export_and_plot(adata, plot_dir, sample_id, mpp, random_state = 0):
     #   Form DataFrame of extracellular bins for export
     #---------------------------------------------------------------------------
 
-    extracellular_df = adata.obs[
-        adata.obs['cell_component'].isin(
-            ['Prim. Extracellular', 'Sec. Extracellular']
-        )
-    ].copy()
-
-    #   For each secondary cell, find the corresponding label in 'labels_joint'
-    label_key = (
-        adata.obs
-            .loc[adata.obs['labels_joint_source'] == 'secondary']
-            .drop_duplicates(subset = 'labels_gex', keep = 'first')
-            [['labels_gex', 'labels_joint']]
-            .rename(
-                {
-                    'labels_joint': 'corresponding_joint',
-                    'labels_gex': 'microenvironment_secondary'
-                },
-                axis = 1
-            )
-    )
-
-    #   Add 'cell_id' column
-    temp = extracellular_df.index
-    extracellular_df = pd.merge(
-        extracellular_df, label_key, how = 'left',
-        on = 'microenvironment_secondary'
-    )
-    extracellular_df.index = temp
-    extracellular_df['cell_id'] = extracellular_df['corresponding_joint']
-    mask = extracellular_df['cell_component'] == 'Prim. Extracellular'
-    extracellular_df.loc[mask, 'cell_id'] = extracellular_df.loc[
-        mask, 'microenvironment_primary'
-    ]
-    assert all(~extracellular_df['cell_id'].isna())
-
-    #   Clean up
     extracellular_df = (
-        extracellular_df[['cell_id']]
+        adata
+            .obs[adata.obs['cell_component'] == 'Prim. Extracellular']
             .reset_index(names = 'bin_id')
-            .assign(sample_id = sample_id)
+            .copy()
     )
-    extracellular_df['cell_id'] = extracellular_df['cell_id'].astype(int)
+    extracellular_df['cell_key'] = extracellular_df['microenvironment_primary'].astype(str) + '_' + sample_id
 
     #---------------------------------------------------------------------------
     #   Visualize cell segmentations and surrounding microenvironment
@@ -79,9 +44,8 @@ def export_and_plot(adata, plot_dir, sample_id, mpp, random_state = 0):
 
     random_cell = (
         extracellular_df
-            .loc[mask.values, :]
             .sample(n = 1, random_state = random_state)
-            ['cell_id']
+            ['microenvironment_primary']
             .values[0]
     )
     small_adata = adata[adata.obs['microenvironment_primary'] == random_cell, :]
@@ -102,5 +66,7 @@ def export_and_plot(adata, plot_dir, sample_id, mpp, random_state = 0):
         os.path.join(plot_dir, f'{sample_id}_random_cells.png')
     )
     plt.close('all')
+
+    extracellular_df = extracellular_df[['bin_id', 'cell_key']]
 
     return extracellular_df
