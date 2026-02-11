@@ -32,10 +32,10 @@ pre_out_path = here(
     f'{sample_id}_pre_bin2cell.h5ad'
 )
 df_out_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples2', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'occupation', f'{sample_id}.csv'
 )
-plot_dir = here('plots', '10_HD_bin_level', 'new_samples2', 'cell_environment')
+plot_dir = here('plots', '10_HD_bin_level', 'no_secondary', 'cell_environment')
 
 os.makedirs(plot_dir, exist_ok=True)
 os.makedirs(df_out_path.parent, exist_ok=True)
@@ -68,8 +68,8 @@ for exp_d in list(range(1, 11)) + [15, 20]:
     num_cells = (
         adata.obs
             .loc[
-                adata.obs['microenvironment_joint'] != 0,
-                'microenvironment_joint'
+                adata.obs['microenvironment_primary'] != 0,
+                'microenvironment_primary'
             ]
             .value_counts()
             .sort_values()
@@ -107,13 +107,9 @@ if sample_id == 'H1-W369TJK_D1_9090':
 
     #   Label each bin with a cellular component
     adata.obs['cell_component'] = 'Unlabeled'
-    adata.obs.loc[adata.obs['microenvironment_secondary'] != 0, 'cell_component'] = 'Sec. Extracellular'
-    adata.obs.loc[adata.obs['labels_gex'] != 0, 'cell_component'] = 'Sec. Cell Body'
     adata.obs.loc[adata.obs['microenvironment_primary'] != 0, 'cell_component'] = 'Prim. Extracellular'
     adata.obs.loc[adata.obs['labels_he_expanded'] != 0, 'cell_component'] = 'Prim. Cell Body'
     adata.obs.loc[adata.obs['labels_he'] != 0, 'cell_component'] = 'Prim. Nucleus'
-
-    adata = ebf.drop_bad_secondary_cells(adata, min_bins_per_cell = 4)
 
     ############################################################################
     #   Plot cells in a region rich in white matter
