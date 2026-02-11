@@ -9,7 +9,6 @@ import session_info
 import datetime
 import pandas as pd
 import bin2cell as b2c
-import anndata as ad
 
 import extracellular_bins_functions as ebf
 
@@ -30,6 +29,7 @@ mpp = 0.3
 expansion_distance = 7
 
 os.makedirs(plot_dir, exist_ok=True)
+os.makedirs(adata_out_dir, exist_ok=True)
 
 sample_info = pd.read_csv(sample_id_path)
 all_samples = sample_info['sample_id'].tolist()
