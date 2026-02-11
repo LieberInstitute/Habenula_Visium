@@ -4,11 +4,11 @@ library(segmented)
 library(sessioninfo)
 
 occupation_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples2', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'occupation', '%s.csv'
 )
 sample_id_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
-plot_dir = here('plots', '10_HD_bin_level', 'new_samples2', 'cell_environment')
+plot_dir = here('plots', '10_HD_bin_level', 'no_secondary', 'cell_environment')
 
 sample_info = read_csv(sample_id_path, show_col_types = FALSE)
 sample_ids = sample_info$sample_id
