@@ -34,7 +34,7 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 repo_dir=$(git rev-parse --show-toplevel)
-out_prefix=${repo_dir}/processed-data/10_MAGMA/$gwas/$cell_type_group
+out_prefix=${repo_dir}/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/GWAS_results/$gwas/$cell_type_group
 gene_set_path=${repo_dir}/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/gene_sets/${cell_type_group}.tsv
 gene_results_path=${repo_dir}/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/GWAS_results/$gwas/${gwas}.genes.raw
 
