@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../../processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/logs/04_MAGMA_first_two_%a.txt
 #SBATCH -e ../../../../processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/logs/04_MAGMA_first_two_%a.txt
-#SBATCH --array=1-17%10
+#SBATCH --array=2
 
 #   Run the first two steps in the MAGMA pipeline for every GWAS. Critically,
 #   all relevant inputs/ reference files use hg19 and European ancestry
@@ -39,7 +39,7 @@ bfile=/dcs04/lieber/lcolladotor/with10x_LIBD001/HumanPilot/Analysis/Layer_Guesse
 case ${gwas} in
     MDD2019)
         snp_loc=${hb_gwas_dir}/mdd2019edinburgh/PGC_UKB_depression_genome-wide.snploc
-        pval_file=${repo_dir}/processed-data/10_MAGMA/MDD2019/p_values.tsv
+        pval_file=${multiome_dir}/processed-data/10_MAGMA/MDD2019/p_values.tsv
         ;;
     panic)
         snp_loc=${hb_gwas_dir}/panic2019/pgc-panic2019.snploc
