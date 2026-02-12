@@ -5,6 +5,7 @@ library(here)
 library(tidyverse)
 library(SpatialExperiment)
 library(sessioninfo)
+library(scran)
 library(spatialLIBD)
 
 spe_raw_path = here(
@@ -61,6 +62,7 @@ vis_clus_HD = function(spe, sampleid, clustervar, plot_dir, ...) {
 
 spe = readRDS(spe_raw_path)
 spe$exclude_overlapping = FALSE
+spe$key = colnames(spe)
 
 #   Filter out the artifact in H1-MVPY9BW_A1_8433 using info gained in bin-level
 #   QC

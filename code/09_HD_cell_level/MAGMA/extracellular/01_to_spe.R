@@ -47,10 +47,8 @@ anndata_to_spe = function(sample_id, ad_in_path, spe_bin) {
     g = anndataToGiotto(anndata_path = ad_in_path)
     spe = giottoToSpatialExperiment(g)[[1]]
 
-    #   Fix sample ID and key
+    #   Fix sample ID
     spe$sample_id = sample_id
-    spe$key = paste(colnames(spe), sample_id, sep = "_")
-    colnames(spe) = spe$key
 
     #   Use more standard names for spatialCoords and assays
     colnames(spatialCoords(spe)) = c("pxl_col_in_fullres", "pxl_row_in_fullres")
@@ -129,7 +127,7 @@ spe = do.call(cbind, spe_list)
 
 #   Save
 message(Sys.time(), " - Saving raw SPE")
-saveRDS(spe, spe_raw_path)
+saveRDS(spe, spe_out_path)
 
 message("Memory usage:")
 gc()

@@ -4,8 +4,8 @@
 #SBATCH --job-name=02_prep_spe
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/logs/02_prep_spe.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/logs/02_prep_spe.txt
+#SBATCH -o ../../../../processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/logs/02_prep_spe.txt
+#SBATCH -e ../../../../processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/logs/02_prep_spe.txt
 
 set -e
 
