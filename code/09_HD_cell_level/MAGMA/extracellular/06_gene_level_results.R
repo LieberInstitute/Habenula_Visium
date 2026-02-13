@@ -73,7 +73,7 @@ for (gwas in names(gene_stat_paths)) {
         #   Read in set-level stats to identify significant sets
         set_df = sprintf(set_stat_paths, gwas, cell_type_group) |>
             read_table_auto_skip() |>
-            dplyr::rename(cell_type = FULL_NAME) |>
+            dplyr::rename(cell_type = VARIABLE) |>
             mutate(
                 set_is_sig = P < sig_cutoff,
                 cell_type_res = cell_type_group
@@ -82,13 +82,13 @@ for (gwas in names(gene_stat_paths)) {
 
         #   Read in gene sets themselves and merge with gene- and set-level
         #   stats
-        gene_df = read_table(
+        gene_df_list[[paste(gwas, cell_type_group, sep = '_')]] = read_table(
                 gene_set_paths[[cell_type_group]], show_col_types = FALSE
             ) |>
             left_join(gene_stat_df, by = c('gene_id' = 'GENE')) |>
             dplyr::rename(cell_type = set_id) |>
             left_join(set_df, by = 'cell_type') |>
-            dplyr::rename(p = P, gene_id = link_gene_id) |>
+            dplyr::rename(p = P) |>
             select(gene_id, cell_type, gwas, p, set_is_sig, cell_type_res)
     }
 }
@@ -106,6 +106,17 @@ for (gwas in names(gene_stat_paths)) {
     )
 }
 
+gene_df = gene_df |>
+    filter(!is.na(p), p < sig_cutoff, set_is_sig) |>
+    mutate(gwas = gwas_renaming[gwas])
+
+#   Do we have enough genes for meaningful testing?
+gene_df |>
+    group_by(cell_type, gwas, cell_type_res) |>
+    summarize(n = n()) |>
+    arrange(cell_type_res, cell_type) |>
+    print(n = Inf)
+
 #   Read in the GTF to get gene symbols
 gtf = import(reference_gtf)
 gtf = gtf[gtf$type == 'gene'] |>
@@ -115,9 +126,6 @@ gtf = gtf[gtf$type == 'gene'] |>
 
 #   Export final gene sets, only including genes where the set
 #   as a whole was significant
-gene_df = gene_df |>
-    filter(!is.na(p), p < sig_cutoff, set_is_sig) |>
-    mutate(gwas = gwas_renaming[gwas])
 
 gene_df |>
     arrange(cell_type_res, gwas, cell_type, p) |>
