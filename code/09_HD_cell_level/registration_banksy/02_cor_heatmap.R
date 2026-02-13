@@ -29,11 +29,12 @@ ref_paths = c(
             c("final_Annotations", "final_Annotations_broad")
         )
     ),
-    #   Multiome data
+    #   Multiome data mid and fine resolutions
     here(
         'processed-data', '05_snRNA-seq_model_stats',
         'enrichment_snRNA-multiome_v5.rds'
     ),
+    '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/08_spatial_registration_vs_multiome_snRNA-seq/fine/enrichment_snRNA-multiome_v5.rds',
     #    Visium BayesSpace clusters (k 2 through 28)
     here(
         "processed-data", "05_brain_area_differential_expression",
@@ -42,7 +43,7 @@ ref_paths = c(
     )
 )
 ref_names = c(
-    'snRNAseq_fine', 'snRNAseq_broad', 'multiome',
+    'snRNAseq_fine', 'snRNAseq_broad', 'multiome_mid', 'multiome_fine',
     sprintf('Visium_BayesSpace_k%02d', 2:28)
 )
 
@@ -108,7 +109,7 @@ saveRDS(this_cor, file = out_path)
 
 #   For helping to annotate the multiome data, we also want a version where
 #   Visium HD is the reference
-if (ref_name == 'multiome') {
+if (grepl('^multiome', ref_name)) {
     #   Remove 'X' from Visium HD cluster names
     for (i in seq_len(length(t_stats))) {
         colnames(t_stats[[i]]) = sub(
@@ -134,7 +135,7 @@ if (ref_name == 'multiome') {
     )
 
     #   Make heatmaps
-    pdf(file.path(plot_dir, "multiome_flipped.pdf"))
+    pdf(file.path(plot_dir, sprintf("%s_flipped.pdf", ref_name)))
     for (i in seq_len(length(this_cor))) {
         print(
             layer_stat_cor_plot(
