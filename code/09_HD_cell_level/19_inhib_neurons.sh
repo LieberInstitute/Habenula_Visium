@@ -4,8 +4,8 @@
 #SBATCH --job-name=19_inhib_neurons
 #SBATCH -c 1
 #SBATCH -t 1-00:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples2/logs/19_inhib_neurons.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples2/logs/19_inhib_neurons.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/no_secondary/logs/19_inhib_neurons.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/no_secondary/logs/19_inhib_neurons.txt
 
 set -e
 
