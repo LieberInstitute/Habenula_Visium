@@ -1,10 +1,10 @@
 **** Job starts ****
-Thu Feb 12 12:32:46 PM EST 2026
+Fri Feb 13 12:17:04 PM EST 2026
 **** JHPCE info ****
 User: neagles
-Job id: 28175827
+Job id: 28609782
 Job name: 03_mean_ratio
-Node name: compute-176
+Node name: compute-169
 Task id: 
 Unloading conda_R/4.5
 Loading conda_R/4.5
@@ -124,20 +124,43 @@ The following objects are masked from ‘package:matrixStats’:
 ✖ dplyr::slice()        masks IRanges::slice()
 ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 here() starts at /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium
+2026-02-13 12:17:40.185249 make pseudobulk object
+2026-02-13 12:17:42.536732 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
+2026-02-13 12:17:42.567177 drop lowly expressed genes
+2026-02-13 12:17:42.686116 normalize expression
 Marker counts for fine resolution:
 
- Astrocyte Excit.Thal  LHb.1.3.4    LHb.2.7      LHb.4      MHb.1      MHb.2 
-        18         25         15          1         26          7         29 
-     Oligo        OPC 
-        21          9 
+ Astrocyte       Endo Excit.Thal  LHb.1.3.4    LHb.2.7      LHb.4      MHb.1 
+       200        200        151        200         92        200        158 
+     MHb.2  Microglia      Oligo        OPC 
+       200        169        200         31 
+Warning message:
+In get_mean_ratio(sce = spe_pb, assay_name = "logcounts", cellType_col = cell_type_col,  :
+  One or more cell types has < 10 cells, this may result in unstable marker genes results. Check details of get_mean_ratio() for more info
+2026-02-13 12:17:51.784729 make pseudobulk object
+2026-02-13 12:17:53.857913 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
+2026-02-13 12:17:53.878634 drop lowly expressed genes
+2026-02-13 12:17:53.960326 normalize expression
 Marker counts for mid resolution:
 
- Astrocyte Excit.Thal        LHb        MHb      Oligo        OPC 
-        18         39         17         29         21          9 
+ Astrocyte       Endo Excit.Thal        LHb        MHb  Microglia      Oligo 
+       200        200        200        200        200        167        200 
+       OPC 
+        48 
+Warning message:
+In get_mean_ratio(sce = spe_pb, assay_name = "logcounts", cellType_col = cell_type_col,  :
+  One or more cell types has < 10 cells, this may result in unstable marker genes results. Check details of get_mean_ratio() for more info
+2026-02-13 12:17:59.967356 make pseudobulk object
+2026-02-13 12:18:01.943316 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
+2026-02-13 12:18:01.96277 drop lowly expressed genes
+2026-02-13 12:18:02.038158 normalize expression
 Marker counts for broad resolution:
 
- Astrocyte Excit.Thal         Hb      Oligo        OPC 
-        18         49         19         21          9 
+ Astrocyte       Endo Excit.Thal         Hb  Microglia      Oligo        OPC 
+       200        200        200        200        200        200        113 
+Warning message:
+In get_mean_ratio(sce = spe_pb, assay_name = "logcounts", cellType_col = cell_type_col,  :
+  One or more cell types has < 10 cells, this may result in unstable marker genes results. Check details of get_mean_ratio() for more info
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.5.0 Patched (2025-05-21 r88220)
@@ -148,7 +171,7 @@ Marker counts for broad resolution:
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2026-02-12
+ date     2026-02-13
  pandoc   3.7.0.1 @ /jhpce/shared/community/core/conda_R/4.5/bin/pandoc
  quarto   1.8.27 @ /users/neagles/.positron-server/bin/4b472e9bf40ca88f886fe9c7fcfbb9ee702fccd0/quarto/bin/quarto
 
@@ -290,7 +313,7 @@ Marker counts for broad resolution:
  SparseArray            1.8.1     2025-07-23 [1] Bioconduc~
  sparseMatrixStats      1.20.0    2025-04-15 [1] Bioconduc~
  SpatialExperiment    * 1.18.1    2025-05-11 [2] Bioconductor 3.21 (R 4.5.0)
- spatialLIBD            1.20.1    2025-05-01 [2] Bioconductor 3.21 (R 4.5.0)
+ spatialLIBD          * 1.20.1    2025-05-01 [2] Bioconductor 3.21 (R 4.5.0)
  statmod                1.5.0     2023-01-06 [2] CRAN (R 4.5.0)
  stringi                1.8.7     2025-03-27 [1] CRAN (R 4.5.0)
  stringr              * 1.5.1     2023-11-14 [1] CRAN (R 4.5.0)
@@ -320,4 +343,4 @@ Marker counts for broad resolution:
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Thu Feb 12 12:33:45 PM EST 2026
+Fri Feb 13 12:18:09 PM EST 2026
