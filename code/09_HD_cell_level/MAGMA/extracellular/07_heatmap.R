@@ -64,6 +64,29 @@ sig_cutoff = 0.05
 #   Functions
 ################################################################################
 
+p_val_heatmap = function(results_df, gwas_groups, f_name) {
+    p = ggplot(
+            results_df,
+            aes(
+                x = gwas_group, y = cell_type, fill = neg_log_p, label = p_label
+            )
+        ) +
+        geom_tile() +
+        geom_text(size = 6) +
+        scale_fill_viridis_c() +
+        facet_wrap(~cell_type_group, ncol = 3, scales = "free_y") +
+        theme_bw(base_size = 20) +
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+        labs(x = "GWAS Trait", y = "Cell Type", fill = "-log10(p)")
+    pdf(
+        file.path(plot_dir, f_name),
+        width = 3 + 2 * length(gwas_groups),
+        height = 3 + length(cell_type_groups)
+    )
+    print(p)
+    dev.off()
+}
+
 ################################################################################
 #   Main
 ################################################################################
@@ -86,7 +109,7 @@ for (cell_type_group in cell_type_groups) {
         results_df_list[[length(results_df_list) + 1]] = read_table_auto_skip(
                 sprintf(results_path, gwas_group, cell_type_group)
             ) |>
-            dplyr::rename(cell_type = FULL_NAME) |>
+            dplyr::rename(cell_type = VARIABLE) |>
             mutate(
                 neg_log_p = -log10(P),
                 cell_type_group = cell_type_group,

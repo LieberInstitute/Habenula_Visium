@@ -126,21 +126,11 @@ gtf = gtf[gtf$type == 'gene'] |>
 
 #   Export final gene sets, only including genes where the set
 #   as a whole was significant
-
 gene_df |>
     arrange(cell_type_res, gwas, cell_type, p) |>
     left_join(gtf, by = 'gene_id') |>
     select(cell_type_res, gwas, cell_type, gene_id, gene_name, p) |>
     write_csv(out_path)
-
-#   Grab unique genes per substance-use-related GWAS and cell type
-gene_df = gene_df |>
-    filter(gwas %in% gwas_renaming[gwas_groups[['substance']]]) |>
-    group_by(gwas, cell_type, cell_type_res) |>
-    filter(!duplicated(gene_id)) |>
-    ungroup() |>
-    select(gene_id, cell_type, gwas, cell_type_res) |>
-    mutate(cell_type_res = factor(cell_type_res, levels = cell_type_groups))
 
 session_info()
       
