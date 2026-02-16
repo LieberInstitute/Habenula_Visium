@@ -29,10 +29,10 @@ vis_gene_clean = function(spe, gene_vec, sample_id) {
     #   Run twice to overcome a bug with different behavior on the first plot
     for (i in seq_len(2)) {
         p = vis_gene(
-                spe, sampleid = sample_id, geneid = gene_vec,
-                is_stitched = TRUE, point_size = 20, spatial = FALSE
-            ) +
-            guides(fill = guide_legend(override.aes = list(size = 8)))
+            spe, sampleid = sample_id, geneid = gene_vec,
+            is_stitched = TRUE, point_size = 20, spatial = FALSE,
+            cap_percentile = 0.99
+        )
     }
     return(p)
 }
