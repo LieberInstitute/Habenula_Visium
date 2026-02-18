@@ -8,7 +8,7 @@ library(SpatialExperiment)
 library(sessioninfo)
 
 spe_path = here(
-    'processed-data', '10_HD_bin_level', 'no_secondary',
+    'processed-data', '09_HD_cell_level', 'no_secondary',
     'spe_norm_filtered_split.rds'
 )
 out_path = here(
