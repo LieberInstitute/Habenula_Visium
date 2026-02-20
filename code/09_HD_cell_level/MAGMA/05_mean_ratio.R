@@ -64,14 +64,17 @@ cluster_df = cluster_df %>%
 
 stopifnot(all(spe$key %in% cluster_df$key))
 
-spe$cell_type_broad = cluster_df$broad_cell_type[match(spe$key, cluster_df$key)]
-spe$cell_type_fine  = cluster_df$fine_cell_type [match(spe$key, cluster_df$key)]
+spe$cell_type_fine  = cluster_df$fine_cell_type[match(spe$key, cluster_df$key)]
+spe$cell_type_mid = cluster_df$broad_cell_type[match(spe$key, cluster_df$key)]
+spe$cell_type_broad = str_replace(spe$cell_type_fine, '^[ML]Hb\\.[^_]+', 'Hb')
 
-spe$cell_type_broad = factor(spe$cell_type_broad, levels = sort(unique(spe$cell_type_broad)))
 spe$cell_type_fine  = factor(spe$cell_type_fine,  levels = sort(unique(spe$cell_type_fine)))
+spe$cell_type_mid   = factor(spe$cell_type_mid,   levels = sort(unique(spe$cell_type_mid)))
+spe$cell_type_broad = factor(spe$cell_type_broad, levels = sort(unique(spe$cell_type_broad)))
 
 # ---- export gene sets (fine / mid / broad) ----
 export_set(spe, "cell_type_fine",  "fine")
+export_set(spe, "cell_type_mid",   "mid")
 export_set(spe, "cell_type_broad", "broad")
 
 session_info()
