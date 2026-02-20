@@ -7,13 +7,9 @@ results_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
     'extracellular', 'GWAS_results', '%s', '%s.gsa.out'
 )
-gene_sets_path = here(
+out_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
-    'extracellular', 'gene_sets', '%s.tsv'
-)
-gene_stat_path = here(
-    'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
-    'extracellular', 'GWAS_results', '%s', '%s.genes.out'
+    'extracellular', 'heatmap_data.csv'
 )
 plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'MAGMA',
@@ -133,6 +129,8 @@ results_df = bind_rows(results_df_list) |>
         gwas_group = factor(gwas_renaming[gwas_group], levels = gwas_renaming),
         cell_type_group = factor(cell_type_group, levels = cell_type_groups)
     )
+
+write_csv(results_df, out_path)
 
 #   P-value heatmaps split by substance-use-related traits vs. others
 for (gwas_set in names(gwas_groups)) {
