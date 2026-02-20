@@ -1,0 +1,259 @@
+**** Job starts ****
+Fri Feb 20 10:44:33 AM EST 2026
+**** JHPCE info ****
+User: neagles
+Job id: 29073587
+Job name: 06_MAGMA
+Node name: compute-169
+Task id: 3
+Loading LIBD SLURM module for magma/1.10
+
+Currently Loaded Modules:
+  1) JHPCE_ROCKY9_DEFAULT_ENV   3) conda/3-24.3.0   5) magma/1.10
+  2) JHPCE_tools/3.0            4) conda_R/4.5
+
+ 
+
+Processing GWAS SCZ
+Using SNP location file: /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas/scz2022/PGC3_SCZ_wave3.european.autosome.public.v3.snploc
+Using p-value file: /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas/scz2022/PGC3_SCZ_wave3.european.autosome.public.v3.pval
+Welcome to MAGMA v1.10 (linux/s)
+Using flags:
+	--annotate
+	--snp-loc /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas/scz2022/PGC3_SCZ_wave3.european.autosome.public.v3.snploc
+	--gene-loc /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/hg19_gene_loc.tsv
+	--out /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio_SCZ
+
+Start time is 10:44:33, Friday 20 Feb 2026
+
+Starting annotation...
+Reading gene locations from file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/hg19_gene_loc.tsv... 
+	WARNING: on line 17088, chromosome code 'M' not recognised; skipping gene (ID = ENSG00000198695)
+	WARNING: on line 17093, chromosome code 'M' not recognised; skipping gene (ID = ENSG00000198712)
+	WARNING: on line 17101, chromosome code 'M' not recognised; skipping gene (ID = ENSG00000198727)
+	WARNING: on line 17120, chromosome code 'M' not recognised; skipping gene (ID = ENSG00000198763)
+	WARNING: on line 17128, chromosome code 'M' not recognised; skipping gene (ID = ENSG00000198786)
+	WARNING: on line 17139, chromosome code 'M' not recognised; skipping gene (ID = ENSG00000198804)
+	WARNING: on line 17161, chromosome code 'M' not recognised; skipping gene (ID = ENSG00000198840)
+	WARNING: on line 17186, chromosome code 'M' not recognised; skipping gene (ID = ENSG00000198886)
+	WARNING: on line 17188, chromosome code 'M' not recognised; skipping gene (ID = ENSG00000198888)
+	WARNING: on line 17194, chromosome code 'M' not recognised; skipping gene (ID = ENSG00000198899)
+	WARNING: on line 17217, chromosome code 'M' not recognised; skipping gene (ID = ENSG00000198938)
+	WARNING: on line 18241, chromosome code 'M' not recognised; skipping gene (ID = ENSG00000212907)
+	WARNING: on line 20308, chromosome code 'M' not recognised; skipping gene (ID = ENSG00000228253)
+	38511 gene locations read from file
+	chromosome  1: 3581 genes
+	chromosome  2: 2691 genes
+	chromosome  3: 2009 genes
+	chromosome  4: 1606 genes
+	chromosome  5: 1898 genes
+	chromosome  6: 1943 genes
+	chromosome  7: 1797 genes
+	chromosome  8: 1563 genes
+	chromosome  9: 1407 genes
+	chromosome 10: 1486 genes
+	chromosome 11: 2176 genes
+	chromosome 12: 2012 genes
+	chromosome 13: 844 genes
+	chromosome 14: 1541 genes
+	chromosome 15: 1363 genes
+	chromosome 16: 1754 genes
+	chromosome 17: 2085 genes
+	chromosome 18: 800 genes
+	chromosome 19: 2114 genes
+	chromosome 20: 1000 genes
+	chromosome 21: 548 genes
+	chromosome 22: 947 genes
+	chromosome  X: 1208 genes
+	chromosome  Y: 138 genes
+Reading SNP locations from file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas/scz2022/PGC3_SCZ_wave3.european.autosome.public.v3.snploc... 
+	WARNING: on line 1, chromosome code 'CHR' not recognised; skipping SNP (ID = SNP)
+	SNPs mapped so far: 470068	SNPs mapped so far: 1004028	SNPs mapped so far: 1484909	SNPs mapped so far: 2005036	SNPs mapped so far: 2563961	SNPs mapped so far: 3101368	SNPs mapped so far: 3588675	SNPs mapped so far: 4154434                                                                                                 	7659767 SNP locations read from file
+	of those, 4374347 (57.11%) mapped to at least one gene
+Writing annotation to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio_SCZ.genes.annot
+	for chromosome  1, 230 genes are empty (out of 3581)
+	for chromosome  2, 172 genes are empty (out of 2691)
+	for chromosome  3, 39 genes are empty (out of 2009)
+	for chromosome  4, 46 genes are empty (out of 1606)
+	for chromosome  5, 73 genes are empty (out of 1898)
+	for chromosome  6, 64 genes are empty (out of 1943)
+	for chromosome  7, 116 genes are empty (out of 1797)
+	for chromosome  8, 84 genes are empty (out of 1563)
+	for chromosome  9, 134 genes are empty (out of 1407)
+	for chromosome 10, 71 genes are empty (out of 1486)
+	for chromosome 11, 73 genes are empty (out of 2176)
+	for chromosome 12, 70 genes are empty (out of 2012)
+	for chromosome 13, 29 genes are empty (out of 844)
+	for chromosome 14, 252 genes are empty (out of 1541)
+	for chromosome 15, 139 genes are empty (out of 1363)
+	for chromosome 16, 174 genes are empty (out of 1754)
+	for chromosome 17, 139 genes are empty (out of 2085)
+	for chromosome 18, 20 genes are empty (out of 800)
+	for chromosome 19, 69 genes are empty (out of 2114)
+	for chromosome 20, 28 genes are empty (out of 1000)
+	for chromosome 21, 40 genes are empty (out of 548)
+	for chromosome 22, 67 genes are empty (out of 947)
+	for chromosome  X, 1208 genes are empty (out of 1208)
+	for chromosome  Y, 138 genes are empty (out of 138)
+	at least one SNP mapped to each of a total of 35036 genes (out of 38511)
+
+
+End time is 10:44:50, Friday 20 Feb 2026 (elapsed: 00:00:17)
+Welcome to MAGMA v1.10 (linux/s)
+Using flags:
+	--bfile /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas/g1000_eur/g1000_eur
+	--pval /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas/scz2022/PGC3_SCZ_wave3.european.autosome.public.v3.pval ncol=N
+	--gene-annot /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/SCZ.genes.annot
+	--out /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio_SCZ
+
+Start time is 10:44:50, Friday 20 Feb 2026
+
+Loading PLINK-format data...
+Reading file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas/g1000_eur/g1000_eur.fam... 503 individuals read
+Reading file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas/g1000_eur/g1000_eur.bim... 22665064 SNPs read
+Preparing file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas/g1000_eur/g1000_eur.bed... 
+
+Reading SNP synonyms from file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas/g1000_eur/g1000_eur.synonyms (auto-detected)
+	read 6016767 mapped synonyms from file, mapping to 3921040 SNPs in the data
+	WARNING: detected 133 synonymous SNP pairs in the data
+	         skipped all synonym entries involved, synonymous SNPs are kept in analysis
+	         writing list of detected synonyms in data to supplementary log file
+Reading SNP p-values from file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas/scz2022/PGC3_SCZ_wave3.european.autosome.public.v3.pval... 
+	detected 3 variables in file
+	using variable: SNP (SNP id)
+	using variable: P (p-value)
+	using variable: N (sample size; discarding SNPs with N < 50)
+	read 7659768 lines from file, containing valid SNP p-values for 7549430 SNPs in data (98.56% of lines, 33.31% of SNPs in data)
+Loading gene annotation from file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/SCZ.genes.annot... 
+	35036 gene definitions read from file
+	found 34932 genes containing valid SNPs in genotype data
+
+
+Starting gene analysis... 
+	using model: SNPwise-mean
+	processed genes: 160 (0.5%)     	processed genes: 258 (0.7%)     	processed genes: 364 (1%)     	processed genes: 436 (1.2%)     	processed genes: 512 (1.5%)     	processed genes: 607 (1.7%)     	processed genes: 705 (2%)     	processed genes: 784 (2.2%)     	processed genes: 869 (2.5%)     	processed genes: 937 (2.7%)     	processed genes: 1015 (2.9%)     	processed genes: 1088 (3.1%)     	processed genes: 1140 (3.3%)     	processed genes: 1173 (3.4%)     	processed genes: 1218 (3.5%)     	processed genes: 1270 (3.6%)     	processed genes: 1278 (3.7%)     	processed genes: 1339 (3.8%)     	processed genes: 1394 (4%)     	processed genes: 1458 (4.2%)     	processed genes: 1493 (4.3%)     	processed genes: 1497 (4.3%)     	processed genes: 1499 (4.3%)     	processed genes: 1583 (4.5%)     	processed genes: 1691 (4.8%)     	processed genes: 1825 (5.2%)     	processed genes: 1858 (5.3%)     	processed genes: 2063 (5.9%)     	processed genes: 2163 (6.2%)     	processed genes: 2264 (6.5%)     	processed genes: 2329 (6.7%)     	processed genes: 2382 (6.8%)     	processed genes: 2406 (6.9%)     	processed genes: 2470 (7.1%)     	processed genes: 2556 (7.3%)     	processed genes: 2629 (7.5%)     	processed genes: 2729 (7.8%)     	processed genes: 2811 (8%)     	processed genes: 2885 (8.3%)     	processed genes: 2954 (8.5%)     	processed genes: 3049 (8.7%)     	processed genes: 3110 (8.9%)     	processed genes: 3171 (9.1%)     	processed genes: 3220 (9.2%)     	processed genes: 3281 (9.4%)     	processed genes: 3398 (9.7%)     	processed genes: 3493 (10%)     	processed genes: 3541 (10.1%)     	processed genes: 3623 (10.4%)     	processed genes: 3703 (10.6%)     	processed genes: 3747 (10.7%)     	processed genes: 3809 (10.9%)     	processed genes: 3866 (11.1%)     	processed genes: 3907 (11.2%)     	processed genes: 3925 (11.2%)     	processed genes: 3957 (11.3%)     	processed genes: 4036 (11.6%)     	processed genes: 4118 (11.8%)     	processed genes: 4155 (11.9%)     	processed genes: 4241 (12.1%)     	processed genes: 4439 (12.7%)     	processed genes: 4552 (13%)     	processed genes: 4668 (13.4%)     	processed genes: 4798 (13.7%)     	processed genes: 4842 (13.9%)     	processed genes: 4928 (14.1%)     	processed genes: 4988 (14.3%)     	processed genes: 5034 (14.4%)     	processed genes: 5099 (14.6%)     	processed genes: 5145 (14.7%)     	processed genes: 5198 (14.9%)     	processed genes: 5254 (15%)     	processed genes: 5268 (15.1%)     	processed genes: 5357 (15.3%)     	processed genes: 5414 (15.5%)     	processed genes: 5474 (15.7%)     	processed genes: 5562 (15.9%)     	processed genes: 5646 (16.2%)     	processed genes: 5674 (16.2%)     	processed genes: 5740 (16.4%)     	processed genes: 5833 (16.7%)     	processed genes: 5882 (16.8%)     	processed genes: 5917 (16.9%)     	processed genes: 5976 (17.1%)     	processed genes: 6037 (17.3%)     	processed genes: 6056 (17.3%)     	processed genes: 6090 (17.4%)     	processed genes: 6153 (17.6%)     	processed genes: 6246 (17.9%)     	processed genes: 6258 (17.9%)     	processed genes: 6368 (18.2%)     	processed genes: 6456 (18.5%)     	processed genes: 6458 (18.5%)     	processed genes: 6481 (18.6%)     	processed genes: 6482 (18.6%)     	processed genes: 6483 (18.6%)     	processed genes: 6519 (18.7%)     	processed genes: 6561 (18.8%)     	processed genes: 6602 (18.9%)     	processed genes: 6654 (19%)     	processed genes: 6744 (19.3%)     	processed genes: 6819 (19.5%)     	processed genes: 6882 (19.7%)     	processed genes: 6933 (19.8%)     	processed genes: 6981 (20%)     	processed genes: 7044 (20.2%)     	processed genes: 7099 (20.3%)     	processed genes: 7137 (20.4%)     	processed genes: 7209 (20.6%)     	processed genes: 7285 (20.9%)     	processed genes: 7337 (21%)     	processed genes: 7393 (21.2%)     	processed genes: 7467 (21.4%)     	processed genes: 7502 (21.5%)     	processed genes: 7568 (21.7%)     	processed genes: 7660 (21.9%)     	processed genes: 7728 (22.1%)     	processed genes: 7851 (22.5%)     	processed genes: 7919 (22.7%)     	processed genes: 7958 (22.8%)     	processed genes: 8011 (22.9%)     	processed genes: 8053 (23.1%)     	processed genes: 8131 (23.3%)     	processed genes: 8206 (23.5%)     	processed genes: 8311 (23.8%)     	processed genes: 8409 (24.1%)     	processed genes: 8499 (24.3%)     	processed genes: 8555 (24.5%)     	processed genes: 8604 (24.6%)     	processed genes: 8644 (24.7%)     	processed genes: 8697 (24.9%)     	processed genes: 8752 (25.1%)     	processed genes: 8816 (25.2%)     	processed genes: 8890 (25.4%)     	processed genes: 8960 (25.6%)     	processed genes: 9023 (25.8%)     	processed genes: 9104 (26.1%)     	processed genes: 9157 (26.2%)     	processed genes: 9223 (26.4%)     	processed genes: 9274 (26.5%)     	processed genes: 9350 (26.8%)     	processed genes: 9467 (27.1%)     	processed genes: 9530 (27.3%)     	processed genes: 9586 (27.4%)     	processed genes: 9657 (27.6%)     	processed genes: 9722 (27.8%)     	processed genes: 9775 (28%)     	processed genes: 9872 (28.3%)     	processed genes: 9945 (28.5%)     	processed genes: 10025 (28.7%)     	processed genes: 10089 (28.9%)     	processed genes: 10184 (29.2%)     	processed genes: 10239 (29.3%)     	processed genes: 10287 (29.4%)     	processed genes: 10331 (29.6%)     	processed genes: 10379 (29.7%)     	processed genes: 10415 (29.8%)     	processed genes: 10505 (30.1%)     	processed genes: 10566 (30.2%)     	processed genes: 10635 (30.4%)     	processed genes: 10673 (30.6%)     	processed genes: 10707 (30.7%)     	processed genes: 10747 (30.8%)     	processed genes: 10822 (31%)     	processed genes: 10850 (31.1%)     	processed genes: 10917 (31.3%)     	processed genes: 10968 (31.4%)     	processed genes: 11059 (31.7%)     	processed genes: 11148 (31.9%)     	processed genes: 11249 (32.2%)     	processed genes: 11303 (32.4%)     	processed genes: 11352 (32.5%)     	processed genes: 11418 (32.7%)     	processed genes: 11466 (32.8%)     	processed genes: 11479 (32.9%)     	processed genes: 11486 (32.9%)     	processed genes: 11501 (32.9%)     	processed genes: 11505 (32.9%)     	processed genes: 11518 (33%)     	processed genes: 11537 (33%)     	processed genes: 11538 (33%)     	processed genes: 11543 (33%)     	processed genes: 11544 (33%)     	processed genes: 11545 (33%)     	processed genes: 11549 (33.1%)     	processed genes: 11551 (33.1%)     	processed genes: 11552 (33.1%)     	processed genes: 11556 (33.1%)     	processed genes: 11557 (33.1%)     	processed genes: 11558 (33.1%)     	processed genes: 11559 (33.1%)     	processed genes: 11560 (33.1%)     	processed genes: 11564 (33.1%)     	processed genes: 11565 (33.1%)     	processed genes: 11566 (33.1%)     	processed genes: 11567 (33.1%)     	processed genes: 11568 (33.1%)     	processed genes: 11569 (33.1%)     	processed genes: 11573 (33.1%)     	processed genes: 11576 (33.1%)     	processed genes: 11580 (33.2%)     	processed genes: 11582 (33.2%)     	processed genes: 11585 (33.2%)     	processed genes: 11586 (33.2%)     	processed genes: 11610 (33.2%)     	processed genes: 11616 (33.3%)     	processed genes: 11623 (33.3%)     	processed genes: 11631 (33.3%)     	processed genes: 11632 (33.3%)     	processed genes: 11636 (33.3%)     	processed genes: 11638 (33.3%)     	processed genes: 11671 (33.4%)     	processed genes: 11691 (33.5%)     	processed genes: 11711 (33.5%)     	processed genes: 11712 (33.5%)     	processed genes: 11729 (33.6%)     	processed genes: 11734 (33.6%)     	processed genes: 11736 (33.6%)     	processed genes: 11740 (33.6%)     	processed genes: 11741 (33.6%)     	processed genes: 11759 (33.7%)     	processed genes: 11764 (33.7%)     	processed genes: 11769 (33.7%)     	processed genes: 11770 (33.7%)     	processed genes: 11771 (33.7%)     	processed genes: 11782 (33.7%)     	processed genes: 11832 (33.9%)     	processed genes: 11878 (34%)     	processed genes: 11926 (34.1%)     	processed genes: 12023 (34.4%)     	processed genes: 12067 (34.5%)     	processed genes: 12142 (34.8%)     	processed genes: 12188 (34.9%)     	processed genes: 12244 (35.1%)     	processed genes: 12359 (35.4%)     	processed genes: 12438 (35.6%)     	processed genes: 12517 (35.8%)     	processed genes: 12575 (36%)     	processed genes: 12644 (36.2%)     	processed genes: 12716 (36.4%)     	processed genes: 12783 (36.6%)     	processed genes: 12843 (36.8%)     	processed genes: 12891 (36.9%)     	processed genes: 12933 (37%)     	processed genes: 13004 (37.2%)     	processed genes: 13119 (37.6%)     	processed genes: 13164 (37.7%)     	processed genes: 13205 (37.8%)     	processed genes: 13230 (37.9%)     	processed genes: 13264 (38%)     	processed genes: 13320 (38.1%)     	processed genes: 13400 (38.4%)     	processed genes: 13453 (38.5%)     	processed genes: 13538 (38.8%)     	processed genes: 13624 (39%)     	processed genes: 13764 (39.4%)     	processed genes: 13854 (39.7%)     	processed genes: 13896 (39.8%)     	processed genes: 13965 (40%)     	processed genes: 14078 (40.3%)     	processed genes: 14132 (40.5%)     	processed genes: 14137 (40.5%)     	processed genes: 14185 (40.6%)     	processed genes: 14243 (40.8%)     	processed genes: 14305 (41%)     	processed genes: 14377 (41.2%)     	processed genes: 14426 (41.3%)     	processed genes: 14554 (41.7%)     	processed genes: 14584 (41.7%)     	processed genes: 14668 (42%)     	processed genes: 14729 (42.2%)     	processed genes: 14782 (42.3%)     	processed genes: 14830 (42.5%)     	processed genes: 14873 (42.6%)     	processed genes: 14905 (42.7%)     	processed genes: 14933 (42.7%)     	processed genes: 14960 (42.8%)     	processed genes: 15032 (43%)     	processed genes: 15087 (43.2%)     	processed genes: 15158 (43.4%)     	processed genes: 15196 (43.5%)     	processed genes: 15306 (43.8%)     	processed genes: 15393 (44.1%)     	processed genes: 15462 (44.3%)     	processed genes: 15525 (44.4%)     	processed genes: 15588 (44.6%)     	processed genes: 15636 (44.8%)     	processed genes: 15698 (44.9%)     	processed genes: 15782 (45.2%)     	processed genes: 15816 (45.3%)     	processed genes: 15869 (45.4%)     	processed genes: 15937 (45.6%)     	processed genes: 15976 (45.7%)     	processed genes: 16020 (45.9%)     	processed genes: 16064 (46%)     	processed genes: 16076 (46%)     	processed genes: 16220 (46.4%)     	processed genes: 16282 (46.6%)     	processed genes: 16290 (46.6%)     	processed genes: 16329 (46.7%)     	processed genes: 16370 (46.9%)     	processed genes: 16441 (47.1%)     	processed genes: 16569 (47.4%)     	processed genes: 16653 (47.7%)     	processed genes: 16728 (47.9%)     	processed genes: 16800 (48.1%)     	processed genes: 16870 (48.3%)     	processed genes: 16935 (48.5%)     	processed genes: 16990 (48.6%)     	processed genes: 17040 (48.8%)     	processed genes: 17086 (48.9%)     	processed genes: 17193 (49.2%)     	processed genes: 17277 (49.5%)     	processed genes: 17336 (49.6%)     	processed genes: 17431 (49.9%)     	processed genes: 17541 (50.2%)     	processed genes: 17596 (50.4%)     	processed genes: 17660 (50.6%)     	processed genes: 17703 (50.7%)     	processed genes: 17706 (50.7%)     	processed genes: 17743 (50.8%)     	processed genes: 17795 (50.9%)     	processed genes: 17873 (51.2%)     	processed genes: 17996 (51.5%)     	processed genes: 18035 (51.6%)     	processed genes: 18071 (51.7%)     	processed genes: 18129 (51.9%)     	processed genes: 18202 (52.1%)     	processed genes: 18250 (52.2%)     	processed genes: 18324 (52.5%)     	processed genes: 18391 (52.6%)     	processed genes: 18453 (52.8%)     	processed genes: 18541 (53.1%)     	processed genes: 18567 (53.2%)     	processed genes: 18640 (53.4%)     	processed genes: 18738 (53.6%)     	processed genes: 18821 (53.9%)     	processed genes: 18986 (54.4%)     	processed genes: 19084 (54.6%)     	processed genes: 19142 (54.8%)     	processed genes: 19198 (55%)     	processed genes: 19242 (55.1%)     	processed genes: 19326 (55.3%)     	processed genes: 19387 (55.5%)     	processed genes: 19471 (55.7%)     	processed genes: 19566 (56%)     	processed genes: 19573 (56%)     	processed genes: 19592 (56.1%)     	processed genes: 19720 (56.5%)     	processed genes: 19837 (56.8%)     	processed genes: 19948 (57.1%)     	processed genes: 20075 (57.5%)     	processed genes: 20172 (57.7%)     	processed genes: 20259 (58%)     	processed genes: 20336 (58.2%)     	processed genes: 20382 (58.3%)     	processed genes: 20426 (58.5%)     	processed genes: 20485 (58.6%)     	processed genes: 20535 (58.8%)     	processed genes: 20608 (59%)     	processed genes: 20696 (59.2%)     	processed genes: 20781 (59.5%)     	processed genes: 20846 (59.7%)     	processed genes: 20912 (59.9%)     	processed genes: 20957 (60%)     	processed genes: 21027 (60.2%)     	processed genes: 21087 (60.4%)     	processed genes: 21172 (60.6%)     	processed genes: 21242 (60.8%)     	processed genes: 21291 (60.9%)     	processed genes: 21331 (61.1%)     	processed genes: 21381 (61.2%)     	processed genes: 21426 (61.3%)     	processed genes: 21485 (61.5%)     	processed genes: 21558 (61.7%)     	processed genes: 21643 (62%)     	processed genes: 21741 (62.2%)     	processed genes: 21828 (62.5%)     	processed genes: 21937 (62.8%)     	processed genes: 22029 (63.1%)     	processed genes: 22101 (63.3%)     	processed genes: 22158 (63.4%)     	processed genes: 22209 (63.6%)     	processed genes: 22272 (63.8%)     	processed genes: 22350 (64%)     	processed genes: 22394 (64.1%)     	processed genes: 22415 (64.2%)     	processed genes: 22475 (64.3%)     	processed genes: 22546 (64.5%)     	processed genes: 22631 (64.8%)     	processed genes: 22702 (65%)     	processed genes: 22754 (65.1%)     	processed genes: 22782 (65.2%)     	processed genes: 22829 (65.4%)     	processed genes: 22877 (65.5%)     	processed genes: 22987 (65.8%)     	processed genes: 23049 (66%)     	processed genes: 23110 (66.2%)     	processed genes: 23160 (66.3%)     	processed genes: 23224 (66.5%)     	processed genes: 23291 (66.7%)     	processed genes: 23365 (66.9%)     	processed genes: 23431 (67.1%)     	processed genes: 23507 (67.3%)     	processed genes: 23581 (67.5%)     	processed genes: 23652 (67.7%)     	processed genes: 23798 (68.1%)     	processed genes: 23999 (68.7%)     	processed genes: 24051 (68.9%)     	processed genes: 24104 (69%)     	processed genes: 24147 (69.1%)     	processed genes: 24233 (69.4%)     	processed genes: 24291 (69.5%)     	processed genes: 24347 (69.7%)     	processed genes: 24408 (69.9%)     	processed genes: 24481 (70.1%)     	processed genes: 24560 (70.3%)     	processed genes: 24609 (70.4%)     	processed genes: 24687 (70.7%)     	processed genes: 24774 (70.9%)     	processed genes: 24881 (71.2%)     	processed genes: 25049 (71.7%)     	processed genes: 25124 (71.9%)     	processed genes: 25184 (72.1%)     	processed genes: 25287 (72.4%)     	processed genes: 25378 (72.6%)     	processed genes: 25449 (72.9%)     	processed genes: 25508 (73%)     	processed genes: 25570 (73.2%)     	processed genes: 25652 (73.4%)     	processed genes: 25725 (73.6%)     	processed genes: 25844 (74%)     	processed genes: 25882 (74.1%)     	processed genes: 25952 (74.3%)     	processed genes: 26002 (74.4%)     	processed genes: 26087 (74.7%)     	processed genes: 26126 (74.8%)     	processed genes: 26184 (75%)     	processed genes: 26311 (75.3%)     	processed genes: 26461 (75.8%)     	processed genes: 26521 (75.9%)     	processed genes: 26530 (75.9%)     	processed genes: 26566 (76.1%)     	processed genes: 26614 (76.2%)     	processed genes: 26671 (76.4%)     	processed genes: 26783 (76.7%)     	processed genes: 26865 (76.9%)     	processed genes: 27086 (77.5%)     	processed genes: 27194 (77.8%)     	processed genes: 27264 (78%)     	processed genes: 27422 (78.5%)     	processed genes: 27484 (78.7%)     	processed genes: 27543 (78.8%)     	processed genes: 27594 (79%)     	processed genes: 27605 (79%)     	processed genes: 27642 (79.1%)     	processed genes: 27702 (79.3%)     	processed genes: 27751 (79.4%)     	processed genes: 27824 (79.7%)     	processed genes: 27946 (80%)     	processed genes: 28013 (80.2%)     	processed genes: 28126 (80.5%)     	processed genes: 28174 (80.7%)     	processed genes: 28258 (80.9%)     	WARNING: analysis failed for gene ENSG00000260458; gene contains no valid SNPs after internal QC
+	processed genes: 28385 (81.3%)     	processed genes: 28553 (81.7%)     	processed genes: 28709 (82.2%)     	processed genes: 28873 (82.7%)     	processed genes: 28971 (82.9%)     	processed genes: 28975 (82.9%)     	processed genes: 28985 (83%)     	processed genes: 29081 (83.3%)     	processed genes: 29167 (83.5%)     	processed genes: 29268 (83.8%)     	processed genes: 29362 (84.1%)     	processed genes: 29443 (84.3%)     	processed genes: 29556 (84.6%)     	processed genes: 29606 (84.8%)     	processed genes: 29675 (85%)     	processed genes: 29788 (85.3%)     	processed genes: 29841 (85.4%)     	processed genes: 29922 (85.7%)     	processed genes: 30036 (86%)     	processed genes: 30123 (86.2%)     	processed genes: 30195 (86.4%)     	processed genes: 30249 (86.6%)     	processed genes: 30336 (86.8%)     	processed genes: 30409 (87.1%)     	processed genes: 30519 (87.4%)     	processed genes: 30685 (87.8%)     	processed genes: 30756 (88%)     	processed genes: 30815 (88.2%)     	processed genes: 30879 (88.4%)     	processed genes: 30962 (88.6%)     	processed genes: 31034 (88.8%)     	processed genes: 31119 (89.1%)     	processed genes: 31195 (89.3%)     	processed genes: 31267 (89.5%)     	processed genes: 31309 (89.6%)     	processed genes: 31310 (89.6%)     	processed genes: 31359 (89.8%)     	processed genes: 31451 (90%)     	processed genes: 31582 (90.4%)     	processed genes: 31669 (90.7%)     	processed genes: 31764 (90.9%)     	processed genes: 31856 (91.2%)     	processed genes: 31952 (91.5%)     	processed genes: 32040 (91.7%)     	processed genes: 32098 (91.9%)     	processed genes: 32174 (92.1%)     	processed genes: 32248 (92.3%)     	processed genes: 32293 (92.4%)     	processed genes: 32337 (92.6%)     	processed genes: 32409 (92.8%)     	processed genes: 32474 (93%)     	processed genes: 32538 (93.1%)     	processed genes: 32676 (93.5%)     	processed genes: 32734 (93.7%)     	processed genes: 32797 (93.9%)     	processed genes: 32910 (94.2%)     	processed genes: 33079 (94.7%)     	processed genes: 33185 (95%)     	processed genes: 33286 (95.3%)     	processed genes: 33361 (95.5%)     	processed genes: 33476 (95.8%)     	processed genes: 33593 (96.2%)     	processed genes: 33725 (96.5%)     	processed genes: 33830 (96.8%)     	processed genes: 33902 (97.1%)     	processed genes: 34024 (97.4%)     	processed genes: 34178 (97.8%)     	processed genes: 34349 (98.3%)     	processed genes: 34429 (98.6%)     	processed genes: 34514 (98.8%)     	processed genes: 34590 (99%)     	processed genes: 34695 (99.3%)     	processed genes: 34742 (99.5%)     	processed genes: 34800 (99.6%)     	processed genes: 34859 (99.8%)     	processed genes: 34874 (99.8%)                                                                                                                        	writing gene analysis results to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio_SCZ.genes.out
+	writing intermediate output to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio_SCZ.genes.raw
+
+
+End time is 11:04:22, Friday 20 Feb 2026 (elapsed: 00:19:32)
+Running gene set analysis set for broad resolution
+Welcome to MAGMA v1.10 (linux/s)
+Using flags:
+	--gene-results /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/SCZ.genes.raw
+	--set-annot /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/gene_sets/broad.tsv gene-col=gene_id set-col=set_id
+	--out /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio/broad
+
+Start time is 11:04:22, Friday 20 Feb 2026
+
+Reading file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/SCZ.genes.raw... 
+	34931 genes read from file
+Loading gene-set annotation...
+Reading file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/gene_sets/broad.tsv... 
+	detected 2 variables in file
+	using variable: gene_id (gene ID)
+	using variable: set_id (set ID)
+	7 gene-set definitions read from file
+	found 7 gene sets containing genes defined in genotype data (containing a total of 1186 unique genes)
+Preparing variables for analysis...
+	truncating Z-scores 3 points below zero or 6 standard deviations above the mean
+	truncating covariate values more than 5 standard deviations from the mean
+	total variables available for analysis: 7 gene sets
+
+Parsing model specifications...
+Inverting gene-gene correlation matrix...
+	processing block 1 of 25	processing block 2 of 25	processing block 3 of 25	processing block 4 of 25	processing block 5 of 25	processing block 6 of 25	processing block 7 of 25	processing block 8 of 25	processing block 9 of 25	processing block 10 of 25	processing block 11 of 25	processing block 12 of 25	processing block 13 of 25	processing block 14 of 25	processing block 15 of 25	processing block 16 of 25	processing block 17 of 25	processing block 18 of 25	processing block 19 of 25	processing block 20 of 25	processing block 21 of 25	processing block 22 of 25	processing block 23 of 25	processing block 24 of 25	processing block 25 of 25                                                                                                                   Performing regression analysis...
+	testing direction: one-sided, positive (sets), two-sided (covar)
+	conditioning on internal variables:
+		gene size, log(gene size)
+		gene density, log(gene density)
+		sample size, log(sample size)
+		inverse mac, log(inverse mac)
+	analysing individual variables
+
+	analysing single-variable models (number of models: 7)
+                                                                                                                   	writing results to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio/broad.gsa.out
+	writing gene information to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio/broad.gsa.genes.out
+	writing gene analysis results per significant result (after multiple testing correction, at alpha = 0.05) to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio/broad.gsa.sets.genes.out
+
+End time is 11:05:41, Friday 20 Feb 2026 (elapsed: 00:01:19)
+Running gene set analysis set for mid resolution
+Welcome to MAGMA v1.10 (linux/s)
+Using flags:
+	--gene-results /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/SCZ.genes.raw
+	--set-annot /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/gene_sets/mid.tsv gene-col=gene_id set-col=set_id
+	--out /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio/mid
+
+Start time is 11:05:41, Friday 20 Feb 2026
+
+Reading file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/SCZ.genes.raw... 
+	34931 genes read from file
+Loading gene-set annotation...
+Reading file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/gene_sets/mid.tsv... 
+	detected 2 variables in file
+	using variable: gene_id (gene ID)
+	using variable: set_id (set ID)
+	8 gene-set definitions read from file
+	found 8 gene sets containing genes defined in genotype data (containing a total of 1360 unique genes)
+Preparing variables for analysis...
+	truncating Z-scores 3 points below zero or 6 standard deviations above the mean
+	truncating covariate values more than 5 standard deviations from the mean
+	total variables available for analysis: 8 gene sets
+
+Parsing model specifications...
+Inverting gene-gene correlation matrix...
+	processing block 1 of 25	processing block 2 of 25	processing block 3 of 25	processing block 4 of 25	processing block 5 of 25	processing block 6 of 25	processing block 7 of 25	processing block 8 of 25	processing block 9 of 25	processing block 10 of 25	processing block 11 of 25	processing block 12 of 25	processing block 13 of 25	processing block 14 of 25	processing block 15 of 25	processing block 16 of 25	processing block 17 of 25	processing block 18 of 25	processing block 19 of 25	processing block 20 of 25	processing block 21 of 25	processing block 22 of 25	processing block 23 of 25	processing block 24 of 25	processing block 25 of 25                                                                                                                   Performing regression analysis...
+	testing direction: one-sided, positive (sets), two-sided (covar)
+	conditioning on internal variables:
+		gene size, log(gene size)
+		gene density, log(gene density)
+		sample size, log(sample size)
+		inverse mac, log(inverse mac)
+	analysing individual variables
+
+	analysing single-variable models (number of models: 8)
+                                                                                                                   	writing results to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio/mid.gsa.out
+	writing gene information to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio/mid.gsa.genes.out
+	writing gene analysis results per significant result (after multiple testing correction, at alpha = 0.05) to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio/mid.gsa.sets.genes.out
+
+End time is 11:07:08, Friday 20 Feb 2026 (elapsed: 00:01:27)
+Running gene set analysis set for fine resolution
+Welcome to MAGMA v1.10 (linux/s)
+Using flags:
+	--gene-results /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/SCZ.genes.raw
+	--set-annot /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/gene_sets/fine.tsv gene-col=gene_id set-col=set_id
+	--out /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio/fine
+
+Start time is 11:07:08, Friday 20 Feb 2026
+
+Reading file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/SCZ.genes.raw... 
+	34931 genes read from file
+Loading gene-set annotation...
+Reading file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/gene_sets/fine.tsv... 
+	detected 2 variables in file
+	using variable: gene_id (gene ID)
+	using variable: set_id (set ID)
+	11 gene-set definitions read from file
+	found 11 gene sets containing genes defined in genotype data (containing a total of 1609 unique genes)
+Preparing variables for analysis...
+	truncating Z-scores 3 points below zero or 6 standard deviations above the mean
+	truncating covariate values more than 5 standard deviations from the mean
+	total variables available for analysis: 11 gene sets
+
+Parsing model specifications...
+Inverting gene-gene correlation matrix...
+	processing block 1 of 25	processing block 2 of 25	processing block 3 of 25	processing block 4 of 25	processing block 5 of 25	processing block 6 of 25	processing block 7 of 25	processing block 8 of 25	processing block 9 of 25	processing block 10 of 25	processing block 11 of 25	processing block 12 of 25	processing block 13 of 25	processing block 14 of 25	processing block 15 of 25	processing block 16 of 25	processing block 17 of 25	processing block 18 of 25	processing block 19 of 25	processing block 20 of 25	processing block 21 of 25	processing block 22 of 25	processing block 23 of 25	processing block 24 of 25	processing block 25 of 25                                                                                                                   Performing regression analysis...
+	testing direction: one-sided, positive (sets), two-sided (covar)
+	conditioning on internal variables:
+		gene size, log(gene size)
+		gene density, log(gene density)
+		sample size, log(sample size)
+		inverse mac, log(inverse mac)
+	analysing individual variables
+
+	analysing single-variable models (number of models: 11)
+                                                                                                                   	writing results to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/SCZ/mean_ratio/fine.gsa.out
+
+End time is 11:08:39, Friday 20 Feb 2026 (elapsed: 00:01:31)
+**** Job ends ****
+Fri Feb 20 11:08:39 AM EST 2026
