@@ -37,7 +37,7 @@ stopifnot(!any(is.na(spe$tissue_section)))
 
 model_results = registration_wrapper(
     spe,
-    var_registration = 'banksy',
+    var_registration = 'cell_type',
     var_sample_id = 'tissue_section',
     gene_ensembl = 'gene_id',
     gene_name = 'gene_name',
