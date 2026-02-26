@@ -11,7 +11,7 @@ library(sessioninfo)
 reference_gtf = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2024-A/genes/genes.gtf.gz'
 chain_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/hg38ToHg19.over.chain'
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2', 'MAGMA',
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
     'hg19_gene_loc.tsv'
 )
 

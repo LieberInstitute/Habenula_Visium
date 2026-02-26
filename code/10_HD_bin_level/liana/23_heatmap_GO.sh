@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=50G
-#SBATCH --job-name=19_GO_enrichment_rrvgo
+#SBATCH --job-name=23_heatmap_GO
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/liana/logs/19_GO_enrichment_rrvgo_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/liana/logs/19_GO_enrichment_rrvgo_%a.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/liana/logs/23_heatmap_GO_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/liana/logs/23_heatmap_GO_%a.txt
 #SBATCH --array=1-2%2
 
 set -e
@@ -26,7 +26,7 @@ module load conda_R/4.4
 ## List current modules for reproducibility
 module list
 
-Rscript 19_GO_enrichment_rrvgo.R
+Rscript 23_heatmap_GO.R
 
 echo "**** Job ends ****"
 date

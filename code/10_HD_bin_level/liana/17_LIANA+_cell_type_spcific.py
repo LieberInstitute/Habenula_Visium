@@ -21,32 +21,38 @@ task_id = int(os.getenv('SLURM_ARRAY_TASK_ID'))
 
 #   Read input files
 in_dir = here(
-    'processed-data', '10_HD_bin_level', 'new_samples2', 'liana'
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'liana'
 )
 plot_dir= here(
-    'processed-data', '10_HD_bin_level', 'new_samples2', 'liana', 'figure','habenula'
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'liana', 'figure','habenula'
 )
 os.makedirs(plot_dir, exist_ok=True)
 
 in_files = [ os.path.join(in_dir, f) for f in os.listdir(in_dir) if re.compile(r'.*\.h5ad$').match(f) ]
 
-base_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula"
+base_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/figure/habenula"
 if task_id == 1:
     in_files = [f for f in in_files if "extracellular" not in f and "lrdata" in f]
-    output_dir1 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/celltype_files"
-    output_dir2 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/celltype_specific_interactions"
-    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula/celltype_specific_interactions"
+    output_dir1 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/table/celltype_files"
+    output_dir2 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/table/celltype_specific_interactions"
+    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/figure/habenula/celltype_specific_interactions"
     global_dir = os.path.join(base_dir, "spatial_top_pairs_global")
     specific_dir = os.path.join(base_dir, "spatial_top_pairs_specific")
 else:
     in_files = [f for f in in_files if "extracellular" in f and "lrdata" in f]
-    output_dir1 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/celltype_files_extracellular"
-    output_dir2 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/celltype_specific_interactions_extracellular"
-    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula_extracellular/celltype_specific_interactions_extracellular"
-    base_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula_extracellular"
+    output_dir1 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/table/celltype_files_extracellular"
+    output_dir2 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/table/celltype_specific_interactions_extracellular"
+    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/figure/habenula_extracellular/celltype_specific_interactions_extracellular"
+    base_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/figure/habenula_extracellular"
     global_dir = os.path.join(base_dir, "spatial_top_pairs_global_extracellular")
     specific_dir = os.path.join(base_dir, "spatial_top_pairs_specific_extracellular")
 
+os.makedirs(output_dir1, exist_ok=True)
+os.makedirs(output_dir2, exist_ok=True)
+os.makedirs(plot_dir, exist_ok=True)
+os.makedirs(base_dir, exist_ok=True)
+os.makedirs(global_dir, exist_ok=True)
+os.makedirs(specific_dir, exist_ok=True)
 # ===================================================================
 
 # -------- helper: pick an (n_obs x n_vars) matrix from AnnData --------
@@ -163,7 +169,10 @@ avg_top10 = (
     .head(10)
     .reset_index(drop=True)
 )
-
+avg_top10.to_csv(
+    os.path.join(output_dir1, "celltype_top10_by_mean_score.csv"),
+    index=False
+)
 # =======================================================
 # for each cell_type, create a file with interactions ranked by mean_score per donor
 cell_types = combined_long["cell_type"].unique()
@@ -349,7 +358,7 @@ global_rank = (
     .sort_values('global_mean', ascending=False)
 )
 
-global_rank.to_csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/global_interaction_ranking_mean.csv")
+global_rank.to_csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/table/global_interaction_ranking_mean.csv")
 
 global_top = (
     global_pair_mean

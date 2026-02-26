@@ -1,12 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=50G
-#SBATCH --job-name=19_GO_enrichment_rrvgo
+#SBATCH --job-name=22_heatmap
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/liana/logs/19_GO_enrichment_rrvgo_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/liana/logs/19_GO_enrichment_rrvgo_%a.txt
-#SBATCH --array=1-2%2
+#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/liana/logs/22_heatmap.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/liana/logs/22_heatmap.txt
 
 set -e
 
@@ -20,13 +19,13 @@ echo "Job name: ${SLURM_JOB_NAME}"
 echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
-## Load the R module
-module load conda_R/4.4
+module load liana_plus
 
 ## List current modules for reproducibility
 module list
 
-Rscript 19_GO_enrichment_rrvgo.R
+python3 22_heatmap_LR_cell_type.py
+python3 22_heatmap_LR_cell_type_specific.py
 
 echo "**** Job ends ****"
 date

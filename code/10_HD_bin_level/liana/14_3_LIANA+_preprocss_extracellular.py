@@ -13,49 +13,17 @@ from sklearn.neighbors import KDTree
 from scipy.spatial import cKDTree
 import matplotlib.pyplot as plt
 
-hb_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2',
-    'hb_thal_manual_anno.csv.gz'
-)
-
 extra_bins_path = here(
-    'processed-data', '10_HD_bin_level', 'new_samples2', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'extracellular_bins.csv.gz'
 )
 
-adata = sc.read_h5ad("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/new_samples2/liana/adata/extracellular.h5ad")
+adata = sc.read_h5ad("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/cell_environment/adata/liana_ready/extracellular.h5ad")
 adata = adata[adata.obs['region'] == 'habenula', :].copy()
 
-cell_df_path = here(
-    'processed-data', '10_HD_bin_level', "new_samples2",'liana','adata'
-)
 out_path = here(
-    'processed-data', '10_HD_bin_level', "new_samples2",'liana','adata'
+    'processed-data', '10_HD_bin_level', "no_secondary",'liana','adata'
 )
-cell_df = pd.read_csv(os.path.join(cell_df_path, "cell_df.csv"))
-
-# merge adata with key
-adata.obs = adata.obs.reset_index(names="key")
-adata.obs["key"] = adata.obs["key"].astype(str)
-cell_df["key"] = cell_df["key"].astype(str)
-
-right = cell_df[["key", "cell_type"]].copy()
-
-obs_df = (adata.obs
-          .reset_index(names="__obs_name__")
-          .merge(right, how="left", on="key", validate="one_to_one")
-          .set_index("__obs_name__"))
-
-obs_df = obs_df.copy()
-obs_df["key"] = obs_df["key"].astype(str)
-obs_df.index = obs_df.index.astype(str)  
-adata.obs = obs_df
-
-adata = adata[~adata.obs["cell_type"].isna()].copy()
-print(adata.obs["cell_type"].notna().sum(), "spots matched")
-
-# file_path = os.path.join(out_path, f"adata_cellular_withcelltype.h5ad")
-# adata = sc.read(file_path)
 
 # Add gene symbols
 gtf_path = "/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2020-A/genes/genes.gtf"

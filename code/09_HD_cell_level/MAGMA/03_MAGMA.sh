@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=25G
+#SBATCH --mem=10G
 #SBATCH --job-name=03_MAGMA
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/new_samples2/MAGMA/logs/03_MAGMA_%a.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/new_samples2/MAGMA/logs/03_MAGMA_%a.txt
-#SBATCH --array=1-11%11
+#SBATCH -o ../../../processed-data/09_HD_cell_level/no_secondary/MAGMA/logs/03_MAGMA_%a.txt
+#SBATCH -e ../../../processed-data/09_HD_cell_level/no_secondary/MAGMA/logs/03_MAGMA_%a.txt
+#SBATCH --array=1-16%16
 
 #   Run all 3 steps in the MAGMA pipeline for every GWAS. Critically,
 #   all relevant inputs/ reference files use hg19 and European ancestry.
@@ -26,16 +26,15 @@ echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 module load magma/1.10
 module list
 
-all_gwas=(MDD panic SCZ SUD2020 AUD CUD ext_cannabis lifetime_cannabis OUD SUD2)
+all_gwas=(MDD panic SCZ SUD2020 AUD CUD ext_cannabis lifetime_cannabis OUD SUD2 compulsive internalizing neurodev p_factor SCZ_BPD SUD3)
 gwas=${all_gwas[$(($SLURM_ARRAY_TASK_ID - 1))]}
 
 repo_dir=$(git rev-parse --show-toplevel)
-hb_gwas_dir=/dcs04/lieber/lcolladotor/pilotHb_LIBD001/Roche_Habenula/processed-data/13_MAGMA/GWAS
+hb_gwas_dir=/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas
 multiome_dir=/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome
-gene_set_path=${repo_dir}/processed-data/09_HD_cell_level/new_samples2/MAGMA/gene_sets/enrichment_markers.tsv
-out_dir=${repo_dir}/processed-data/09_HD_cell_level/new_samples2/MAGMA/$gwas
-gene_loc=${repo_dir}/processed-data/09_HD_cell_level/new_samples2/MAGMA/hg19_gene_loc.tsv
-bfile=/dcs04/lieber/lcolladotor/with10x_LIBD001/HumanPilot/Analysis/Layer_Guesses/MAGMA/g1000_eur
+out_dir=${repo_dir}/processed-data/09_HD_cell_level/no_secondary/MAGMA/$gwas
+gene_loc=${repo_dir}/processed-data/09_HD_cell_level/no_secondary/MAGMA/hg19_gene_loc.tsv
+bfile=/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas/g1000_eur/g1000_eur
 
 case ${gwas} in
     MDD)
@@ -82,10 +81,18 @@ magma \
     --out $out_dir/$gwas
 
 #   Gene set analysis step
+
+for i in broad fine; do
+  echo "$i"
+
+gene_set_path=${repo_dir}/processed-data/09_HD_cell_level/no_secondary/MAGMA/gene_sets/enrichment_markers_$i.tsv
+
 magma \
     --gene-results $out_dir/${gwas}.genes.raw \
     --set-annot $gene_set_path gene-col=gene_id set-col=set_id \
-    --out $out_dir/$gwas
+    --out $out_dir/$i
+
+done
 
 echo "**** Job ends ****"
 date

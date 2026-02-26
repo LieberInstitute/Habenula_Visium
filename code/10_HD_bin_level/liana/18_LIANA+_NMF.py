@@ -21,21 +21,21 @@ task_id = int(os.getenv('SLURM_ARRAY_TASK_ID'))
 
 #   Read input files
 in_dir = here(
-    'processed-data', '10_HD_bin_level', 'new_samples2', 'liana'
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'liana'
 )
 
 in_files = [ os.path.join(in_dir, f) for f in os.listdir(in_dir) if re.compile(r'.*\.h5ad$').match(f) ]
 
 if task_id == 1:
     in_files = [f for f in in_files if "extracellular" not in f]
-    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula/NMF"
-    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/NMF"
+    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/figure/habenula/NMF"
+    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/table/NMF"
     data_suffix = ""
     out_file = os.path.join(in_dir, f"merged_five_files.h5ad")
 else:
     in_files = [f for f in in_files if "extracellular" in f and "lrdata" in f]
-    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/figure/habenula_extracellular/NMF"
-    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/new_samples2/liana/table/NMF_extracellular"
+    plot_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/figure/habenula_extracellular/NMF"
+    table_dir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/table/NMF_extracellular"
     data_suffix = ""
     out_file = os.path.join(in_dir, f"merged_five_files_extracellular.h5ad")
 
@@ -118,10 +118,9 @@ pd.Series(all_genes, name="gene").to_csv(os.path.join(table_dir, f"universe_gene
 # Heatmap: Create a heatmap with factors on the y-axis, cell types on the x-axis, and fill color as the average factor scores.
 # Annotate factor scores with cell types
 cell_type_df = adata_merged.obs[['cell_type']].reset_index()
-cell_type_df.rename(columns={'__obs_name__': '__obs_name__'}, inplace=True)
 
 # Merge factor scores with cell type annotations
-factor_scores_annot = factor_scores.merge(cell_type_df, on='__obs_name__', how='left')
+factor_scores_annot = factor_scores.merge(cell_type_df, on='key', how='left')
 
 # Calculate average factor scores for each cell type
 factor_cols = [c for c in factor_scores_annot.columns if c.startswith("Factor")]

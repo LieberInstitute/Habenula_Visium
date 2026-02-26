@@ -4,9 +4,9 @@
 #SBATCH --job-name=15_1_LIANA+
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/liana/logs/15_1_LIANA+_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/liana/logs/15_1_LIANA+_%a.txt
-#SBATCH --array=1-5%5
+#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/liana/logs/15_1_LIANA+_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/liana/logs/15_1_LIANA+_%a.txt
+#SBATCH --array=1-10%10
 
 set -e
 

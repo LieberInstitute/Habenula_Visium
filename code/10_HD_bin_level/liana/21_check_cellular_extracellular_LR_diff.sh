@@ -4,8 +4,8 @@
 #SBATCH --job-name=21_check_cellular_extracellular_LR_diff
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/liana/logs/21_check_cellular_extracellular_LR_diff.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/liana/logs/21_check_cellular_extracellular_LR_diff.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/liana/logs/21_check_cellular_extracellular_LR_diff.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/liana/logs/21_check_cellular_extracellular_LR_diff.txt
 
 set -e
 
@@ -24,6 +24,7 @@ module load liana_plus
 ## List current modules for reproducibility
 module list
 
+python3 21_5_check_cellular_extracellular_LR_diff_cell_type2.py
 python3 21_check_cellular_extracellular_LR_diff.py
 
 echo "**** Job ends ****"

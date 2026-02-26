@@ -18,10 +18,10 @@ from scipy import stats
 
 #   Read input files
 in_dir = here(
-    'processed-data', '10_HD_bin_level', 'new_samples2', 'liana'
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'liana'
 )
 plot_dir= here(
-    'processed-data', '10_HD_bin_level', 'new_samples2', 'liana', 'figure','habenula'
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'liana', 'figure','habenula'
 )
 os.makedirs(plot_dir, exist_ok=True)
 
