@@ -16,7 +16,7 @@ marker_path = here(
     'supp_table_1_filt.xlsx'
 )
 plot_dir = here('plots', '09_HD_cell_level', 'no_secondary', 'interneurons')
-top_n = 10
+top_n = 20
 sample_ids = c('Br9090_1', 'Br8433_1')
 inhib_markers = c('GAD1', 'GAD2', 'SLC32A1')
 
@@ -49,12 +49,11 @@ marker_df = read_excel(marker_path) |>
         gene_id = rowData(spe)$gene_id[match(gene, rowData(spe)$gene_name)]
     ) |>
     filter(!is.na(gene_id), fold_change > 1) |>
-    group_by(gene_id) |>
-    filter(n() == 1) |>
-    ungroup() |>
     group_by(cell_type) |>
     arrange(desc(auroc)) |>
     slice_head(n = top_n) |>
+    group_by(gene_id) |>
+    filter(n() == 1) |>
     ungroup() |>
     select(gene_id, cell_type)
 
