@@ -47,12 +47,14 @@ marker_df = read_excel(marker_path) |>
     mutate(
         gene_id = rowData(spe)$gene_id[match(gene, rowData(spe)$gene_name)]
     ) |>
-    filter(!is.na(gene_id)) |>
+    filter(!is.na(gene_id), fold_change > 1) |>
+    group_by(gene_id) |>
+    filter(n() == 1) |>
+    ungroup() |>
     group_by(cell_type) |>
-    arrange(desc(fold_change)) |>
+    arrange(desc(auroc)) |>
     slice_head(n = top_n) |>
     ungroup() |>
-    filter(fold_change > 1) |>
     select(gene_id, cell_type)
 
 for (cell_type in unique(marker_df$cell_type)) {
