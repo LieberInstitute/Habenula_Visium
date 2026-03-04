@@ -23,7 +23,7 @@ plot_dir = here(
 )
 regions = c('habenula', 'thalamus')
 cell_type_colors = c(
-    Astrocyte = "#2F97FF", placeholder = "#FFA239", Other = "#DFE1DD"
+    Astrocyte = "#2F97FF", 'LHb.2.7' = "#FFA239", Other = "#DFE1DD"
 )
 min_num_signif = 5
 
@@ -139,8 +139,8 @@ for (hb_subtype in c('Astrocyte', 'LHb.2.7')) {
         #   Focus on a particular pair (and its reverse)
         filter(
             region == 'habenula',
-            ((neighbor == hb_subtype) & (reference == 'MHb.2')) |
-            ((neighbor == 'MHb.2') & (reference == hb_subtype))
+            ((neighbor == 'Astrocyte') & (reference == 'LHb.2.7')) |
+            ((neighbor == 'LHb.2.7') & (reference == 'Astrocyte'))
         ) |>
         ggplot(aes(x = scale, y = Z, color = sample_id, group = sample_id)) +
             geom_line() +
@@ -152,7 +152,7 @@ for (hb_subtype in c('Astrocyte', 'LHb.2.7')) {
             labs(x = 'Scale (Microns)', color = 'Sample ID')
 
     pdf(
-        file.path(plot_dir, sprintf('z_scores_%s_MHb_2.pdf', hb_subtype)),
+        file.path(plot_dir, 'z_scores_Astrocyte_LHb_2_7.pdf'),
         width = 10, height = 5
     )
     print(p)
@@ -175,9 +175,8 @@ for (hb_subtype in c('Astrocyte', 'LHb.2.7')) {
         pull(cell_type)
 
     #   Plot the cell-type pair spatially (only habenula) in each sample
-    names(cell_type_colors) = c('MHb.2', hb_subtype, 'Other')
     dir.create(
-        file.path(plot_dir, 'spatial_plots', sprintf('%s_MHb_2', hb_subtype)),
+        file.path(plot_dir, 'spatial_plots', 'Astrocyte_LHb_2_7'),
         showWarnings = FALSE
     )
     for (sample_id in sample_ids) {
@@ -193,7 +192,7 @@ for (hb_subtype in c('Astrocyte', 'LHb.2.7')) {
         }
         png(
             file.path(
-                plot_dir, 'spatial_plots', sprintf('%s_MHb_2', hb_subtype),
+                plot_dir, 'spatial_plots', 'Astrocyte_LHb_2_7',
                 sprintf('%s.png', sample_id)
             ),
             width = 1500, height = 1500
