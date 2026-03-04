@@ -103,6 +103,7 @@ metric_df = anno_df |>
     left_join(unique_df, by = "k") |>
     left_join(shared_df, by = "k") |>
     mutate(
+        frac_shared_hb = replace_na(frac_shared_hb, 0),
         #   Weight all 3 metrics equally, except don't even consider k
         #   with too many ambiguous clusters
         final_score = ifelse(
