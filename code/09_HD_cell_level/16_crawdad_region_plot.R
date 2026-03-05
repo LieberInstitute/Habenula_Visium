@@ -64,6 +64,37 @@ custom_dotplot = function(result_df, z_sig, cell_types, filename) {
     dev.off()
 }
 
+#   Slightly modify the above function for a particular use case
+custom_dotplot2 = function(result_df, z_sig, cell_types, filename) {
+    p = ggplot(
+            result_df, aes(x = reference, y = neighbor, color = Z, size = scale)
+        ) +
+        geom_point() +
+        scale_x_discrete(limits = cell_types) +
+        scale_y_discrete(limits = cell_types) +
+        scale_color_gradientn(
+            colors = c('blue', '#CECECE', '#CECECE', 'red'),
+            values = rescale(
+                c(-1 * max(result_df$Z), -1 * z_sig, z_sig, max(result_df$Z))
+            ),
+            limits = c(-1 * max(result_df$Z), max(result_df$Z))
+        ) +
+        scale_radius(
+            trans = 'reverse',
+            breaks = seq(
+                min(result_df$scale), max(result_df$scale), length.out = 3
+            ),
+            range = c(2, 15)
+        ) +
+        coord_fixed() +
+        theme_bw(base_size = 25) +
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+    pdf(file.path(plot_dir, filename), width = 9)
+    print(p)
+    dev.off()
+}
+
 ################################################################################
 #   CRAWDAD-specific plots
 ################################################################################
@@ -124,6 +155,18 @@ for (region_name in regions) {
             z_sig, cell_types, sprintf('dot_plot_%s.pdf', region_name)
         )
 }
+
+#   A dot plot requested for an RPPR
+manual_cell_types = c('Astrocyte', 'LHb.1.3.4', 'LHb.2.7', 'LHb.4')
+result_df |>
+    filter(
+        region == 'habenula',
+        neighbor %in% manual_cell_types,
+        reference %in% manual_cell_types
+    ) |>
+    custom_dotplot2(
+        z_sig, manual_cell_types, 'dot_plot_habenula_custom.pdf'
+    )
 
 for (hb_subtype in c('Astrocyte', 'LHb.2.7')) {
     #   Plot Z-scores vs scale for a particularly interesting cell-type pair
