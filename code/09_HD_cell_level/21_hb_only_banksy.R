@@ -3,7 +3,7 @@ library(tidyverse)
 library(spatialLIBD)
 library(sessioninfo)
 
-sample_id = 'Br8433_1'
+sample_id = 'Br9090_1'
 cluster_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'banksy',
     'leiden_res1_8.csv'
@@ -28,8 +28,6 @@ cell_type_colors = c(
     'LHb.4' = '#9B1D20',
     'other' = '#C4C4C4'
 )
-
-dir.create(plot_dir, showWarnings = FALSE)
 
 ################################################################################
 #   Functions
