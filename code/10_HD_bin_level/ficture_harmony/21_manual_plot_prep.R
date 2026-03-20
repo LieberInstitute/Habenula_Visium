@@ -1,0 +1,42 @@
+#   The existing FICTURE data required to generate a manual plot in R of
+#   FICTURE clusters is extremely large, and scattered in separate files.
+#   Generate one CSV with donor ID, k 14 cluster, and spatial coordinates
+#   to make plotting less computationally expensive later
+
+library(here)
+library(tidyverse)
+library(sessioninfo)
+library(duckplyr)
+
+cluster_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
+    'bin_level_clusters_batch.csv.gz'
+)
+coord_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
+    'ficture_inputs' , 'cleany', 'input.tsv.gz'
+)
+out_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
+    'k14_cluster_coords.csv.gz'
+)
+
+num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK", 1))
+duckplyr::db_exec(sprintf("SET threads = %d", num_cores))
+fallback_config(info = TRUE)
+
+#   Directly read cluster and spatial coordinate info into DuckDB-managed
+#   memory without touching R's memory
+read_csv_duckdb(coord_path, prudence = 'stingy') |>
+    dplyr::distinct(sample_id, barcode, .keep_all = TRUE) |>
+    select(sample_id, barcode, X, Y) |>
+    left_join(
+        read_csv_duckdb(cluster_path, prudence = 'stingy', nullstr = 'NA') |>
+            select(sample_id, barcode, FICTURE_k14),
+        by = c('sample_id', 'barcode')
+    ) |>
+    filter(!is.na(FICTURE_k14)) |>
+    select(sample_id, X, Y, FICTURE_k14) |>
+    compute_csv(out_path)
+
+session_info()
