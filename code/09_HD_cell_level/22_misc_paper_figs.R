@@ -24,6 +24,7 @@ plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'misc_paper_figs'
 )
 cell_type_colors = c(
+    Excit.Thal = '#9e4ad1',
     OPC = '#d3c871',
     Oligo = '#4d5802',
     Microglia = '#222222',
@@ -33,8 +34,7 @@ cell_type_colors = c(
     MHb.2 = '#FAA0A0',
     LHb.2.7 = '#00a900',
     LHb.1.3.4 = '#004F2D',
-    LHb.4 = '#84DCC6',
-    Excit.Thal = '#9e4ad1'
+    LHb.4 = '#84DCC6'
 )
 region_colors = c(
     LHb = '#93151d',
@@ -74,7 +74,7 @@ anno_df = read_csv(ct_anno_path, show_col_types = FALSE)
 region_df = read_csv(hb_thal_anno_path, show_col_types = FALSE) |>
     dplyr::rename(key = spot_name)
 
-cell_type_df = tibble(key = spe$key) |>
+cell_type_df = tibble(key = spe$key, tissue_id = spe$sample_id) |>
     left_join(read_csv(cluster_path, show_col_types = FALSE), by = 'key') |>
     left_join(region_df, by = 'key') |>
     mutate(
@@ -94,14 +94,25 @@ stopifnot(!any(is.na(cell_type_df$cell_type)))
 spe$cell_type_lhb = cell_type_df$cell_type_lhb
 spe$cell_type_mhb = cell_type_df$cell_type_mhb
 
-#   Composition barplot of cell types by donor
-p = ggplot(cell_type_df, aes(x = donor, fill = cell_type)) +
+#   Order donors by proportion of habenula, but keep tissue sections ordered by 1, 2
+donor_order = cell_type_df |>
+    group_by(donor) |>
+    summarize(prop_hb = mean(grepl('^[ML]Hb', cell_type))) |>
+    arrange(prop_hb) |>
+    pull(donor)
+cell_type_df$tissue_id = factor(
+    cell_type_df$tissue_id,
+    levels = paste0(rep(donor_order, each = 2), c('_1', '_2'))
+)
+
+#   Composition barplot of cell types by tissue section
+p = ggplot(cell_type_df, aes(x = tissue_id, fill = cell_type)) +
     geom_bar(position = "fill") +
     scale_fill_manual(values = cell_type_colors) +
-    labs(x = "Donor", y = "Proportion", fill = "Cell Type") +
+    labs(x = "Tissue Section", y = "Proportion", fill = "Cell Type") +
     theme_bw(base_size = 20) +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-pdf(file.path(plot_dir, 'cell_type_donor_barplot.pdf'))
+pdf(file.path(plot_dir, 'cell_type_tissue_section_barplot.pdf'))
 print(p)
 dev.off()
 
