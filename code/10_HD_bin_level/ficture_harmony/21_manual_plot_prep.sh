@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=80G
+#SBATCH --mem=180G
 #SBATCH --job-name=21_manual_plot_prep
 #SBATCH -c 8
-#SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/21_manual_plot_prep.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples/ficture_harmony/logs/21_manual_plot_prep.txt
+#SBATCH -t 2-0:00:00
+#SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/21_manual_plot_prep.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/21_manual_plot_prep.txt
 
 set -e
 

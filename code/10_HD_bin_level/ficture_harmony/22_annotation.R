@@ -10,7 +10,7 @@ cor_path = here(
 )
 cluster_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
-    'k14_cluster_coords.csv.gz'
+    'k14_cluster_coords.parquet'
 )
 plot_dir = here(
     'plots', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
@@ -58,7 +58,7 @@ anno_df = readRDS(cor_path)[[cor_index]] |>
 
 #   Read in pre-computed FICTURE cluster calls with the associated spatial
 #   coordinates
-cluster_df = read_csv_duckdb(cluster_path, prudence = 'stingy') |>
+cluster_df = read_parquet_duckdb(cluster_path, prudence = 'stingy') |>
     collect() |>
     mutate(
         cell_type = factor(

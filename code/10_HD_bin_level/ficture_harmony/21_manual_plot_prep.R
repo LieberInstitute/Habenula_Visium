@@ -1,7 +1,7 @@
 #   The existing FICTURE data required to generate a manual plot in R of
 #   FICTURE clusters is extremely large, and scattered in separate files.
-#   Generate one CSV with donor ID, k 14 cluster, and spatial coordinates
-#   to make plotting less computationally expensive later
+#   Generate one parquet file with donor ID, k 14 cluster, and spatial
+#   coordinates to make plotting less computationally expensive later
 
 library(here)
 library(tidyverse)
@@ -18,25 +18,25 @@ coord_path = here(
 )
 out_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
-    'k14_cluster_coords.csv.gz'
+    'k14_cluster_coords.parquet'
 )
 
-num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK", 1))
+num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK"))
 duckplyr::db_exec(sprintf("SET threads = %d", num_cores))
 fallback_config(info = TRUE)
 
 #   Directly read cluster and spatial coordinate info into DuckDB-managed
 #   memory without touching R's memory
-read_csv_duckdb(coord_path, prudence = 'stingy') |>
+temp = read_csv_duckdb(coord_path, prudence = 'stingy') |>
     dplyr::distinct(sample_id, barcode, .keep_all = TRUE) |>
     select(sample_id, barcode, X, Y) |>
     left_join(
-        read_csv_duckdb(cluster_path, prudence = 'stingy', nullstr = 'NA') |>
+        read_csv_duckdb(cluster_path, prudence = 'stingy') |>
             select(sample_id, barcode, FICTURE_k14),
         by = c('sample_id', 'barcode')
     ) |>
-    filter(!is.na(FICTURE_k14)) |>
+    filter(!is.na(FICTURE_k14), FICTURE_k14 != "NA") |>
     select(sample_id, X, Y, FICTURE_k14) |>
-    compute_csv(out_path)
+    compute_parquet(out_path)
 
 session_info()
