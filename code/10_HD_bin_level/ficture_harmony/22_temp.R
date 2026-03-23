@@ -21,7 +21,7 @@ out_path = here(
 )
 
 #   dplyr/readr equivalent to the duckplyr version
-read_csv(coord_path) |>
+read_table(coord_path) |>
     dplyr::distinct(sample_id, barcode, .keep_all = TRUE) |>
     select(sample_id, barcode, X, Y) |>
     left_join(

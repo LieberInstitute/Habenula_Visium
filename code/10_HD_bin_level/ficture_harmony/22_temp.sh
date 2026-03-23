@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=80G
+#SBATCH --mem=160G
 #SBATCH --job-name=22_temp
 #SBATCH -c 1
-#SBATCH -t 1-0:00:00
+#SBATCH -t 2-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/22_temp.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/22_temp.txt
 
