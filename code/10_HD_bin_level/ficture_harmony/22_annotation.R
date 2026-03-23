@@ -17,11 +17,7 @@ plot_dir = here(
     'cleany', 'k_14_manual'
 )
 cor_index = 12
-manual_anno = c(
-    '2' = 'MHb.1.2',
-    '9' = 'Ambig_Microglia_1',
-    '5' = 'Ambig_Microglia_2'
-)
+manual_anno = c('2' = 'MHb.1.2')
 cell_type_colors = c(
     OPC = '#d3c871',
     Oligo = '#4d5802',
@@ -34,11 +30,8 @@ cell_type_colors = c(
     LHb.2.7 = '#00a900',
     LHb.1.3.4 = '#004F2D',
     LHb.4 = '#84DCC6',
-    Excit.Thal = '#9e4ad1',
-    Ambig_LHb.7 = '#494949',
-    Ambig_Microglia_1 = '#616161',
-    Ambig_Microglia_2 = '#989898',
-    Ambig_Oligo = '#CCCCCC'
+    LHb.7 = "#7DF9FF", 
+    Excit.Thal = '#9e4ad1'
 )
 
 num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK", 1))
@@ -48,18 +41,15 @@ fallback_config(info = FALSE)
 dir.create(plot_dir, showWarnings = FALSE)
 
 #   Using the spatial registration for k = 14 (optimal result), annotate
-#   FICTURE clusters with cell types. Explicitly label ambiguous clusters since
-#   most have very dirty matches to cell types
+#   FICTURE clusters with cell types. While there are some poor/dirty matches
+#   to cell types, just use the closest match in each case
 anno_df = readRDS(cor_path)[[cor_index]] |>
     annotate_registered_clusters(cutoff_merge_ratio = 0.1) |>
     as_tibble() |>
     mutate(
         cell_type = case_when(
             cluster %in% names(manual_anno) ~ manual_anno[cluster],
-            grepl('\\*$', layer_label) ~ str_replace(
-                layer_label, '(.+)\\*$', 'Ambig_\\1'
-            ),
-            TRUE ~ layer_label
+            TRUE ~ sub('\\*$', '', layer_label)
         ),
         cluster = as.integer(cluster)
     ) |>
