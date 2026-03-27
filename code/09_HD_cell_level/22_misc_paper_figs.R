@@ -36,6 +36,15 @@ cell_type_colors = c(
     LHb.1.3.4 = '#004F2D',
     LHb.4 = '#84DCC6'
 )
+cell_type_colors_2 = c(
+    MHb.1 = '#FF00FF',
+    MHb.2 = '#FAA0A0',
+    LHb.2.7 = '#00a900',
+    LHb.1.3.4 = '#004F2D',
+    LHb.4 = '#84DCC6',
+    other_hb = '#635A69',
+    non_hb = '#C4C4C4'
+)
 region_colors_1 = c(
     LHb = '#93151d',
     MHb = '#93151d',
@@ -104,6 +113,14 @@ cell_type_df = tibble(key = spe$key, tissue_id = spe$sample_id) |>
                 TRUE ~ 'non_hb'
             ),
             levels = names(region_colors_2)
+        ),
+        cell_type_custom = factor(
+            case_when(
+                grepl('^[ML]Hb', cell_type) ~ cell_type,
+                region_anno == 'habenula' ~ 'other_hb',
+                TRUE ~ 'non_hb'
+            ),
+            levels = names(cell_type_colors_2)
         )
     )
 stopifnot(!any(is.na(cell_type_df$cell_type)))
@@ -111,6 +128,7 @@ stopifnot(!any(is.na(cell_type_df$cell_type)))
 spe$cell_type_lhb = cell_type_df$cell_type_lhb
 spe$cell_type_mhb = cell_type_df$cell_type_mhb
 spe$cell_type_hb = cell_type_df$cell_type_hb
+spe$cell_type_custom = cell_type_df$cell_type_custom
 
 #   Order donors by proportion of habenula, but keep tissue sections ordered by 1, 2
 donor_order = cell_type_df |>
@@ -134,10 +152,23 @@ pdf(file.path(plot_dir, 'cell_type_tissue_section_barplot.pdf'))
 print(p)
 dev.off()
 
+#   Simple plot to show how we subset to habenula
 vis_clus_hd(
     spe = spe, clustervar = 'cell_type_hb', sample_id = sample_id,
     colors = region_colors_2, plot_path = file.path(plot_dir, 'Hb_anno.png')
 )
+
+#   Plot for our internal interest: how much of data-driven habenula clusters
+#   lie outside manually annotated habenula region?
+for (tissue_id in paste0(unique(cell_type_df$donor), '_1')) {
+    vis_clus_hd(
+        spe = spe, clustervar = 'cell_type_custom', sample_id = tissue_id,
+        colors = cell_type_colors_2,
+        plot_path = file.path(
+            plot_dir, sprintf('data_driven_vs_manual_hb_%s.png', tissue_id)
+        )
+    )
+}
 
 #   Plot of where medial and lateral habenula are spatially in the sample
 spe_hb = spe[, cell_type_df$region_anno == 'habenula']
