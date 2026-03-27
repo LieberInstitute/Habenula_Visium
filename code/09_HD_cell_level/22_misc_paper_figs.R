@@ -36,10 +36,16 @@ cell_type_colors = c(
     LHb.1.3.4 = '#004F2D',
     LHb.4 = '#84DCC6'
 )
-region_colors = c(
+region_colors_1 = c(
     LHb = '#93151d',
     MHb = '#93151d',
     other = '#C4C4C4'
+)
+region_colors_2 = c(
+    MHb = '#2546D8',
+    LHb = '#93151d',
+    other_hb = '#635A69',
+    non_hb = '#C4C4C4'
 )
 
 dir.create(plot_dir, showWarnings = FALSE)
@@ -48,13 +54,15 @@ dir.create(plot_dir, showWarnings = FALSE)
 #   Functions
 ################################################################################
 
-vis_clus_hd = function(spe, clustervar, sample_id, plot_path) {
+vis_clus_hd = function(
+        spe, clustervar, sample_id, plot_path, colors = region_colors_1
+    ) {
     #   Run twice to overcome a bug with different behavior on the first plot
     for (i in seq_len(2)) {
         p = vis_clus(
                 spe, sampleid = sample_id, clustervar = clustervar,
                 is_stitched = TRUE, point_size = 30, spatial = FALSE,
-                colors = region_colors
+                colors = colors
             ) +
             guides(fill = guide_legend(override.aes = list(size = 8)))
     }
@@ -87,12 +95,22 @@ cell_type_df = tibble(key = spe$key, tissue_id = spe$sample_id) |>
         cell_type_lhb = ifelse(grepl('^LHb', cell_type), 'LHb', 'other'),
         cell_type_mhb = ifelse(grepl('^MHb', cell_type), 'MHb', 'other'),
         donor = paste0('Br', str_extract(key, '[0-9]{4}$')),
-        region_anno = replace_na(ManualAnnotation, 'other')
+        region_anno = replace_na(ManualAnnotation, 'other'),
+        cell_type_hb = factor(
+            case_when(
+                (region_anno == 'habenula') & (cell_type_lhb == 'LHb') ~ 'LHb',
+                (region_anno == 'habenula') & (cell_type_mhb == 'MHb') ~ 'MHb',
+                region_anno == 'habenula' ~ 'other_hb',
+                TRUE ~ 'non_hb'
+            ),
+            levels = names(region_colors_2)
+        )
     )
 stopifnot(!any(is.na(cell_type_df$cell_type)))
 
 spe$cell_type_lhb = cell_type_df$cell_type_lhb
 spe$cell_type_mhb = cell_type_df$cell_type_mhb
+spe$cell_type_hb = cell_type_df$cell_type_hb
 
 #   Order donors by proportion of habenula, but keep tissue sections ordered by 1, 2
 donor_order = cell_type_df |>
@@ -115,6 +133,11 @@ p = ggplot(cell_type_df, aes(x = tissue_id, fill = cell_type)) +
 pdf(file.path(plot_dir, 'cell_type_tissue_section_barplot.pdf'))
 print(p)
 dev.off()
+
+vis_clus_hd(
+    spe = spe, clustervar = 'cell_type_hb', sample_id = sample_id,
+    colors = region_colors_2, plot_path = file.path(plot_dir, 'Hb_anno.png')
+)
 
 #   Plot of where medial and lateral habenula are spatially in the sample
 spe_hb = spe[, cell_type_df$region_anno == 'habenula']
