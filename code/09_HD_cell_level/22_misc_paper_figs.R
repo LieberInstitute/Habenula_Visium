@@ -56,6 +56,10 @@ region_colors_2 = c(
     other_hb = '#635A69',
     non_hb = '#C4C4C4'
 )
+region_colors_3 = c(
+    habenula = '#93151d',
+    other = '#C4C4C4'
+)
 
 dir.create(plot_dir, showWarnings = FALSE)
 
@@ -105,6 +109,9 @@ cell_type_df = tibble(key = spe$key, tissue_id = spe$sample_id) |>
         cell_type_mhb = ifelse(grepl('^MHb', cell_type), 'MHb', 'other'),
         donor = paste0('Br', str_extract(key, '[0-9]{4}$')),
         region_anno = replace_na(ManualAnnotation, 'other'),
+        region_anno_hb = ifelse(
+            region_anno == 'habenula', region_anno, 'other'
+        ),
         cell_type_hb = factor(
             case_when(
                 (region_anno == 'habenula') & (cell_type_lhb == 'LHb') ~ 'LHb',
@@ -129,6 +136,7 @@ spe$cell_type_lhb = cell_type_df$cell_type_lhb
 spe$cell_type_mhb = cell_type_df$cell_type_mhb
 spe$cell_type_hb = cell_type_df$cell_type_hb
 spe$cell_type_custom = cell_type_df$cell_type_custom
+spe$region_anno_hb = cell_type_df$region_anno_hb
 
 #   Order donors by proportion of habenula, but keep tissue sections ordered by 1, 2
 donor_order = cell_type_df |>
@@ -167,6 +175,16 @@ for (tissue_id in paste0(unique(cell_type_df$donor), '_1')) {
         plot_path = file.path(
             plot_dir, sprintf('data_driven_vs_manual_hb_%s.png', tissue_id)
         )
+    )
+}
+
+#   For a supplementary figure, plot manual annotation of habenula in each
+#   sample
+for (tissue_id in unique(spe$sample_id)) {
+    vis_clus_hd(
+        spe = spe, clustervar = 'region_anno_hb', sample_id = tissue_id,
+        colors = region_colors_3,
+        plot_path = file.path(plot_dir, sprintf('manual_hb_%s.png', tissue_id))
     )
 }
 
