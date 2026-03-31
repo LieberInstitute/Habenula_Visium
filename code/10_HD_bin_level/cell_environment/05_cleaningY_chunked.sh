@@ -2,11 +2,11 @@
 #SBATCH -p katun
 #SBATCH --mem=40G
 #SBATCH --job-name=05_cleaningY_chunked
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/05_cleaningY_chunked_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/05_cleaningY_chunked_%a.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/05_cleaningY_chunked_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/05_cleaningY_chunked_%a.txt
 #SBATCH -c 1
-#SBATCH -t 8:00:00
-#SBATCH --array=1-50%15
+#SBATCH -t 1-0:00:00
+#SBATCH --array=1-50%10
 
 set -e
 
@@ -22,7 +22,7 @@ echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 module list
 
-module load conda_R/4.4.x
+module load conda_R/4.5
 Rscript 05_cleaningY_chunked.R
 
 echo "**** Job ends ****"

@@ -5,15 +5,15 @@ library(SpatialExperiment)
 library(sessioninfo)
 
 spe_in_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'ficture_harmony',
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
     'spe_raw.rds'
 )
 spe_out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'spe_filtered.rds'
 )
 bin_set_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'extracellular_bins.csv.gz'
 )
 

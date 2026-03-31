@@ -9,11 +9,11 @@ library(Matrix)
 k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 
 spe_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'spe_filtered.rds'
 )
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'cleaningY', 'temp_chunks', sprintf('%d.rds', k)
 )
 num_chunks_total = 1000

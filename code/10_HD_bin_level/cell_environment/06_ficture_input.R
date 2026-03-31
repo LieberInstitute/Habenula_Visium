@@ -7,23 +7,23 @@ library(sessioninfo)
 
 sample_id_path = here('raw-data', 'sample_info', 'hd_sample_list.txt')
 spe_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'spe_filtered.rds'
 )
 scalefactors_path = here(
-    'processed-data', '01_spaceranger', 'probe_fix', '%s', 'outs',
+    'processed-data', '01_spaceranger', 'five_samples_10_2025', '%s', 'outs',
     'binned_outputs', 'square_002um', 'spatial', 'scalefactors_json.json'
 )
 counts_out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'ficture_inputs', 'cleaningy_input.tsv.gz'
 )
 minmax_out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'ficture_inputs', 'cleaningy_minmax.tsv'
 )
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'probe_fix', 'cell_environment',
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'cleaningY', 'temp_chunks', '%d.rds'
 )
 buffer_prop = 0.05
