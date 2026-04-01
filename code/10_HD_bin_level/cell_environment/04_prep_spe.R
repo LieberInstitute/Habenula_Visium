@@ -26,7 +26,7 @@ spe = readRDS(spe_in_path)
 spe$key = paste(spe$sample_id, colnames(spe), sep = '_')
 
 bin_set = read_csv(bin_set_path, show_col_types = FALSE) |>
-    mutate(key = paste(sample_id, bin_id, sep = '_')) |>
+    mutate(key = paste(str_extract(cell_key, 'H1-.*'), bin_id, sep = '_')) |>
     pull(key)
 
 message(
