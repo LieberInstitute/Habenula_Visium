@@ -1,3 +1,7 @@
+#   HD Banksy vs. mid-resolution multiome spatial registration heatmap with
+#   additional annotations about how the Banksy clusters would be labeled if we
+#   were to do it based on the multiome, not Yalcinbas fine snRNA-seq
+
 library(here)
 library(tidyverse)
 library(SpatialExperiment)
@@ -16,8 +20,8 @@ model_path_27 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium
 
 # reference data
 ref_paths = here(
-    "processed-data", "05_snRNA-seq_model_stats",
-    "enrichment_final_Annotations.rds"
+    'processed-data', '05_snRNA-seq_model_stats',
+    'enrichment_snRNA-multiome_v5.rds'
 )
 
 ref_name = "snRNAseq_fine"
@@ -38,17 +42,20 @@ cluster_anno <- read.csv(
 
 # fine subtype main colors
 fine_colors = c(
-    OPC = '#d3c871',
-    Oligo = '#4d5802',
-    Microglia = '#222222',
-    Astrocyte = '#8d363c',
-    Endo = '#ee6c14',
-    MHb.1 = '#FF00FF',
-    MHb.2 = '#FAA0A0',
-    LHb.2.7 = '#00a900',
-    LHb.1.3.4 = '#004F2D',
-    LHb.4 = '#84DCC6',
-    Excit.Thal = '#9e4ad1'
+    Oligo = "#4d5802",
+    OPC = "#d3c871",
+    Microglia = "#222222",
+    Astrocyte = "#8d363c",
+    Endo = "#ee6c14",
+    Inhib.Thal = '#b5a2ff',
+    Excit.Thal = "#9e4ad1",
+    LHb.1.3.4 = "#0085af",
+    LHb.2.7 = "#7DF9FF",
+    LHb.4 = '#76c2af',
+    MHb.1 = "#FF00FF",
+    MHb.1.2 = "#c76a6a",
+    MHb.2 = "#FAA0A0",
+    MHb.3 = "#fa246a"
 )
 
 message("Processing: ", ref_name)
@@ -59,7 +66,7 @@ out_path = here(
 )
 
 # load reference data
-results_enrichment = list(enrichment = readRDS(ref_paths))
+results_enrichment = list(enrichment = readRDS(ref_paths)$enrichment)
 
 # correlation
 this_cor = layer_stat_cor(
@@ -110,9 +117,13 @@ make_subtype_shades <- function(base_col, n) {
 # build cluster -> fine subtype mapping
 # --------------------------------------------------
 fine_lookup = setNames(
-    cluster_anno$fine_cell_type,
-    as.character(cluster_anno$cluster)
+    annotated_clusters$layer_label,
+    as.character(annotated_clusters$cluster)
 )
+
+fine_lookup['11'] = "MHb.1.2"
+fine_lookup['9'] = "Excit.Thal"
+fine_lookup['6'] = "OPC"
 
 row_ids = rownames(this_cor)
 fine_vec = fine_lookup[row_ids]
