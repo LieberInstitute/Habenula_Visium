@@ -30,29 +30,15 @@ out_dir=$repo_dir/processed-data/10_HD_bin_level/no_secondary/cell_environment/f
 mkdir -p $out_dir
 
 #   Run full FICTURE pipeline
-if [[ $SLURM_ARRAY_TASK_ID -eq 2 ]]; then
-    #   Overwride the default of finding top 3 factors, since only 2 exist
-    ficture run_together \
-        --in-tsv $in_dir/cleaningy_input.tsv.gz \
-        --in-minmax $in_dir/cleaningy_minmax.tsv \
-        --out-dir $out_dir \
-        --mu-scale 1 \
-        --major-axis X \
-        --all \
-        --n-factor ${SLURM_ARRAY_TASK_ID} \
-        --decode-top-k 2 \
-        --fractional-count 1
-else
-    ficture run_together \
-        --in-tsv $in_dir/cleaningy_input.tsv.gz \
-        --in-minmax $in_dir/cleaningy_minmax.tsv \
-        --out-dir $out_dir \
-        --mu-scale 1 \
-        --major-axis X \
-        --all \
-        --n-factor ${SLURM_ARRAY_TASK_ID} \
-        --fractional-count 1
-fi
+ficture run_together \
+    --in-tsv $in_dir/cleaningy_input.tsv.gz \
+    --in-minmax $in_dir/cleaningy_minmax.tsv \
+    --out-dir $out_dir \
+    --mu-scale 1 \
+    --major-axis X \
+    --all \
+    --n-factor ${SLURM_ARRAY_TASK_ID} \
+    --fractional-count 1
 
 echo "**** Job ends ****"
 date
