@@ -4,9 +4,9 @@
 #SBATCH --job-name=09_spatula_join
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/09_spatula_join_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/09_spatula_join_%a.txt
-#SBATCH --array=70,100%2
+#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/09_spatula_join_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/09_spatula_join_%a.txt
+#SBATCH --array=4,10,20%3
 
 set -e
 
@@ -25,8 +25,8 @@ ml spatula/f0e9936
 repo_dir=$(git rev-parse --show-toplevel)
 
 #   Path definitions
-out_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/cell_environment/ficture_outputs/cleaningy/k_$SLURM_ARRAY_TASK_ID/analysis/nF${SLURM_ARRAY_TASK_ID}.d_12
-in_tsv=$repo_dir/processed-data/10_HD_bin_level/probe_fix/cell_environment/ficture_inputs/cleaningy_input.tsv.gz
+out_dir=$repo_dir/processed-data/10_HD_bin_level/no_secondary/cell_environment/ficture_outputs/cleaningy/k_$SLURM_ARRAY_TASK_ID/analysis/nF${SLURM_ARRAY_TASK_ID}.d_12
+in_tsv=$repo_dir/processed-data/10_HD_bin_level/no_secondary/cell_environment/ficture_inputs/cleaningy_input.tsv.gz
 
 #   Sort FICTURE output by major axis
 (gzip -cd $out_dir/nF${SLURM_ARRAY_TASK_ID}.d_12.decode.prj_12.r_4_5.pixel.sorted.tsv.gz \

@@ -4,9 +4,9 @@
 #SBATCH --job-name=08_ficture_plot
 #SBATCH -c 1
 #SBATCH -t 1:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/08_ficture_plot_%a.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/probe_fix/cell_environment/logs/08_ficture_plot_%a.txt
-#SBATCH --array=70,100%2
+#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/08_ficture_plot_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/08_ficture_plot_%a.txt
+#SBATCH --array=4,10,20%3
 
 set -e
 
@@ -23,8 +23,8 @@ echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 module load visium_hd/1.0
 
 repo_dir=$(git rev-parse --show-toplevel)
-out_dir=$repo_dir/processed-data/10_HD_bin_level/probe_fix/cell_environment/ficture_outputs/cleaningy/k_${SLURM_ARRAY_TASK_ID}
-plot_dir=$repo_dir/plots/10_HD_bin_level/probe_fix/cell_environment/cleaningy
+out_dir=$repo_dir/processed-data/10_HD_bin_level/no_secondary/cell_environment/ficture_outputs/cleaningy/k_${SLURM_ARRAY_TASK_ID}
+plot_dir=$repo_dir/plots/10_HD_bin_level/no_secondary/cell_environment/cleaningy
 
 mkdir -p $plot_dir
 
