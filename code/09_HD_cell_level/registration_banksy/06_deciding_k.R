@@ -11,11 +11,7 @@ library(spatialLIBD)
 library(ComplexHeatmap)
 library(viridis)
 
-ref_names = c('snRNAseq_fine', 'snRNAseq_broad')
-
-#   Get the reference data for this task
-task_id = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-ref_name = ref_names[task_id]
+ref_name = "multiome_mid"
 
 in_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
@@ -52,10 +48,10 @@ unique_df = anno_df |>
     group_by(res) |>
     summarize(
         frac_unique_non_hb = length(
-            unique(layer_label[!grepl("^[ML]Hb", layer_label)])
+            unique(layer_label[!grepl("[ML]Hb", layer_label)])
         ) / 7,
         frac_unique_hb = length(
-            unique(layer_label[grepl("^[ML]Hb", layer_label)])
+            unique(layer_label[grepl("[ML]Hb", layer_label)])
         ) / 10
     )
 
@@ -65,7 +61,7 @@ shared_df = anno_df |>
     filter(layer_confidence == 'good') |>
     separate_longer_delim(layer_label, delim = '/') |>
     group_by(res, cluster) |>
-    filter(all(grepl('^MHb', layer_label)) | all(grepl('^LHb', layer_label))) |>
+    filter(all(grepl('^MHb', layer_label)) | all(grepl('LHb', layer_label))) |>
     group_by(res) |>
     summarize(frac_shared_hb = length(unique(layer_label)) / 10)
 
@@ -80,8 +76,8 @@ metric_df = anno_df |>
             !(
                 #   Either it's split across 1+ MHb clusters
                 grepl('^(MHb\\.[1-3]/*)+$', layer_label) |
-                #   Or 1+ LHb clusters
-                grepl('^(LHb\\.[1-7]/*)+$', layer_label) |
+                #   Or 1+ LHb clusters (had to interactively test this one)
+                grepl('^((Inhib_)?LHb(\\.[1-7]|_4\\.[12])/*)+$', layer_label) |
                 #   Or 1 cluster of any type
                 !grepl('/', layer_label)
             )
