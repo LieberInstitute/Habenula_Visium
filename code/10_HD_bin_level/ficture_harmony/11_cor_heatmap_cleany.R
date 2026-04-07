@@ -25,10 +25,7 @@ ref_paths = c(
         )
     ),
     #   Multiome data
-    here(
-        'processed-data', '05_snRNA-seq_model_stats',
-        'enrichment_snRNA-multiome_v5.rds'
-    ),
+    "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/11_link_prep/04_registration_wrapper/model_results.rds",
     #    Visium BayesSpace clusters (k 2 through 28)
     here(
         "processed-data", "05_brain_area_differential_expression",
