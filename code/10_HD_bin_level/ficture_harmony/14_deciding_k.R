@@ -8,34 +8,22 @@ library(here)
 library(tidyverse)
 library(sessioninfo)
 library(spatialLIBD)
-library(getopt)
 library(ComplexHeatmap)
 library(viridis)
 
-# Import command-line parameters
-spec <- matrix(
-    c(
-        c("ref_name", "input_method"),
-        c("r", "i"),
-        rep("1", 2),
-        rep("character", 2),
-        rep("Add variable description here", 2)
-    ),
-    ncol = 5
-)
-opt <- getopt(spec)
-
-message("Using the following parameters:")
-print(opt)
+input_method = c("normalized", "cleaning_y")[
+    as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+]
+ref_name = "multiome"
 
 in_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
-    'registration', 'cor_rds', opt$input_method,
-    sprintf('cor_vs_%s.rds', opt$ref_name)
+    'registration', 'cor_rds', input_method,
+    sprintf('cor_vs_%s.rds', ref_name)
 )
 out_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
-    'deciding_k', sprintf('%s_%s.csv', opt$ref_name, opt$input_method)
+    'deciding_k', sprintf('%s_%s.csv', ref_name, input_method)
 )
 plot_dir = here(
     'plots', '10_HD_bin_level', 'new_samples2', 'ficture_harmony', 'deciding_k'
@@ -65,11 +53,11 @@ unique_df = anno_df |>
     group_by(k) |>
     summarize(
         frac_unique_non_hb = length(
-            unique(layer_label[!grepl("^[ML]Hb", layer_label)])
+            unique(layer_label[!grepl("[ML]Hb", layer_label)])
         ) / 7,
         frac_unique_hb = length(
-            unique(layer_label[grepl("^[ML]Hb", layer_label)])
-        ) / 10
+            unique(layer_label[grepl("[ML]Hb", layer_label)])
+        ) / 9
     )
 
 #   Count fraction of habenula and non-habenula cell types covered in any way by
@@ -78,9 +66,9 @@ shared_df = anno_df |>
     filter(layer_confidence == 'good') |>
     separate_longer_delim(layer_label, delim = '/') |>
     group_by(k, cluster) |>
-    filter(all(grepl('^MHb', layer_label)) | all(grepl('^LHb', layer_label))) |>
+    filter(all(grepl('^MHb', layer_label)) | all(grepl('LHb', layer_label))) |>
     group_by(k) |>
-    summarize(frac_shared_hb = length(unique(layer_label)) / 10)
+    summarize(frac_shared_hb = length(unique(layer_label)) / 9)
 
 #   Calculate fraction of ambiguous mappings, join with other metrics, and score
 metric_df = anno_df |>
@@ -93,8 +81,8 @@ metric_df = anno_df |>
             !(
                 #   Either it's split across 1+ MHb clusters
                 grepl('^(MHb\\.[1-3]/*)+$', layer_label) |
-                #   Or 1+ LHb clusters
-                grepl('^(LHb\\.[1-7]/*)+$', layer_label) |
+                #   Or 1+ LHb clusters (had to interactively test this one)
+                grepl('^((Inhib_)?LHb(\\.[1-7]|_4\\.[12])/*)+$', layer_label) |
                 #   Or 1 cluster of any type
                 !grepl('/', layer_label)
             )
@@ -103,8 +91,7 @@ metric_df = anno_df |>
     left_join(unique_df, by = "k") |>
     left_join(shared_df, by = "k") |>
     mutate(
-        frac_shared_hb = replace_na(frac_shared_hb, 0),
-        #   Weight all 3 metrics equally, except don't even consider k
+        #   Weight all 3 metrics equally, except don't even consider k values
         #   with too many ambiguous clusters
         final_score = ifelse(
             round(num_clusters * frac_ambig) > max_ambig_clusters,
@@ -132,7 +119,7 @@ heatmap_mat = metric_df |>
 p = Heatmap(
     heatmap_mat,
     name = 'Score',
-    row_title = 'Number of Clusters',
+    row_title = 'FICTURE k',
     column_title = 'Metric',
     col = viridis(100),
     show_row_names = TRUE,
@@ -144,13 +131,7 @@ p = Heatmap(
         gp = gpar(fontsize = 10))
     }
 )
-pdf(
-    file.path(
-        plot_dir,
-        sprintf('%s_%s_top_results.pdf', opt$ref_name, opt$input_method)
-    ),
-    width = 5
-)
+pdf(file.path(plot_dir, sprintf('%s__%s_top_results.pdf', ref_name, input_method)), width = 5)
 draw(p)
 dev.off()
 
