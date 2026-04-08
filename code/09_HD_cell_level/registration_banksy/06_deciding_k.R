@@ -1,8 +1,8 @@
 #   This script provides a data-driven method for ranking spatial registration
 #   results across all tested resolutions, ultimately deciding upon an optimal
-#   clustering resolution from Banksy. It ultimately uses the Yalcinbas
-#   snRNA-seq reference data, favors covering many cell types (especially
-#   uniquely) and penalizes ambiguously mapped clusters
+#   clustering resolution from Banksy. It ultimately uses the multiome
+#   reference data, favors covering many cell types (especially uniquely) and
+#   penalizes ambiguously mapped clusters
 
 library(here)
 library(tidyverse)
