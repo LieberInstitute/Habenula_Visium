@@ -52,7 +52,7 @@ unique_df = anno_df |>
         ) / 7,
         frac_unique_hb = length(
             unique(layer_label[grepl("[ML]Hb", layer_label)])
-        ) / 10
+        ) / 9
     )
 
 #   Count fraction of habenula and non-habenula cell types covered in any way by
@@ -63,7 +63,7 @@ shared_df = anno_df |>
     group_by(res, cluster) |>
     filter(all(grepl('^MHb', layer_label)) | all(grepl('LHb', layer_label))) |>
     group_by(res) |>
-    summarize(frac_shared_hb = length(unique(layer_label)) / 10)
+    summarize(frac_shared_hb = length(unique(layer_label)) / 9)
 
 #   Calculate fraction of ambiguous mappings, join with other metrics, and score
 metric_df = anno_df |>
