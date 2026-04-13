@@ -4,8 +4,8 @@
 #SBATCH --job-name=12_registration_tuning
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/09_HD_cell_level/new_samples/registration_banksy/logs/12_registration_tuning.txt
-#SBATCH -e ../../../processed-data/09_HD_cell_level/new_samples/registration_banksy/logs/12_registration_tuning.txt
+#SBATCH -o ../../../processed-data/09_HD_cell_level/no_secondary/registration_banksy/logs/12_registration_tuning.txt
+#SBATCH -e ../../../processed-data/09_HD_cell_level/no_secondary/registration_banksy/logs/12_registration_tuning.txt
 
 set -e
 
