@@ -7,9 +7,20 @@ library(SpatialExperiment)
 library(spatialLIBD)
 library(sessioninfo)
 
-plot_dir = here(
-    'plots', '09_HD_cell_level', 'no_secondary', 'registration_banksy'
-)
+#   This was actually set to FALSE for the manuscript
+all_genes = TRUE
+
+if (all_genes) {
+    plot_dir = here(
+        'plots', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
+        'all_genes'
+    )
+} else {
+    plot_dir = here(
+        'plots', '09_HD_cell_level', 'no_secondary', 'registration_banksy'
+    )
+}
+
 model_paths = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'modeling_results',
@@ -49,13 +60,21 @@ array_task = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 ref_path = ref_paths[array_task]
 ref_name = ref_names[array_task]
 
-out_path = here(
-    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
-    sprintf('cor_vs_%s.rds', ref_name)
-)
+if (all_genes) {
+    out_path = here(
+        'processed-data', '09_HD_cell_level', 'no_secondary',
+        'registration_banksy', 'all_genes', sprintf('cor_vs_%s.rds', ref_name)
+    )
+} else {
+    out_path = here(
+        'processed-data', '09_HD_cell_level', 'no_secondary',
+        'registration_banksy', sprintf('cor_vs_%s.rds', ref_name)
+    )
+}
+
 
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
-dir.create(dirname(out_path), showWarnings = FALSE)
+dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
 
 #   Read in enrichment stats for Banksy clusters at all Leiden resolutions
 t_stats = lapply(model_paths, function(path) readRDS(path)$enrichment)
@@ -72,13 +91,22 @@ if (grepl('^Visium', ref_name)) {
     )
 }
 
-this_cor = lapply(
-    t_stats,
-    layer_stat_cor,
-    modeling_results = results_enrichment,
-    model_type = "enrichment",
-    top_n = 100
-)
+if (all_genes) {
+    this_cor = lapply(
+        t_stats,
+        layer_stat_cor,
+        modeling_results = results_enrichment,
+        model_type = "enrichment"
+    )
+} else {
+    this_cor = lapply(
+        t_stats,
+        layer_stat_cor,
+        modeling_results = results_enrichment,
+        model_type = "enrichment",
+        top_n = 100
+    )
+}
 
 #  Remove 'X' from cluster names
 for (i in seq_len(length(this_cor))) {
