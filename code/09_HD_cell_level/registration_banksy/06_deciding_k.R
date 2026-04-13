@@ -15,7 +15,7 @@ ref_name = "multiome_mid"
 
 in_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
-    sprintf('cor_vs_%s.rds', ref_name)
+    'all_genes', sprintf('cor_vs_%s.rds', ref_name)
 )
 out_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',

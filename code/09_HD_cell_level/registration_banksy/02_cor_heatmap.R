@@ -7,7 +7,6 @@ library(SpatialExperiment)
 library(spatialLIBD)
 library(sessioninfo)
 
-#   This was actually set to FALSE for the manuscript
 all_genes = TRUE
 
 if (all_genes) {
