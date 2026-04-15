@@ -29,7 +29,6 @@ plot_dir = here(
     'plots', '10_HD_bin_level', 'new_samples2', 'ficture_harmony', 'deciding_k'
 )
 k_values = c(seq(3, 40), 70, 100)
-max_ambig_clusters = 5
 
 dir.create(plot_dir, showWarnings = FALSE)
 dir.create(dirname(out_path), showWarnings = FALSE)
@@ -91,13 +90,9 @@ metric_df = anno_df |>
     left_join(unique_df, by = "k") |>
     left_join(shared_df, by = "k") |>
     mutate(
-        #   Weight all 3 metrics equally, except don't even consider k values
-        #   with too many ambiguous clusters
-        final_score = ifelse(
-            round(num_clusters * frac_ambig) > max_ambig_clusters,
-            0,
-            (frac_unique_non_hb + frac_unique_hb + frac_shared_hb) / 3
-        )
+        #   Weight all 3 metrics equally
+        across(everything(), ~replace_na(.x, 0)),
+        final_score = (frac_unique_non_hb + frac_unique_hb + frac_shared_hb) / 3
     ) |>
     arrange(desc(final_score), frac_ambig)
 
@@ -131,7 +126,7 @@ p = Heatmap(
         gp = gpar(fontsize = 10))
     }
 )
-pdf(file.path(plot_dir, sprintf('%s__%s_top_results.pdf', ref_name, input_method)), width = 5)
+pdf(file.path(plot_dir, sprintf('%s_%s_top_results.pdf', ref_name, input_method)), width = 5)
 draw(p)
 dev.off()
 
