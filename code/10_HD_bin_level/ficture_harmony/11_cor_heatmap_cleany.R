@@ -85,8 +85,7 @@ this_cor = lapply(
     t_stats,
     layer_stat_cor,
     modeling_results = results_enrichment,
-    model_type = "enrichment",
-    top_n = 100
+    model_type = "enrichment"
 )
 
 #  Remove 'X' from cluster names
