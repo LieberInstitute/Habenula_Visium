@@ -40,8 +40,10 @@ ref_paths = c(
         )
     ),
     #   Multiome data mid and fine resolutions
-    '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/11_link_prep/04_registration_wrapper/model_results.rds',
-    '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/08_spatial_registration_vs_multiome_snRNA-seq/fine/enrichment_snRNA-multiome_v5.rds',
+    sprintf(
+        '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/11_link_prep/04_registration_wrapper/model_results_%s.rds',
+        c("mid", "fine")
+    ),
     #    Visium BayesSpace clusters (k 2 through 28)
     here(
         "processed-data", "05_brain_area_differential_expression",
