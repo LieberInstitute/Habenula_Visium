@@ -6,7 +6,7 @@
 #SBATCH -t 8:00:00
 #SBATCH -o ../../../processed-data/09_HD_cell_level/no_secondary/registration_banksy/logs/02_cor_heatmap_all_genes_%a.txt
 #SBATCH -e ../../../processed-data/09_HD_cell_level/no_secondary/registration_banksy/logs/02_cor_heatmap_all_genes_%a.txt
-#SBATCH --array=4
+#SBATCH --array=3-4%2
 
 set -e
 
