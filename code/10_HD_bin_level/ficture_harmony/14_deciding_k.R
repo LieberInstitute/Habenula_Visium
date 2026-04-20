@@ -53,7 +53,7 @@ unique_df = anno_df |>
     summarize(
         frac_unique_non_hb = length(
             unique(layer_label[!grepl("[ML]Hb", layer_label)])
-        ) / 7,
+        ) / 8,
         frac_unique_hb = length(
             unique(layer_label[grepl("[ML]Hb", layer_label)])
         ) / 9
@@ -79,7 +79,7 @@ metric_df = anno_df |>
             (layer_confidence == 'poor') |
             !(
                 #   Either it's split across 1+ MHb clusters
-                grepl('^(MHb\\.[1-3]/*)+$', layer_label) |
+                grepl('^(MHb\\.[1-3](\\.2)?/*)+$', layer_label) |
                 #   Or 1+ LHb clusters (had to interactively test this one)
                 grepl('^((Inhib_)?LHb(\\.[1-7]|_4\\.[12])/*)+$', layer_label) |
                 #   Or 1 cluster of any type
@@ -91,7 +91,6 @@ metric_df = anno_df |>
     left_join(shared_df, by = "k") |>
     mutate(
         #   Weight all 3 metrics equally
-        across(everything(), ~replace_na(.x, 0)),
         final_score = (frac_unique_non_hb + frac_unique_hb + frac_shared_hb) / 3
     ) |>
     arrange(desc(final_score), frac_ambig)

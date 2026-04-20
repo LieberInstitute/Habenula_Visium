@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/14_deciding_k_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/14_deciding_k_%a.txt
-#SBATCH --array=1
+#SBATCH --array=1-2%2
 
 set -e
 
