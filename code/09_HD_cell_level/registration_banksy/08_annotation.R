@@ -21,10 +21,6 @@ spe_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary',
     'spe_norm_filtered_split.rds'
 )
-hb_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2',
-    'hb_thal_manual_anno.csv.gz'
-)
 out_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'cluster_annotation.csv'
@@ -33,24 +29,24 @@ plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'annotation'
 )
-demo_samples = c("Br9090_1", "Br8433_1")
-region_colors = c(
-    habenula = "#B1092D", thalamus = "#0B52C4", other = "#DFE1DD"
-)
+demo_samples = c("Br9090_1", "Br8433_1", "Br9902_1")
 fine_colors = c(
     OPC = '#d3c871',
     Oligo = '#4d5802',
     Microglia = '#222222',
     Astrocyte = '#8d363c',
     Endo = '#ee6c14',
+    'Endo/microglia' = '#a4511b',
     MHb.1 = '#FF00FF',
-    MHb.1.2 = '#f183e6',
     MHb.2 = '#FAA0A0',
     LHb.2.7 = '#00a900',
-    LHb.1.3.4 = '#004F2D',
     LHb.4 = '#84DCC6',
-    Inhib_LHb_4.2 = '#1E19AD',
-    Excit.Thal = '#9e4ad1'
+    "LHb.4/Inhib_LHb_4.2" = '#004F2D',
+    Inhib_LHb_4.2 = '#9faefb',
+    Excit_LHb = '#6aff00',
+    Excit.Thal = '#9e4ad1',
+    Subependymal = '#4c00ff',
+    Ependymal = '#0e005c'
 )
 broad_colors = c(
     OPC = '#d3c871',
@@ -58,38 +54,35 @@ broad_colors = c(
     Microglia = '#222222',
     Astrocyte = '#8d363c',
     Endo = '#ee6c14',
+    'Endo/microglia' = '#a4511b',
     MHb = '#FF00FF',
     LHb = '#004F2D',
-    Excit.Thal = '#9e4ad1'
+    Excit.Thal = '#9e4ad1',
+    Subependymal = '#4c00ff',
+    Ependymal = '#0e005c'
 )
-ambig_1_colors = c(
-    '8' = '#1E19AD',
-    '11' = '#758E4F',
-    '15' = '#F6AE2D',
-    'Astrocyte' = '#AF1D1D',
-    'Other' = '#939393'
-)
-ambig_2_colors = c(
-    '2' = '#758E4F',
-    '13' = '#F6AE2D',
-    'Astrocyte' = '#AF1D1D',
-    'Endo' = '#1E19AD',
-    'Other' = '#939393'
-)
-ambig_3_colors = c(
-    '5' = '#F6AE2D',
-    'LHb.2.7' = '#758E4F',
-    'LHb.1.3.4' = '#490437',
-    'LHb.4' = '#AF1D1D',
-    'Inhib_LHb_4.2' = '#1E19AD',
-    'Other' = '#939393'
+ambig_colors = c(
+    'LHb' = '#758E4F',
+    'Excit.Thal' = '#AF1D1D',
+    '9' = '#1E19AD',
+    'Other' = '#aeaeae'
 )
 
-#   Just rewriting HD results (stuff like 'LHb.7/LHb.2' => 'LHb.2.7') 
-manual_anno = c('19' = 'LHb.2.7', '23' = 'LHb.1.3.4')
+#   We looked at spatial plots, registration against the fine multiome data, and
+#   top markers to manually resolve some ambiguous or hard-to-label clusters
+manual_anno = c(
+    '15' = 'MHb.2',
+    '8' = 'MHb.1',
+    '23' = 'Excit_LHb',
+    '5' = 'LHb.4/Inhib_LHb_4.2',
+    '13' = 'Subependymal',
+    '14' = 'Subependymal',
+    '2' = 'Endo/microglia',
+    '16' = 'Drop'
+)
 
 dir.create(plot_dir, showWarnings = FALSE)
-for (subdir in c('region', 'anno_broad', 'anno_fine', 'ambig_1', 'ambig_2', 'ambig_3')) {
+for (subdir in c('anno_broad', 'anno_fine', 'ambig')) {
     dir.create(file.path(plot_dir, subdir), showWarnings = FALSE)
 }
 
@@ -117,7 +110,7 @@ vis_clus_HD = function(spe, sampleid, clustervar, plot_dir, ...) {
 }
 
 ################################################################################
-#   Add Banksy clusters and region annotation to the SPE. Plot both
+#   Add Banksy clusters to the SPE and plot
 ################################################################################
 
 spe = readRDS(spe_path)
@@ -132,62 +125,22 @@ spe$banksy = factor(
 cluster_colors = palette36.colors(length(levels(spe$banksy)))
 names(cluster_colors) = levels(spe$banksy)
 
-#   Add manual annotation of habenula/thalamus/other
-hb_anno_df = read_csv(hb_anno_path, show_col_types = FALSE) |>
-    dplyr::rename(key = spot_name, region_anno = ManualAnnotation) |>
-    select(key, region_anno)
-spe$region_anno = tibble(key = spe$key) |>
-    left_join(hb_anno_df, by = "key") |>
-    pull(region_anno) |>
-    replace_na('other')
-
-#   Plot the region annotation on each sample to make sure it worked
-for (sample_id in unique(spe$sample_id)) {
-    vis_clus_HD(
-        spe, sample_id, 'region_anno', file.path(plot_dir, 'region'),
-        colors = region_colors
-    )
-}
-
 ################################################################################
 #   Investigate ambiguous clusters
 ################################################################################
 
-spe$ambig_1 = case_when(
-        spe$banksy %in% c(8, 11, 15) ~ as.character(spe$banksy),
-        spe$banksy %in% c(6, 16, 12, 24, 14, 18) ~ 'Astrocyte',
+spe$ambig = case_when(
+        spe$banksy %in% c(19, 23, 7, 25, 5) ~ 'LHb',
+        spe$banksy == 20 ~ 'Excit.Thal',
+        spe$banksy == 9 ~ '9',
         TRUE ~ 'Other'
     ) |>
-    factor(levels = names(ambig_1_colors))
-spe$ambig_2 = case_when(
-        spe$banksy %in% c(2, 13) ~ as.character(spe$banksy),
-        spe$banksy %in% c(6, 16, 12, 24, 14, 18) ~ 'Astrocyte',
-        spe$banksy %in% c(22, 26, 21, 17) ~ 'Endo',
-        TRUE ~ 'Other'
-    ) |>
-    factor(levels = names(ambig_2_colors))
-spe$ambig_3 = case_when(
-        spe$banksy == 19 ~ 'LHb.2.7',
-        spe$banksy == 23 ~ 'LHb.1.3.4',
-        spe$banksy %in% c(7, 25) ~ 'LHb.4',
-        spe$banksy == 9 ~ 'Inhib_LHb_4.2',
-        spe$banksy == 5 ~ '5',
-        TRUE ~ 'Other'
-    ) |>
-    factor(levels = names(ambig_3_colors))
+    factor(levels = names(ambig_colors))
 
 for (this_sample_id in demo_samples) {
     vis_clus_HD(
-        spe, this_sample_id, 'ambig_1', file.path(plot_dir, 'ambig_1'),
-        colors = ambig_1_colors
-    )
-    vis_clus_HD(
-        spe, this_sample_id, 'ambig_2', file.path(plot_dir, 'ambig_2'),
-        colors = ambig_2_colors
-    )
-    vis_clus_HD(
-        spe, this_sample_id, 'ambig_3', file.path(plot_dir, 'ambig_3'),
-        colors = ambig_3_colors
+        spe, this_sample_id, 'ambig', file.path(plot_dir, 'ambig'),
+        colors = ambig_colors
     )
 }
 
@@ -204,12 +157,19 @@ anno_df = readRDS(cor_path)[[cor_index]] |>
             cluster %in% names(manual_anno) ~ manual_anno[cluster],
             TRUE ~ layer_label
         ),
-        broad_cell_type = str_replace(fine_cell_type, '\\.[0-9]+.*$', '')
+        broad_cell_type = case_when(
+            grepl('^MHb', fine_cell_type) ~ 'MHb',
+            grepl('LHb', fine_cell_type) ~ 'LHb',
+            TRUE ~ fine_cell_type
+        )
     ) |>
     select(cluster, broad_cell_type, fine_cell_type) |>
     arrange(as.integer(cluster))
 
 write_csv(anno_df, out_path)
+
+#   Highly ambiguous, sample-specific, and small cluster
+spe = spe[, spe$banksy != 16]
 
 #   Now plot the broad and fine annotations on each sample
 spe$anno_broad = factor(
