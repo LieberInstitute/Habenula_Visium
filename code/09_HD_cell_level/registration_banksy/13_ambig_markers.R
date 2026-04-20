@@ -23,19 +23,20 @@ ambig_clusters = c(2, 13, 14, 16)
 
 readRDS(model_path)$enrichment |>
     as_tibble() |>
-    select(ensembl, gene, matches('^fdr_')) |>
+    select(ensembl, gene, matches('^(fdr|t_stat)_')) |>
     pivot_longer(
-        cols = starts_with("fdr_"),
-        names_to = "banksy",
-        values_to = "fdr"
+        cols = matches('^(fdr|t_stat)_'),
+        names_to = c(".value", "cluster"),
+        names_pattern = "^(fdr|t_stat)_X(\\d+)$"
     ) |>
-    mutate(cluster = as.integer(sub('fdr_X', '', banksy))) |>
-    filter(cluster %in% ambig_clusters, fdr < sig_cutoff) |>
+    mutate(cluster = as.integer(cluster)) |>
     dplyr::rename(gene_id = ensembl, gene_name = gene) |>
-    select(cluster, gene_id, gene_name, fdr) |>
-    arrange(cluster, fdr) |>
+    filter(cluster %in% ambig_clusters, fdr < sig_cutoff, t_stat > 0) |>
+    select(cluster, gene_id, gene_name, fdr, t_stat) |>
     group_by(cluster) |>
+    arrange(fdr) |>
     slice_head(n = num_top_markers) |>
+    arrange(cluster, fdr) |>
     write_csv(out_path)
 
 session_info()
