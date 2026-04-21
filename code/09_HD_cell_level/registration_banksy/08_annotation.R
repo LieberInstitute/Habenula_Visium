@@ -67,6 +67,12 @@ ambig_colors = c(
     '9' = '#1E19AD',
     'Other' = '#aeaeae'
 )
+ambig_2_colors = c(
+    'LHb' = '#758E4F',
+    'Excit.Thal' = '#AF1D1D',
+    '25' = '#1E19AD',
+    'Other' = '#aeaeae'
+)
 
 #   We looked at spatial plots, registration against the fine multiome data, and
 #   top markers to manually resolve some ambiguous or hard-to-label clusters
@@ -82,7 +88,7 @@ manual_anno = c(
 )
 
 dir.create(plot_dir, showWarnings = FALSE)
-for (subdir in c('anno_broad', 'anno_fine', 'ambig')) {
+for (subdir in c('anno_broad', 'anno_fine', 'ambig', 'ambig_2')) {
     dir.create(file.path(plot_dir, subdir), showWarnings = FALSE)
 }
 
@@ -136,11 +142,22 @@ spe$ambig = case_when(
         TRUE ~ 'Other'
     ) |>
     factor(levels = names(ambig_colors))
+spe$ambig_2 = case_when(
+        spe$banksy %in% c(19, 23, 7, 5) ~ 'LHb',
+        spe$banksy == 20 ~ 'Excit.Thal',
+        spe$banksy == 25 ~ '25',
+        TRUE ~ 'Other'
+    ) |>
+    factor(levels = names(ambig_2_colors))
 
 for (this_sample_id in demo_samples) {
     vis_clus_HD(
         spe, this_sample_id, 'ambig', file.path(plot_dir, 'ambig'),
         colors = ambig_colors
+    )
+    vis_clus_HD(
+        spe, this_sample_id, 'ambig_2', file.path(plot_dir, 'ambig_2'),
+        colors = ambig_2_colors
     )
 }
 
