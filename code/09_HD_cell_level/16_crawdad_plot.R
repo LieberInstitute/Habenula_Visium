@@ -23,6 +23,11 @@ cell_type_colors = c(
     Astrocyte = "#2F97FF", 'LHb.2.7' = "#FFA239", Other = "#DFE1DD"
 )
 min_num_signif = 5
+cell_type_levels = c(
+    'MHb.1', 'MHb.2', 'Excit_LHb', 'LHb.2.7', 'LHb.4', 'LHb.4/Inhib_LHb_4.2',
+    'Inhib_LHb_4.2', 'Astrocyte', 'Endo', 'Endo/microglia', 'Oligo', 'OPC',
+    'Ependymal', 'Subependymal'
+)
 
 dir.create(
     file.path(plot_dir, 'spatial_plots'), recursive = TRUE, showWarnings = FALSE
@@ -32,13 +37,11 @@ dir.create(
 #   Functions
 ################################################################################
 
-custom_dotplot = function(result_df, z_sig, cell_types, filename) {
+custom_dotplot = function(result_df, z_sig, filename) {
     p = ggplot(
             result_df, aes(x = reference, y = neighbor, color = Z, size = scale)
         ) +
         geom_point() +
-        scale_x_discrete(limits = cell_types) +
-        scale_y_discrete(limits = cell_types) +
         scale_color_gradientn(
             colors = c('blue', '#CECECE', '#CECECE', 'red'),
             values = rescale(
@@ -50,7 +53,7 @@ custom_dotplot = function(result_df, z_sig, cell_types, filename) {
             breaks = seq(
                 min(result_df$scale), max(result_df$scale), length.out = 3
             ),
-            range = c(2, 15)
+            range = c(2, 8)
         ) +
         coord_fixed() +
         theme_bw(base_size = 20) +
@@ -81,6 +84,11 @@ z_sig = do.call(rbind, result_list) |>
     correctZBonferroni()
 
 result_df = do.call(rbind, result_list) |>
+    filter(reference != 'Excit.Thal', neighbor != 'Excit.Thal') |>
+    mutate(
+        reference = factor(reference, levels = cell_type_levels),
+        neighbor = factor(neighbor, levels = cell_type_levels)
+    ) |>
     #   First average Z-scores across permutations
     group_by(sample_id, neighbor, scale, reference) |>
     summarize(Z = mean(Z)) |>
@@ -102,89 +110,79 @@ result_df = do.call(rbind, result_list) |>
     #   Cap Z-score at twice the magnitude of the significance threshold
     mutate(Z = sign(Z) * pmin(abs(Z), z_sig * 2))
 
-    #   Grab all unique cell types originally present in the data
-    cell_types = do.call(rbind, result_list) |>
-        pull(reference) |>
-        unique() |>
-        sort()
+custom_dotplot(result_df, z_sig, 'dot_plot.pdf')
 
-custom_dotplot(result_df, z_sig, cell_types, 'dot_plot.pdf')
+#   Plot Z-scores vs scale for a particularly interesting cell-type pair
+p = do.call(rbind, result_list) |>
+    #   Average Z-scores across permutations
+    group_by(sample_id, neighbor, scale, reference) |>
+    summarize(Z = mean(Z)) |>
+    ungroup() |>
+    #   Improve plot appearance
+    mutate(
+        facet_anno = sprintf("Ref: %s\nNeighbor: %s", reference, neighbor)
+    ) |>
+    #   Focus on a particular pair (and its reverse)
+    filter(
+        ((neighbor == 'Astrocyte') & (reference == 'LHb.2.7')) |
+        ((neighbor == 'LHb.2.7') & (reference == 'Astrocyte'))
+    ) |>
+    ggplot(aes(x = scale, y = Z, color = sample_id, group = sample_id)) +
+        geom_line() +
+        geom_point() +
+        geom_hline(yintercept = z_sig, linetype = 'dashed') +
+        geom_hline(yintercept = -1 * z_sig, linetype = 'dashed') +
+        facet_wrap(~ facet_anno, nrow = 1) +
+        theme_bw(base_size = 20) +
+        labs(x = 'Scale (Microns)', color = 'Sample ID')
 
-for (hb_subtype in c('Astrocyte', 'LHb.2.7')) {
-    #   Plot Z-scores vs scale for a particularly interesting cell-type pair
-    p = do.call(rbind, result_list) |>
-        #   Average Z-scores across permutations
-        group_by(region, sample_id, neighbor, scale, reference) |>
-        summarize(Z = mean(Z)) |>
-        ungroup() |>
-        #   Improve plot appearance
-        mutate(
-            facet_anno = sprintf("Ref: %s\nNeighbor: %s", reference, neighbor)
-        ) |>
-        #   Focus on a particular pair (and its reverse)
-        filter(
-            region == 'habenula',
-            ((neighbor == 'Astrocyte') & (reference == 'LHb.2.7')) |
-            ((neighbor == 'LHb.2.7') & (reference == 'Astrocyte'))
-        ) |>
-        ggplot(aes(x = scale, y = Z, color = sample_id, group = sample_id)) +
-            geom_line() +
-            geom_point() +
-            geom_hline(yintercept = z_sig, linetype = 'dashed') +
-            geom_hline(yintercept = -1 * z_sig, linetype = 'dashed') +
-            facet_wrap(~ facet_anno, nrow = 1) +
-            theme_bw(base_size = 20) +
-            labs(x = 'Scale (Microns)', color = 'Sample ID')
+pdf(
+    file.path(plot_dir, 'z_scores_Astrocyte_LHb_2_7.pdf'),
+    width = 10, height = 5
+)
+print(p)
+dev.off()
 
-    pdf(
-        file.path(plot_dir, 'z_scores_Astrocyte_LHb_2_7.pdf'),
-        width = 10, height = 5
+cell_df = read_csv(in_path, show_col_types = FALSE) |>
+    mutate(
+        cell_type = ifelse(
+            cell_type %in% c('Astrocyte', 'LHb.2.7'), cell_type, 'Other'
+        )
+    ) |>
+    select(key, cell_type)
+
+spe = readRDS(spe_path)
+spe = spe[, spe$key %in% cell_df$key]
+
+spe$cell_type = tibble(key = spe$key) |>
+    left_join(cell_df, by = 'key') |>
+    pull(cell_type)
+
+#   Plot the cell-type pair spatially in each sample
+dir.create(
+    file.path(plot_dir, 'spatial_plots', 'Astrocyte_LHb_2_7'),
+    showWarnings = FALSE
+)
+for (sample_id in sample_ids) {
+    #   Run twice to overcome a bug with different behavior on the first
+    #   plot
+    for (i in seq_len(2)) {
+        p = vis_clus(
+                spe, sampleid = sample_id, clustervar = 'cell_type',
+                is_stitched = TRUE, point_size = 20, spatial = FALSE,
+                colors = cell_type_colors
+            ) +
+            guides(fill = guide_legend(override.aes = list(size = 8)))
+    }
+    png(
+        file.path(
+            plot_dir, 'spatial_plots', 'Astrocyte_LHb_2_7',
+            sprintf('%s.png', sample_id)
+        ),
+        width = 1500, height = 1500
     )
     print(p)
     dev.off()
-
-    cell_df = read_csv(in_path, show_col_types = FALSE) |>
-        filter(region_anno == 'habenula') |>
-        mutate(
-            cell_type = ifelse(
-                cell_type %in% c(hb_subtype, 'MHb.2'), cell_type, 'Other'
-            )
-        ) |>
-        select(key, cell_type)
-
-    spe = readRDS(spe_path)
-    spe = spe[, spe$key %in% cell_df$key]
-
-    spe$cell_type = tibble(key = spe$key) |>
-        left_join(cell_df, by = 'key') |>
-        pull(cell_type)
-
-    #   Plot the cell-type pair spatially (only habenula) in each sample
-    dir.create(
-        file.path(plot_dir, 'spatial_plots', 'Astrocyte_LHb_2_7'),
-        showWarnings = FALSE
-    )
-    for (sample_id in sample_ids) {
-        #   Run twice to overcome a bug with different behavior on the first
-        #   plot
-        for (i in seq_len(2)) {
-            p = vis_clus(
-                    spe, sampleid = sample_id, clustervar = 'cell_type',
-                    is_stitched = TRUE, point_size = 20, spatial = FALSE,
-                    colors = cell_type_colors
-                ) +
-                guides(fill = guide_legend(override.aes = list(size = 8)))
-        }
-        png(
-            file.path(
-                plot_dir, 'spatial_plots', 'Astrocyte_LHb_2_7',
-                sprintf('%s.png', sample_id)
-            ),
-            width = 1500, height = 1500
-        )
-        print(p)
-        dev.off()
-    }
 }
 
 session_info()
