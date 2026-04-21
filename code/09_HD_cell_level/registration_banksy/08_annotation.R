@@ -7,6 +7,7 @@ library(tidyverse)
 library(spatialLIBD)
 library(Polychrome)
 library(sessioninfo)
+library(cowplot)
 
 cor_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
@@ -42,7 +43,7 @@ fine_colors = c(
     LHb.2.7 = '#00a900',
     LHb.4 = '#84DCC6',
     "LHb.4/Inhib_LHb_4.2" = '#004F2D',
-    Inhib_LHb_4.2 = '#9faefb',
+    "Excit.Thal/Inhib_LHb_4.2" = '#9faefb',
     Excit_LHb = '#6aff00',
     Excit.Thal = '#9e4ad1',
     Subependymal = '#4c00ff',
@@ -84,11 +85,12 @@ manual_anno = c(
     '13' = 'Subependymal',
     '14' = 'Subependymal',
     '2' = 'Endo/microglia',
+    '9' = 'Excit.Thal/Inhib_LHb_4.2',
     '16' = 'Drop'
 )
 
 dir.create(plot_dir, showWarnings = FALSE)
-for (subdir in c('anno_broad', 'anno_fine', 'ambig', 'ambig_2')) {
+for (subdir in c('anno_broad', 'anno_fine', 'ambig', 'ambig_2', 'faceted')) {
     dir.create(file.path(plot_dir, subdir), showWarnings = FALSE)
 }
 
@@ -130,6 +132,34 @@ spe$banksy = factor(
 )
 cluster_colors = palette36.colors(length(levels(spe$banksy)))
 names(cluster_colors) = levels(spe$banksy)
+
+#   Plot each cluster individually in all samples
+all_samples = unique(spe$sample_id)[grepl('_1$', unique(spe$sample_id))]
+for (this_cluster in levels(spe$banksy)) {
+    p_list = list()
+    for (this_sample_id in all_samples) {
+        spe$temp = ifelse(spe$banksy == this_cluster, this_cluster, 'Other') |>
+            factor(levels = c(this_cluster, 'Other'))
+
+        #   Run twice to overcome a bug with different behavior on the first
+        #   plot
+        for (i in seq_len(2)) {
+            p_list[[this_sample_id]] = vis_clus(
+                    spe, sampleid = this_sample_id, clustervar = 'temp',
+                    is_stitched = TRUE, point_size = 10, spatial = FALSE,
+                    colors = c('#AF1D1D', '#aeaeae')
+                ) +
+                guides(fill = guide_legend(override.aes = list(size = 5)))
+        }
+    }
+    p = plot_grid(plotlist = p_list, nrow = 1)
+    png(
+        file.path(plot_dir, 'faceted', sprintf('%s.png', this_cluster)),
+        width = 2000, height = 400
+    )
+    print(p)
+    dev.off()
+}
 
 ################################################################################
 #   Investigate ambiguous clusters
@@ -176,7 +206,7 @@ anno_df = readRDS(cor_path)[[cor_index]] |>
         ),
         broad_cell_type = case_when(
             grepl('^MHb', fine_cell_type) ~ 'MHb',
-            grepl('LHb', fine_cell_type) ~ 'LHb',
+            grepl('LHb', fine_cell_type) & !grepl('^Excit\\.Thal', fine_cell_type) ~ 'LHb',
             TRUE ~ fine_cell_type
         )
     ) |>
