@@ -5,7 +5,7 @@ library(sessioninfo)
 
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info_split.csv')
 sample_info = read_csv(sample_info_path, show_col_types = FALSE)
-this_sample_id = sample_info$sample_id[
+this_sample_id = sample_info$tissue_id[
     as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 ]
 

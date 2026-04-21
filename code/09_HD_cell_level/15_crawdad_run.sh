@@ -2,11 +2,12 @@
 #SBATCH -p katun
 #SBATCH --mem=8G
 #SBATCH --job-name=15_crawdad_run
-#SBATCH -c 1
+#SBATCH -c 2
 #SBATCH -t 1:00:00
 #SBATCH -o ../../processed-data/09_HD_cell_level/no_secondary/logs/15_crawdad_run_%a.txt
 #SBATCH -e ../../processed-data/09_HD_cell_level/no_secondary/logs/15_crawdad_run_%a.txt
-#SBATCH --array=1-10%10
+#SBATCH --array=9
+#SBATCH --exclude=compute-169
 
 set -e
 
