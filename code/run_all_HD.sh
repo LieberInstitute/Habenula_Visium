@@ -124,9 +124,9 @@ cd $repo_dir/code/09_HD_cell_level/quick_shiny
 #   Now locally run 01_app.R, exporting CSV of habenula and thalamus annotations
 
 cd $repo_dir/code/09_HD_cell_level
-job_id_5_2=$(sbatch --dependency=afterok:${job_id_4_9} --parsable 14_crawdad_region_prep.sh)
-job_id_5_3=$(sbatch --dependency=afterok:${job_id_5_2} --parsable 15_crawdad_region_run.sh)
-job_id_5_4=$(sbatch --dependency=afterok:${job_id_5_3} --parsable 16_crawdad_region_plot.sh)
+job_id_5_2=$(sbatch --dependency=afterok:${job_id_4_9} --parsable 14_crawdad_prep.sh)
+job_id_5_3=$(sbatch --dependency=afterok:${job_id_5_2} --parsable 15_crawdad_run.sh)
+job_id_5_4=$(sbatch --dependency=afterok:${job_id_5_3} --parsable 16_crawdad_plot.sh)
 
 ################################################################################
 #   Other bin-level analyses
