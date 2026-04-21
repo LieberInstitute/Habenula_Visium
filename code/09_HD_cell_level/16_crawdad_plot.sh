@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
 #SBATCH --mem=8G
-#SBATCH --job-name=16_crawdad_region_plot
+#SBATCH --job-name=16_crawdad_plot
 #SBATCH -c 1
 #SBATCH -t 1:00:00
-#SBATCH -o ../../processed-data/09_HD_cell_level/no_secondary/logs/16_crawdad_region_plot.txt
-#SBATCH -e ../../processed-data/09_HD_cell_level/no_secondary/logs/16_crawdad_region_plot.txt
+#SBATCH -o ../../processed-data/09_HD_cell_level/no_secondary/logs/16_crawdad_plot.txt
+#SBATCH -e ../../processed-data/09_HD_cell_level/no_secondary/logs/16_crawdad_plot.txt
 
 set -e
 
@@ -25,7 +25,7 @@ module load conda_R/4.5
 ## List current modules for reproducibility
 module list
 
-Rscript 16_crawdad_region_plot.R
+Rscript 16_crawdad_plot.R
 
 echo "**** Job ends ****"
 date

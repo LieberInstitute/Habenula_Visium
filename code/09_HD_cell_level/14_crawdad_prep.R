@@ -1,6 +1,4 @@
-#   We're interested in running CRAWDAD on only the habenula or only thalamus.
-#   This script reads in annotations of the regions from Shiny, and otherwise
-#   prepares input data for CRAWDAD
+#   Prepare input data for CRAWDAD
 
 library(here)
 library(tidyverse)
@@ -18,25 +16,17 @@ banksy_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'banksy',
     'leiden_res1_8.csv'
 )
-cor_path = here(
-    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
-    'cor_vs_snRNAseq_fine.rds'
-)
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info_split.csv')
 out_path = here(
-    'processed-data', '09_HD_cell_level', 'no_secondary', 'crawdad', 'region',
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'crawdad',
     'input_cells.csv.gz'
-)
-hb_thal_anno_path = here(
-    'processed-data', '09_HD_cell_level', 'new_samples2',
-    'hb_thal_manual_anno.csv.gz'
 )
 ct_anno_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'cluster_annotation.csv'
 )
 
-dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
+dir.create(dirname(out_path), showWarnings = FALSE)
 
 sample_info = read_csv(sample_info_path, show_col_types = FALSE)
 spe = readRDS(spe_path)
@@ -65,22 +55,11 @@ scale_df = tibble(
 #   Mapping from clusters to cell types
 anno_df = read_csv(ct_anno_path, show_col_types = FALSE)
 
-#   Read in Shiny annotations of habenula and thalamus regions and attach to
-#   the SpatialExperiment object
-region_df = read_csv(hb_thal_anno_path, show_col_types = FALSE) |>
-    dplyr::rename(key = spot_name)
-
-spe$region_anno = tibble(key = spe$key) |>
-    left_join(region_df, by = 'key') |>
-    pull(ManualAnnotation) |>
-    replace_na('other')
-
-#   Gather spatial coordinates, Banksy clusters, and region annotations into a
-#   single CSV for input to CRAWDAD
-cell_df = tibble(
+#   Gather spatial coordinates and Banksy clusters into a single CSV for input
+#   to CRAWDAD
+tibble(
         key = spe$key,
         sample_id = spe$sample_id,
-        region_anno = spe$region_anno,
         x = spatialCoords(spe)[, 'pxl_col_in_fullres'] * scale_df$micron_per_px[
             match(sample_id, sample_info$tissue_id)
         ],
@@ -93,21 +72,9 @@ cell_df = tibble(
         cell_type = anno_df$fine_cell_type[
             match(as.character(banksy), anno_df$cluster)
         ]
-    )
-
-#   Signal to drop combinations of cell type and region that consitute less than
-#   1% of the region's cells
-cell_counts_df = cell_df |>
-    group_by(region_anno, cell_type) |>
-    summarize(n = n()) |>
-    group_by(region_anno) |>
-    mutate(drop = n < sum(n) * 0.01) |>
-    ungroup()
-
-#   Clean up and export
-cell_df |>
-    left_join(cell_counts_df, by = c('region_anno', 'cell_type')) |>
-    select(key, x, y, sample_id, region_anno, cell_type, drop) |>
+    ) |>
+    filter(cell_type != 'Drop') |>
+    select(key, x, y, sample_id, cell_type) |>
     write_csv(out_path)
 
 message('Memory usage:')
