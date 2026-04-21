@@ -6,6 +6,7 @@
 #SBATCH -t 2:00:00
 #SBATCH -o ../../processed-data/09_HD_cell_level/no_secondary/logs/14_crawdad_prep.txt
 #SBATCH -e ../../processed-data/09_HD_cell_level/no_secondary/logs/14_crawdad_prep.txt
+#SBATCH --exclude=compute-169
 
 set -e
 
