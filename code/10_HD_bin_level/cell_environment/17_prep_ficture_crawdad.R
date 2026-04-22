@@ -53,6 +53,10 @@ ficture_df = read_csv_duckdb(ficture_path, prudence = 'stingy') |>
     compute_parquet(ficture_out_path) |>
     collect()
 
+
+#   Mapping from clusters to cell types
+anno_df = read_csv(anno_path, show_col_types = FALSE)
+
 input_df = read_csv_duckdb(extra_bin_path, prudence = 'lavish') |>
     mutate(sample_id = str_extract(cell_key, '_(H1-.*)$', group = 1)) |>
     inner_join(ficture_df, by = c('bin_id', 'sample_id')) |>
@@ -73,6 +77,11 @@ input_df = read_csv_duckdb(extra_bin_path, prudence = 'lavish') |>
         by = 'cell_key'
     ) |>
     filter(banksy != 16) |>
+    mutate(
+        cell_type = anno_df$fine_cell_type[
+            match(as.character(banksy), anno_df$cluster)
+        ]
+    ) |>
     collect()
 
 sample_info = read_csv(sample_info_path, show_col_types = FALSE)
@@ -113,7 +122,7 @@ tibble(
         ]
     ) |>
     inner_join(input_df, by = 'cell_key') |>
-    dplyr::rename(cell_type = banksy, ficture_cluster = factor_K1) |>
+    dplyr::rename(ficture_cluster = factor_K1) |>
     select(x, y, sample_id, cell_type, ficture_cluster) |>
     write_csv(crawdad_out_path)
 
