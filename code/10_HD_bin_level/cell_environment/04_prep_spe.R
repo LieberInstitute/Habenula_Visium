@@ -52,7 +52,6 @@ spe = spe[rowSums(assays(spe)$counts) > 0, colSums(assays(spe)$counts) > 0]
 message(Sys.time(), ' | Performing log normalization...')
 spe = computeLibraryFactors(spe)
 spe = logNormCounts(spe)
-assays(spe)$counts = NULL
 
 message(Sys.time(), ' | Saving filtered SPE...')
 saveRDS(spe, spe_out_path)
