@@ -2,10 +2,11 @@
 #SBATCH -p katun
 #SBATCH --mem=25G
 #SBATCH --job-name=20_extra_registration
-#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/20_extra_registration.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/20_extra_registration.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/20_extra_registration_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/20_extra_registration_%a.txt
 #SBATCH -c 2
 #SBATCH -t 1-0:00:00
+#SBATCH --array=1-3%3
 
 set -e
 
