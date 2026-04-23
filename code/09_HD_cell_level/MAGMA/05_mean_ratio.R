@@ -1,5 +1,5 @@
 # Find MeanRatio marker genes
-library(SpatialExperiment)
+
 library(tidyverse)
 library(DeconvoBuddies)
 library(here)
@@ -7,13 +7,16 @@ library(sessioninfo)
 library(spatialLIBD)
 
 spe_path = here(
-    'processed-data', '09_HD_cell_level', 'no_secondary', 'spe_norm_filtered_split.rds'
+    'processed-data', '09_HD_cell_level', 'no_secondary',
+    'spe_norm_filtered_split.rds'
 )
 cluster_path = here(
-    'processed-data', '09_HD_cell_level', 'no_secondary', 'banksy', 'leiden_res1_8.csv'
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'banksy',
+    'leiden_res1_8.csv'
 )
 cell_type_path = here(
-    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy', 'cluster_annotation.csv'
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
+    'cluster_annotation.csv'
 )
 
 out_dir = here(
@@ -63,14 +66,16 @@ spe = readRDS(spe_path)
 cluster_df = read_csv(cluster_path, show_col_types = FALSE)
 cell_type_df = read_csv(cell_type_path, show_col_types = FALSE)
 
-cluster_df = cluster_df %>%
+cluster_df = cluster_df |>
     left_join(cell_type_df, by = c("banksy" = "cluster"))
 
 stopifnot(all(spe$key %in% cluster_df$key))
 
 spe$cell_type_fine  = cluster_df$fine_cell_type[match(spe$key, cluster_df$key)]
 spe$cell_type_mid = cluster_df$broad_cell_type[match(spe$key, cluster_df$key)]
-spe$cell_type_broad = str_replace(spe$cell_type_fine, '^[ML]Hb\\.[^_]+', 'Hb')
+spe$cell_type_broad = str_replace(spe$cell_type_mid, '^[ML]Hb', 'Hb')
+
+spe = spe[, spe$cell_type_fine != 'Drop']
 
 spe$cell_type_fine  = factor(spe$cell_type_fine,  levels = sort(unique(spe$cell_type_fine)))
 spe$cell_type_mid   = factor(spe$cell_type_mid,   levels = sort(unique(spe$cell_type_mid)))
