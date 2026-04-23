@@ -53,8 +53,12 @@ export_set = function(spe, cell_type_col, file_tag) {
 spe = readRDS(spe_path)
 
 #   Also define mid and broad cell-type resolutions
-spe$cell_type_mid = str_replace(spe$cell_type, '^([ML])Hb\\.[^_]+', '\\1Hb')
-spe$cell_type_broad = str_replace(spe$cell_type, '^[ML]Hb\\.[^_]+', 'Hb')
+spe$cell_type_mid = case_when(
+    grepl('^MHb', spe$cell_type) ~ 'MHb',
+    grepl('LHb', spe$cell_type) & !grepl('^Excit\\.Thal', spe$cell_type) ~ 'LHb',
+    TRUE ~ spe$cell_type
+)
+spe$cell_type_broad = str_replace(spe$cell_type_mid, '^[ML]Hb$', 'Hb')
 
 export_set(spe, "cell_type", "fine")
 export_set(spe, "cell_type_mid", "mid")
