@@ -100,7 +100,7 @@ message(
         100 * mean(is.na(spe$cell_type))
     )
 )
-spe = spe[, !is.na(spe$cell_type)]
+spe = spe[, !is.na(spe$cell_type) & (spe$cell_type != 'Drop')]
 
 #   Now plot cell types on the off chance there was an issue matching keys
 #   between cellular and extracellular objects
