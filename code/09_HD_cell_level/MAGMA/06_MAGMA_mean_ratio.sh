@@ -7,6 +7,7 @@
 #SBATCH -o ../../../processed-data/09_HD_cell_level/no_secondary/MAGMA/logs/06_MAGMA_%a.txt
 #SBATCH -e ../../../processed-data/09_HD_cell_level/no_secondary/MAGMA/logs/06_MAGMA_%a.txt
 #SBATCH --array=1-16%16
+#SBATCH --reservation=neagles-2wk
 
 #   Run all 3 steps in the MAGMA pipeline for every GWAS. Critically,
 #   all relevant inputs/ reference files use hg19 and European ancestry.
