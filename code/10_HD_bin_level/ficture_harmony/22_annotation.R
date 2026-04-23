@@ -79,7 +79,7 @@ for (sample_id in unique(cluster_df$sample_id)) {
             theme_void(base_size = 100) +
             labs(color = 'Cell Type') +
             guides(color = guide_legend(override.aes = list(size = 10)))
-    pdf(file.path(plot_dir, paste0(sample_id, '.pdf')), width = 80, height = 80)
+    pdf(file.path(plot_dir, paste0(sample_id, '.pdf')), width = 70, height = 70)
     print(p)
     dev.off()
 }
