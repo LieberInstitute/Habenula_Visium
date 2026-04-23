@@ -33,12 +33,16 @@ export_set = function(spe, cell_type_col, file_tag) {
             gene_name = "gene_name"
         ) |>
         filter(MeanRatio > mean_ratio_threshold) |>
-        dplyr::rename(set_id = cellType.target, gene_id = gene) |>
+        dplyr::rename(
+            set_id = cellType.target,
+            gene_id = gene
+        ) |>
         group_by(set_id) |>
-        arrange(desc(MeanRatio)) |>
+        arrange(desc(MeanRatio), .by_group = TRUE) |>
         slice_head(n = max_num_genes) |>
-        select(set_id, gene_id) |>
-        arrange(set_id)
+        ungroup() |>
+        select(set_id, gene_id, gene_name, MeanRatio) |>
+        arrange(set_id, desc(MeanRatio))
 
     message(sprintf("Marker counts for %s resolution:", file_tag))
     print(table(marker_stats$set_id))
