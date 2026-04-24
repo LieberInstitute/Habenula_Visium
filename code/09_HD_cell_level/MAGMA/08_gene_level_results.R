@@ -26,6 +26,7 @@ set_stat_paths = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
     '%s', 'mean_ratio', '%s.gsa.out'
 )
+gwas_name_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/RNA/gwas_info.csv'
 out_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
     'top_genes.csv'
@@ -34,24 +35,7 @@ reference_gtf = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-g
 names(gene_set_paths) = cell_type_groups
 names(gene_stat_paths) = unlist(gwas_groups)
 sig_cutoff = 0.05
-gwas_renaming = c(
-    'MDD' = 'MDD',
-    'panic' = 'Panic Disorder',
-    'compulsive' = 'Compuls. Dis.',
-    'SCZ' = 'SCZ',
-    'SCZ_BPD' = 'SCZ/BPD',
-    'AUD' = 'AUD',
-    'CUD' = 'CUD',
-    'ext_cannabis' = 'Ext. Cannabis',
-    'lifetime_cannabis' = 'Life. Cannabis',
-    'SUD2020' = 'OUD 1',
-    'OUD' = 'OUD 2',
-    'SUD2' = 'SUD 1',
-    'SUD3' = 'SUD 2',
-    'internalizing' = 'Intern. Disorders',
-    'neurodev' = 'Neurodev.',
-    'p_factor' = 'P Factor'
-)
+min_genes_per_set = 10
 
 #   MAGMA set-level outputs have a variable amount of header lines. Auto-detect
 #   the header length and read in dynamically
@@ -88,6 +72,14 @@ for (gwas in names(gene_stat_paths)) {
             dplyr::rename(cell_type = set_id) |>
             left_join(set_df, by = 'cell_type') |>
             dplyr::rename(p = P) |>
+            mutate(
+                cell_type = case_when(
+                    cell_type == 'Endo.microglia' ~ 'Endo/microglia',
+                    cell_type == 'Excit.Thal.Inhib_LHb_4.2' ~ 'Excit.Thal/Inhib_LHb_4.2',
+                    cell_type == 'LHb.4.Inhib_LHb_4.2' ~ 'LHb.4/Inhib_LHb_4.2',
+                    TRUE ~ cell_type
+                )
+            ) |>
             select(gene_id, cell_type, gwas, p, set_is_sig, cell_type_res)
     }
 }
@@ -105,15 +97,20 @@ for (gwas in names(gene_stat_paths)) {
     )
 }
 
+gwas_map = read_csv(gwas_name_path, show_col_types = FALSE) |>
+    select(nickname, manuscript_name)
+
 gene_df = gene_df |>
     filter(!is.na(p), p < sig_cutoff, set_is_sig) |>
-    mutate(gwas = gwas_renaming[gwas])
+    mutate(gwas = ifelse(gwas == 'MDD', 'MDD2019', gwas)) |>
+    left_join(gwas_map, by = c('gwas' = 'nickname'))
 
 #   Do we have enough genes for meaningful testing?
 gene_df |>
     group_by(cell_type, gwas, cell_type_res) |>
-    summarize(n = n()) |>
-    arrange(cell_type_res, cell_type) |>
+    filter(n() < min_genes_per_set) |>
+    ungroup() |>
+    distinct(cell_type_res, cell_type, manuscript_name) |>
     print(n = Inf)
 
 #   Read in the GTF to get gene symbols
@@ -126,9 +123,15 @@ gtf = gtf[gtf$type == 'gene'] |>
 #   Export final gene sets, only including genes where the set
 #   as a whole was significant
 gene_df |>
+    #   Require sets to have a minimum number of genes (to accurately determine
+    #   set-level significance)
+    group_by(cell_type, gwas, cell_type_res) |>
+    filter(n() >= min_genes_per_set) |>
+    ungroup() |>
     arrange(cell_type_res, gwas, cell_type, p) |>
     left_join(gtf, by = 'gene_id') |>
-    select(cell_type_res, gwas, cell_type, gene_id, gene_name, p) |>
+    select(cell_type_res, manuscript_name, cell_type, gene_id, gene_name, p) |>
+    dplyr::rename(gwas = manuscript_name) |>
     write_csv(out_path)
 
 session_info()
