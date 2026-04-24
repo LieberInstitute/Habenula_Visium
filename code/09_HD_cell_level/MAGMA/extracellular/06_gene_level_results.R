@@ -3,38 +3,35 @@ library(here)
 library(rtracklayer)
 library(sessioninfo)
 
+gwas_name_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/RNA/gwas_info.csv'
+gwas_map = read_csv(gwas_name_path, show_col_types = FALSE) |>
+    select(nickname, manuscript_name)
+
 cell_type_groups = c('broad', 'mid', 'fine')
-gwas_groups = list(
-    substance = c(
-        'SUD2020', 'AUD', 'CUD', 'ext_cannabis', 'lifetime_cannabis', 'OUD',
-        'SUD2', 'SUD3'
-    ),
-    non_substance = c(
-        'MDD2019', 'panic', 'SCZ', 'compulsive', 'internalizing', 'neurodev',
-        'p_factor', 'SCZ_BPD'
-    )
-)
 gene_set_paths = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
     'extracellular', 'gene_sets', sprintf('%s.tsv', cell_type_groups)
 )
 gene_stat_paths = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
-    'extracellular', 'GWAS_results', unlist(gwas_groups),
-    sprintf('%s.genes.out', unlist(gwas_groups))
+    'extracellular', 'GWAS_results', gwas_map$nickname,
+    sprintf('%s.genes.out', gwas_map$nickname)
 )
 set_stat_paths = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
     'extracellular', 'GWAS_results', '%s', '%s.gsa.out'
 )
-gwas_name_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/RNA/gwas_info.csv'
 out_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
     'extracellular', 'top_genes.csv'
 )
+out_low_genes_path = here(
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
+    'extracellular', 'low_gene_sets.csv'
+)
 reference_gtf = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2024-A/genes/genes.gtf.gz'
 names(gene_set_paths) = cell_type_groups
-names(gene_stat_paths) = unlist(gwas_groups)
+names(gene_stat_paths) = gwas_map$nickname
 sig_cutoff = 0.05
 min_genes_per_set = 10
 
@@ -98,20 +95,18 @@ for (gwas in names(gene_stat_paths)) {
     )
 }
 
-gwas_map = read_csv(gwas_name_path, show_col_types = FALSE) |>
-    select(nickname, manuscript_name)
-
 gene_df = gene_df |>
-    filter(!is.na(p), p < sig_cutoff, set_is_sig) |>
+    filter(!is.na(p)) |>
     left_join(gwas_map, by = c('gwas' = 'nickname'))
 
-#   Do we have enough genes for meaningful testing?
+#   Do we have enough genes for meaningful testing? Export sets with too few
+#   genes, so we can note them in the heatmaps
 gene_df |>
     group_by(cell_type, gwas, cell_type_res) |>
     filter(n() < min_genes_per_set) |>
     ungroup() |>
     distinct(cell_type_res, cell_type, manuscript_name) |>
-    print(n = Inf)
+    write_csv(out_low_genes_path)
 
 #   Read in the GTF to get gene symbols
 gtf = import(reference_gtf)
@@ -123,6 +118,7 @@ gtf = gtf[gtf$type == 'gene'] |>
 #   Export final gene sets, only including genes where the set
 #   as a whole was significant
 gene_df |>
+    filter(p < sig_cutoff, set_is_sig) |>
     #   Require sets to have a minimum number of genes (to accurately determine
     #   set-level significance)
     group_by(cell_type, gwas, cell_type_res) |>
