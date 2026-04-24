@@ -98,7 +98,7 @@ for (gwas in names(gene_stat_paths)) {
 }
 
 gene_df = gene_df |>
-    filter(!is.na(p), p < sig_cutoff, set_is_sig) |>
+    filter(!is.na(p)) |>
     mutate(gwas = ifelse(gwas == 'MDD', 'MDD2019', gwas)) |>
     left_join(gwas_map, by = c('gwas' = 'nickname'))
 
@@ -121,6 +121,7 @@ gtf = gtf[gtf$type == 'gene'] |>
 #   Export final gene sets, only including genes where the set
 #   as a whole was significant
 gene_df |>
+    filter(p < sig_cutoff, set_is_sig) |>
     #   Require sets to have a minimum number of genes (to accurately determine
     #   set-level significance)
     group_by(cell_type, gwas, cell_type_res) |>
