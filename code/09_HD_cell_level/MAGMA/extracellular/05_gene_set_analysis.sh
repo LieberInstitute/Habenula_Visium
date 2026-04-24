@@ -6,7 +6,8 @@
 #SBATCH -t 1-00:00:00
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
-#SBATCH --array=1-51%10
+#SBATCH --array=1-51%51
+#SBATCH --reservation=neagles-2wk
 
 #   Run just the gene-set-analysis step from MAGMA for each GWAS and cell-type
 #   resolution

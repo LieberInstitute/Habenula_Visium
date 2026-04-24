@@ -1,10 +1,10 @@
 **** Job starts ****
-Fri Feb 13 12:23:36 PM EST 2026
+Fri Apr 24 11:38:57 AM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 28609889
+Job id: 31053558
 Job name: 05_gene_set_analysis
-Node name: compute-177
+Node name: compute-178
 Task id: 17
 Loading LIBD SLURM module for magma/1.10
 
@@ -20,21 +20,21 @@ Using flags:
 	--set-annot /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/gene_sets/fine.tsv gene-col=gene_id set-col=set_id
 	--out /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/GWAS_results/AUD/fine
 
-Start time is 12:23:36, Friday 13 Feb 2026
+Start time is 11:38:57, Friday 24 Apr 2026
 
 Reading file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/GWAS_results/AUD/AUD.genes.raw... 
 	34265 genes read from file
 Loading gene-set annotation...
 Reading file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/gene_sets/fine.tsv... 
-	detected 2 variables in file
+	detected 4 variables in file
 	using variable: gene_id (gene ID)
 	using variable: set_id (set ID)
-	11 gene-set definitions read from file
-	found 11 gene sets containing genes defined in genotype data (containing a total of 1712 unique genes)
+	15 gene-set definitions read from file
+	found 15 gene sets containing genes defined in genotype data (containing a total of 1841 unique genes)
 Preparing variables for analysis...
 	truncating Z-scores 3 points below zero or 6 standard deviations above the mean
 	truncating covariate values more than 5 standard deviations from the mean
-	total variables available for analysis: 11 gene sets
+	total variables available for analysis: 15 gene sets
 
 Parsing model specifications...
 Inverting gene-gene correlation matrix...
@@ -47,9 +47,11 @@ Inverting gene-gene correlation matrix...
 		inverse mac, log(inverse mac)
 	analysing individual variables
 
-	analysing single-variable models (number of models: 11)
+	analysing single-variable models (number of models: 15)
                                                                                                                    	writing results to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/GWAS_results/AUD/fine.gsa.out
+	writing gene information to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/GWAS_results/AUD/fine.gsa.genes.out
+	writing gene analysis results per significant result (after multiple testing correction, at alpha = 0.05) to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/GWAS_results/AUD/fine.gsa.sets.genes.out
 
-End time is 12:24:51, Friday 13 Feb 2026 (elapsed: 00:01:15)
+End time is 11:40:47, Friday 24 Apr 2026 (elapsed: 00:01:50)
 **** Job ends ****
-Fri Feb 13 12:24:51 PM EST 2026
+Fri Apr 24 11:40:47 AM EDT 2026
