@@ -1,10 +1,10 @@
 **** Job starts ****
-Fri Feb 13 12:42:01 PM EST 2026
+Fri Apr 24 12:30:26 PM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 28610078
+Job id: 31066601
 Job name: 06_gene_level_results
-Node name: compute-168
+Node name: compute-169
 Task id: 
 Unloading conda_R/4.5
 Loading conda_R/4.5
@@ -112,60 +112,36 @@ Warning: 2 parsing failures.
 35401 CHR a double      X '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/GWAS_results/lifetime_cannabis/lifetime_cannabis.genes.out'
 35402 CHR a double      X '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/GWAS_results/lifetime_cannabis/lifetime_cannabis.genes.out'
 
-Dropping 62% of genes for SUD2020 GWAS missing MAGMA stats
-Dropping 60% of genes for AUD GWAS missing MAGMA stats
-Dropping 60% of genes for CUD GWAS missing MAGMA stats
-Dropping 61% of genes for ext_cannabis GWAS missing MAGMA stats
-Dropping 60% of genes for lifetime_cannabis GWAS missing MAGMA stats
-Dropping 61% of genes for OUD GWAS missing MAGMA stats
-Dropping 61% of genes for SUD2 GWAS missing MAGMA stats
-Dropping 63% of genes for SUD3 GWAS missing MAGMA stats
-Dropping 60% of genes for MDD2019 GWAS missing MAGMA stats
-Dropping 60% of genes for panic GWAS missing MAGMA stats
-Dropping 60% of genes for SCZ GWAS missing MAGMA stats
-Dropping 63% of genes for compulsive GWAS missing MAGMA stats
-Dropping 63% of genes for internalizing GWAS missing MAGMA stats
-Dropping 63% of genes for neurodev GWAS missing MAGMA stats
-Dropping 63% of genes for p_factor GWAS missing MAGMA stats
-Dropping 63% of genes for SCZ_BPD GWAS missing MAGMA stats
-`summarise()` has grouped output by 'cell_type', 'gwas'. You can override using
-the `.groups` argument.
-# A tibble: 32 × 4
-# Groups:   cell_type, gwas [29]
-   cell_type  gwas              cell_type_res     n
-   <chr>      <chr>             <chr>         <int>
- 1 Astrocyte  OUD 1             broad            10
- 2 Excit.Thal Intern. Disorders broad            63
- 3 Excit.Thal P Factor          broad            67
- 4 Excit.Thal SCZ               broad            73
- 5 Excit.Thal SCZ/BPD           broad            62
- 6 Hb         Intern. Disorders broad            55
- 7 Hb         MDD               broad            48
- 8 Hb         P Factor          broad            63
- 9 Hb         SCZ               broad            61
-10 Hb         SUD 2             broad            26
-11 Microglia  CUD               broad            18
-12 OPC        CUD               broad             4
-13 OPC        Compuls. Dis.     broad            14
-14 OPC        SCZ               broad            44
-15 Endo       OUD 2             fine             12
-16 Excit.Thal SUD 1             fine             31
-17 LHb.1.3.4  MDD               fine             47
-18 LHb.1.3.4  OUD 2             fine             10
-19 LHb.2.7    SCZ               fine             37
-20 LHb.2.7    SCZ/BPD           fine             32
-21 LHb.2.7    SUD 1             fine             14
-22 LHb.4      Compuls. Dis.     fine             25
-23 MHb.2      Ext. Cannabis     fine             83
-24 MHb.2      OUD 2             fine             16
-25 MHb.2      SCZ               fine             68
-26 OPC        Compuls. Dis.     fine              5
-27 OPC        OUD 2             fine              6
-28 Excit.Thal SCZ/BPD           mid              59
-29 MHb        P Factor          mid              54
-30 MHb        SCZ               mid              59
-31 Microglia  SUD 1             mid              24
-32 OPC        Compuls. Dis.     mid               6
+Dropping 61% of genes for SUD2020 GWAS missing MAGMA stats
+Dropping 59% of genes for AUD GWAS missing MAGMA stats
+Dropping 59% of genes for CUD GWAS missing MAGMA stats
+Dropping 60% of genes for ext_cannabis GWAS missing MAGMA stats
+Dropping 59% of genes for lifetime_cannabis GWAS missing MAGMA stats
+Dropping 59% of genes for OUD GWAS missing MAGMA stats
+Dropping 60% of genes for SUD2 GWAS missing MAGMA stats
+Dropping 61% of genes for SUD3 GWAS missing MAGMA stats
+Dropping 59% of genes for MDD2019 GWAS missing MAGMA stats
+Dropping 59% of genes for panic GWAS missing MAGMA stats
+Dropping 59% of genes for SCZ GWAS missing MAGMA stats
+Dropping 61% of genes for compulsive GWAS missing MAGMA stats
+Dropping 61% of genes for internalizing GWAS missing MAGMA stats
+Dropping 61% of genes for neurodev GWAS missing MAGMA stats
+Dropping 61% of genes for p_factor GWAS missing MAGMA stats
+Dropping 61% of genes for SCZ_BPD GWAS missing MAGMA stats
+# A tibble: 11 × 3
+   cell_type_res cell_type                manuscript_name         
+   <chr>         <chr>                    <chr>                   
+ 1 broad         Excit.Thal/Inhib_LHb_4.2 SUD_Polimanti           
+ 2 fine          LHb.2.7                  AUD_Zhou                
+ 3 fine          LHb.2.7                  CUD_Pasman              
+ 4 fine          Excit_LHb                OUD_Deak                
+ 5 fine          LHb.4/Inhib_LHb_4.2      SUD_Hotoum              
+ 6 fine          OPC                      MDD_Howard              
+ 7 fine          LHb.2.7                  panic_Forster           
+ 8 broad         OPC                      compulsive_F1_Grotzinger
+ 9 mid           OPC                      compulsive_F1_Grotzinger
+10 fine          OPC                      compulsive_F1_Grotzinger
+11 fine          LHb.2.7                  neurodev_F3_Grotzinger  
 Warning messages:
 1: In S4Vectors:::anyMissing(runValue(x_seqnames)) :
   'S4Vectors:::anyMissing()' is deprecated.
@@ -185,9 +161,9 @@ See help("Deprecated")
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2026-02-13
+ date     2026-04-24
  pandoc   3.7.0.1 @ /jhpce/shared/community/core/conda_R/4.5/bin/pandoc
- quarto   1.8.27 @ /users/neagles/.positron-server/bin/4b472e9bf40ca88f886fe9c7fcfbb9ee702fccd0/quarto/bin/quarto
+ quarto   1.9.37 @ /users/neagles/.positron-server/bin/5dfc92424b4381ca7139f3f0a122a65abc2a9383/quarto/bin/quarto
 
 ─ Packages ───────────────────────────────────────────────────────────────────
  package              * version   date (UTC) lib source
@@ -272,4 +248,4 @@ See help("Deprecated")
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Fri Feb 13 12:42:43 PM EST 2026
+Fri Apr 24 12:31:08 PM EDT 2026
