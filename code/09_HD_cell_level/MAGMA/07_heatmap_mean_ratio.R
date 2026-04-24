@@ -7,6 +7,10 @@ results_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA', '%s',
     "mean_ratio", '%s.gsa.out'
 )
+low_genes_path = here(
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
+    'low_gene_sets.csv'
+)
 out_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
     'heatmap_data.csv'
@@ -83,18 +87,26 @@ for (cell_type_group in cell_type_groups) {
     }
 }
 
+low_genes_df = read_csv(low_genes_path, show_col_types = FALSE) |>
+    dplyr::rename(cell_type_group = cell_type_res) |>
+    mutate(low_gene_count = TRUE)
+
 #   Gather into one tibble
 results_df = bind_rows(results_df_list) |>
     left_join(gwas_map, by = c('gwas_group' = 'nickname')) |>
+    left_join(low_genes_df, by = c('cell_type_group', 'cell_type', 'manuscript_name')) |>
     mutate(
+        low_gene_count = ifelse(is.na(low_gene_count), FALSE, low_gene_count),
         p_label = ifelse(neg_log_p > -log10(sig_cutoff), "*", ""),
+        #   Add a question mark for results determined from small gene sets
+        p_label = ifelse(low_gene_count, paste0(p_label, "?"), p_label),
         cell_type_group = factor(cell_type_group, levels = cell_type_groups),
         cell_type = case_when(
             cell_type == 'Endo.microglia' ~ 'Endo/microglia',
             cell_type == 'Excit.Thal.Inhib_LHb_4.2' ~ 'Excit.Thal/Inhib_LHb_4.2',
             cell_type == 'LHb.4.Inhib_LHb_4.2' ~ 'LHb.4/Inhib_LHb_4.2',
             TRUE ~ cell_type
-        )
+        ),
     ) |>
     dplyr::rename(gwas_nickname = gwas_group, gwas_group = manuscript_name)
 
