@@ -5,153 +5,120 @@ library(sessioninfo)
 
 results_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
-    'MAGMA','%s','%s.gsa.out'
+    'MAGMA', '%s', '%s.gsa.out'
+)
+plot_dir = here(
+    'plots', '10_HD_bin_level', 'new_samples2', 'ficture_harmony', 'MAGMA'
+)
+low_genes_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
+    'MAGMA', 'low_gene_sets.csv'
 )
 out_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
     'MAGMA', 'heatmap_data.csv'
 )
-plot_dir = here(
-    'plots', '10_HD_bin_level', 'new_samples2', 'ficture_harmony', 'MAGMA','mean_ratio'
-)
-
-gwas_groups = list(
-    substance = c(
-        'SUD2020', 'AUD', 'CUD', 'ext_cannabis', 'lifetime_cannabis', 'OUD',
-        'SUD2', 'SUD3'
-    ),
-    non_substance = c(
-        'MDD', 'panic', 'SCZ', 'compulsive', 'internalizing', 'neurodev',
-        'p_factor', 'SCZ_BPD'
-    )
-)
-
-# The 5 factors + general P factor from the paper
-gwas_factors = c(
-    'compulsive' = 'F1: compulsive',
-    'SCZ_BPD' = 'F2: SCZ/BPD',
-    'neurodev' = 'F3: neurodev',
-    'internalizing' = 'F4: intern.',
-    'SUD3' = 'F5: SUD',
-    'p_factor' = 'P Factor'
-)
-
-gwas_renaming = c(
-    'MDD' = 'MDD',
-    'panic' = 'Panic Disorder',
-    'compulsive' = 'Compuls. Dis.',
-    'SCZ' = 'SCZ',
-    'SCZ_BPD' = 'SCZ/BPD',
-    'AUD' = 'AUD',
-    'CUD' = 'CUD',
-    'ext_cannabis' = 'Ext. Cannabis',
-    'lifetime_cannabis' = 'Life. Cannabis',
-    'SUD2020' = 'OUD 1',
-    'OUD' = 'OUD 2',
-    'SUD2' = 'SUD 1',
-    'SUD3' = 'SUD 2',
-    'internalizing' = 'Intern. Disorders',
-    'neurodev' = 'Neurodev.',
-    'p_factor' = 'P Factor'
-)
-
+gwas_name_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/RNA/gwas_info.csv'
 sig_cutoff = 0.05
 
 dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 
 ################################################################################
-# Functions
+#   Functions
 ################################################################################
 
+p_val_heatmap = function(results_df, gwas_groups, f_name) {
+    p = ggplot(
+            results_df,
+            aes(
+                x = gwas_group, y = cell_type, fill = neg_log_p, label = p_label
+            )
+        ) +
+        geom_tile() +
+        geom_text(size = 6) +
+        scale_fill_viridis_c() +
+        theme_bw(base_size = 20) +
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+        labs(x = "GWAS Trait", y = "Cell Type", fill = "-log10(p)")
+    pdf(
+        file.path(plot_dir, f_name),
+        width = 3 + 2 * length(gwas_groups), height = 4
+    )
+    print(p)
+    dev.off()
+}
+
+#   MAGMA outputs have a variable amount of header lines. Auto-detect then
+#   header length and read in dynamically
 read_table_auto_skip = function(path, check_lines = 100) {
     n_skip = sum(grepl('^#', readLines(path, n = check_lines)))
     clean_df = read_table(path, skip = n_skip, show_col_types = FALSE)
     return(clean_df)
 }
 
-p_val_heatmap = function(results_df, gwas_groups, f_name) {
-    p = ggplot(
-        results_df,
-        aes(
-            x = gwas_group,
-            y = cell_type,
-            fill = neg_log_p,
-            label = p_label
-        )
-    ) +
-        geom_tile() +
-        geom_text(size = 6) +
-        scale_fill_viridis_c() +
-        theme_bw(base_size = 20) +
-        theme(
-            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
-        ) +
-        labs(x = "GWAS Trait", y = "Factor", fill = "-log10(p)")
-
-    pdf(
-        file.path(plot_dir, f_name),
-        width = 2 + 1 * length(gwas_groups),
-        height = 2 + 0.35 * dplyr::n_distinct(results_df$cell_type)
-    )
-    print(p)
-    dev.off()
-}
-
 ################################################################################
-# Main
+#   Main
 ################################################################################
 
-# Read in all GWAS results
+gwas_map = read_csv(gwas_name_path, show_col_types = FALSE) |>
+    mutate(nickname = ifelse(nickname == 'MDD2019', 'MDD', nickname)) |>
+    select(nickname, manuscript_name)
+
+#   Read in all GWAS results
 results_df_list = list()
-
-for (gwas_group in unlist(gwas_groups)) {
-    results_df_list[[length(results_df_list) + 1]] =
-        read_table_auto_skip(sprintf(results_path, gwas_group, gwas_group)) |>
-        dplyr::rename(cell_type = VARIABLE) |>
-        mutate(
-            neg_log_p = -log10(P),
-            gwas_group = gwas_group
+for (gwas_group in gwas_map$nickname) {
+    #   Read in and clean MAGMA results
+    results_df_list[[length(results_df_list) + 1]] = read_table_auto_skip(
+            sprintf(results_path, gwas_group, gwas_group)
         ) |>
+        dplyr::rename(cell_type = VARIABLE) |>
+        mutate(neg_log_p = -log10(P), gwas_group = gwas_group) |>
         select(cell_type, neg_log_p, gwas_group)
 }
 
-# Gather into one tibble
+low_genes_df = read_csv(low_genes_path, show_col_types = FALSE) |>
+    mutate(low_gene_count = TRUE)
+
 results_df = bind_rows(results_df_list) |>
+    left_join(gwas_map, by = c('gwas_group' = 'nickname')) |>
+    left_join(low_genes_df, by = c('cell_type', 'manuscript_name')) |>
     mutate(
+        low_gene_count = ifelse(is.na(low_gene_count), FALSE, low_gene_count),
         p_label = ifelse(neg_log_p > -log10(sig_cutoff), "*", ""),
-        gwas_factor = factor(
-            ifelse(
-                gwas_group %in% names(gwas_factors),
-                gwas_factors[gwas_group],
-                NA
-            ),
-            levels = unname(gwas_factors)
-        ),
-        gwas_group = factor(
-            gwas_renaming[gwas_group],
-            levels = unname(gwas_renaming)
-        )
-    )
+        #   Add a question mark for results determined from small gene sets
+        p_label = ifelse(low_gene_count, paste0(p_label, "?"), p_label)
+    ) |>
+    dplyr::rename(gwas_nickname = gwas_group, gwas_group = manuscript_name)
 
 write_csv(results_df, out_path)
 
-# P-value heatmaps split by substance-use-related traits vs. others
-for (gwas_set in names(gwas_groups)) {
+#   P-value heatmaps split by substance-use-related traits vs. others
+gwas_categories = list(
+    substance = gwas_map$manuscript_name[
+        grepl('^[ACSO]UD_', gwas_map$manuscript_name)
+    ],
+    psychiatric = gwas_map$manuscript_name[
+        !grepl('^[ACSO]UD_|^p_factor_', gwas_map$manuscript_name)
+    ],
+    factor = c(
+        gwas_map$manuscript_name[grepl('_F[1-5]_', gwas_map$manuscript_name)] |>
+            (\(x) x[order(as.integer(stringr::str_extract(x, '(?<=_F)\\d(?=_)')))])(),
+        'p_factor_Grotzinger'
+    )
+)
+
+for (gwas_category in names(gwas_categories)) {
     p_val_heatmap(
         results_df = results_df |>
-            filter(gwas_group %in% gwas_renaming[gwas_groups[[gwas_set]]]),
-        gwas_groups = gwas_renaming[gwas_groups[[gwas_set]]],
-        f_name = sprintf("heatmap_%s.pdf", gwas_set)
+            filter(gwas_group %in% gwas_categories[[gwas_category]]) |>
+            mutate(
+                gwas_group = factor(
+                    gwas_group, levels = gwas_categories[[gwas_category]]
+                )
+            ),
+        gwas_groups = gwas_categories[[gwas_category]],
+        f_name = sprintf("heatmap_%s.pdf", gwas_category)
     )
 }
-
-# P-value heatmap for the 5 factors + P factor
-p_val_heatmap(
-    results_df = results_df |>
-        filter(!is.na(gwas_factor)) |>
-        mutate(gwas_group = gwas_factor),
-    gwas_groups = gwas_factors,
-    f_name = "heatmap_5_factors.pdf"
-)
 
 session_info()
