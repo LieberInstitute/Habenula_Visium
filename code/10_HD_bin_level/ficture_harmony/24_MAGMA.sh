@@ -7,6 +7,7 @@
 #SBATCH -o ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/24_MAGMA_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/new_samples2/ficture_harmony/logs/24_MAGMA_%a.txt
 #SBATCH --array=1-16%16
+#SBATCH --reservation=neagles-2wk
 
 #   Run all 3 steps in the MAGMA pipeline for every GWAS. Critically,
 #   all relevant inputs/ reference files use hg19 and European ancestry.
@@ -35,6 +36,7 @@ multiome_dir=/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome
 out_dir=${repo_dir}/processed-data/10_HD_bin_level/new_samples2/ficture_harmony/MAGMA/$gwas
 gene_loc=${repo_dir}/processed-data/09_HD_cell_level/no_secondary/MAGMA/hg19_gene_loc.tsv
 bfile=/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/habenula_pilot_gwas/g1000_eur/g1000_eur
+gene_set_path=${repo_dir}/processed-data/10_HD_bin_level/new_samples2/ficture_harmony/MAGMA/gene_sets/ficturek8.tsv
 
 rm -rf "$out_dir"
 mkdir -p "$out_dir"
@@ -84,9 +86,6 @@ magma \
     --out $out_dir/$gwas
 
 #   Gene set analysis step
-
-gene_set_path=${repo_dir}/processed-data/10_HD_bin_level/new_samples2/ficture_harmony/MAGMA/gene_sets/ficturek30.tsv
-
 magma \
     --gene-results $out_dir/$gwas.genes.raw \
     --set-annot $gene_set_path gene-col=gene_id set-col=set_id \
