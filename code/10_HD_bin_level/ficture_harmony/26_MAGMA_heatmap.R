@@ -42,7 +42,7 @@ p_val_heatmap = function(results_df, gwas_groups, f_name) {
         labs(x = "GWAS Trait", y = "Cell Type", fill = "-log10(p)")
     pdf(
         file.path(plot_dir, f_name),
-        width = 3 + 2 * length(gwas_groups), height = 4
+        width = 3 + length(gwas_groups), height = 8
     )
     print(p)
     dev.off()
