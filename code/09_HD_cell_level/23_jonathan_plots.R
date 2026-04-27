@@ -21,42 +21,50 @@ anno_path = here(
 plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'jonathan_plots'
 )
+other_color = '#d4d4d4'
 cluster_combos = list(
     MHb = c(
         MHb.1 = "#A86A9A",
         MHb.2 = "#BCA6B6",
         LHb = "#1f78b4",
-        Other = '#aeaeae'
+        Other = other_color
     ),
     Excit_LHb = c(
         MHb = "#ad1d8c",
         LHb = "#1f78b4",
         Excit_LHb = "#A8B8BC",
-        Other = '#aeaeae'
+        Other = other_color
     ),
     LHb.2.7 = c(
         MHb = "#ad1d8c",
         LHb = "#1f78b4",
         LHb.2.7 = "#6C9FA9",
-        Other = '#aeaeae'
+        Other = other_color
     ),
     LHb.4 = c(
         MHb = "#ad1d8c",
         LHb = "#1f78b4",
         LHb.4 = "#00607A",
-        Other = '#aeaeae'
+        Other = other_color
     ),
     Inhib_LHb_4.2 = c(
         MHb = "#ad1d8c",
         LHb = "#1f78b4",
         Inhib_LHb_4.2 = "#DC143C",
         Excit.Thal = "#4d55b7",
-        Other = '#aeaeae'
+        Other = other_color
     ),
     Ependymal = c(
         Ependymal = "#f5a105",
         Subependymal = "#a5aa04",
-        Other = '#aeaeae'
+        Other = other_color
+    ),
+    summary_plot = c(
+        MHb = "#ad1d8c",
+        LHb = "#1f78b4",
+        Inhib_LHb_4.2 = "#DC143C",
+        Excit.Thal = "#4d55b7",
+        Other = other_color
     )
 )
 
@@ -167,6 +175,13 @@ spe$Inhib_LHb_4.2 = case_when(
 spe$Ependymal = case_when(
     spe$banksy %in% c(12, 24) ~ "Ependymal",
     spe$banksy %in% c(13, 14) ~ "Subependymal",
+    TRUE ~ "Other"
+)
+spe$summary_plot = case_when(
+    spe$banksy %in% c(7, 19, 23, 25) ~ "LHb",
+    spe$banksy %in% c(8, 15) ~ "MHb",
+    spe$banksy == 20 ~ "Excit.Thal",
+    spe$banksy %in% c(5, 9) ~ "Inhib_LHb_4.2",
     TRUE ~ "Other"
 )
 
