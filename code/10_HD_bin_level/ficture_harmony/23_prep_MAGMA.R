@@ -1,12 +1,12 @@
-# MAGAMA on FICTURE cluster markers (k=30)
+# MAGAMA on FICTURE cluster markers (k=8)
 # prepare input data
 
-userlib <- "/users/cliu3/R/4.5"
-.libPaths(c(userlib, setdiff(.libPaths(), userlib)))
+# userlib <- "/users/cliu3/R/4.5"
+# .libPaths(c(userlib, setdiff(.libPaths(), userlib)))
 
-find.package("dplyr")
-packageVersion("dplyr")
-library(dplyr)
+# find.package("dplyr")
+# packageVersion("dplyr")
+# library(dplyr)
 library(duckplyr)
 
 # Find MeanRatio marker genes
@@ -19,14 +19,15 @@ library(spatialLIBD)
 
 spe_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
-    'spe','y_clean_spe.rds'
+    'spe', 'y_clean_spe.rds'
 )
 cluster_path = here(
   'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
   'bin_level_clusters_batch.parquet'
 )
 out_dir = here(
-    'processed-data', '10_HD_bin_level', 'new_samples2','ficture_harmony', 'MAGMA', 'gene_sets'
+    'processed-data', '10_HD_bin_level', 'new_samples2','ficture_harmony',
+    'MAGMA', 'gene_sets'
 )
 
 mean_ratio_threshold = 1.05
@@ -35,20 +36,20 @@ max_num_genes = 200
 num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK"))
 if (is.na(num_cores) || num_cores < 1) num_cores <- 1
 duckplyr::db_exec(sprintf("SET threads = %d", num_cores))
-Sys.setenv(DUCKPLYR_FALLBACK_INFO = "FALSE")
+fallback_config(info = FALSE)
 
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 spe = readRDS(spe_path)
 
 cluster_df = read_parquet_duckdb(cluster_path) |>
-  select(sample_id, barcode, FICTURE_k30) |>
-  collect()
+    select(sample_id, barcode, FICTURE_k8) |>
+    collect()
 
 spe$barcode = rownames(colData(spe))
 spe$ficture_cluster = tibble(sample_id = spe$sample_id, barcode = spe$barcode) |>
-  left_join(cluster_df, by = c("sample_id", "barcode")) |>
-  pull(FICTURE_k30)
+    left_join(cluster_df, by = c("sample_id", "barcode")) |>
+    pull(FICTURE_k8)
 
 rowData(spe)$gene_id = rownames(rowData(spe))
 rowData(spe)$gene_name = rowData(spe)$symbol
@@ -67,20 +68,16 @@ export_set = function(spe, cell_type_col, file_tag) {
     
     marker_stats = get_mean_ratio(
             sce = spe_pb, assay_name = "logcounts",
-            cellType_col = cell_type_col, gene_ensembl = "gene_name",
-            gene_name = "gene_id"
+            cellType_col = cell_type_col, gene_ensembl = "gene_id",
+            gene_name = "gene_name"
         ) |>
         filter(MeanRatio > mean_ratio_threshold) |>
-        dplyr::rename(
-            set_id = cellType.target,
-            gene_id = gene
-
-        ) |>
+        dplyr::rename(set_id = cellType.target, gene_id = gene_ensembl) |>
         group_by(set_id) |>
-        arrange(desc(MeanRatio), .by_group = TRUE) |>
+        arrange(desc(MeanRatio)) |>
         slice_head(n = max_num_genes) |>
         ungroup() |>
-        select(set_id, gene_id, gene_ensembl, MeanRatio) |>
+        select(set_id, gene_id, gene_name, MeanRatio) |>
         arrange(set_id, desc(MeanRatio))
 
     message(sprintf("Marker counts for %s resolution:", file_tag))
@@ -90,11 +87,6 @@ export_set = function(spe, cell_type_col, file_tag) {
 }
 
 # ---- export gene sets (ficture) ----
-export_set(spe, "ficture_cluster",  "ficturek30")
+export_set(spe, "ficture_cluster",  "ficturek8")
 
 session_info()
-
-# X0  X1 X10 X11 X12 X13 X14 X15 X16 X17 X18 X19  X2 X20 X21 X22 X23 X24 X25 X26 
-#  32  12  42   8  48  63  32  64  80  62  60  89   9  42  87  64  54  89  69  92 
-# X27 X28 X29  X3  X4  X5  X6  X7  X8  X9 
-#  70  76  48  38  62   6  10  21  66   8 
