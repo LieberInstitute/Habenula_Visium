@@ -30,13 +30,8 @@ for sample_id in all_samples:
     adata = adata[adata.obs['labels_he_expanded'] != 0, :]
 
     adata.obs['cell_key'] = adata.obs['labels_he_expanded'].astype(str) + '_' + sample_id
-    cellular_df_list.append(
-        adata
-            .obs
-            .reset_index()
-            .rename({'index': 'bin_id'}, axis = 1)
-            [['bin_id', 'cell_key']]
-    )
+    adata.obs['bin_id'] = adata.obs.index + '_' + sample_id
+    cellular_df_list.append(adata.obs[['bin_id', 'cell_key']])
 
 print(f"{datetime.datetime.now()} | Merging and exporting")
 cellular_df = pd.concat(cellular_df_list, axis = 0)
