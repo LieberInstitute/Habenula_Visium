@@ -1,6 +1,6 @@
-#   Register each extracellular FICTURE run against Banksy clusters (not cell
-#   types). We'll later (in another script) ask if FICTURE clusters nearby cells
-#   agree transcriptionally with the Bansky clusters (cellular data)
+#   Register each extracellular FICTURE run against Banksy cell types (not 
+#   clusters). We'll later (in another script) ask if FICTURE clusters nearby cells
+#   agree transcriptionally with the Bansky cell types (cellular data)
 
 library(here)
 library(spatialLIBD)
