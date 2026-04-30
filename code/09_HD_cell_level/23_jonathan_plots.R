@@ -65,6 +65,14 @@ cluster_combos = list(
         Inhib_LHb_4.2 = "#DC143C",
         Excit.Thal = "#4d55b7",
         Other = other_color
+    ),
+    all_Hb = c(
+        MHb = '#4024bb',
+        Excit_LHb = '#D5CB0A',
+        LHb.2.7 = '#C26D0D',
+        LHb.4 = '#9B1D20',
+        Inhib_LHb_4.2 = '#037d1f',
+        Other = '#C4C4C4'
     )
 )
 
@@ -181,6 +189,14 @@ spe$summary_plot = case_when(
     spe$banksy %in% c(7, 19, 23, 25) ~ "LHb",
     spe$banksy %in% c(8, 15) ~ "MHb",
     spe$banksy == 20 ~ "Excit.Thal",
+    spe$banksy %in% c(5, 9) ~ "Inhib_LHb_4.2",
+    TRUE ~ "Other"
+)
+spe$all_Hb = case_when(
+    spe$banksy == 23 ~ "Excit_LHb",
+    spe$banksy == 19 ~ "LHb.2.7",
+    spe$banksy %in% c(7, 25) ~ "LHb.4",
+    spe$banksy %in% c(8, 15) ~ "MHb",
     spe$banksy %in% c(5, 9) ~ "Inhib_LHb_4.2",
     TRUE ~ "Other"
 )
