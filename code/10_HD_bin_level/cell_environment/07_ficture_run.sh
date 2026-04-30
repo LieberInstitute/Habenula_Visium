@@ -6,7 +6,7 @@
 #SBATCH -t 5-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/07_ficture_run_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/07_ficture_run_%a.txt
-#SBATCH --array=4,10,20%3
+#SBATCH --array=3,5%2
 
 set -e
 
