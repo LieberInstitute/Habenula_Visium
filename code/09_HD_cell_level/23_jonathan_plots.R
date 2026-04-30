@@ -67,11 +67,18 @@ cluster_combos = list(
         Other = other_color
     ),
     all_Hb = c(
-        MHb = '#4024bb',
+        MHb.1 = '#1b0389',
+        MHb.2 = '#4c7cec',
         Excit_LHb = '#D5CB0A',
         LHb.2.7 = '#C26D0D',
         LHb.4 = '#9B1D20',
         Inhib_LHb_4.2 = '#037d1f',
+        Other = '#C4C4C4'
+    ),
+    astro = c(
+        MHb = '#2f04ee',
+        LHb = '#C26D0D',
+        Astrocyte = '#037d1f',
         Other = '#C4C4C4'
     )
 )
@@ -195,9 +202,16 @@ spe$summary_plot = case_when(
 spe$all_Hb = case_when(
     spe$banksy == 23 ~ "Excit_LHb",
     spe$banksy == 19 ~ "LHb.2.7",
+    spe$banksy == 8 ~ "MHb.1",
+    spe$banksy == 15 ~ "MHb.2",
     spe$banksy %in% c(7, 25) ~ "LHb.4",
-    spe$banksy %in% c(8, 15) ~ "MHb",
     spe$banksy %in% c(5, 9) ~ "Inhib_LHb_4.2",
+    TRUE ~ "Other"
+)
+spe$astro = case_when(
+    spe$banksy %in% c(7, 19, 23, 25) ~ "LHb",
+    spe$banksy %in% c(8, 15) ~ "MHb",
+    spe$banksy %in% c(11, 18) ~ "Astrocyte",
     TRUE ~ "Other"
 )
 
