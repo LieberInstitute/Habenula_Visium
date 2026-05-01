@@ -2,20 +2,31 @@ library(here)
 library(tidyverse)
 library(crawdad)
 library(sessioninfo)
+library(getopt)
 
-sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info_split.csv')
-sample_info = read_csv(sample_info_path, show_col_types = FALSE)
-this_sample_id = sample_info$tissue_id[
-    as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-]
+# Import command-line parameters
+spec <- matrix(
+    c(
+        c("sample_id", "k"),
+        c("s", "k"),
+        rep("1", 2),
+        rep("character", 2),
+        rep("Add variable description here", 2)
+    ),
+    ncol = 5
+)
+opt <- getopt(spec)
+
+message("Using the following parameters:")
+print(opt)
 
 in_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'crawdad', 'input_cells.csv.gz'
+    'crawdad', sprintf('input_cells_%d.csv.gz', opt$k)
 )
 out_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'crawdad', 'output', sprintf('%s_results.csv', this_sample_id)
+    'crawdad', 'output', sprintf('%s_k%d_results.csv', opt$sample_id, opt$k)
 )
 scales = c(100, 200, 500, 1000, 5000)
 random_seed = 0
@@ -24,7 +35,7 @@ num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK"))
 dir.create(dirname(out_path), showWarnings = FALSE)
 
 cell_df = read_csv(in_path, show_col_types = FALSE) |>
-    filter(sample_id == this_sample_id) |>
+    filter(sample_id == opt$sample_id) |>
     #   Pretend here that we have 2 cells: one for the Banksy cluster and one
     #   for the FICTURE (same coordinates)
     mutate(ficture_cluster = paste0('Factor_', ficture_cluster)) |>
