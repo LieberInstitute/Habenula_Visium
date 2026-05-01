@@ -9,6 +9,8 @@ library(sessioninfo)
 library(SpatialExperiment)
 library(rjson)
 
+k = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+
 extra_bin_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'extracellular_bins.csv.gz'
@@ -28,16 +30,11 @@ spe_path = here(
 )
 ficture_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'ficture_outputs', 'cleaningy', 'k_10', 'analysis', 'nF10.d_12',
-    'cleaningy_joined_input.tsv.gz'
-)
-ficture_out_path = here(
-    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'ficture_outputs', 'cleaningy', 'k_10', 'cleaned_clusters.parquet'
+    'ficture_plotting', 'extracellular.parquet'
 )
 crawdad_out_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'crawdad', 'input_cells.csv.gz'
+    'crawdad', sprintf('input_cells_k%d.csv.gz', k)
 )
 
 num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK"))
@@ -46,20 +43,18 @@ fallback_config(info = FALSE)
 
 dir.create(dirname(crawdad_out_path), showWarnings = FALSE)
 
-ficture_df = read_csv_duckdb(ficture_path, prudence = 'stingy') |>
-    distinct(barcode, sample_id, factor_K1) |>
-    filter(factor_K1 != 'NA') |>
-    dplyr::rename(bin_id = barcode) |>
-    compute_parquet(ficture_out_path) |>
-    collect()
-
+ficture_df = read_parquet_duckdb(ficture_path, prudence = 'stingy') |>
+    dplyr::rename(factor_K1 = paste0('k', k))
 
 #   Mapping from clusters to cell types
 anno_df = read_csv(anno_path, show_col_types = FALSE)
 
 input_df = read_csv_duckdb(extra_bin_path, prudence = 'lavish') |>
-    mutate(sample_id = str_extract(cell_key, '_(H1-.*)$', group = 1)) |>
-    inner_join(ficture_df, by = c('bin_id', 'sample_id')) |>
+    mutate(
+        sample_id = str_extract(cell_key, '_(H1-.*)$', group = 1),
+        bin_key = paste(bin_id, sample_id, sep = '_')
+    ) |>
+    inner_join(ficture_df, by = 'bin_key') |>
     #   For each cell, take the most common extracellular FICTURE cluster,
     #   randomly breaking any ties
     summarize(
@@ -107,22 +102,17 @@ scale_df = tibble(
     micron_per_px = micron_per_px
 )
 
-spe = readRDS(spe_path)
+message('Number of bins per donor:')
+table(input_df$sample_id)
 
 #   Gather spatial coordinates, FICTURE, and Banksy clusters into a single CSV
 #   for input to CRAWDAD
-tibble(
-        cell_key = spe$key,
-        sample_id = spe$sample_id,
-        x = spatialCoords(spe)[, 'pxl_col_in_fullres'] * scale_df$micron_per_px[
-            match(sample_id, sample_info$tissue_id)
-        ],
-        y = spatialCoords(spe)[, 'pxl_row_in_fullres'] * scale_df$micron_per_px[
-            match(sample_id, sample_info$tissue_id)
-        ]
-    ) |>
-    inner_join(input_df, by = 'cell_key') |>
+input_df |>
     dplyr::rename(ficture_cluster = factor_K1) |>
+    mutate(
+        x = x * scale_df$micron_per_px[match(sample_id, sample_info$tissue_id)],
+        y = y * scale_df$micron_per_px[match(sample_id, sample_info$tissue_id)]
+    ) |>
     select(x, y, sample_id, cell_type, ficture_cluster) |>
     write_csv(crawdad_out_path)
 

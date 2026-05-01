@@ -2,10 +2,12 @@
 #SBATCH -p katun
 #SBATCH --mem=20G
 #SBATCH --job-name=17_prep_ficture_crawdad
-#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/17_prep_ficture_crawdad.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/17_prep_ficture_crawdad.txt
+#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/17_prep_ficture_crawdad_%a.txt
+#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/17_prep_ficture_crawdad_%a.txt
 #SBATCH -c 4
 #SBATCH -t 1-0:00:00
+#SBATCH --array=3-10,20%9
+#SBATCH --reservation=neagles-2wk
 
 set -e
 
