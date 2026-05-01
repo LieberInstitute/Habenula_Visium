@@ -6,7 +6,7 @@ library(tidyverse)
 library(spatialLIBD)
 library(sessioninfo)
 
-k = c(4, 10, 20)
+k = c(3, 4, 5, 10, 20)
 
 plot_dir = here(
     'plots', '10_HD_bin_level', 'no_secondary', 'cell_environment', 
