@@ -15,7 +15,7 @@ library(duckplyr)
 library(SpatialExperiment)
 library(sessioninfo)
 
-k_values = c(4, 10, 20)
+k_values = c(3:10, 20)
 
 ficture_paths = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
@@ -75,7 +75,7 @@ for (this_k in k_values) {
         distinct(barcode, sample_id, factor_K1) |>
         filter(factor_K1 != 'NA') |>
         mutate(
-            bin_key = paste(sample_id, barcode, sep = '_'),
+            bin_key = paste(barcode, sample_id, sep = '_'),
             factor_K1 = as.integer(factor_K1)
         ) |>
         select(bin_key, !!paste0("k", this_k) := factor_K1) |>
@@ -88,8 +88,12 @@ spe_extra = readRDS(spe_extra_path)
 
 extra_df = tibble(
         bin_key = spe_extra$key,
-        x = spatialCoords(spe_extra)[, 1],
-        y = spatialCoords(spe_extra)[, 2]
+        x = unname(spatialCoords(spe_extra)[, 1]),
+        y = unname(spatialCoords(spe_extra)[, 2])
+    ) |>
+    #   Accidentally switched sample and bin ID when building the SPE
+    mutate(
+        bin_key = str_replace(bin_key, '^(H1.*_[0-9]{4})_(s_.*)$', '\\2_\\1')
     ) |>
     inner_join(ficture_joined, by = "bin_key") |>
     compute_parquet(extra_out_path)
@@ -106,8 +110,8 @@ anno_df = read_csv(ct_anno_path, show_col_types = FALSE)
 
 cell_df = tibble(
         key = spe_cell$key,
-        x = spatialCoords(spe_cell)[, 1],
-        y = spatialCoords(spe_cell)[, 2]
+        x = unname(spatialCoords(spe_cell)[, 1]),
+        y = unname(spatialCoords(spe_cell)[, 2])
     ) |>
     left_join(read_csv(banksy_path, show_col_types = FALSE), by = 'key') |>
     mutate(
