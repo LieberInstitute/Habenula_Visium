@@ -7,7 +7,7 @@ library(duckplyr)
 library(sessioninfo)
 
 array_task = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
-k = c(4, 10, 20)[array_task]
+k = c(3:10, 20)[array_task]
 
 cor_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',

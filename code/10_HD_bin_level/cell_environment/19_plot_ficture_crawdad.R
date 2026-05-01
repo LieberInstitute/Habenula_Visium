@@ -5,14 +5,16 @@ library(spatialLIBD)
 library(scales)
 library(sessioninfo)
 
+k = as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info_split.csv')
 result_paths = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'crawdad', 'output', '%s_results.csv'
+    'crawdad', 'output', sprintf('%s_k%d_results.csv', '%s', k)
 )
 in_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'crawdad', 'input_cells.csv.gz'
+    'crawdad', sprintf('input_cells_k%d.csv.gz', k)
 )
 spe_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary',
@@ -22,11 +24,11 @@ plot_dir = here(
     'plots', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'crawdad'
 )
-min_num_signif = 5
+min_num_signif = 4
 cell_type_levels = c(
     'MHb.1', 'MHb.2', 'Excit_LHb', 'LHb.2.7', 'LHb.4', 'LHb.4/Inhib_LHb_4.2',
     'Excit.Thal/Inhib_LHb_4.2', 'Astrocyte', 'Endo', 'Endo/microglia', 'Oligo',
-    'OPC', 'Ependymal', 'Subependymal', paste0('Factor_', 0:9)
+    'OPC', 'Ependymal', 'Subependymal', paste0('Factor_', 0:(k - 1))
 )
 
 dir.create(plot_dir, showWarnings = FALSE)
@@ -69,7 +71,9 @@ custom_dotplot = function(result_df, z_sig, filename) {
 ################################################################################
 
 sample_info = read_csv(sample_info_path, show_col_types = FALSE)
-sample_ids = sample_info$tissue_id
+sample_ids = sample_info |>
+    filter(donor != 'Br9902') |>
+    pull(tissue_id)
 
 result_list = list()
 for (sample_id in sample_ids) {
@@ -110,6 +114,6 @@ result_df = do.call(rbind, result_list) |>
     #   Cap Z-score at twice the magnitude of the significance threshold
     mutate(Z = sign(Z) * pmin(abs(Z), z_sig * 2))
 
-custom_dotplot(result_df, z_sig, 'dot_plot.pdf')
+custom_dotplot(result_df, z_sig, sprintf('dot_plot_k%d.pdf', k))
 
 session_info()
