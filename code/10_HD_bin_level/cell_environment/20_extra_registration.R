@@ -8,7 +8,7 @@ library(sessioninfo)
 library(tidyverse)
 library(duckplyr)
 
-k = c(4, 10, 20)[as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))]
+k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 
 spe_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',

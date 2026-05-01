@@ -1,11 +1,11 @@
 **** Job starts ****
-Thu Apr 30 04:53:07 PM EDT 2026
+Thu Apr 30 04:42:31 PM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 31393237
+Job id: 31392638
 Job name: 20_extra_registration
 Node name: compute-168
-Task id: 3
+Task id: 20
 
 Currently Loaded Modules:
   1) JHPCE_ROCKY9_DEFAULT_ENV   3) conda/3-24.3.0
@@ -137,23 +137,25 @@ be uploaded.
 ℹ Configure automatic uploading with `duckplyr::fallback_config()`.
 ✔ Overwriting dplyr methods with duckplyr methods.
 ℹ Turn off with `duckplyr::methods_restore()`.
-Dropping 0.0% of bins without a defined FICTURE cluster
-2026-04-30 16:58:07.551343 make pseudobulk object
-2026-04-30 16:59:30.149079 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
-2026-04-30 16:59:30.16645 drop lowly expressed genes
-2026-04-30 16:59:30.244398 normalize expression
-2026-04-30 16:59:30.434189 saving sce_pseudo to /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/cell_environment/registration/pseudobulk_spe/3.rds
-2026-04-30 16:59:30.637654 create model matrix
-2026-04-30 16:59:30.6491 run duplicateCorrelation()
-2026-04-30 16:59:39.334657 The estimated correlation is: 0.951328546095681
-2026-04-30 16:59:39.336985 computing enrichment statistics
-2026-04-30 16:59:39.44293 extract and reformat enrichment results
-2026-04-30 16:59:39.463174 running the baseline pairwise model
-2026-04-30 16:59:39.495092 computing pairwise statistics
-2026-04-30 16:59:39.630611 computing F-statistics
+Error reading duckplyr, fallback configuration, deleting file.
+Caused by error in `if (any(ind)) ...`:
+! missing value where TRUE/FALSE neededDropping 0.0% of bins without a defined FICTURE cluster
+2026-04-30 16:48:12.519535 make pseudobulk object
+2026-04-30 16:50:30.8116 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
+2026-04-30 16:50:30.83444 drop lowly expressed genes
+2026-04-30 16:50:30.943134 normalize expression
+2026-04-30 16:50:31.955292 saving sce_pseudo to /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/cell_environment/registration/pseudobulk_spe/20.rds
+2026-04-30 16:50:32.871935 create model matrix
+2026-04-30 16:50:32.883891 run duplicateCorrelation()
+2026-04-30 16:50:41.944465 The estimated correlation is: 0.754655474433825
+2026-04-30 16:50:41.947211 computing enrichment statistics
+2026-04-30 16:50:44.72016 extract and reformat enrichment results
+2026-04-30 16:50:44.77214 running the baseline pairwise model
+2026-04-30 16:50:44.931576 computing pairwise statistics
+2026-04-30 16:50:46.690569 computing F-statistics
 Warning message:
-var_registration "ficture_cluster" contains non-syntatic variables: 2, 0, 1
-converting to X2, X0, X1 
+var_registration "ficture_cluster" contains non-syntatic variables: 12, 13, 0, 2, 1, 5, 3, 18, 4, 8, 6, 9, 17, 10, 16, 14, 19, 15, 11, 7
+converting to X12, X13, X0, X2, X1, X5, X3, X18, X4, X8, X6, X9, X17, X10, X16, X14, X19, X15, X11, X7 
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.5.0 Patched (2025-05-21 r88220)
@@ -329,4 +331,4 @@ converting to X2, X0, X1
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Thu Apr 30 04:59:41 PM EDT 2026
+Thu Apr 30 04:50:51 PM EDT 2026
