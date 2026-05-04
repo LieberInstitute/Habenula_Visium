@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/09_spatula_join_%a.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/09_spatula_join_%a.txt
-#SBATCH --array=3,5%2
+#SBATCH --array=6-9%4
 
 set -e
 
