@@ -44,7 +44,8 @@ fallback_config(info = FALSE)
 dir.create(dirname(crawdad_out_path), showWarnings = FALSE)
 
 ficture_df = read_parquet_duckdb(ficture_path, prudence = 'stingy') |>
-    dplyr::rename(factor_K1 = paste0('k', k))
+    dplyr::rename(factor_K1 = paste0('k', k)) |>
+    select(bin_key, x, y, factor_K1)
 
 #   Mapping from clusters to cell types
 anno_df = read_csv(anno_path, show_col_types = FALSE)
@@ -55,6 +56,7 @@ input_df = read_csv_duckdb(extra_bin_path, prudence = 'lavish') |>
         bin_key = paste(bin_id, sample_id, sep = '_')
     ) |>
     inner_join(ficture_df, by = 'bin_key') |>
+    filter(!is.na(factor_K1)) |>
     #   For each cell, take the most common extracellular FICTURE cluster,
     #   randomly breaking any ties
     summarize(
@@ -102,18 +104,27 @@ scale_df = tibble(
     micron_per_px = micron_per_px
 )
 
-message('Number of bins per donor:')
-table(input_df$sample_id)
+spe = readRDS(spe_path)
 
 #   Gather spatial coordinates, FICTURE, and Banksy clusters into a single CSV
 #   for input to CRAWDAD
-input_df |>
-    dplyr::rename(ficture_cluster = factor_K1) |>
-    mutate(
-        x = x * scale_df$micron_per_px[match(sample_id, sample_info$tissue_id)],
-        y = y * scale_df$micron_per_px[match(sample_id, sample_info$tissue_id)]
+input_df = tibble(
+        cell_key = spe$key,
+        sample_id = spe$sample_id,
+        x = spatialCoords(spe)[, 'pxl_col_in_fullres'] * scale_df$micron_per_px[
+            match(sample_id, sample_info$tissue_id)
+        ],
+        y = spatialCoords(spe)[, 'pxl_row_in_fullres'] * scale_df$micron_per_px[
+            match(sample_id, sample_info$tissue_id)
+        ]
     ) |>
-    select(x, y, sample_id, cell_type, ficture_cluster) |>
-    write_csv(crawdad_out_path)
+    inner_join(input_df, by = 'cell_key') |>
+    dplyr::rename(ficture_cluster = factor_K1) |>
+    select(x, y, sample_id, cell_type, ficture_cluster)
+
+message('Number of cells per sample:')
+print(table(input_df$sample_id))
+
+write_csv(input_df, crawdad_out_path)
 
 session_info()
