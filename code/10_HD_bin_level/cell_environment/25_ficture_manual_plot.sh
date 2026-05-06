@@ -7,7 +7,6 @@
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
 #SBATCH --array=3-10,20%9
-#SBATCH --reservation=neagles-2wk
 
 set -e
 
