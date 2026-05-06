@@ -10,7 +10,7 @@ spec <- matrix(
         c("sample_id", "k"),
         c("s", "k"),
         rep("1", 2),
-        rep("character", 2),
+        c("character", "integer"),
         rep("Add variable description here", 2)
     ),
     ncol = 5
@@ -22,7 +22,7 @@ print(opt)
 
 in_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'crawdad', sprintf('input_cells_%d.csv.gz', opt$k)
+    'crawdad', sprintf('input_cells_k%d.csv.gz', opt$k)
 )
 out_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',

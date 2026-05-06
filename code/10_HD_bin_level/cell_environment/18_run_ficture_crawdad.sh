@@ -4,6 +4,7 @@
 #SBATCH --job-name=18_run_ficture_crawdad
 #SBATCH -o /dev/null
 #SBATCH -e /dev/null
+#SBATCH -c 1
 #SBATCH -t 1-0:00:00
 #SBATCH --array=1-72%20
 
