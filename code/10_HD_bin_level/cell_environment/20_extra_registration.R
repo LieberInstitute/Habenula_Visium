@@ -16,8 +16,7 @@ spe_path = here(
 )
 cluster_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'ficture_outputs', 'cleaningy', sprintf('k_%d', k), 'analysis',
-    sprintf('nF%d.d_12', k), 'cleaningy_joined_input.tsv.gz'
+    'ficture_plotting', 'extracellular.parquet'
 )
 pseudo_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
@@ -37,14 +36,14 @@ dir.create(dirname(model_path), showWarnings = FALSE, recursive = TRUE)
 
 spe = readRDS(spe_path)
 
-ficture_df = read_csv_duckdb(cluster_path, prudence = 'stingy') |>
-    distinct(barcode, sample_id, factor_K1) |>
-    filter(factor_K1 != 'NA')
+ficture_df = read_parquet_duckdb(cluster_path, prudence = 'stingy') |>
+    dplyr::rename(factor_K1 = paste0('k', k)) |>
+    select(bin_key, factor_K1)
 
 spe$ficture_cluster = tibble(
-        barcode = colnames(spe), sample_id = spe$sample_id
+        bin_key = paste(colnames(spe), spe$sample_id, sep = "_")
     ) |>
-    left_join(ficture_df, by = c('barcode', 'sample_id')) |>
+    left_join(ficture_df, by = 'bin_key') |>
     pull(factor_K1)
 
 message(

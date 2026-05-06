@@ -1,10 +1,10 @@
 **** Job starts ****
-Thu Apr 30 04:42:31 PM EDT 2026
+Wed May  6 10:42:36 AM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 31392642
+Job id: 31754807
 Job name: 20_extra_registration
-Node name: compute-168
+Node name: compute-176
 Task id: 10
 
 Currently Loaded Modules:
@@ -131,31 +131,30 @@ guide future development. By default, data will be collected but no data will
 be uploaded.
 ℹ Automatic fallback uploading is not controlled and therefore disabled, see
   `?duckplyr::fallback()`.
-✔ Number of reports ready for upload: 147.
+✔ Number of reports ready for upload: 192.
 → Review with `duckplyr::fallback_review()`, upload with
   `duckplyr::fallback_upload()`.
 ℹ Configure automatic uploading with `duckplyr::fallback_config()`.
 ✔ Overwriting dplyr methods with duckplyr methods.
 ℹ Turn off with `duckplyr::methods_restore()`.
-Error reading duckplyr, fallback configuration, deleting file.
-Caused by error in `if (any(ind)) ...`:
-! missing value where TRUE/FALSE neededDropping 0.0% of bins without a defined FICTURE cluster
-2026-04-30 16:48:11.687586 make pseudobulk object
-2026-04-30 16:50:14.803078 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
-2026-04-30 16:50:14.823755 drop lowly expressed genes
-2026-04-30 16:50:14.91632 normalize expression
-2026-04-30 16:50:15.441629 saving sce_pseudo to /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/cell_environment/registration/pseudobulk_spe/10.rds
-2026-04-30 16:50:15.966521 create model matrix
-2026-04-30 16:50:15.978579 run duplicateCorrelation()
-2026-04-30 16:50:25.014741 The estimated correlation is: 0.846593846881308
-2026-04-30 16:50:25.016839 computing enrichment statistics
-2026-04-30 16:50:25.50619 extract and reformat enrichment results
-2026-04-30 16:50:25.553373 running the baseline pairwise model
-2026-04-30 16:50:25.639041 computing pairwise statistics
-2026-04-30 16:50:26.084517 computing F-statistics
-Warning message:
-var_registration "ficture_cluster" contains non-syntatic variables: 3, 1, 0, 9, 8, 4, 6, 7, 2, 5
-converting to X3, X1, X0, X9, X8, X4, X6, X7, X2, X5 
+Dropping 0.0% of bins without a defined FICTURE cluster
+2026-05-06 10:50:00.184313 make pseudobulk object
+2026-05-06 10:54:21.436198 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
+2026-05-06 10:54:21.488907 drop lowly expressed genes
+2026-05-06 10:54:21.698926 normalize expression
+2026-05-06 10:54:22.92344 saving sce_pseudo to /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/cell_environment/registration/pseudobulk_spe/10.rds
+2026-05-06 10:54:24.063201 create model matrix
+2026-05-06 10:54:24.092133 run duplicateCorrelation()
+2026-05-06 10:54:45.618696 The estimated correlation is: 0.884809477522951
+2026-05-06 10:54:45.68105 computing enrichment statistics
+2026-05-06 10:54:47.057557 extract and reformat enrichment results
+2026-05-06 10:54:47.150622 running the baseline pairwise model
+2026-05-06 10:54:47.317283 computing pairwise statistics
+2026-05-06 10:54:48.205989 computing F-statistics
+Warning messages:
+1: var_registration "ficture_cluster" is numeric, convering to categorical vector... 
+2: var_registration "ficture_cluster" contains non-syntatic variables: 7, 1, 4, 2, 8, 6, 3, 9, 0, 5
+converting to X7, X1, X4, X2, X8, X6, X3, X9, X0, X5 
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.5.0 Patched (2025-05-21 r88220)
@@ -166,9 +165,9 @@ converting to X3, X1, X0, X9, X8, X4, X6, X7, X2, X5
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2026-04-30
+ date     2026-05-06
  pandoc   3.7.0.1 @ /jhpce/shared/community/core/conda_R/4.5/bin/pandoc
- quarto   1.9.37 @ /users/neagles/.positron-server/bin/5dfc92424b4381ca7139f3f0a122a65abc2a9383/quarto/bin/quarto
+ quarto   1.9.37 @ /users/neagles/.positron-server/bin/b271b10dfb5190a18813b46705216dd95e7e8927/quarto/bin/quarto
 
 ─ Packages ───────────────────────────────────────────────────────────────────
  package              * version   date (UTC) lib source
@@ -331,4 +330,4 @@ converting to X3, X1, X0, X9, X8, X4, X6, X7, X2, X5
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Thu Apr 30 04:50:28 PM EDT 2026
+Wed May  6 10:54:53 AM EDT 2026

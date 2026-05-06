@@ -1,10 +1,10 @@
 **** Job starts ****
-Thu Apr 30 04:42:31 PM EDT 2026
+Wed May  6 10:42:36 AM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 31392638
+Job id: 31754799
 Job name: 20_extra_registration
-Node name: compute-168
+Node name: compute-176
 Task id: 20
 
 Currently Loaded Modules:
@@ -131,31 +131,30 @@ guide future development. By default, data will be collected but no data will
 be uploaded.
 ℹ Automatic fallback uploading is not controlled and therefore disabled, see
   `?duckplyr::fallback()`.
-✔ Number of reports ready for upload: 147.
+✔ Number of reports ready for upload: 192.
 → Review with `duckplyr::fallback_review()`, upload with
   `duckplyr::fallback_upload()`.
 ℹ Configure automatic uploading with `duckplyr::fallback_config()`.
 ✔ Overwriting dplyr methods with duckplyr methods.
 ℹ Turn off with `duckplyr::methods_restore()`.
-Error reading duckplyr, fallback configuration, deleting file.
-Caused by error in `if (any(ind)) ...`:
-! missing value where TRUE/FALSE neededDropping 0.0% of bins without a defined FICTURE cluster
-2026-04-30 16:48:12.519535 make pseudobulk object
-2026-04-30 16:50:30.8116 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
-2026-04-30 16:50:30.83444 drop lowly expressed genes
-2026-04-30 16:50:30.943134 normalize expression
-2026-04-30 16:50:31.955292 saving sce_pseudo to /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/cell_environment/registration/pseudobulk_spe/20.rds
-2026-04-30 16:50:32.871935 create model matrix
-2026-04-30 16:50:32.883891 run duplicateCorrelation()
-2026-04-30 16:50:41.944465 The estimated correlation is: 0.754655474433825
-2026-04-30 16:50:41.947211 computing enrichment statistics
-2026-04-30 16:50:44.72016 extract and reformat enrichment results
-2026-04-30 16:50:44.77214 running the baseline pairwise model
-2026-04-30 16:50:44.931576 computing pairwise statistics
-2026-04-30 16:50:46.690569 computing F-statistics
-Warning message:
-var_registration "ficture_cluster" contains non-syntatic variables: 12, 13, 0, 2, 1, 5, 3, 18, 4, 8, 6, 9, 17, 10, 16, 14, 19, 15, 11, 7
-converting to X12, X13, X0, X2, X1, X5, X3, X18, X4, X8, X6, X9, X17, X10, X16, X14, X19, X15, X11, X7 
+Dropping 0.0% of bins without a defined FICTURE cluster
+2026-05-06 10:50:13.926674 make pseudobulk object
+2026-05-06 10:55:29.935646 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
+2026-05-06 10:55:29.973642 drop lowly expressed genes
+2026-05-06 10:55:30.152194 normalize expression
+2026-05-06 10:55:31.743773 saving sce_pseudo to /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/cell_environment/registration/pseudobulk_spe/20.rds
+2026-05-06 10:55:33.074511 create model matrix
+2026-05-06 10:55:33.092242 run duplicateCorrelation()
+2026-05-06 10:56:33.567043 The estimated correlation is: 0.780953812167742
+2026-05-06 10:56:33.633506 computing enrichment statistics
+2026-05-06 10:56:38.951894 extract and reformat enrichment results
+2026-05-06 10:56:39.175795 running the baseline pairwise model
+2026-05-06 10:56:39.671786 computing pairwise statistics
+2026-05-06 10:56:44.40411 computing F-statistics
+Warning messages:
+1: var_registration "ficture_cluster" is numeric, convering to categorical vector... 
+2: var_registration "ficture_cluster" contains non-syntatic variables: 1, 16, 8, 6, 3, 0, 19, 10, 7, 2, 12, 14, 17, 13, 15, 11, 4, 9, 18, 5
+converting to X1, X16, X8, X6, X3, X0, X19, X10, X7, X2, X12, X14, X17, X13, X15, X11, X4, X9, X18, X5 
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.5.0 Patched (2025-05-21 r88220)
@@ -166,9 +165,9 @@ converting to X12, X13, X0, X2, X1, X5, X3, X18, X4, X8, X6, X9, X17, X10, X16, 
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2026-04-30
+ date     2026-05-06
  pandoc   3.7.0.1 @ /jhpce/shared/community/core/conda_R/4.5/bin/pandoc
- quarto   1.9.37 @ /users/neagles/.positron-server/bin/5dfc92424b4381ca7139f3f0a122a65abc2a9383/quarto/bin/quarto
+ quarto   1.9.37 @ /users/neagles/.positron-server/bin/b271b10dfb5190a18813b46705216dd95e7e8927/quarto/bin/quarto
 
 ─ Packages ───────────────────────────────────────────────────────────────────
  package              * version   date (UTC) lib source
@@ -331,4 +330,4 @@ converting to X12, X13, X0, X2, X1, X5, X3, X18, X4, X8, X6, X9, X17, X10, X16, 
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Thu Apr 30 04:50:51 PM EDT 2026
+Wed May  6 10:56:56 AM EDT 2026
