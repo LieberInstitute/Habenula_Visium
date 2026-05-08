@@ -27,8 +27,7 @@ anno_path = here(
 )
 ficture_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'ficture_outputs', 'cleaningy', sprintf('k_%d', k), 'analysis',
-    sprintf('nF%d.d_12', k), 'cleaningy_joined_input.tsv.gz'
+    'ficture_plotting', 'extracellular.parquet'
 )
 plot_path = here(
     'plots', '10_HD_bin_level', 'no_secondary', 'cell_environment',
@@ -51,34 +50,32 @@ fallback_config(info = FALSE)
 dir.create(dirname(plot_path), showWarnings = FALSE)
 dir.create(dirname(out_path), showWarnings = FALSE)
 
-ficture_df = read_csv_duckdb(ficture_path, prudence = 'stingy') |>
-    distinct(barcode, sample_id, factor_K1) |>
-    filter(factor_K1 != 'NA') |>
-    dplyr::rename(bin_id = barcode)
+anno_df = read_csv_duckdb(anno_path, prudence = 'stingy') |>
+    dplyr::rename(banksy = cluster, cell_type = fine_cell_type)
 
-#   Mapping from clusters to cell types
-anno_df = read_csv(anno_path, show_col_types = FALSE)
+cluster_df = read_csv_duckdb(cluster_path, prudence = 'stingy') |>
+    dplyr::rename(cell_key = key) |>
+    left_join(anno_df, by = 'banksy') |>
+    filter(cell_type != 'Drop') |>
+    select(cell_key, cell_type)
 
-cluster_df = read_csv_duckdb(extra_bin_path, prudence = 'lavish') |>
-    mutate(sample_id = str_extract(cell_key, '_(H1-.*)$', group = 1)) |>
-    inner_join(ficture_df, by = c('bin_id', 'sample_id')) |>
-    #   Grab Banksy clusters for each cell
-    left_join(
-        read_csv_duckdb(cluster_path, prudence = 'stingy') |>
-            dplyr::rename(cell_key = key),
-        by = 'cell_key'
-    ) |>
-    filter(banksy != 16, !is.na(banksy)) |>
-    #   Annotate cell types
+ficture_df = read_parquet_duckdb(ficture_path, prudence = 'stingy') |>
+    dplyr::rename(ficture_cluster = paste0('k', k)) |>
+    filter(!is.na(ficture_cluster)) |>
+    select(bin_key, ficture_cluster)
+
+full_df = read_csv_duckdb(extra_bin_path, prudence = 'lavish') |>
     mutate(
-        cell_type = anno_df$fine_cell_type[
-            match(as.character(banksy), anno_df$cluster)
-        ]
+        sample_id = str_extract(cell_key, '_(H1-.*)$', group = 1),
+        bin_key = paste(bin_id, sample_id, sep = '_')
     ) |>
+    select(cell_key, bin_key) |>
+    inner_join(ficture_df, by = 'bin_key') |>
+    inner_join(cluster_df, by = 'cell_key') |>
     collect()
 
-prop_df = cluster_df |>
-    group_by(factor_K1, cell_type) |>
+prop_df = full_df |>
+    group_by(ficture_cluster, cell_type) |>
     summarize(prop_bins = n()) |>
     group_by(cell_type) |>
     mutate(prop_bins = prop_bins / sum(prop_bins)) |>
@@ -86,9 +83,9 @@ prop_df = cluster_df |>
 
 prop_df = readRDS(cor_path)[[array_task]] |>
     as.data.frame() |>
-    rownames_to_column('factor_K1') |>
+    rownames_to_column('ficture_cluster') |>
     pivot_longer(
-        cols = -factor_K1, names_to = 'cell_type', values_to = 'cor_val'
+        cols = -ficture_cluster, names_to = 'cell_type', values_to = 'cor_val'
     ) |>
     mutate(
         cell_type = case_when(
@@ -98,7 +95,10 @@ prop_df = readRDS(cor_path)[[array_task]] |>
             TRUE ~ cell_type
         )
     ) |>
-    left_join(prop_df, by = c('factor_K1', 'cell_type')) |>
+    left_join(
+        prop_df |> mutate(ficture_cluster = as.character(ficture_cluster)),
+        by = c('ficture_cluster', 'cell_type')
+    ) |>
     mutate(cell_type = factor(cell_type, levels = cell_type_levels)) |>
     replace_na(list(prop_bins = 0))
 
@@ -106,7 +106,7 @@ write_csv(prop_df, out_path)
 
 p = ggplot(
         prop_df,
-        aes(x = factor_K1, y = cell_type, color = cor_val, size = prop_bins)
+        aes(x = ficture_cluster, y = cell_type, color = cor_val, size = prop_bins)
     ) +
     geom_point() +
     coord_fixed() +
