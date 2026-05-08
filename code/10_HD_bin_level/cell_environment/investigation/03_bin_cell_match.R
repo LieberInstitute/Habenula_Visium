@@ -81,4 +81,41 @@ ggsave(
     p, width = 24, height = 20, dpi = 150, bg = 'white'
 )
 
+# Okay, the plot actually looks correct. Try one more thing that could've gone
+# wrong-- check the logic for assigning the dominant FICTURE cluster to each
+# cell.
+
+# The original logic
+a = full_df |>
+    summarize(
+        ficture_cluster = {
+            counts <- table(ficture_cluster)
+            candidates <- names(counts[counts == max(counts)])
+            sample(candidates, 1)
+        },
+        .by = cell_key
+    )
+
+# Try something slightly different
+b = full_df |>
+    group_by(cell_key, ficture_cluster) |>
+    mutate(cluster_count = n()) |>
+    group_by(cell_key) |>
+    filter(cluster_count == max(cluster_count)) |>
+    slice_sample(n = 1) |>
+    distinct(cell_key, ficture_cluster) |>
+    ungroup()
+
+# Alright, the logic looks fine as well. Hmmmm
+inner_join(
+        a |> dplyr::rename(ficture_cluster_a = ficture_cluster),
+        b |> dplyr::rename(ficture_cluster_b = ficture_cluster),
+        by = 'cell_key'
+    ) |>
+    summarize(
+        percent_agreement = mean(ficture_cluster_a == ficture_cluster_b)
+    ) |>
+    pull(percent_agreement) |>
+    print()
+
 session_info()
