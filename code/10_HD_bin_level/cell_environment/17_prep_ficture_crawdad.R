@@ -120,7 +120,7 @@ input_df = tibble(
     ) |>
     inner_join(input_df, by = 'cell_key') |>
     dplyr::rename(ficture_cluster = factor_K1) |>
-    select(x, y, sample_id, cell_type, ficture_cluster)
+    select(cell_key, x, y, sample_id, cell_type, ficture_cluster)
 
 message('Number of cells per sample:')
 print(table(input_df$sample_id))
