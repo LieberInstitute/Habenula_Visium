@@ -27,7 +27,7 @@ if (dataset == 'extra') {
 } else {
     spe_path = here(
         'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
-        'spe_raw.rds'
+        'spe', 'y_clean_spe.rds'
     )
     cluster_path = here(
         'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
@@ -37,6 +37,10 @@ if (dataset == 'extra') {
 out_path = here(
     'plots', '10_HD_bin_level', 'no_secondary', 'cell_environment', 
     'investigation', 'reduced_dims', sprintf('spe_%s.qs2', dataset)
+)
+svg_path = here(
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'nnSVG_out',
+    'merged_SVGs.txt'
 )
 plot_dir = here(
     'plots', '10_HD_bin_level', 'no_secondary', 'cell_environment', 
@@ -50,18 +54,31 @@ fallback_config(info = FALSE)
 dir.create(plot_dir, showWarnings = FALSE)
 dir.create(dirname(out_path), showWarnings = FALSE, recursive = TRUE)
 
+message(Sys.time(), " | Loading SPE")
 spe = readRDS(spe_path)
 
+if (dataset == 'all') {
+    names(assays(spe)) = 'logcounts'
+}
+
+#   Subset to SVGs for speed. We aren't guaranteed SVGs provide good signal in
+#   the extracellular bins, but we need to reduce runtime somehow
+svg = readLines(svg_path)
+stopifnot(all(svg %in% rownames(spe)))
+
+message(Sys.time(), " | Running PCA")
 spe = runPCA(
-    spe, ncomponents = 10, BSPARAM = IrlbaParam(),
+    spe, ncomponents = 10, subset_row = svg, BSPARAM = IrlbaParam(),
     BPPARAM = MulticoreParam(num_cores)
 )
 
 #   PCA took a while to compute; save in case something goes wrong or I want to
 #   edit a plot
+message(Sys.time(), " | Saving SPE without assays")
 assays(spe) = list()
 qs_save(spe, out_path)
 
+message(Sys.time(), " | Merging in FICTURE clusters and plotting")
 ficture_df = read_parquet_duckdb(cluster_path, prudence = 'stingy') |>
     dplyr::rename(factor_K1 = paste0('k', k)) |>
     select(bin_key, factor_K1)
