@@ -6,11 +6,9 @@ library(here)
 library(SpatialExperiment)
 library(sessioninfo)
 library(tidyverse)
-library(duckplyr)
 library(scater)
 library(BiocSingular)
 library(BiocParallel)
-library(qs2)
 
 k = 10
 dataset = c('extra', 'all')[as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))]
@@ -18,26 +16,16 @@ dataset = c('extra', 'all')[as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))]
 if (dataset == 'extra') {
     spe_path = here(
         'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-        'spe_filtered.rds'
+        'registration', 'pseudobulk_spe', sprintf('%s.rds', k)
     )
-    cluster_path = here(
-        'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-        'ficture_plotting', 'extracellular.parquet'
-    )
+    cluster_var = 'ficture_cluster'
 } else {
     spe_path = here(
         'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
-        'spe', 'y_clean_spe.rds'
+        'registration', 'pseudobulk_spe', 'cleaning_y', sprintf('%d.rds', k)
     )
-    cluster_path = here(
-        'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
-        'bin_level_clusters_batch.parquet'
-    )
+    cluster_var = 'ficture'
 }
-out_path = here(
-    'plots', '10_HD_bin_level', 'no_secondary', 'cell_environment', 
-    'investigation', 'reduced_dims', sprintf('spe_%s.qs2', dataset)
-)
 svg_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'nnSVG_out',
     'merged_SVGs.txt'
@@ -48,61 +36,27 @@ plot_dir = here(
 )
 
 num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK"))
-duckplyr::db_exec(sprintf("SET threads = %d", num_cores))
-fallback_config(info = FALSE)
-
 dir.create(plot_dir, showWarnings = FALSE)
-dir.create(dirname(out_path), showWarnings = FALSE, recursive = TRUE)
 
-message(Sys.time(), " | Loading SPE")
 spe = readRDS(spe_path)
-
-if (dataset == 'all') {
-    names(assays(spe)) = 'logcounts'
-}
 
 #   Subset to SVGs for speed. We aren't guaranteed SVGs provide good signal in
 #   the extracellular bins, but we need to reduce runtime somehow
 svg = readLines(svg_path)
 stopifnot(all(svg %in% rownames(spe)))
 
-message(Sys.time(), " | Running PCA")
 spe = runPCA(
     spe, ncomponents = 10, subset_row = svg, BSPARAM = IrlbaParam(),
     BPPARAM = MulticoreParam(num_cores)
 )
 
-#   PCA took a while to compute; save in case something goes wrong or I want to
-#   edit a plot
-message(Sys.time(), " | Saving SPE without assays")
-assays(spe) = list()
-qs_save(spe, out_path)
-
-message(Sys.time(), " | Merging in FICTURE clusters and plotting")
-ficture_df = read_parquet_duckdb(cluster_path, prudence = 'stingy') |>
-    dplyr::rename(factor_K1 = paste0('k', k)) |>
-    select(bin_key, factor_K1)
-
-spe$ficture_cluster = tibble(
-        bin_key = paste(colnames(spe), spe$sample_id, sep = "_")
-    ) |>
-    left_join(ficture_df, by = 'bin_key') |>
-    collect() |>
-    pull(factor_K1)
-
-p = plotReducedDim(spe, dimred = "PCA", colour_by = "factor_K1")
-png(
-    file.path(plot_dir, sprintf('PCA_factor_k%d_%s.png', k, dataset)),
-    width = 400, height = 400
-)
+p = plotReducedDim(spe, dimred = "PCA", colour_by = cluster_var)
+pdf(file.path(plot_dir, sprintf('PCA_factor_k%d_%s.pdf', k, dataset)))
 print(p)
 dev.off()
 
 p = plotReducedDim(spe, dimred = "PCA", colour_by = "sample_id")
-png(
-    file.path(plot_dir, sprintf('PCA_sample_id_k%d_%s.png', k, dataset)),
-    width = 400, height = 400
-)
+pdf(file.path(plot_dir, sprintf('PCA_sample_id_k%d_%s.pdf', k, dataset)))
 print(p)
 dev.off()
 
