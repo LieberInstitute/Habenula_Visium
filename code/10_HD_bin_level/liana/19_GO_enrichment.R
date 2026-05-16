@@ -13,8 +13,7 @@ library(readr)
 library(ggplot2)
 
 overall_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/table/overall_mean_morans_across_donors.csv")
-sce <- readLines("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/table/universe_genes.txt")
-
+sce <- readLines("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/LIANA/table/universe_genes.txt")
 
 overall_long <- rbind(
   overall_top_pairs[, c("ligand", "mean", "morans")] |> 
@@ -104,7 +103,7 @@ for (ont_type in c("BP", "MF", "CC")) {
 
 cell_top_pairs<-read.csv("/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/table/celltype_specific_interactions/celltype_specific_interactions_all.csv")
 
-cell_top_pairs$cell_type <- factor(cell_top_pairs$cell_type, levels = c("LHb.2","LHb.3","LHb.4","MHb.1","MHb.2","Excit.Thal","Astrocyte","Oligo","OPC","Microglia","Endo","Endo/Microglia","C19"))
+cell_top_pairs$cell_type <- factor(cell_top_pairs$cell_type, levels = c("LHb.1.3.4","LHb.2.7","LHb.4","MHb.1","MHb.2","Excit.Thal","Astrocyte","Oligo","OPC","Microglia","Endo"))
 
 top_genes_per_cell <- cell_top_pairs %>%
   separate(interaction, into = c("gene1", "gene2"), sep = "\\^") %>%
@@ -135,7 +134,7 @@ for (ont_type in c("BP", "MF", "CC")) {
     go_obj@compareClusterResult = go_obj@compareClusterResult |>
         filter(p.adjust < fdr_cutoff, ONTOLOGY == ont_type)
 
-    cell_order <- c("LHb.2","LHb.3","LHb.4","MHb.1","MHb.2","Excit.Thal","Astrocyte","Oligo","OPC","Microglia","Endo","Endo/Microglia","C19")
+    cell_order <- c("LHb.1.3.4","LHb.2.7","LHb.4","MHb.1","MHb.2","Excit.Thal","Astrocyte","Oligo","OPC","Microglia","Endo")
 
     go_obj@compareClusterResult$Cluster <- factor(go_obj@compareClusterResult$Cluster,levels = cell_order)
 
@@ -303,6 +302,65 @@ for (ont_type in c("BP", "MF", "CC")) {
         dev.off()
     }
 }
+
+# only factor 3 and 4 top genes not specific
+nmf_long <- NMF_top_pairs %>% 
+  separate(index, into = c("gene1", "gene2"), sep = "\\^") %>%
+  pivot_longer(cols = starts_with("Factor"), names_to = "factor", values_to = "loading") %>%
+  pivot_longer(cols = c(gene1, gene2), names_to = "role", values_to = "gene") %>%
+  select(-role)
+
+# top 30 genes per factor
+
+top_genes_per_factor <- nmf_long %>%
+  group_by(factor) %>%
+  arrange(desc(loading), .by_group = TRUE) %>%
+  slice_head(n = 30) %>%
+  ungroup() %>% filter(factor %in% c("Factor3", "Factor4"))
+
+gene_list <- top_genes_per_factor %>%
+  group_by(factor) %>%
+  summarise(genes = list(unique(gene))) %>%
+  deframe()
+
+str(gene_list, max.level = 1)
+sapply(gene_list, length)
+head(gene_list$Factor1)
+
+go_obj = compareCluster(
+        gene_list, fun = "enrichGO", universe = rownames(sce),
+        OrgDb = org.Hs.eg.db, ont = "ALL", pAdjustMethod = "BH",
+        pvalueCutoff = 1, qvalueCutoff = 1, readable = TRUE, keyType = "SYMBOL"
+    )
+
+for (ont_type in c("BP", "MF", "CC")) {
+    go_obj_use=go_obj
+    go_obj_use@compareClusterResult = go_obj_use@compareClusterResult |>
+        filter(p.adjust < fdr_cutoff, ONTOLOGY == ont_type)
+
+    if(nrow(go_obj_use@compareClusterResult) > 0) {
+        pdf(
+            file.path(
+                plot_dir,
+                sprintf(
+                    'GO_NMF_%s_30_f34.pdf',
+                    ont_type
+                )
+            ),
+            height = as.integer(
+                round(min(5,2 + nrow(go_obj_use@compareClusterResult) * 0.7))),
+            width = 6
+        )
+        print(dotplot(go_obj_use)+ theme(
+        axis.text.x = element_text(
+        angle = 45,     
+        hjust = 1,      
+        vjust = 1),
+        axis.text.y = element_text(size = 10)))
+        dev.off()
+    }
+}
+
 
 # z-score >=2
 

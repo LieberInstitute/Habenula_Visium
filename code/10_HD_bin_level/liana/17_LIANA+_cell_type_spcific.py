@@ -173,6 +173,22 @@ avg_top10.to_csv(
     os.path.join(output_dir1, "celltype_top10_by_mean_score.csv"),
     index=False
 )
+
+# get the union of top10 interactions across cell types
+top10_interactions = avg_top10["interaction"].drop_duplicates()
+avg_top10_all_ct = avg_df[avg_df["interaction"].isin(top10_interactions)].copy()
+
+heatmap_mat = avg_top10_all_ct.pivot_table(
+    index="interaction",
+    columns="cell_type",
+    values="mean_score",
+    aggfunc="max"
+)
+
+heatmap_mat.to_csv(
+    os.path.join(output_dir1, "celltype_top10_union_all_celltypes_matrix.csv")
+)
+
 # =======================================================
 # for each cell_type, create a file with interactions ranked by mean_score per donor
 cell_types = combined_long["cell_type"].unique()

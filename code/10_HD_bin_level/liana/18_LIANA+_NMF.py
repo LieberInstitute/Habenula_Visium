@@ -248,7 +248,6 @@ fig.tight_layout(pad=1.5)
 fig.savefig(os.path.join(plot_dir, f"NMF_top10_pairs_per_factor{data_suffix}.pdf"), bbox_inches="tight", dpi=300)
 plt.close(fig)
 print("✅ Saved: NMF_top10_pairs_per_factor.pdf")
-
 # ====================================
 # bar plots for cell type specific NMF
 

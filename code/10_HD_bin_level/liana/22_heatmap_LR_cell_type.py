@@ -14,121 +14,109 @@ Outputs:
 """
 
 import os
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.cluster.hierarchy import linkage, leaves_list
 from scipy.spatial.distance import pdist
 
-
 # -----------------------
 # 0) Paths / settings
 # -----------------------
-infile = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/table/celltype_files/celltype_top10_by_mean_score.csv" 
+infile = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/table/celltype_files/celltype_top10_union_all_celltypes_matrix.csv"
 outdir = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana/figure"
 
-out_png = os.path.join(outdir, "heatmap_top10_union_ctmean.png")
-out_csv = os.path.join(outdir, "heatmap_top10_union_ctmean_matrix.csv")
+os.makedirs(outdir, exist_ok=True)
 
+out_png = os.path.join(outdir, "heatmap_top10_union_all_celltypes_from_matrix.png")
+
+# clustering
 cluster_rows = True
 cluster_cols = True
 linkage_method = "average"
 distance_metric = "euclidean"
 
-# Heatmap appearance
+# if NA still exists, choose whether to fill with 0 for plotting
+fill_missing_with_zero = False
+
+# figure size
 fig_w = 0.6   # width per column
 fig_h = 0.25  # height per row
 base_w = 6
 base_h = 3
 
+# -----------------------
+# 1) Load matrix
+# -----------------------
+mat = pd.read_csv(infile, index_col=0)
+
+# make sure numeric
+mat = mat.apply(pd.to_numeric, errors="coerce")
+
+print(f"Matrix shape: {mat.shape}")
+print(f"NA cells: {mat.isna().sum().sum()}")
 
 # -----------------------
-# 1) Load
+# 2) Clustering
 # -----------------------
-os.makedirs(outdir, exist_ok=True)
-df = pd.read_csv(infile)
-
-need = {"cell_type", "interaction", "mean_score"}
-missing = need - set(df.columns)
-if missing:
-    raise ValueError(f"Missing columns in {infile}: {missing}")
-
-df = df[["cell_type", "interaction", "mean_score"]].copy()
-
-# If there are duplicates, keep the max mean_score (or change to mean if you prefer)
-df = (df.groupby(["cell_type", "interaction"], as_index=False)["mean_score"]
-        .max())
-
-# -----------------------
-# 2) Union of top10 across cell types -> matrix
-# -----------------------
-mat = df.pivot_table(
-    index="interaction",
-    columns="cell_type",
-    values="mean_score",
-    aggfunc="max"
-)
-
-# Save raw matrix (NaN means that LR pair is not in top10 of that cell type)
-mat.to_csv(out_csv)
-
-# -----------------------
-# 3) Optional clustering (rows/cols)
-#    (Use 0-fill only for clustering distance calc; keep NaN for plotting mask)
-# -----------------------
+# use 0-fill only for clustering
 mat_for_cluster = mat.fillna(0.0)
 
 row_order = mat.index
 col_order = mat.columns
 
 if cluster_rows and mat.shape[0] > 2:
-    Zr = linkage(pdist(mat_for_cluster.values, metric=distance_metric), method=linkage_method)
+    Zr = linkage(
+        pdist(mat_for_cluster.values, metric=distance_metric),
+        method=linkage_method
+    )
     row_order = mat.index[leaves_list(Zr)]
 
 if cluster_cols and mat.shape[1] > 2:
-    Zc = linkage(pdist(mat_for_cluster.values.T, metric=distance_metric), method=linkage_method)
+    Zc = linkage(
+        pdist(mat_for_cluster.values.T, metric=distance_metric),
+        method=linkage_method
+    )
     col_order = mat.columns[leaves_list(Zc)]
 
 mat_plot = mat.loc[row_order, col_order]
 
 # -----------------------
-# 4) Plot heatmap
+# 3) Plot heatmap
 # -----------------------
+if fill_missing_with_zero:
+    mat_heatmap = mat_plot.fillna(0.0)
+    mask = None
+else:
+    mat_heatmap = mat_plot
+    mask = mat_plot.isna()
+
 sns.set(style="white", context="talk")
 
-n_rows, n_cols = mat_plot.shape
+n_rows, n_cols = mat_heatmap.shape
 plt.figure(figsize=(base_w + fig_w * n_cols, base_h + fig_h * n_rows), dpi=200)
 
-# Mask NaN so missing pairs are blank
-mask = mat_plot.isna()
-
 ax = sns.heatmap(
-    mat_plot,
+    mat_heatmap,
     mask=mask,
+    cmap="OrRd",
     linewidths=0.2,
     linecolor="white",
-    cbar_kws={"label": "Mean bivariate score (mean_score)"}
+    cbar_kws={"label": "Mean score"}
 )
 
-ax.set_title("Union of top10 LR pairs across cell types (fill = mean_score)")
+ax.set_title("Union of top10 LR pairs across cell types")
 ax.set_xlabel("Cell type")
 ax.set_ylabel("LR pair (interaction)")
 
 plt.xticks(rotation=90)
 plt.yticks(rotation=0)
 plt.tight_layout()
-plt.savefig(out_png)
+plt.savefig(out_png, bbox_inches="tight")
 plt.close()
 
 print("Done.")
 print(f"- Heatmap: {out_png}")
-print(f"- Matrix CSV: {out_csv}")
-
-
-
-
-
 
 
 
