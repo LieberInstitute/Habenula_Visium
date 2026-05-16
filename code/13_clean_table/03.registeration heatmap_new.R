@@ -19,12 +19,9 @@ plot_dir = here(
 model_path_27 = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/registration_banksy/modeling_results/1_8.rds"
 
 # reference data
-ref_paths = here(
-    'processed-data', '05_snRNA-seq_model_stats',
-    'enrichment_snRNA-multiome_v5.rds'
-)
+ref_paths = "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/11_link_prep/04_registration_wrapper/model_results.rds"
 
-ref_name = "snRNAseq_fine"
+ref_name = "multiome_mid"
 
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(
