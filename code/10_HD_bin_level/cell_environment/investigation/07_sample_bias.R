@@ -1,7 +1,9 @@
 #   How sample-biased are the clustering results for extracellular and all bins?
 #   I interactively tried a bunch of k values and surprsingly, extracellular
 #   results are not systematically more biased than all-bin results despite
-#   sample bias being much stronger at the gene-expression level
+#   sample bias being much stronger at the gene-expression level. Also,
+#   subsetting all-bin results to extracellular bins doesn't make bias worse
+#   (tested that interactively)
 
 library(here)
 library(sessioninfo)
