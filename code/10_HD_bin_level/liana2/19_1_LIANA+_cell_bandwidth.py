@@ -136,14 +136,16 @@ li.ut.spatial_neighbors(adata=adata, bandwidth=bandwidth, spatial_key="spatial",
 
 idx = min(5500, adata.n_obs - 1)
 # Visualize proximity graph
-li.pl.connectivity(adata, idx=idx, size=0.01, figure_size=(6, 5), spatial_key="spatial")
 
-p = li.pl.connectivity(
+p = (
+    li.pl.connectivity(
     adata,
     idx=idx,
     size=0.01,
-    figure_size=(6, 5),
-    spatial_key="spatial"
+    figure_size=(6, 10),
+    spatial_key="spatial",
+    return_fig=True)
+     + p9.coord_fixed()
 )
 
 p.save(
@@ -153,7 +155,7 @@ p.save(
     ),
     dpi=300,
     width=6,
-    height=5,
+    height=10,
     units="in"
 )
 
@@ -215,13 +217,18 @@ interaction = 'MHb.1^LIN7C^HTR2C'
 
 comp = interaction.split("^")
 
-sc.pl.embedding(
+ax = sc.pl.embedding(
     lrdata,
     basis=spatial_key,
     color=interaction,
+    cmap='viridis_r',
     s=10,
     ncols=2,
+    show=False
 )
+
+ax.invert_yaxis()
+ax.set_aspect("equal")
 
 plt.savefig(
     os.path.join(figure_path, f"{tissue_id}_{interaction}_embedding_{bandwidth}.png"),
