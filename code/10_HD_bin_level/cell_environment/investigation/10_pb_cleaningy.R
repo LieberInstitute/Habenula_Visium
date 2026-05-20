@@ -69,3 +69,29 @@ for (dim_red in c("PCA", "UMAP")) {
     dev.off()
 }
 
+#   Manually perform the spatial registration steps except pseudobulking, which
+#   was already done
+registration_mod = registration_model(spe, covars = NULL)
+block_cor = registration_block_cor(spe, registration_model = registration_mod)
+results_enrichment = registration_stats_enrichment(
+    spe, block_cor = block_cor, covars = NULL, gene_ensembl = 'gene_id',
+    gene_name = 'symbol'
+)
+
+#   As expected, there are almost no significant markers. The data is just
+#   lacking cluster-differentiating signal
+message("Number of significant enrichment markers per cluster:")
+results_enrichment |>
+    as_tibble() |>
+    select(ensembl, gene, matches('^(fdr|t_stat)_')) |>
+    pivot_longer(
+        cols = matches('^(fdr|t_stat)_'),
+        names_to = c(".value", "cluster"),
+        names_pattern = "^(fdr|t_stat)_X(\\d+)$"
+    ) |>
+    filter(fdr < 0.05) |>
+    group_by(cluster) |>
+    summarize(num_sig = n()) |>
+    print()
+
+session_info()
