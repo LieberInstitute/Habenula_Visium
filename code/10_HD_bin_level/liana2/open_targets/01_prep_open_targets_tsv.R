@@ -1,4 +1,5 @@
 library(here)
+library(sessioninfo)
 library(tidyverse)
 
 in_paths = here(
@@ -14,6 +15,10 @@ risk_cols = c(
 plot_dir = here(
     'plots', '10_HD_bin_level', 'no_secondary', 'liana2',
     'open_targets'
+)
+out_path = here(
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'liana2',
+    'open_targets', 'risk_genes.csv'
 )
 cutoff_val = 0.1 # recommended for trait association
 
@@ -46,7 +51,16 @@ p = ggplot(risk_df, aes(x = max_risk)) +
         title = "Distribution of Maximum Risk Scores by Trait",
         x = "Maximum Risk Score",
         y = "Number of Genes"
-    )
+    ) +
+    theme_bw(base_size = 15)
 pdf(file.path(plot_dir, 'max_risk_histogram.pdf'))
 print(p)
 dev.off()
+
+risk_df |>
+    filter(max_risk >= cutoff_val) |>
+    dplyr::rename(gene = symbol) |>
+    select(trait, gene) |>
+    write_csv(out_path)
+
+session_info()
