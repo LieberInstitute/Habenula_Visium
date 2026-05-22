@@ -79,7 +79,8 @@ p = liana_df |>
     ggplot(aes(x = bandwidth, y = prop_bad_int)) +
         geom_point() +
         geom_line() +
-        theme_bw(base_size = 15)
+        theme_bw(base_size = 15) +
+        labs(x = 'LIANA Bandwidth', y = 'Proportion of unexpected interactions')
 pdf(file.path(plot_dir, 'crawdad_bandwidth_check.pdf'))
 print(p)
 dev.off()
