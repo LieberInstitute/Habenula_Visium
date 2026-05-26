@@ -42,13 +42,21 @@ expect_identical(d$a, d$b)
 
 ref_spe = a |>
     arrange(sample_id, barcode) |>
+    slice_sample(prop = 1) |>
     select(sample_id, barcode)
 
 a_clus = ref_spe |>
-    left_join(a, by = c('sample_id', 'barcode')) |>
+    left_join(a |> slice_sample(prop = 1), by = c('sample_id', 'barcode')) |>
     pull(factor_K1)
 
 library(duckplyr)
 b_clus = ref_spe |>
     left_join(b, by = c('sample_id', 'barcode')) |>
     pull(factor_K1)
+
+expect_identical(a_clus, b_clus)
+
+# After thinking for a while, I'm highly suspicious that maybe in the larger
+# real data, left_join() is not preserving row order through duckplyr. In
+# this smaller case it appears to though
+# https://duckplyr.tidyverse.org/articles/limits.html#output-order-stability
