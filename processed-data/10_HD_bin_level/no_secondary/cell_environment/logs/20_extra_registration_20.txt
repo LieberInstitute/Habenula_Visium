@@ -1,10 +1,10 @@
 **** Job starts ****
-Wed May  6 10:42:36 AM EDT 2026
+Tue May 26 02:41:01 PM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 31754799
+Job id: 32185895
 Job name: 20_extra_registration
-Node name: compute-176
+Node name: compute-177
 Task id: 20
 
 Currently Loaded Modules:
@@ -131,30 +131,30 @@ guide future development. By default, data will be collected but no data will
 be uploaded.
 ℹ Automatic fallback uploading is not controlled and therefore disabled, see
   `?duckplyr::fallback()`.
-✔ Number of reports ready for upload: 192.
+✔ Number of reports ready for upload: 58.
 → Review with `duckplyr::fallback_review()`, upload with
   `duckplyr::fallback_upload()`.
 ℹ Configure automatic uploading with `duckplyr::fallback_config()`.
 ✔ Overwriting dplyr methods with duckplyr methods.
 ℹ Turn off with `duckplyr::methods_restore()`.
 Dropping 0.0% of bins without a defined FICTURE cluster
-2026-05-06 10:50:13.926674 make pseudobulk object
-2026-05-06 10:55:29.935646 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
-2026-05-06 10:55:29.973642 drop lowly expressed genes
-2026-05-06 10:55:30.152194 normalize expression
-2026-05-06 10:55:31.743773 saving sce_pseudo to /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/cell_environment/registration/pseudobulk_spe/20.rds
-2026-05-06 10:55:33.074511 create model matrix
-2026-05-06 10:55:33.092242 run duplicateCorrelation()
-2026-05-06 10:56:33.567043 The estimated correlation is: 0.780953812167742
-2026-05-06 10:56:33.633506 computing enrichment statistics
-2026-05-06 10:56:38.951894 extract and reformat enrichment results
-2026-05-06 10:56:39.175795 running the baseline pairwise model
-2026-05-06 10:56:39.671786 computing pairwise statistics
-2026-05-06 10:56:44.40411 computing F-statistics
+2026-05-26 14:45:35.159773 make pseudobulk object
+2026-05-26 14:47:54.577737 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
+2026-05-26 14:47:54.604318 drop lowly expressed genes
+2026-05-26 14:47:54.721432 normalize expression
+2026-05-26 14:47:55.677472 saving sce_pseudo to /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/cell_environment/registration/pseudobulk_spe/20.rds
+2026-05-26 14:47:56.561625 create model matrix
+2026-05-26 14:47:56.573242 run duplicateCorrelation()
+2026-05-26 14:49:37.768355 The estimated correlation is: 0.156908808999008
+2026-05-26 14:49:37.829081 computing enrichment statistics
+2026-05-26 14:49:40.046774 extract and reformat enrichment results
+2026-05-26 14:49:40.13455 running the baseline pairwise model
+2026-05-26 14:49:40.330396 computing pairwise statistics
+2026-05-26 14:49:42.380999 computing F-statistics
 Warning messages:
 1: var_registration "ficture_cluster" is numeric, convering to categorical vector... 
-2: var_registration "ficture_cluster" contains non-syntatic variables: 1, 16, 8, 6, 3, 0, 19, 10, 7, 2, 12, 14, 17, 13, 15, 11, 4, 9, 18, 5
-converting to X1, X16, X8, X6, X3, X0, X19, X10, X7, X2, X12, X14, X17, X13, X15, X11, X4, X9, X18, X5 
+2: var_registration "ficture_cluster" contains non-syntatic variables: 3, 16, 0, 18, 12, 14, 17, 13, 8, 2, 4, 6, 9, 19, 11, 1, 10, 7, 15, 5
+converting to X3, X16, X0, X18, X12, X14, X17, X13, X8, X2, X4, X6, X9, X19, X11, X1, X10, X7, X15, X5 
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.5.0 Patched (2025-05-21 r88220)
@@ -165,9 +165,9 @@ converting to X1, X16, X8, X6, X3, X0, X19, X10, X7, X2, X12, X14, X17, X13, X15
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2026-05-06
+ date     2026-05-26
  pandoc   3.7.0.1 @ /jhpce/shared/community/core/conda_R/4.5/bin/pandoc
- quarto   1.9.37 @ /users/neagles/.positron-server/bin/b271b10dfb5190a18813b46705216dd95e7e8927/quarto/bin/quarto
+ quarto   1.9.37 @ /users/neagles/.positron-server/bin/1b5dfba9314510340cb08f2fedccc5ffba822beb/quarto/bin/quarto
 
 ─ Packages ───────────────────────────────────────────────────────────────────
  package              * version   date (UTC) lib source
@@ -265,12 +265,13 @@ converting to X1, X16, X8, X6, X3, X0, X19, X10, X7, X2, X12, X14, X17, X13, X15
  matrixStats          * 1.5.0     2025-01-07 [1] CRAN (R 4.5.0)
  memoise                2.0.1     2021-11-26 [1] CRAN (R 4.5.0)
  mime                   0.13      2025-03-17 [1] CRAN (R 4.5.0)
+ otel                   0.2.0     2025-08-29 [1] CRAN (R 4.5.0)
  paletteer              1.6.0     2024-01-21 [2] CRAN (R 4.5.0)
  pillar                 1.11.0    2025-07-04 [1] CRAN (R 4.5.0)
  pkgconfig              2.0.3     2019-09-22 [1] CRAN (R 4.5.0)
  plotly                 4.11.0    2025-06-19 [1] CRAN (R 4.5.0)
  png                    0.1-8     2022-11-29 [1] CRAN (R 4.5.0)
- promises               1.3.3     2025-05-29 [1] CRAN (R 4.5.0)
+ promises               1.5.0     2025-11-01 [1] CRAN (R 4.5.0)
  purrr                * 1.1.0     2025-07-10 [1] CRAN (R 4.5.0)
  R6                     2.6.1     2025-02-15 [1] CRAN (R 4.5.0)
  rappdirs               0.3.3     2021-01-31 [1] CRAN (R 4.5.0)
@@ -330,4 +331,4 @@ converting to X1, X16, X8, X6, X3, X0, X19, X10, X7, X2, X12, X14, X17, X13, X15
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Wed May  6 10:56:56 AM EDT 2026
+Tue May 26 02:49:48 PM EDT 2026

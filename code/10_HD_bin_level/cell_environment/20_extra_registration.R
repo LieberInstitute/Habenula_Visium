@@ -41,9 +41,12 @@ ficture_df = read_parquet_duckdb(cluster_path, prudence = 'stingy') |>
     select(bin_key, factor_K1)
 
 spe$ficture_cluster = tibble(
-        bin_key = paste(colnames(spe), spe$sample_id, sep = "_")
+        bin_key = paste(colnames(spe), spe$sample_id, sep = "_"),
+        idx = seq_along(colnames(spe))
     ) |>
     left_join(ficture_df, by = 'bin_key') |>
+    #   This is critical, as duckplyr does not naturally preserve row order
+    arrange(idx) |>
     pull(factor_K1)
 
 message(
