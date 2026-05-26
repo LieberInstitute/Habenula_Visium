@@ -106,4 +106,19 @@ plot_ficture(spe, file.path(plot_dir, 'alignment_spatula.png'))
 #   For my sanity I'll check the joining without duckplyr given the results
 #   so far
 
+#   Okay, coming back to this script after duckplyr gave incorrect results.
+#   Is it that left_join() doesn't preserve row order?
+
+spe$ficture_cluster = tibble(
+        sample_id = spe$sample_id, barcode = colnames(spe),
+        idx = seq_along(spe$sample_id)
+    ) |>
+    left_join(ficture_df, by = c('sample_id', 'barcode')) |>
+    arrange(idx) |>
+    pull(factor_K1)
+
+plot_ficture(spe, file.path(plot_dir, 'alignment_spatula_duckplyr_ordered.png'))
+
+#   Awesome, that was the exact issue
+
 session_info()
