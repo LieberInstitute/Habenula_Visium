@@ -9,13 +9,14 @@ library(sessioninfo)
 library(spatialLIBD)
 library(duckplyr)
 
+k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 spe_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'spe_filtered.rds'
 )
 cluster_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'ficture_outputs', 'cleaningy', 'k_10', 'cleaned_clusters.parquet'
+    'ficture_plotting', 'extracellular.parquet'
 )
 out_dir = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
@@ -33,13 +34,17 @@ dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 spe = readRDS(spe_path)
 
-cluster_df = read_parquet_duckdb(cluster_path, prudence = 'lavish') |>
-    mutate(key = paste(sample_id, bin_id, sep = "_")) |>
-    select(key, factor_K1) |>
-    collect()
+ficture_df = read_parquet_duckdb(cluster_path, prudence = 'stingy') |>
+    dplyr::rename(factor_K1 = paste0('k', k)) |>
+    select(bin_key, factor_K1)
 
-spe$ficture_cluster = tibble(key = spe$key) |>
-    left_join(cluster_df, by = "key") |>
+spe$ficture_cluster = tibble(
+        bin_key = paste(colnames(spe), spe$sample_id, sep = "_"),
+        idx = seq_along(colnames(spe))
+    ) |>
+    left_join(ficture_df, by = 'bin_key') |>
+    #   This is critical, as duckplyr does not naturally preserve row order
+    arrange(idx) |>
     pull(factor_K1)
 
 rowData(spe)$gene_id = rownames(spe)
@@ -76,6 +81,6 @@ export_set = function(spe, cell_type_col, file_tag) {
     write_tsv(marker_stats, file.path(out_dir, sprintf("%s.tsv", file_tag)))
 }
 
-export_set(spe, "ficture_cluster", "k10")
+export_set(spe, "ficture_cluster", sprintf("k%d", k))
 
 session_info()

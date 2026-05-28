@@ -1,11 +1,11 @@
 **** Job starts ****
-Tue Apr 28 09:04:14 AM EDT 2026
+Thu May 28 11:12:52 AM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 31275046
+Job id: 32225185
 Job name: 01_mean_ratio
-Node name: compute-169
-Task id: 
+Node name: compute-168
+Task id: 7
 
 Currently Loaded Modules:
   1) JHPCE_ROCKY9_DEFAULT_ENV   3) conda/3-24.3.0
@@ -130,24 +130,25 @@ guide future development. By default, data will be collected but no data will
 be uploaded.
 ℹ Automatic fallback uploading is not controlled and therefore disabled, see
   `?duckplyr::fallback()`.
-✔ Number of reports ready for upload: 129.
+✔ Number of reports ready for upload: 81.
 → Review with `duckplyr::fallback_review()`, upload with
   `duckplyr::fallback_upload()`.
 ℹ Configure automatic uploading with `duckplyr::fallback_config()`.
 ✔ Overwriting dplyr methods with duckplyr methods.
 ℹ Turn off with `duckplyr::methods_restore()`.
-2026-04-28 09:09:49.695193 make pseudobulk object
-2026-04-28 09:12:36.439157 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
-2026-04-28 09:12:36.462521 drop lowly expressed genes
-2026-04-28 09:12:36.57261 normalize expression
-Marker counts for k10 resolution:
+2026-05-28 11:18:46.430485 make pseudobulk object
+2026-05-28 11:21:36.705734 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
+2026-05-28 11:21:36.733301 drop lowly expressed genes
+2026-05-28 11:21:36.86092 normalize expression
+Marker counts for k7 resolution:
 
- X0  X1  X2  X3  X4  X5  X6  X7  X8  X9 
- 48  91  62 109  64 108 136 115 118 130 
+ X0  X1  X2  X3  X4  X5  X6 
+200 200 200 200 200 200 200 
 Warning messages:
-1: var_registration "ficture_cluster" contains non-syntatic variables: 1, 7, 4, 3, 5, 9, 6, 8, 0, 2
-converting to X1, X7, X4, X3, X5, X9, X6, X8, X0, X2 
-2: In get_mean_ratio(sce = spe_pb, assay_name = "logcounts", cellType_col = cell_type_col,  :
+1: var_registration "ficture_cluster" is numeric, convering to categorical vector... 
+2: var_registration "ficture_cluster" contains non-syntatic variables: 3, 4, 0, 1, 2, 5, 6
+converting to X3, X4, X0, X1, X2, X5, X6 
+3: In get_mean_ratio(sce = spe_pb, assay_name = "logcounts", cellType_col = cell_type_col,  :
   One or more cell types has < 10 cells, this may result in unstable marker genes results. Check details of get_mean_ratio() for more info
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
@@ -159,9 +160,9 @@ converting to X1, X7, X4, X3, X5, X9, X6, X8, X0, X2
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2026-04-28
+ date     2026-05-28
  pandoc   3.7.0.1 @ /jhpce/shared/community/core/conda_R/4.5/bin/pandoc
- quarto   1.9.37 @ /users/neagles/.positron-server/bin/5dfc92424b4381ca7139f3f0a122a65abc2a9383/quarto/bin/quarto
+ quarto   1.9.37 @ /users/neagles/.positron-server/bin/1b5dfba9314510340cb08f2fedccc5ffba822beb/quarto/bin/quarto
 
 ─ Packages ───────────────────────────────────────────────────────────────────
  package              * version   date (UTC) lib source
@@ -265,12 +266,13 @@ converting to X1, X7, X4, X3, X5, X9, X6, X8, X0, X2
  memoise                2.0.1     2021-11-26 [1] CRAN (R 4.5.0)
  metapod                1.16.0    2025-04-15 [2] Bioconductor 3.21 (R 4.5.0)
  mime                   0.13      2025-03-17 [1] CRAN (R 4.5.0)
+ otel                   0.2.0     2025-08-29 [1] CRAN (R 4.5.0)
  paletteer              1.6.0     2024-01-21 [2] CRAN (R 4.5.0)
  pillar                 1.11.0    2025-07-04 [1] CRAN (R 4.5.0)
  pkgconfig              2.0.3     2019-09-22 [1] CRAN (R 4.5.0)
  plotly                 4.11.0    2025-06-19 [1] CRAN (R 4.5.0)
  png                    0.1-8     2022-11-29 [1] CRAN (R 4.5.0)
- promises               1.3.3     2025-05-29 [1] CRAN (R 4.5.0)
+ promises               1.5.0     2025-11-01 [1] CRAN (R 4.5.0)
  purrr                * 1.1.0     2025-07-10 [1] CRAN (R 4.5.0)
  R6                     2.6.1     2025-02-15 [1] CRAN (R 4.5.0)
  rafalib                1.0.4     2025-04-08 [1] CRAN (R 4.5.0)
@@ -334,4 +336,4 @@ converting to X1, X7, X4, X3, X5, X9, X6, X8, X0, X2
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Tue Apr 28 09:12:53 AM EDT 2026
+Thu May 28 11:21:48 AM EDT 2026

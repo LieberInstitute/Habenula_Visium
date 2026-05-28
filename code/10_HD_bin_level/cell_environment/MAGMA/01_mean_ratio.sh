@@ -2,10 +2,11 @@
 #SBATCH -p katun
 #SBATCH --mem=40G
 #SBATCH --job-name=01_mean_ratio
-#SBATCH -o ../../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/MAGMA/logs/01_mean_ratio.txt
-#SBATCH -e ../../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/MAGMA/logs/01_mean_ratio.txt
+#SBATCH -o ../../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/MAGMA/logs/01_mean_ratio_%a.txt
+#SBATCH -e ../../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/MAGMA/logs/01_mean_ratio_%a.txt
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
+#SBATCH --array=3-10,20%9
 
 set -e
 
