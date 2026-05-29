@@ -1,5 +1,5 @@
 library(here)
-library(SpatialExperiment)
+library(spatialLIBD)
 library(sessioninfo)
 library(tidyverse)
 
@@ -23,6 +23,10 @@ b_markers_path = here(
 )
 genes_per_cluster = 70
 
+################################################################################
+#   Functions
+################################################################################
+
 read_markers = function(model_path) {
     readRDS(model_path)$enrichment |>
         as_tibble() |>
@@ -37,13 +41,43 @@ read_markers = function(model_path) {
         select(cluster, gene_id, fdr)
 }
 
+################################################################################
+#   Main
+################################################################################
+
+#-------------------------------------------------------------------------------
+#   Merge FICTURE and Banksy objects
+#-------------------------------------------------------------------------------
+
 ficture_spe = readRDS(ficture_path)
 banksy_spe = readRDS(banksy_path)
 
+common_genes = intersect(rownames(ficture_spe), rownames(banksy_spe))
+ficture_spe = ficture_spe[common_genes, ]
+banksy_spe = banksy_spe[common_genes, ]
+
+colData(ficture_spe) = colData(ficture_spe)[
+    , 'registration_variable', drop = FALSE
+]
+colData(banksy_spe) = colData(banksy_spe)[
+    , 'registration_variable', drop = FALSE
+]
+sce = as(cbind(ficture_spe, banksy_spe), "SingleCellExperiment")
+sce$sample_id = "anything"
+sce$cluster = sce$registration_variable
+sce$registration_variable = NULL
+
+sce_pb = registration_pseudobulk(
+    sce, var_registration = "cluster",
+    var_sample_id = "sample_id", min_ncells = 1
+)
+
+#-------------------------------------------------------------------------------
+#   Grab union of cluster markers
+#-------------------------------------------------------------------------------
+
 markers = rbind(read_markers(f_markers_path), read_markers(b_markers_path)) |>
-    filter(
-        gene_id %in% rownames(ficture_spe), gene_id %in% rownames(banksy_spe)
-    ) |>
+    filter(gene_id %in% rownames(sce_pb)) |>
     group_by(cluster) |>
     arrange(fdr) |>
     slice_head(n = genes_per_cluster) |>
