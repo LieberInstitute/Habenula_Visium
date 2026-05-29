@@ -3,21 +3,23 @@ library(here)
 library(viridis)
 library(sessioninfo)
 
+k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
+
 results_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'MAGMA', '%s', '%s.gsa.out'
+    'MAGMA', '%s', '%s', sprintf('k%d.gsa.out', k)
 )
 plot_dir = here(
     'plots', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'MAGMA'
+    'MAGMA', sprintf('k%d', k)
 )
 low_genes_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'MAGMA', 'low_gene_sets.csv'
+    'MAGMA', sprintf('low_gene_sets_k%d.csv', k)
 )
 out_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'MAGMA', 'heatmap_data.csv'
+    'MAGMA', sprintf('heatmap_data_k%d.csv', k)
 )
 gwas_name_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/RNA/gwas_info.csv'
 sig_cutoff = 0.05
