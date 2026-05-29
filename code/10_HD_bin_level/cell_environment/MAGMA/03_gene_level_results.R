@@ -3,6 +3,8 @@ library(here)
 library(rtracklayer)
 library(sessioninfo)
 
+k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
+
 gwas_name_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/RNA/gwas_info.csv'
 gwas_map = read_csv(gwas_name_path, show_col_types = FALSE) |>
     select(nickname, manuscript_name)
@@ -12,7 +14,7 @@ these_gwas_names = ifelse(
 
 gene_set_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'MAGMA', 'gene_sets', 'k10.tsv'
+    'MAGMA', 'gene_sets', sprintf('k%d.tsv', k)
 )
 gene_stat_paths = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
@@ -20,15 +22,15 @@ gene_stat_paths = here(
 )
 set_stat_paths = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'MAGMA', '%s', '%s.gsa.out'
+    'MAGMA', '%s', '%s', sprintf('k%d.gsa.out', k)
 )
 out_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'MAGMA', 'top_genes.csv'
+    'MAGMA', sprintf('top_genes_k%d.csv', k)
 )
 out_low_genes_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'MAGMA', 'low_gene_sets.csv'
+    'MAGMA', sprintf('low_gene_sets_k%d.csv', k)
 )
 reference_gtf = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2024-A/genes/genes.gtf.gz'
 names(gene_stat_paths) = these_gwas_names
