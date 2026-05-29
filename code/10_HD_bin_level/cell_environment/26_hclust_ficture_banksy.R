@@ -2,6 +2,8 @@ library(here)
 library(spatialLIBD)
 library(sessioninfo)
 library(tidyverse)
+library(stats)
+library(dendextend)
 
 k = as.integer(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 
@@ -21,7 +23,13 @@ b_markers_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'modeling_results', '1_8_cell_types.rds'
 )
-genes_per_cluster = 70
+plot_dir = here(
+    'plots', '10_HD_bin_level', 'no_secondary', 'cell_environment',
+    'hclust_ficture_banksy'
+)
+target_num_genes = 1000
+
+dir.create(plot_dir, showWarnings = FALSE)
 
 ################################################################################
 #   Functions
@@ -72,6 +80,10 @@ sce_pb = registration_pseudobulk(
     var_sample_id = "sample_id", min_ncells = 1
 )
 
+colnames(sce_pb) = colnames(sce_pb) |>
+    str_replace('^anything_', '') |>
+    str_replace('^X', 'Factor_')
+
 #-------------------------------------------------------------------------------
 #   Grab union of cluster markers
 #-------------------------------------------------------------------------------
@@ -80,9 +92,32 @@ markers = rbind(read_markers(f_markers_path), read_markers(b_markers_path)) |>
     filter(gene_id %in% rownames(sce_pb)) |>
     group_by(cluster) |>
     arrange(fdr) |>
-    slice_head(n = genes_per_cluster) |>
+    #   1.3 determined empirically to approximately get target_num_genes total
+    #   markers
+    slice_head(n = as.integer(target_num_genes / ncol(sce_pb) * 1.3)) |>
     ungroup() |>
     pull(gene_id) |>
     unique()
 
 message(sprintf("Using %d total markers", length(markers)))
+
+#-------------------------------------------------------------------------------
+#   Hierarchically cluster clusters transcriptionally
+#-------------------------------------------------------------------------------
+
+mat = t(logcounts(sce_pb)[markers, ])
+dist_mat = as.dist(1 - cor(t(mat)))
+hc = hclust(dist_mat, method = "ward.D2")
+
+# Color labels: FICTURE clusters in blue, others in red
+dend = as.dendrogram(hc)
+label_colors = ifelse(startsWith(labels(dend), "Factor_"), "blue", "red")
+dend = set(dend, "labels_col", label_colors)
+
+pdf(file.path(plot_dir, sprintf("hclust_k%d.pdf", k)), width = ncol(sce_pb) / 3)
+par(mar = c(12, 4, 2, 2))
+plot(dend)
+par(mar = c(5, 4, 4, 2))  # reset to default
+dev.off()
+
+session_info()
