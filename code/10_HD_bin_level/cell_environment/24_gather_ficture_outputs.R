@@ -15,7 +15,7 @@ library(duckplyr)
 library(SpatialExperiment)
 library(sessioninfo)
 
-k_values = c(3:10, 20)
+k_values = 3:20
 
 ficture_paths = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',

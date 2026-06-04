@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=80G
+#SBATCH --mem=160G
 #SBATCH --job-name=24_gather_ficture_outputs
 #SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/24_gather_ficture_outputs.txt
 #SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/24_gather_ficture_outputs.txt
