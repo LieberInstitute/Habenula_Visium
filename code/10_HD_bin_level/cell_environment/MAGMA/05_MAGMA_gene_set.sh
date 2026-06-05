@@ -35,7 +35,7 @@ gene_set_dir=${repo_dir}/processed-data/10_HD_bin_level/no_secondary/cell_enviro
 echo "Processing GWAS ${gwas}"
 
 #   Gene set analysis step
-for k in $(seq 3 10) 20; do
+for k in $(seq 11 19); do
     mkdir -p $out_dir/$gwas/k$k
     magma \
         --gene-results $out_dir/$gwas.genes.raw \
