@@ -6,7 +6,7 @@
 #SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/22_nearby_transcription_%a.txt
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH --array=1-9%9
+#SBATCH --array=1-18%9
 
 set -e
 
