@@ -5,6 +5,7 @@
 #       - add cell-type annotation
 #       - add tissue section info
 #       - add manual region info (habenula + thalamus)
+#       - fix anatomical orientation (spatial coordinates)
 #   Produce one dataset-wide AnnData each for cellular + extracellular with
 #   this info
 
@@ -106,6 +107,9 @@ adata = adata[~adata.obs['cell_type'].isna(), :].copy()
 
 tissue_df = pd.read_csv(tissue_path, index_col='key')
 adata.obs['tissue_section'] = tissue_df['tissue_section']
+adata.obsm['spatial'] = tissue_df.loc[
+    adata.obs_names, ['pxl_col_in_fullres', 'pxl_row_in_fullres']
+].to_numpy()
 missing_prop = adata.obs['tissue_section'].isna().mean()
 print(f'Percentage of cells missing a tissue section label: {missing_prop:.3%}')
 if missing_prop > 0:
