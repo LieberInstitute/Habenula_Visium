@@ -1,4 +1,4 @@
-#   Find mean-ratio markers for k = 10 FICTURE clusters. These will be input
+#   Find mean-ratio markers for all FICTURE clusters. These will be input
 #   gene sets for MAGMA
 
 library(SpatialExperiment)
