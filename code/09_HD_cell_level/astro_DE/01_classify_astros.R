@@ -3,6 +3,8 @@ library(here)
 library(jsonlite)
 library(RANN)
 library(sessioninfo)
+library(SpatialExperiment)
+library(spatialLIBD)
 
 spe_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary',
