@@ -20,7 +20,7 @@ ct_anno_path = here(
 )
 out_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'astro_DE',
-    'astro_labels.csv.gz'
+    'astro_spe.rds'
 )
 plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'astro_DE',
@@ -244,9 +244,16 @@ print(p)
 dev.off()
 
 ################################################################################
-#   Export labels
+#   Export labels as a minimal SPE
 ################################################################################
 
-write_csv(astro_df, out_path)
+spe$astro_label = tibble(key = spe$key) |>
+    left_join(astro_df, by = "key") |>
+    pull(astro_label)
+
+spe = spe[, !is.na(spe$astro_label)]
+assays(spe) = list(logcounts = assays(spe)$logcounts)
+
+saveRDS(spe, out_path)
 
 session_info()
