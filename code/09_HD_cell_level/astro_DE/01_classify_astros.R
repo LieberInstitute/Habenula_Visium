@@ -24,8 +24,8 @@ plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'astro_DE',
     'astro_classification'
 )
-example_samples = c("Br9090_1", "Br8433_1")
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info_split.csv')
+example_samples = c("Br9090_1", "Br8433_1")
 ASTRO_DIST_THRESHOLD_UM = 100
 ASTRO_KNN = 10
 label_colors = c(
@@ -161,13 +161,16 @@ astro_df = coord_df |>
             TRUE ~ "neither"
         )
     ) |>
-    select(key, astro_label)
+    select(key, sample_id, astro_label)
 
 ################################################################################
 #   Plots visually validating that our classification is reasonable
 ################################################################################
 
+#-------------------------------------------------------------------------------
 #   Choice of distance threshold
+#-------------------------------------------------------------------------------
+
 p = astro_labels |>
     pivot_longer(
         c(mean_dist_mhb, mean_dist_lhb),
@@ -191,6 +194,10 @@ pdf(file.path(plot_dir, "astro_distance_density.pdf"))
 print(p)
 dev.off()
 
+#-------------------------------------------------------------------------------
+#   Spatial feasibility of labels
+#-------------------------------------------------------------------------------
+
 spe$astro_label = tibble(key = spe$key) |>
     left_join(astro_df, by = "key") |>
     mutate(
@@ -211,3 +218,32 @@ for (this_sample in example_samples) {
         )
     )
 }
+
+#-------------------------------------------------------------------------------
+#   Overall counts of each label
+#-------------------------------------------------------------------------------
+
+p = astro_df |>
+    dplyr::count(sample_id, astro_label) |>
+    group_by(sample_id) |>
+    mutate(prop = n / sum(n)) |>
+    ggplot(aes(sample_id, prop, fill = astro_label)) +
+        geom_col() +
+        scale_y_continuous(labels = scales::percent) +
+        labs(
+            x = "Sample", y = "Proportion of astrocytes",
+            fill = "Astrocyte\nLabel"
+        ) +
+        theme_bw(base_size = 15) +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+pdf(file.path(plot_dir, "astro_label_proportions.pdf"))
+print(p)
+dev.off()
+
+################################################################################
+#   Export labels
+################################################################################
+
+write_csv(astro_df, out_path)
+
+session_info()
