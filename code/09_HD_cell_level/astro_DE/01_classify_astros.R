@@ -104,12 +104,13 @@ coord_df = cbind(
         key = spe$key
     ) |>
     as_tibble() |>
-    filter(grepl('^Astrocyte$|^MHb|LHb', cell_type)) |>
+    #   Note here we're intentionally excluding Excit.Thal/Inhib_LHb_4.2
+    filter(grepl('^Astrocyte$|^MHb|^LHb', cell_type)) |>
     mutate(
         cell_type = case_when(
             cell_type == 'Astrocyte' ~ 'Astrocyte',
             grepl('^MHb', cell_type) ~ 'MHb',
-            grepl('LHb', cell_type) ~ 'LHb',
+            grepl('^LHb', cell_type) ~ 'LHb',
             TRUE ~ NA_character_
         )
     )
@@ -203,7 +204,7 @@ spe$astro_label = tibble(key = spe$key) |>
     mutate(
         astro_label = case_when(
             is.na(astro_label) & grepl('^MHb', spe$cell_type) ~ "MHb",
-            is.na(astro_label) & grepl('LHb', spe$cell_type) ~ "LHb",
+            is.na(astro_label) & grepl('^LHb', spe$cell_type) ~ "LHb",
             is.na(astro_label) ~ "Other",
             TRUE ~ paste('Astro:', astro_label)
         )
