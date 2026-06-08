@@ -6,7 +6,8 @@
 #SBATCH -e /dev/null
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH --array=1-144%20
+#SBATCH --array=87,92%2
+#SBATCH --exclude=compute-169
 
 ## Define loops and appropriately subset each variable for the array task ID
 all_sample_id=(Br9090_1 Br9090_2 Br8433_1 Br8433_2 Br8667_1 Br8667_2 Br3942_1 Br3942_2)
