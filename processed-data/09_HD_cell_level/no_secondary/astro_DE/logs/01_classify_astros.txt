@@ -1,10 +1,10 @@
 **** Job starts ****
-Fri Jun  5 03:51:41 PM EDT 2026
+Mon Jun  8 02:12:00 PM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 32442732
+Job id: 32465359
 Job name: 01_classify_astros
-Node name: compute-094
+Node name: compute-168
 Task id: 
 Unloading conda_R/4.5
 Loading conda_R/4.5
@@ -32,38 +32,6 @@ Attaching package: ‘jsonlite’
 The following object is masked from ‘package:purrr’:
 
     flatten
-
-Loading required package: SingleCellExperiment
-Loading required package: SummarizedExperiment
-Loading required package: MatrixGenerics
-Loading required package: matrixStats
-
-Attaching package: ‘matrixStats’
-
-The following object is masked from ‘package:dplyr’:
-
-    count
-
-
-Attaching package: ‘MatrixGenerics’
-
-The following objects are masked from ‘package:matrixStats’:
-
-    colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
-    colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
-    colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
-    colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
-    colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
-    colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
-    colWeightedMeans, colWeightedMedians, colWeightedSds,
-    colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
-    rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
-    rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
-    rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
-    rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
-    rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
-    rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
-    rowWeightedSds, rowWeightedVars
 
 Loading required package: GenomicRanges
 Loading required package: stats4
@@ -146,6 +114,38 @@ The following object is masked from ‘package:purrr’:
     reduce
 
 Loading required package: GenomeInfoDb
+Loading required package: SingleCellExperiment
+Loading required package: SummarizedExperiment
+Loading required package: MatrixGenerics
+Loading required package: matrixStats
+
+Attaching package: ‘matrixStats’
+
+The following object is masked from ‘package:dplyr’:
+
+    count
+
+
+Attaching package: ‘MatrixGenerics’
+
+The following objects are masked from ‘package:matrixStats’:
+
+    colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
+    colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
+    colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
+    colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
+    colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
+    colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
+    colWeightedMeans, colWeightedMedians, colWeightedSds,
+    colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
+    rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
+    rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
+    rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
+    rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
+    rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
+    rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
+    rowWeightedSds, rowWeightedVars
+
 Loading required package: Biobase
 Welcome to Bioconductor
 
@@ -171,6 +171,19 @@ null device
           1 
 null device 
           1 
+2026-06-08 14:13:02.091275 make pseudobulk object
+2026-06-08 14:13:02.822864 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
+2026-06-08 14:13:02.863348 drop lowly expressed genes
+2026-06-08 14:13:03.036271 normalize expression
+Warning messages:
+1: In S4Vectors:::anyMissing(runValue(x_seqnames)) :
+  'S4Vectors:::anyMissing()' is deprecated.
+Use 'anyNA()' instead.
+See help("Deprecated")
+2: In S4Vectors:::anyMissing(runValue(strand(x))) :
+  'S4Vectors:::anyMissing()' is deprecated.
+Use 'anyNA()' instead.
+See help("Deprecated")
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.5.0 Patched (2025-05-21 r88220)
@@ -181,7 +194,7 @@ null device
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2026-06-05
+ date     2026-06-08
  pandoc   3.7.0.1 @ /jhpce/shared/community/core/conda_R/4.5/bin/pandoc
  quarto   1.9.38 @ /users/neagles/.positron-server/bin/d5f94f072b1083b8237930739cb6525c6e12e1da/quarto/bin/quarto
 
@@ -302,7 +315,7 @@ null device
  Rsamtools              2.24.0    2025-04-15 [2] Bioconductor 3.21 (R 4.5.0)
  RSQLite                2.3.11    2025-05-04 [2] CRAN (R 4.5.0)
  rsvd                   1.0.5     2021-04-16 [1] CRAN (R 4.5.0)
- rtracklayer            1.68.0    2025-04-15 [2] Bioconductor 3.21 (R 4.5.0)
+ rtracklayer          * 1.68.0    2025-04-15 [2] Bioconductor 3.21 (R 4.5.0)
  S4Arrays               1.8.1     2025-06-01 [1] Bioconduc~
  S4Vectors            * 0.48.0    2025-10-29 [1] Bioconductor 3.22 (R 4.5.0)
  sass                   0.4.10    2025-04-11 [1] CRAN (R 4.5.0)
@@ -347,4 +360,4 @@ null device
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Fri Jun  5 03:57:08 PM EDT 2026
+Mon Jun  8 02:13:15 PM EDT 2026

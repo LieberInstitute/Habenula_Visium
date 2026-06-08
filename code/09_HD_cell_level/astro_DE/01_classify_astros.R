@@ -2,6 +2,7 @@ library(tidyverse)
 library(here)
 library(jsonlite)
 library(RANN)
+library(rtracklayer)
 library(sessioninfo)
 library(SpatialExperiment)
 library(spatialLIBD)
@@ -26,6 +27,7 @@ plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'astro_DE',
     'astro_classification'
 )
+gtf_path = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2024-A/genes/genes.gtf.gz'
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info_split.csv')
 example_samples = c("Br9090_1", "Br8433_1")
 ASTRO_DIST_THRESHOLD_UM = 100
@@ -244,16 +246,38 @@ print(p)
 dev.off()
 
 ################################################################################
-#   Export labels as a minimal SPE
+#   Pseudobulk, prepare for DE, and export
 ################################################################################
 
 spe$astro_label = tibble(key = spe$key) |>
     left_join(astro_df, by = "key") |>
     pull(astro_label)
 
-spe = spe[, !is.na(spe$astro_label)]
-assays(spe) = list(logcounts = assays(spe)$logcounts)
+spe = spe[, !is.na(spe$astro_label) & (spe$astro_label != "neither")]
 
-saveRDS(spe, out_path)
+spe_pb = registration_pseudobulk(
+    spe, var_registration = "astro_label", var_sample_id = "sample_id"
+)
+
+#   Restore rowRanges from GTF (spe loses seqinfo during construction).
+#   Preserve existing rowData and only update the genomic ranges/seqinfo.
+gtf_genes = import(gtf_path, feature.type = "gene")
+existing_rd = rowData(spe_pb)
+rowRanges(spe_pb) = gtf_genes[match(rownames(spe_pb), gtf_genes$gene_id)]
+mcols(rowRanges(spe_pb)) = existing_rd
+
+#   Preserve relevant colData and recompute certain metrics we may need
+colData(spe_pb) = colData(spe_pb)[
+    , c('sample_id', 'astro_label', 'sizeFactor', 'ncells')
+]
+spe_pb$pb_sample_id = colnames(spe_pb)
+spe_pb$donor = sub('_[12]$', '', spe_pb$sample_id)
+spe_pb$sum_umi = unname(colSums(counts(spe_pb)))
+spe_pb$expr_chrM = colSums(
+    counts(spe_pb)[which(seqnames(spe_pb) == "chrM"), , drop = FALSE]
+)
+spe_pb$expr_chrM_ratio = spe_pb$expr_chrM / spe_pb$sum_umi
+
+saveRDS(spe_pb, out_path)
 
 session_info()
