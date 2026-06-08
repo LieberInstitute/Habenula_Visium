@@ -4,10 +4,11 @@ library(sessioninfo)
 library(SpatialExperiment)
 library(variancePartition)
 library(pheatmap)
+library(qs2)
 
-spe_path = here(
+sce_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'astro_DE',
-    'astro_spe.rds'
+    'astro_sce_pb.qs2'
 )
 plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'astro_DE',
@@ -26,11 +27,8 @@ dir.create(dirname(out_path), showWarnings = FALSE)
 #   Load data and prepare covariates and models
 ################################################################################
 
-spe = readRDS(spe_path)
-pd = as.data.frame(colData(spe))
-
-#   Forgot to do this in the last script
-pd$astro_label = factor(pd$astro_label, levels = c('medial', 'lateral'))
+sce = qs_read(sce_path)
+pd = as.data.frame(colData(sce))
 
 #   Will use centered and scaled versions of continuous covariates in the model
 for (this_covariate in cont_covariates) {
@@ -72,7 +70,7 @@ dev.off()
 #   Variance-explained plots
 ################################################################################
 
-vp_obj = fitExtractVarPartModel(logcounts(spe), this_formula_vp, pd) |>
+vp_obj = fitExtractVarPartModel(logcounts(sce), this_formula_vp, pd) |>
     sortCols()
 
 p = plotVarPart(vp_obj,) +
