@@ -6,6 +6,7 @@ library(rtracklayer)
 library(sessioninfo)
 library(SpatialExperiment)
 library(spatialLIBD)
+library(qs2)
 
 spe_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary',
@@ -19,10 +20,7 @@ ct_anno_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'cluster_annotation.csv'
 )
-out_path = here(
-    'processed-data', '09_HD_cell_level', 'no_secondary', 'astro_DE',
-    'astro_spe.rds'
-)
+out_dir = here('processed-data', '09_HD_cell_level', 'no_secondary', 'astro_DE')
 plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'astro_DE',
     'astro_classification'
@@ -42,7 +40,7 @@ label_colors = c(
 )
 
 dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
-dir.create(dirname(out_path), showWarnings = FALSE)
+dir.create(out_dir, showWarnings = FALSE)
 
 ################################################################################
 #   Functions
@@ -246,38 +244,53 @@ print(p)
 dev.off()
 
 ################################################################################
-#   Pseudobulk, prepare for DE, and export
+#   Export a minimal SCE for DE
 ################################################################################
 
 spe$astro_label = tibble(key = spe$key) |>
     left_join(astro_df, by = "key") |>
     pull(astro_label)
 
-spe = spe[, !is.na(spe$astro_label) & (spe$astro_label != "neither")]
+spe = spe[, !is.na(spe$astro_label)]
 
-spe_pb = registration_pseudobulk(
-    spe, var_registration = "astro_label", var_sample_id = "sample_id"
-)
+#   Trim down the object so loading is extremely fast
+sce = as(spe, "SingleCellExperiment")
+assays(sce) = list(counts = assays(sce)$counts)
+colData(sce) = colData(sce)[, c("sample_id", "astro_label")]
 
-#   Restore rowRanges from GTF (spe loses seqinfo during construction).
-#   Preserve existing rowData and only update the genomic ranges/seqinfo.
+#   Fix rowRanges and seqinfo, which for some reason is corrupt
 gtf_genes = import(gtf_path, feature.type = "gene")
-existing_rd = rowData(spe_pb)
-rowRanges(spe_pb) = gtf_genes[match(rownames(spe_pb), gtf_genes$gene_id)]
-mcols(rowRanges(spe_pb)) = existing_rd
+existing_rd = rowData(sce)
+rowRanges(sce) = gtf_genes[match(rownames(sce), gtf_genes$gene_id)]
+mcols(rowRanges(sce)) = existing_rd
+rownames(sce) = rowData(sce)$gene_id
+
+#   In each DE run we'll use this object: we'll scramble labels, pseudobulk,
+#   then do DE
+qs_save(sce, file.path(out_dir, 'astro_sce.qs2'))
+
+################################################################################
+#   Prep a pseudobulked version for determining the appropriate DE model
+################################################################################
+
+#   But for EDA and determining the appropriate DE model, we might as well
+#   prepare a pseudobulked object in this script as well
+sce = sce[, sce$astro_label %in% c('medial', 'lateral')]
+sce_pb = registration_pseudobulk(
+    sce, var_registration = "astro_label", var_sample_id = "sample_id"
+)
 
 #   Preserve relevant colData and recompute certain metrics we may need
-colData(spe_pb) = colData(spe_pb)[
-    , c('sample_id', 'astro_label', 'sizeFactor', 'ncells')
-]
-spe_pb$pb_sample_id = colnames(spe_pb)
-spe_pb$donor = sub('_[12]$', '', spe_pb$sample_id)
-spe_pb$sum_umi = unname(colSums(counts(spe_pb)))
-spe_pb$expr_chrM = colSums(
-    counts(spe_pb)[which(seqnames(spe_pb) == "chrM"), , drop = FALSE]
+colData(sce_pb) = colData(sce_pb)[, c('sample_id', 'astro_label', 'ncells')]
+sce_pb$pb_sample_id = colnames(sce_pb)
+sce_pb$donor = sub('_[12]$', '', sce_pb$sample_id)
+sce_pb$sum_umi = unname(colSums(counts(sce_pb)))
+sce_pb$expr_chrM = colSums(
+    counts(sce_pb)[which(seqnames(sce_pb) == "chrM"), , drop = FALSE]
 )
-spe_pb$expr_chrM_ratio = spe_pb$expr_chrM / spe_pb$sum_umi
+sce_pb$expr_chrM_ratio = sce_pb$expr_chrM / sce_pb$sum_umi
+sce_pb$astro_label = factor(sce_pb$astro_label, levels = c('medial', 'lateral'))
 
-saveRDS(spe_pb, out_path)
+qs_save(sce_pb, file.path(out_dir, 'astro_sce_pb.qs2'))
 
 session_info()
