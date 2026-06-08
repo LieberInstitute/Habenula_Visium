@@ -6,7 +6,7 @@
 #SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/cell_environment/logs/19_plot_ficture_crawdad_%a.txt
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH --array=3-10,20%9
+#SBATCH --array=3-20%18
 
 set -e
 
