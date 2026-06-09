@@ -34,7 +34,7 @@ sce = qs_read(sce_path)
 if (task_id > 0) {
     message("Permuting labels...")
     sce$astro_label = tibble(astro_label = sce$astro_label) |>
-        slice_sample(n = nrow(sce)) |>
+        slice_sample(n = ncol(sce)) |>
         pull(astro_label)
 } else {
     message("Using original labels.")
