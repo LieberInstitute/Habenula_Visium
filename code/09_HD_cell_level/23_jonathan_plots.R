@@ -43,7 +43,7 @@ vis_clus_improved = function(spe, sampleid, clustervar,target_celltypes, colors,
             alpha_vec = ifelse(small_spe[[clustervar]] %in% target_celltypes, 1, alpha_value)
         ) |>
         ggplot(aes(x = x, y = y, color = cluster, alpha = alpha_vec)) +
-            geom_point(size = 0.3) +
+            geom_point(size = 0.75) +
             scale_color_manual(values = colors) +
             coord_fixed() +
             labs(color = 'Cell Type', title = sampleid) +
@@ -142,7 +142,7 @@ plot_marker_spatial = function(spe_bin, sample_id, genes, px_per_plot, plot_titl
                 )
                 
             ) +
-            geom_point(aes(size = ifelse(!!sym(genes[i]) > 0, 1, 0.1))) +
+            geom_point(aes(size = ifelse(!!sym(genes[i]) > 0, 1.5, 0.1))) +
             scale_size_identity() +
             scale_fill_gradientn(colors = gene_colors, values = breakpoints) +
             scale_color_gradientn(colors = gene_colors, values = breakpoints) +
@@ -160,7 +160,10 @@ plot_marker_spatial = function(spe_bin, sample_id, genes, px_per_plot, plot_titl
                 axis.text.x = element_blank(), axis.text.y = element_blank(),
                 axis.ticks.x = element_blank(), axis.ticks.y = element_blank(),
                 plot.title = element_text(size = 25),
-                plot.margin = margin(0, 0, 0, 0, 'pt')
+                plot.margin = margin(0, 0, 0, 0, 'pt'),
+                legend.key.size = unit(1, "cm"),
+                legend.text = element_text(size = 16),
+                legend.title = element_text(size = 18)
             )
     }
 
@@ -284,6 +287,14 @@ cluster_combos = list(
         Inhib_LHb_4.2 = my_colors_mid[["Inhib_LHb_4.2"]],
         Other = other_color
     ),
+    summary = c(
+        MHb.1 = my_colors_mid[["MHb.1"]],
+        MHb.2 = my_colors_mid[["MHb.2"]],
+        LHb.2.7 = my_colors_mid[["LHb.2.7"]],
+        LHb.4 = my_colors_mid[["LHb.4"]],
+        Excit_LHb = "#0587f9",
+        Other = other_color
+    ),
     Excit.Thal = c(
         LHb = my_colors_class[["LHb"]],
         MHb = my_colors_class[["MHb"]], 
@@ -385,6 +396,14 @@ spe$Inhib_LHb_4.2 = case_when(
     spe$banksy %in% c(5, 9) ~ "Inhib_LHb_4.2",
     TRUE ~ "Other"
 )
+spe$summary = case_when(
+    spe$banksy == 8 ~ "MHb.1",
+    spe$banksy == 15 ~ "MHb.2",
+    spe$banksy == 19 ~ "LHb.2.7",
+    spe$banksy %in% c(7, 25) ~ "LHb.4",
+    spe$banksy == 23 ~ "Excit_LHb",
+    TRUE ~ "Other"
+)
 spe$Excit.Thal = case_when(
     spe$banksy %in% c(7, 25, 23, 19) ~ "LHb",
     spe$banksy %in% c(8, 15) ~ "MHb",
@@ -438,7 +457,7 @@ spe$OPC = case_when(
 #    plot_combo(spe, combo_name)
 #}
 
-px_per_plot = 1200
+px_per_plot = 600
 for (combo_name in names(cluster_combos)) {
     #pngs
     if(combo_name == 'Ependymal'){
@@ -451,6 +470,13 @@ for (combo_name in names(cluster_combos)) {
       #pdfs
     #plot_combo(spe, combo_name,region_name = 'Habenula', target_celltypes = combo_name, alpha_value = .005, flip = FALSE, is_pdf = TRUE)
 }
+
+#And summary plots of the neurons
+
+plot_combo(spe, combo_name = 'summary', region_name = 'Habenula', 
+target_celltypes = c('MHb.1', 'MHb.2', 'LHb.2.7', 'LHb.4', 'Excit_LHb'), 
+alpha_value = .005, flip = FALSE, is_pdf = FALSE)
+
 
 #############
 #Marker genes
@@ -472,6 +498,11 @@ plot_marker_spatial(spe, sample_id = all_samples[1], genes, px_per_plot, plot_ti
 
 for(i in 1:length(all_samples)){
 
+    genes = c('SLC32A1', 'GAD1', 'GAD2')
+    genes = rowData(spe)$gene_id[match(genes, rowData(spe)$gene_name)]
+    plot_marker_spatial(spe, sample_id = all_samples[i], genes, px_per_plot, plot_title = 'inhibitory_markers_cells', alpha_value = .1, flip = FALSE)
+
+  
     genes = c('OPRM1', 'TAC3', 'GPR149', 'COL25A1', 'HTR4', 'SLIT1')
     genes = rowData(spe)$gene_id[match(genes, rowData(spe)$gene_name)]
     plot_marker_spatial(spe, sample_id = all_samples[i], genes, px_per_plot, plot_title = 'oprm1_markers_cells', alpha_value = .1, flip = FALSE)
@@ -506,6 +537,9 @@ for(i in 1:length(all_samples)){
     plot_marker_spatial(spe, sample_id = all_samples[i], genes, px_per_plot, plot_title = 'LHb4_markers_cells', alpha_value = .1, flip = FALSE)
 
 }
+
+
+
 
 
 session_info()
