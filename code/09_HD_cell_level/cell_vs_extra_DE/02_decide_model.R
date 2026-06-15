@@ -28,6 +28,7 @@ dir.create(dirname(out_path), showWarnings = FALSE)
 
 sce = readRDS(sce_path)
 pd = as.data.frame(colData(sce))
+sce$sample_id = factor(sce$sample_id, levels = sort(unique(sce$sample_id)))
 
 #   Will use centered and scaled versions of continuous covariates in the model
 for (this_covariate in cont_covariates) {
@@ -40,11 +41,14 @@ cont_covariates_scaled = paste(cont_covariates, 'scaled', sep = '_')
 #   Appropriate formulas for canCorPairs and fitExtractVarPartModel,
 #   respectively
 this_formula = as.formula(
-    paste('~ compartment +', paste0(cont_covariates_scaled, collapse = ' + '))
+    paste(
+        '~ compartment + sample_id +',
+        paste0(cont_covariates_scaled, collapse = ' + ')
+    )
 )
 this_formula_vp = as.formula(
     paste(
-        '~ (1 | compartment) +',
+        '~ (1 | compartment) + (1 | sample_id) +',
         paste0(cont_covariates_scaled, collapse = ' + ')
     )
 )
