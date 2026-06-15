@@ -40,7 +40,7 @@ complete_pseudobulk = function(sce) {
     )
 
     #   Preserve relevant colData and recompute certain metrics we may need
-    colData(sce_pb) = colData(sce_pb)[, c('key', 'sample_id', 'compartment')]
+    colData(sce_pb) = colData(sce_pb)[, c('sample_id', 'compartment')]
     sce_pb$pb_sample_id = colnames(sce_pb)
     sce_pb$donor = sub('_[12]$', '', sce_pb$sample_id)
     sce_pb$donor = factor(sce_pb$donor, levels = sort(unique(sce_pb$donor)))
@@ -125,6 +125,7 @@ sce$cell_type = tibble(key = sce$key) |>
     left_join(read_csv(ct_anno_path, show_col_types = FALSE), by = 'cluster') |>
     pull(fine_cell_type)
 stopifnot(!any(is.na(sce$cell_type)))
+sce = sce[,sce$cell_type != 'Drop']
 
 ################################################################################
 #   Pseudobulk for each cell type, including a global object, and export
