@@ -184,6 +184,83 @@ plot_marker_spatial = function(spe_bin, sample_id, genes, px_per_plot, plot_titl
   
 }
 
+#Plotting the z-scored value of aggregated log counts for a set of markers
+plot_marker_signature_spatial = function(spe_bin, sample_id, genes, px_per_plot, plot_title, 
+    flip = FALSE, alpha_value = 1, is_pdf = FALSE, max_exp = NULL){
+    
+    spe_bin = spe_bin[, spe_bin$sample_id == sample_id]
+    grey_viridis <- c("grey90", rev(magma(255)))
+
+    vg_exp = as.matrix(assays(spe_bin)$logcounts[genes,])
+    
+    # Sum across genes for each cell, then z-score
+    summed_exp = colSums(vg_exp)
+    max_norm_exp = summed_exp / max(summed_exp)
+    #z_scored_exp = scale(summed_exp)[, 1]
+
+    # Gather expression and spatial coordinates into a tidy tibble
+    exp_df = tibble(
+        #z_score = z_scored_exp
+        max_norm_exp = max_norm_exp
+    ) |>
+        cbind(spatialCoords(spe_bin)) |>
+        as_tibble() |>
+        mutate(
+            x = if (flip) max(pxl_col_in_fullres) - pxl_col_in_fullres else pxl_col_in_fullres,
+            y = if (flip) pxl_row_in_fullres else max(pxl_row_in_fullres) - pxl_row_in_fullres,
+            alpha_val = ifelse(max_norm_exp == 0 , 0.05, 1)
+        )
+
+    # Compute symmetric range for diverging scale
+    #data_max = max(exp_df$z_score, na.rm = TRUE)
+    #data_min = min(exp_df$z_score, na.rm = TRUE)
+  
+    p = ggplot(
+            exp_df,
+            aes(
+                x = x, y = y, color = max_norm_exp,
+                fill = max_norm_exp, alpha = alpha_val
+            )
+        ) +
+        geom_point(size = .5) +
+        scale_fill_gradient(low = "#D3D3D3", high = "#8B0000") +
+        scale_color_gradient(low = "#D3D3D3", high = "#8B0000") +
+        scale_alpha_identity() +
+        coord_fixed() +
+        labs(
+            fill = 'max_norm_exp',
+            title = plot_title
+        ) +
+        guides(color = "none", alpha = 'none') +
+        theme_bw(base_size = 15) +
+        theme(
+            axis.title.x = element_blank(), axis.title.y = element_blank(),
+            axis.text.x = element_blank(), axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(), axis.ticks.y = element_blank(),
+            plot.title = element_text(size = 25),
+            plot.margin = margin(0, 0, 0, 0, 'pt'),
+            legend.key.size = unit(1, "cm"),
+            legend.text = element_text(size = 16),
+            legend.title = element_text(size = 18)
+        )
+
+    if (is_pdf) {
+        pdf(
+            file.path(plot_dir, sprintf('%s_signature_%s.pdf', plot_title, sample_id)),
+            width = 8, height = 8
+        )
+    } else {
+        png(
+            file.path(plot_dir, sprintf('%s_signature_%s.png', plot_title, sample_id)),
+            width = px_per_plot, height = px_per_plot
+        )
+    }
+  
+    print(p)
+    dev.off()
+  
+}
+
 ################################################################################
 #   Main
 ################################################################################
@@ -539,6 +616,53 @@ for(i in 1:length(all_samples)){
 }
 
 
+#Combinations of top marker genes, using the top 10 1vsAll markers as a starting point
+
+genes_to_sum = c('PDE11A', 'F13A1', 'TAC3','RASGRP1','ASIC2','CDC14A','GUCY1A1','SOX5','ONECUT1','THSD7B')
+genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+                               plot_title = 'MHb1 top markers', alpha_value = 0.1)
+
+genes_to_sum = c('GPR149','NEUROD1','SLC5A7','TSPAN13','PDZRN4','GSDME','NWD2')
+genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+                               plot_title = 'MHb2 top markers', alpha_value = 0.1)
+
+genes_to_sum = c('MME','RET','SSTR2','GFRA1','PDGFD','MCC', 'SYT10')
+genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+                               plot_title = 'MHb1.2 top markers', alpha_value = 0.1)
+
+genes_to_sum = c('FGF10','ADH1B','BHLHE22','EBF3','SMIM35')
+genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+                               plot_title = 'MHb3 top markers', alpha_value = 0.1)
+
+
+genes_to_sum = c('COL25A1','GALR1','CBLN2','RFTN1','CHRM2','CALN1', 'PRKD1')
+genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+                               plot_title = 'LHb2.7 top markers', alpha_value = 0.1)
+
+genes_to_sum = c('MMRN1','GRIK4','SEMA3D','EBF1','HTR4', 'KCNH8', 'TENM1', 'SLC35F3')
+genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+                               plot_title = 'LHb1.3.4 top markers', alpha_value = 0.1)
+
+genes_to_sum = c('DAB1','NOVA1','GABRG3','ARPP21', 'HS3ST4', 'SEMA5A', 'GABRB1', 'CACNA2D1', 'SLIT1')
+genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+                               plot_title = 'LHb4 top markers', alpha_value = 0.1)
+
+genes_to_sum = c('SLC32A1','PNOC','SIX3','PAX7')
+genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+                               plot_title = 'Inhib4.2 top markers', alpha_value = 0.1)
+
+genes_to_sum = c('TFAP2B','NXPH1','NRXN3','GAD2','GRM8', 'PAX3', 'LHX1', 'EMX2', 'ADRA1A', 'GATA3')
+genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+                               plot_title = 'Inhib4.1 top markers', alpha_value = 0.1)
 
 
 
