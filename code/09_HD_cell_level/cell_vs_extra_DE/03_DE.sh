@@ -4,8 +4,9 @@
 #SBATCH --job-name=03_DE
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/09_HD_cell_level/no_secondary/cell_vs_extra_DE/logs/03_DE.txt
-#SBATCH -e ../../../processed-data/09_HD_cell_level/no_secondary/cell_vs_extra_DE/logs/03_DE.txt
+#SBATCH -o ../../../processed-data/09_HD_cell_level/no_secondary/cell_vs_extra_DE/logs/03_DE_%a.txt
+#SBATCH -e ../../../processed-data/09_HD_cell_level/no_secondary/cell_vs_extra_DE/logs/03_DE_%a.txt
+#SBATCH --array=1-15%15
 
 set -e
 
