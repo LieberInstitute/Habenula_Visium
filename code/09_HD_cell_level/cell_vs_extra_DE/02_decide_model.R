@@ -65,6 +65,17 @@ pdf(file.path(plot_dir, 'CCA_heatmap.pdf'))
 print(p)
 dev.off()
 
+#  expr_chrM_ratio is highly correlated with compartment, so much so that in a
+#  linear model we won't be able to distentangle the two
+p = ggplot(pd, aes(x = compartment, y = expr_chrM_ratio)) +
+    geom_boxplot() +
+    geom_jitter() +
+    theme_bw(base_size = 20) +
+    theme(axis.text.x = element_text(vjust = 0.5, hjust = 1, angle = 90))
+pdf(file.path(plot_dir, 'expr_chrM_ratio_vs_compartment.pdf'))
+print(p)
+dev.off()
+
 ################################################################################
 #   Variance-explained plots
 ################################################################################
