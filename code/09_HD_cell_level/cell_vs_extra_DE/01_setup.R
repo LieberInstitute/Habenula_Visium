@@ -40,7 +40,7 @@ complete_pseudobulk = function(sce) {
     )
 
     #   Preserve relevant colData and recompute certain metrics we may need
-    colData(sce_pb) = colData(sce_pb)[, c('key', 'sample_id')]
+    colData(sce_pb) = colData(sce_pb)[, c('key', 'sample_id', 'compartment')]
     sce_pb$pb_sample_id = colnames(sce_pb)
     sce_pb$donor = sub('_[12]$', '', sce_pb$sample_id)
     sce_pb$donor = factor(sce_pb$donor, levels = sort(unique(sce_pb$donor)))
@@ -132,11 +132,11 @@ stopifnot(!any(is.na(sce$cell_type)))
 
 for (this_cell_type in unique(sce$cell_type)) {
     sce_pb = complete_pseudobulk(sce[, sce$cell_type == this_cell_type])
+    clean_cell_type = this_cell_type |>
+        str_replace_all('\\.', '-') |>
+        str_replace_all('/', '--')
     saveRDS(
-        sce_pb,
-        file.path(
-            out_dir, sprintf('sce_%s_pb.rds', gsub('\\.', '-', this_cell_type))
-        )
+        sce_pb, file.path(out_dir, sprintf('sce_%s_pb.rds', clean_cell_type))
     )
 }
 
