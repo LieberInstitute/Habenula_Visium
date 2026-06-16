@@ -1,10 +1,10 @@
 **** Job starts ****
-Thu Feb 12 10:29:36 AM EST 2026
+Tue Jun 16 01:07:30 PM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 28169509
+Job id: 32914537
 Job name: 01_to_spe
-Node name: compute-175
+Node name: compute-093
 Task id: 
 Unloading conda_R/4.5
 Loading conda_R/4.5
@@ -16,7 +16,7 @@ Currently Loaded Modules:
  
 
 Loading required package: GiottoClass
-Newer devel version of GiottoClass on GitHub: 0.4.10
+Newer devel version of GiottoClass on GitHub: 0.5.1
 Giotto Suite 4.2.2
 here() starts at /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium
 ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
@@ -180,19 +180,12 @@ The following objects are masked from ‘package:Giotto’:
 
     clusterCells, findMarkers
 
-Rows: 5 Columns: 3
-── Column specification ────────────────────────────────────────────────────────
-Delimiter: ","
-chr (2): sample_id, spaceranger_dir
-dbl (1): batch_num
-
-ℹ Use `spec()` to retrieve the full column specification for this data.
-ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-2026-02-12 10:30:24.602813 - Forming basic SPE from the bin2cell-output AnnData for sample H1-W369TJK_D1_9090...
+qs2 0.1.7
 checking default envname 'giotto_env'
 a system default python environment was found
 Using python path:
  "/users/neagles/.conda/envs/giotto_env/bin/python"
+Spatial locations found.
 
 List item [1]:
  spat_unit: cell
@@ -209,9 +202,15 @@ List item [1]:
 > Feat metadata for spat_unit " cell " and feat_type " rna " already exists and
  will be replaced with new metadata.
 Setting feature metadata [cell][rna]
-Spatial locations found.
 
 AnnData object successfully converted to Giotto.
+Warning messages:
+1: In asMethod(object) :
+  sparse->dense coercion: allocating vector of size 38.0 GiB
+2: In .evaluate_cell_metadata(metadata = metadata, verbose = verbose) :
+  Cell metadata input: no col named cell_ID.
+ Setting temporary NA values
+Warning: Key 'spatialneighbors' not found in adata.uns.
 Processing spatial unit: 'cell'
 Copying expression matrix: 'raw' for spatial unit: 'cell'
 Copying phenotype data for spatial unit: 'cell'
@@ -223,159 +222,23 @@ No nearest networks found in the input Giotto object
 No spatial networks found in the input Giotto object
 No spatial images found in the input Giotto object
 
-2026-02-12 10:30:54.094957 - Adding spatialLIBD metrics for sample H1-W369TJK_D1_9090...
-2026-02-12 10:30:56.559467 - Forming basic SPE from the bin2cell-output AnnData for sample H1-MVPY9BW_A1_8433...
-python already initialized in this session
- active environment : 'giotto_env'
- python version : 3.10
-Warning: Key 'spatialneighbors' not found in adata.uns.
-
-List item [1]:
- spat_unit: cell
- feat_type: rna
-> Cell metadata for spat_unit " cell " and feat_type " rna " already exists and
- will be replaced with new metadata.
-Setting cell metadata [cell][rna]
-Cell metadata: guessing key as cell_ID column.
-list depth of 2
-
-List item [1]:
- spat_unit: cell
- feat_type: rna
-> Feat metadata for spat_unit " cell " and feat_type " rna " already exists and
- will be replaced with new metadata.
-Setting feature metadata [cell][rna]
-Spatial locations found.
-
-AnnData object successfully converted to Giotto.
-Processing spatial unit: 'cell'
-Copying expression matrix: 'raw' for spatial unit: 'cell'
-Copying phenotype data for spatial unit: 'cell'
-Copying feature metadata for spatial unit: 'cell'
-Copying spatial locations for spatial unit: 'cell'
-No reduced dimensions found in the input Giotto
-                        object
-No nearest networks found in the input Giotto object
-No spatial networks found in the input Giotto object
-No spatial images found in the input Giotto object
-
-2026-02-12 10:31:23.913045 - Adding spatialLIBD metrics for sample H1-MVPY9BW_A1_8433...
-2026-02-12 10:31:25.869874 - Forming basic SPE from the bin2cell-output AnnData for sample H1-MVPY9BW_D1_8667...
-python already initialized in this session
- active environment : 'giotto_env'
- python version : 3.10
-Warning: Key 'spatialneighbors' not found in adata.uns.
-
-List item [1]:
- spat_unit: cell
- feat_type: rna
-> Cell metadata for spat_unit " cell " and feat_type " rna " already exists and
- will be replaced with new metadata.
-Setting cell metadata [cell][rna]
-Cell metadata: guessing key as cell_ID column.
-list depth of 2
-
-List item [1]:
- spat_unit: cell
- feat_type: rna
-> Feat metadata for spat_unit " cell " and feat_type " rna " already exists and
- will be replaced with new metadata.
-Setting feature metadata [cell][rna]
-Spatial locations found.
-
-AnnData object successfully converted to Giotto.
-Processing spatial unit: 'cell'
-Copying expression matrix: 'raw' for spatial unit: 'cell'
-Copying phenotype data for spatial unit: 'cell'
-Copying feature metadata for spatial unit: 'cell'
-Copying spatial locations for spatial unit: 'cell'
-No reduced dimensions found in the input Giotto
-                        object
-No nearest networks found in the input Giotto object
-No spatial networks found in the input Giotto object
-No spatial images found in the input Giotto object
-
-2026-02-12 10:31:51.047891 - Adding spatialLIBD metrics for sample H1-MVPY9BW_D1_8667...
-2026-02-12 10:31:52.963076 - Forming basic SPE from the bin2cell-output AnnData for sample H1-6FX4YN3_A1_3942...
-python already initialized in this session
- active environment : 'giotto_env'
- python version : 3.10
-Warning: Key 'spatialneighbors' not found in adata.uns.
-
-List item [1]:
- spat_unit: cell
- feat_type: rna
-> Cell metadata for spat_unit " cell " and feat_type " rna " already exists and
- will be replaced with new metadata.
-Setting cell metadata [cell][rna]
-Cell metadata: guessing key as cell_ID column.
-list depth of 2
-
-List item [1]:
- spat_unit: cell
- feat_type: rna
-> Feat metadata for spat_unit " cell " and feat_type " rna " already exists and
- will be replaced with new metadata.
-Setting feature metadata [cell][rna]
-Spatial locations found.
-
-AnnData object successfully converted to Giotto.
-Processing spatial unit: 'cell'
-Copying expression matrix: 'raw' for spatial unit: 'cell'
-Copying phenotype data for spatial unit: 'cell'
-Copying feature metadata for spatial unit: 'cell'
-Copying spatial locations for spatial unit: 'cell'
-No reduced dimensions found in the input Giotto
-                        object
-No nearest networks found in the input Giotto object
-No spatial networks found in the input Giotto object
-No spatial images found in the input Giotto object
-
-2026-02-12 10:32:20.04896 - Adding spatialLIBD metrics for sample H1-6FX4YN3_A1_3942...
-2026-02-12 10:32:22.331697 - Forming basic SPE from the bin2cell-output AnnData for sample H1-6FX4YN3_D1_9902...
-python already initialized in this session
- active environment : 'giotto_env'
- python version : 3.10
-Warning: Key 'spatialneighbors' not found in adata.uns.
-
-List item [1]:
- spat_unit: cell
- feat_type: rna
-> Cell metadata for spat_unit " cell " and feat_type " rna " already exists and
- will be replaced with new metadata.
-Setting cell metadata [cell][rna]
-Cell metadata: guessing key as cell_ID column.
-list depth of 2
-
-List item [1]:
- spat_unit: cell
- feat_type: rna
-> Feat metadata for spat_unit " cell " and feat_type " rna " already exists and
- will be replaced with new metadata.
-Setting feature metadata [cell][rna]
-Spatial locations found.
-
-AnnData object successfully converted to Giotto.
-Processing spatial unit: 'cell'
-Copying expression matrix: 'raw' for spatial unit: 'cell'
-Copying phenotype data for spatial unit: 'cell'
-Copying feature metadata for spatial unit: 'cell'
-Copying spatial locations for spatial unit: 'cell'
-No reduced dimensions found in the input Giotto
-                        object
-No nearest networks found in the input Giotto object
-No spatial networks found in the input Giotto object
-No spatial images found in the input Giotto object
-
-2026-02-12 10:32:53.274432 - Adding spatialLIBD metrics for sample H1-6FX4YN3_D1_9902...
-There were 25 warnings (use warnings() to see them)
-Warning: Key 'spatialneighbors' not found in adata.uns.
-2026-02-12 10:32:56.177882 - Merging SPEs across samples
-2026-02-12 10:32:57.58689 - Saving raw SPE
+Warning messages:
+1: In S4Vectors:::anyMissing(runValue(x_seqnames)) :
+  'S4Vectors:::anyMissing()' is deprecated.
+Use 'anyNA()' instead.
+See help("Deprecated")
+2: In S4Vectors:::anyMissing(runValue(strand(x))) :
+  'S4Vectors:::anyMissing()' is deprecated.
+Use 'anyNA()' instead.
+See help("Deprecated")
+Warning message:
+Dropping 434 of 18088 genes not present in 'spe_bin'... 
+2026-06-16 13:11:35.517453 | Performing log normalization...
+2026-06-16 13:11:46.188631 - Saving raw SPE
 Memory usage:
              used    (Mb) gc trigger    (Mb)   max used    (Mb)
-Ncells   14527106   775.9   25184870  1345.1   19610897  1047.4
-Vcells 1369899255 10451.6 4102082789 31296.5 3990366970 30444.1
+Ncells   13276104   709.1   22102441  1180.4   17694362   945.0
+Vcells 2526134538 19272.9 8130009525 62027.1 7843582749 59841.8
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.5.0 Patched (2025-05-21 r88220)
@@ -386,9 +249,9 @@ Vcells 1369899255 10451.6 4102082789 31296.5 3990366970 30444.1
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2026-02-12
+ date     2026-06-16
  pandoc   3.7.0.1 @ /jhpce/shared/community/core/conda_R/4.5/bin/pandoc
- quarto   1.8.27 @ /users/neagles/.positron-server/bin/4b472e9bf40ca88f886fe9c7fcfbb9ee702fccd0/quarto/bin/quarto
+ quarto   1.9.38 @ /users/neagles/.positron-server/bin/d5f94f072b1083b8237930739cb6525c6e12e1da/quarto/bin/quarto
 
 ─ Packages ───────────────────────────────────────────────────────────────────
  package              * version  date (UTC) lib source
@@ -400,8 +263,6 @@ Vcells 1369899255 10451.6 4102082789 31296.5 3990366970 30444.1
  BiocNeighbors          2.2.0    2025-04-15 [1] Bioconduc~
  BiocParallel         * 1.42.1   2025-06-01 [1] Bioconduc~
  BiocSingular           1.24.0   2025-04-15 [1] Bioconduc~
- bit                    4.6.0    2025-03-06 [2] CRAN (R 4.5.0)
- bit64                  4.6.0-1  2025-01-16 [2] CRAN (R 4.5.0)
  bluster                1.18.0   2025-04-15 [1] Bioconduc~
  cachem                 1.1.0    2024-05-16 [1] CRAN (R 4.5.0)
  checkmate              2.3.2    2024-07-29 [1] CRAN (R 4.5.0)
@@ -468,10 +329,12 @@ Vcells 1369899255 10451.6 4102082789 31296.5 3990366970 30444.1
  png                    0.1-8    2022-11-29 [1] CRAN (R 4.5.0)
  polyclip               1.10-7   2024-07-23 [1] CRAN (R 4.5.0)
  purrr                * 1.1.0    2025-07-10 [1] CRAN (R 4.5.0)
+ qs2                  * 0.1.7    2026-01-20 [1] CRAN (R 4.5.0)
  R6                     2.6.1    2025-02-15 [1] CRAN (R 4.5.0)
  rappdirs               0.3.3    2021-01-31 [1] CRAN (R 4.5.0)
  RColorBrewer           1.1-3    2022-04-03 [1] CRAN (R 4.5.0)
  Rcpp                   1.1.0    2025-07-02 [1] CRAN (R 4.5.0)
+ RcppParallel           5.1.10   2025-01-24 [2] CRAN (R 4.5.0)
  readr                * 2.1.5    2024-01-10 [2] CRAN (R 4.5.0)
  reticulate             1.43.0   2025-07-21 [1] CRAN (R 4.5.0)
  rjson                  0.2.23   2024-09-16 [2] CRAN (R 4.5.0)
@@ -490,6 +353,7 @@ Vcells 1369899255 10451.6 4102082789 31296.5 3990366970 30444.1
  SparseArray            1.8.1    2025-07-23 [1] Bioconduc~
  SpatialExperiment    * 1.18.1   2025-05-11 [2] Bioconductor 3.21 (R 4.5.0)
  statmod                1.5.0    2023-01-06 [2] CRAN (R 4.5.0)
+ stringfish             0.18.0   2026-01-18 [1] CRAN (R 4.5.0)
  stringi                1.8.7    2025-03-27 [1] CRAN (R 4.5.0)
  stringr              * 1.5.1    2023-11-14 [1] CRAN (R 4.5.0)
  SummarizedExperiment * 1.38.1   2025-04-30 [2] Bioconductor 3.21 (R 4.5.0)
@@ -506,7 +370,6 @@ Vcells 1369899255 10451.6 4102082789 31296.5 3990366970 30444.1
  vctrs                  0.6.5    2023-12-01 [1] CRAN (R 4.5.0)
  viridis                0.6.5    2024-01-29 [1] CRAN (R 4.5.0)
  viridisLite            0.4.2    2023-05-02 [1] CRAN (R 4.5.0)
- vroom                  1.6.5    2023-12-05 [2] CRAN (R 4.5.0)
  withr                  3.0.2    2024-10-28 [1] CRAN (R 4.5.0)
  XVector                0.48.0   2025-04-15 [1] Bioconduc~
 
@@ -527,4 +390,4 @@ Vcells 1369899255 10451.6 4102082789 31296.5 3990366970 30444.1
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Thu Feb 12 10:34:00 AM EST 2026
+Tue Jun 16 01:12:38 PM EDT 2026
