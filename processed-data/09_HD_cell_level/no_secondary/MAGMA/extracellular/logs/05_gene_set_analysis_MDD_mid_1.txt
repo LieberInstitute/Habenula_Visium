@@ -1,10 +1,10 @@
 **** Job starts ****
-Fri Apr 24 11:38:57 AM EDT 2026
+Tue Jun 16 01:27:02 PM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 31053542
+Job id: 32914605
 Job name: 05_gene_set_analysis
-Node name: compute-178
+Node name: compute-099
 Task id: 1
 Loading LIBD SLURM module for magma/1.10
 
@@ -20,7 +20,7 @@ Using flags:
 	--set-annot /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/gene_sets/mid.tsv gene-col=gene_id set-col=set_id
 	--out /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/GWAS_results/MDD/mid
 
-Start time is 11:38:57, Friday 24 Apr 2026
+Start time is 13:27:02, Tuesday 16 Jun 2026
 
 Reading file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/GWAS_results/MDD/MDD.genes.raw... 
 	507 genes read from file
@@ -30,14 +30,16 @@ Reading file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/pro
 	using variable: gene_id (gene ID)
 	using variable: set_id (set ID)
 	WARNING: gene set Endo.microglia contains no genes defined in genotype data
+	WARNING: gene set Subependymal contains no genes defined in genotype data
 	11 gene-set definitions read from file
-	found 10 gene sets containing genes defined in genotype data (containing a total of 41 unique genes)
+	found 9 gene sets containing genes defined in genotype data (containing a total of 35 unique genes)
 Preparing variables for analysis...
 	truncating Z-scores 3 points below zero or 6 standard deviations above the mean
+	WARNING: discarding gene set 'Endo' from file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/gene_sets/mid.tsv, variance is too low (set contains only one gene used in analysis)
 	WARNING: discarding gene set 'Excit.Thal.Inhib_LHb_4.2' from file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/gene_sets/mid.tsv, variance is too low (set contains only one gene used in analysis)
 	WARNING: discarding gene set 'Oligo' from file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/gene_sets/mid.tsv, variance is too low (set contains only one gene used in analysis)
 	truncating covariate values more than 5 standard deviations from the mean
-	total variables available for analysis: 8 gene sets
+	total variables available for analysis: 6 gene sets
 
 Parsing model specifications...
 Inverting gene-gene correlation matrix...
@@ -49,9 +51,9 @@ Inverting gene-gene correlation matrix...
 		inverse mac, log(inverse mac)
 	analysing individual variables
 
-	analysing single-variable models (number of models: 8)
+	analysing single-variable models (number of models: 6)
                                                                                                                    	writing results to file /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/09_HD_cell_level/no_secondary/MAGMA/extracellular/GWAS_results/MDD/mid.gsa.out
 
-End time is 11:38:57, Friday 24 Apr 2026 (elapsed: 00:00:00)
+End time is 13:27:02, Tuesday 16 Jun 2026 (elapsed: 00:00:00)
 **** Job ends ****
-Fri Apr 24 11:38:57 AM EDT 2026
+Tue Jun 16 01:27:02 PM EDT 2026
