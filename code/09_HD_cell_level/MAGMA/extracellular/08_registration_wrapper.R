@@ -5,10 +5,11 @@ library(here)
 library(spatialLIBD)
 library(sessioninfo)
 library(tidyverse)
+library(qs2)
 
 spe_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
-    'extracellular', 'spe_norm_filtered.rds'
+    'extracellular', 'spe_norm_filtered.qs2'
 )
 pseudo_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
@@ -18,27 +19,15 @@ model_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
     'extracellular', 'spatial_registration', 'modeling_results.rds'
 )
-tissue_path = here(
-    'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
-    'tissue_key_map.csv.gz'
-)
 
 dir.create(dirname(pseudo_path), showWarnings = FALSE)
 
-spe = readRDS(spe_path)
-
-#   Add in info about tissue section. Pseudobulking is done by tissue section
-#   as was done for the cellular data
-tissue_df = read_csv(tissue_path, show_col_types = FALSE)
-spe$tissue_section = tibble(key = spe$key) |>
-    left_join(tissue_df, by = 'key') |>
-    pull(tissue_section)
-stopifnot(!any(is.na(spe$tissue_section)))
+spe = qs_read(spe_path)
 
 model_results = registration_wrapper(
     spe,
     var_registration = 'cell_type',
-    var_sample_id = 'tissue_section',
+    var_sample_id = 'sample_id',
     gene_ensembl = 'gene_id',
     gene_name = 'gene_name',
     pseudobulk_rds_file = pseudo_path
