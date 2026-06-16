@@ -4,10 +4,11 @@ library(DeconvoBuddies)
 library(here)
 library(sessioninfo)
 library(spatialLIBD)
+library(qs2)
 
 spe_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
-    'extracellular', 'spe_norm_filtered.rds'
+    'extracellular', 'spe_norm_filtered.qs2'
 )
 out_dir = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
@@ -50,7 +51,7 @@ export_set = function(spe, cell_type_col, file_tag) {
     write_tsv(marker_stats, file.path(out_dir, sprintf("%s.tsv", file_tag)))
 }
 
-spe = readRDS(spe_path)
+spe = qs_read(spe_path)
 
 #   Also define mid and broad cell-type resolutions
 spe$cell_type_mid = case_when(

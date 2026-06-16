@@ -1,8 +1,8 @@
 **** Job starts ****
-Thu Apr 23 05:03:58 PM EDT 2026
+Tue Jun 16 01:22:31 PM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 31037586
+Job id: 32914594
 Job name: 03_mean_ratio
 Node name: compute-169
 Task id: 
@@ -124,65 +124,60 @@ The following objects are masked from ‘package:matrixStats’:
 ✖ dplyr::slice()        masks IRanges::slice()
 ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 here() starts at /dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium
-2026-04-23 17:04:27.731085 make pseudobulk object
-2026-04-23 17:04:29.854229 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
-2026-04-23 17:04:29.881148 drop lowly expressed genes
-2026-04-23 17:04:29.992414 normalize expression
+qs2 0.1.7
+2026-06-16 13:23:05.642394 make pseudobulk object
+2026-06-16 13:23:08.203377 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
+2026-06-16 13:23:08.236443 drop lowly expressed genes
+2026-06-16 13:23:08.617436 normalize expression
 Marker counts for fine resolution:
 
                Astrocyte                     Endo           Endo.microglia 
-                      40                      200                       22 
+                      37                      200                       11 
                Ependymal                Excit_LHb               Excit.Thal 
-                     200                      153                      194 
+                     200                      120                       68 
 Excit.Thal.Inhib_LHb_4.2                  LHb.2.7                    LHb.4 
-                      31                       53                      200 
+                      38                       45                      200 
      LHb.4.Inhib_LHb_4.2                    MHb.1                    MHb.2 
                        7                      200                      200 
                    Oligo                      OPC             Subependymal 
-                     200                       34                      200 
-Warning messages:
-1: var_registration "cell_type" contains non-syntatic variables: LHb.4/Inhib_LHb_4.2, Excit.Thal/Inhib_LHb_4.2, Endo/microglia
+                     200                       31                      200 
+Warning message:
+var_registration "cell_type" contains non-syntatic variables: LHb.4/Inhib_LHb_4.2, Excit.Thal/Inhib_LHb_4.2, Endo/microglia
 converting to LHb.4.Inhib_LHb_4.2, Excit.Thal.Inhib_LHb_4.2, Endo.microglia 
-2: In get_mean_ratio(sce = spe_pb, assay_name = "logcounts", cellType_col = cell_type_col,  :
-  One or more cell types has < 10 cells, this may result in unstable marker genes results. Check details of get_mean_ratio() for more info
-2026-04-23 17:04:40.398391 make pseudobulk object
-2026-04-23 17:04:42.263923 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
-2026-04-23 17:04:42.284589 drop lowly expressed genes
-2026-04-23 17:04:42.363184 normalize expression
+2026-06-16 13:23:20.868616 make pseudobulk object
+2026-06-16 13:23:23.01088 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
+2026-06-16 13:23:23.032339 drop lowly expressed genes
+2026-06-16 13:23:23.135504 normalize expression
 Marker counts for mid resolution:
 
                Astrocyte                     Endo           Endo.microglia 
-                      50                      200                       39 
+                      47                      200                       15 
                Ependymal               Excit.Thal Excit.Thal.Inhib_LHb_4.2 
-                     200                      200                       86 
+                     200                      107                       87 
                      LHb                      MHb                    Oligo 
                      200                      200                      200 
                      OPC             Subependymal 
-                      43                      200 
-Warning messages:
-1: var_registration "cell_type_mid" contains non-syntatic variables: Excit.Thal/Inhib_LHb_4.2, Endo/microglia
+                      39                      200 
+Warning message:
+var_registration "cell_type_mid" contains non-syntatic variables: Excit.Thal/Inhib_LHb_4.2, Endo/microglia
 converting to Excit.Thal.Inhib_LHb_4.2, Endo.microglia 
-2: In get_mean_ratio(sce = spe_pb, assay_name = "logcounts", cellType_col = cell_type_col,  :
-  One or more cell types has < 10 cells, this may result in unstable marker genes results. Check details of get_mean_ratio() for more info
-2026-04-23 17:04:50.374851 make pseudobulk object
-2026-04-23 17:04:52.117427 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
-2026-04-23 17:04:52.134416 drop lowly expressed genes
-2026-04-23 17:04:52.2052 normalize expression
+2026-06-16 13:23:32.307329 make pseudobulk object
+2026-06-16 13:23:34.321464 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
+2026-06-16 13:23:34.343311 drop lowly expressed genes
+2026-06-16 13:23:34.438339 normalize expression
 Marker counts for broad resolution:
 
                Astrocyte                     Endo           Endo.microglia 
-                      56                      200                       47 
+                      55                      200                       19 
                Ependymal               Excit.Thal Excit.Thal.Inhib_LHb_4.2 
                      200                      200                      140 
                       Hb                    Oligo                      OPC 
-                     200                      200                       57 
+                     200                      200                       48 
             Subependymal 
                      200 
-Warning messages:
-1: var_registration "cell_type_broad" contains non-syntatic variables: Excit.Thal/Inhib_LHb_4.2, Endo/microglia
+Warning message:
+var_registration "cell_type_broad" contains non-syntatic variables: Excit.Thal/Inhib_LHb_4.2, Endo/microglia
 converting to Excit.Thal.Inhib_LHb_4.2, Endo.microglia 
-2: In get_mean_ratio(sce = spe_pb, assay_name = "logcounts", cellType_col = cell_type_col,  :
-  One or more cell types has < 10 cells, this may result in unstable marker genes results. Check details of get_mean_ratio() for more info
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.5.0 Patched (2025-05-21 r88220)
@@ -193,9 +188,9 @@ converting to Excit.Thal.Inhib_LHb_4.2, Endo.microglia
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2026-04-23
+ date     2026-06-16
  pandoc   3.7.0.1 @ /jhpce/shared/community/core/conda_R/4.5/bin/pandoc
- quarto   1.9.37 @ /users/neagles/.positron-server/bin/5dfc92424b4381ca7139f3f0a122a65abc2a9383/quarto/bin/quarto
+ quarto   1.9.38 @ /users/neagles/.positron-server/bin/d5f94f072b1083b8237930739cb6525c6e12e1da/quarto/bin/quarto
 
 ─ Packages ───────────────────────────────────────────────────────────────────
  package              * version   date (UTC) lib source
@@ -296,18 +291,21 @@ converting to Excit.Thal.Inhib_LHb_4.2, Endo.microglia
  memoise                2.0.1     2021-11-26 [1] CRAN (R 4.5.0)
  metapod                1.16.0    2025-04-15 [2] Bioconductor 3.21 (R 4.5.0)
  mime                   0.13      2025-03-17 [1] CRAN (R 4.5.0)
+ otel                   0.2.0     2025-08-29 [1] CRAN (R 4.5.0)
  paletteer              1.6.0     2024-01-21 [2] CRAN (R 4.5.0)
  pillar                 1.11.0    2025-07-04 [1] CRAN (R 4.5.0)
  pkgconfig              2.0.3     2019-09-22 [1] CRAN (R 4.5.0)
  plotly                 4.11.0    2025-06-19 [1] CRAN (R 4.5.0)
  png                    0.1-8     2022-11-29 [1] CRAN (R 4.5.0)
- promises               1.3.3     2025-05-29 [1] CRAN (R 4.5.0)
+ promises               1.5.0     2025-11-01 [1] CRAN (R 4.5.0)
  purrr                * 1.1.0     2025-07-10 [1] CRAN (R 4.5.0)
+ qs2                  * 0.1.7     2026-01-20 [1] CRAN (R 4.5.0)
  R6                     2.6.1     2025-02-15 [1] CRAN (R 4.5.0)
  rafalib                1.0.4     2025-04-08 [1] CRAN (R 4.5.0)
  rappdirs               0.3.3     2021-01-31 [1] CRAN (R 4.5.0)
  RColorBrewer           1.1-3     2022-04-03 [1] CRAN (R 4.5.0)
  Rcpp                   1.1.0     2025-07-02 [1] CRAN (R 4.5.0)
+ RcppParallel           5.1.10    2025-01-24 [2] CRAN (R 4.5.0)
  RCurl                  1.98-1.17 2025-03-22 [2] CRAN (R 4.5.0)
  readr                * 2.1.5     2024-01-10 [2] CRAN (R 4.5.0)
  rematch2               2.1.2     2020-05-01 [2] CRAN (R 4.5.0)
@@ -337,6 +335,7 @@ converting to Excit.Thal.Inhib_LHb_4.2, Endo.microglia
  SpatialExperiment    * 1.18.1    2025-05-11 [2] Bioconductor 3.21 (R 4.5.0)
  spatialLIBD          * 1.20.1    2025-05-01 [2] Bioconductor 3.21 (R 4.5.0)
  statmod                1.5.0     2023-01-06 [2] CRAN (R 4.5.0)
+ stringfish             0.18.0    2026-01-18 [1] CRAN (R 4.5.0)
  stringi                1.8.7     2025-03-27 [1] CRAN (R 4.5.0)
  stringr              * 1.5.1     2023-11-14 [1] CRAN (R 4.5.0)
  SummarizedExperiment * 1.38.1    2025-04-30 [2] Bioconductor 3.21 (R 4.5.0)
@@ -365,4 +364,4 @@ converting to Excit.Thal.Inhib_LHb_4.2, Endo.microglia
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Thu Apr 23 05:04:58 PM EDT 2026
+Tue Jun 16 01:23:42 PM EDT 2026
