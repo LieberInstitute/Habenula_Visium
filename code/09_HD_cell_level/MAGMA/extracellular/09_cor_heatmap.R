@@ -15,7 +15,7 @@ model_path = here(
 )
 ref_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
-    'modeling_results', 'fine.rds'
+    'modeling_results', '1_8_cell_types.rds'
 )
 out_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
@@ -29,8 +29,7 @@ t_stats_target = readRDS(model_path)$enrichment
 t_stats_ref = list(enrichment = readRDS(ref_path)$enrichment)
 
 this_cor = layer_stat_cor(
-    t_stats_target, modeling_results = t_stats_ref, model_type = "enrichment",
-    top_n = 100
+    t_stats_target, modeling_results = t_stats_ref, model_type = "enrichment"
 )
 
 anno_df = annotate_registered_clusters(this_cor, cutoff_merge_ratio = 0.1)
