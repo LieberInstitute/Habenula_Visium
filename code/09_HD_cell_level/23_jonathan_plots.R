@@ -26,6 +26,13 @@ plot_dir = here(
 
 dir.create(plot_dir, showWarnings = FALSE)
 
+#Human markers
+deconvo_marker_path = file.path(dirname(here()),'Hb_multiome','processed-data','05_03_annotation_adjustments','14_deconvoBuddies_markers')
+marker_stats_MeanRatio = readRDS(file = paste0(deconvo_marker_path, '/marker_stats_MeanRatio.rds'))
+marker_stats_1vAll = readRDS(file = paste0(deconvo_marker_path, '/marker_stats_1vAll.rds'))
+marker_stats = readRDS(file = paste0(deconvo_marker_path, '/marker_stats_combo.rds'))
+
+
 ################################################################################
 #   Functions
 ################################################################################
@@ -260,6 +267,89 @@ plot_marker_signature_spatial = function(spe_bin, sample_id, genes, px_per_plot,
     dev.off()
   
 }
+
+
+#And what about the z-scored values of the marker enrichments
+plot_marker_enrichment = function(spe_bin, sample_id, marker_set, px_per_plot, flip = FALSE){
+    
+    spe_test = spe_bin[, spe_bin$sample_id == sample_id]
+  
+    #CPM normalization and swap gene names
+    assay(spe_test, "cpm") = MetaMarkers::convert_to_cpm(assay(spe_test, "counts"))
+    rownames(spe_test) = rowData(spe_test)$gene_name
+
+    #Filter markers for those present in data
+    top_current_markers = marker_set  %>%
+    select(gene, cellType.target) %>% filter(gene %in% rownames(spe_test))
+
+    colnames(top_current_markers) = c('gene', 'cell_type')
+    top_current_markers$group = 'All'
+
+
+    ct_scores = MetaMarkers::score_cells(log1p(cpm(spe_test)), top_current_markers)
+    ct_enrichment = MetaMarkers::compute_marker_enrichment(ct_scores)
+    scaled_enrichment = scale(t(ct_enrichment))[ ,]
+
+
+    colnames(scaled_enrichment) = sapply(strsplit(colnames(scaled_enrichment), split = '|', fixed = TRUE), `[`, 2)
+    all_celltypes = colnames(scaled_enrichment)
+
+    # Gather expression and spatial coordinates into a tidy tibble
+    exp_df = as.matrix(scaled_enrichment) |>
+        as_tibble() |>
+        cbind(spatialCoords(spe_test)) |>
+        as_tibble() |>
+        mutate(
+            x = if (flip) max(pxl_col_in_fullres) - pxl_col_in_fullres else pxl_col_in_fullres,
+            y = if (flip) pxl_row_in_fullres else max(pxl_row_in_fullres) - pxl_row_in_fullres
+        )
+    
+    p_list = list()
+
+    for(this_celltype in all_celltypes){
+
+        p = ggplot(
+                exp_df,
+                aes(
+                    x = x, y = y, color = !!sym(this_celltype)
+                )
+            ) +
+            geom_point(size = .5) +
+            scale_color_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0,
+                                limits = c(NA, 5), oob = scales::squish) +
+            coord_fixed() +
+            labs(
+                color = 'scaled marker enrichment',
+                title = sprintf('%s %s', sample_id, this_celltype)
+            ) +
+            theme_bw(base_size = 15) +
+            theme(
+                axis.title.x = element_blank(), axis.title.y = element_blank(),
+                axis.text.x = element_blank(), axis.text.y = element_blank(),
+                axis.ticks.x = element_blank(), axis.ticks.y = element_blank(),
+                plot.title = element_text(size = 25),
+                plot.margin = margin(0, 0, 0, 0, 'pt'),
+                legend.key.size = unit(1, "cm"),
+                legend.text = element_text(size = 16),
+                legend.title = element_text(size = 18)
+            )
+
+        p_list[[this_celltype]] = p
+    
+        }
+
+    p = plot_grid(plotlist = p_list, nrow = 2)
+
+
+    png(
+        file.path(plot_dir, sprintf('%s_agg_markers.png', sample_id)),
+        width = px_per_plot * length(all_celltypes), height = px_per_plot * 2
+    )
+    print(p)
+    dev.off()
+
+}
+
 
 ################################################################################
 #   Main
@@ -618,23 +708,50 @@ for(i in 1:length(all_samples)){
 
 #Combinations of top marker genes, using the top 10 1vsAll markers as a starting point
 
-genes_to_sum = c('PDE11A', 'F13A1', 'TAC3','RASGRP1','ASIC2','CDC14A','GUCY1A1','SOX5','ONECUT1','THSD7B')
+top_1vsAll_marker_df = marker_stats_1vAll %>% group_by(cellType.target) %>% filter(std.logFC.rank <= 50)
+
+#top_1vsAll_marker_df = marker_stats_MeanRatio %>% group_by(cellType.target) %>% filter(MeanRatio.rank <= 20)
+
+
+dup_genes = top_1vsAll_marker_df$gene[which(duplicated(top_1vsAll_marker_df$gene))]
+#For each duplicate, assign it to the cell-type with the better (minimum) rank
+keep_dups = top_1vsAll_marker_df %>% filter(gene %in% dup_genes) %>% group_by(gene) %>% filter(std.logFC.rank == min(std.logFC.rank))
+#keep_dups = top_1vsAll_marker_df %>% filter(gene %in% dup_genes) %>% group_by(gene) %>% filter(MeanRatio.rank == min(MeanRatio.rank))
+top_1vsAll_marker_df = top_1vsAll_marker_df %>% filter(!gene %in% dup_genes)
+top_1vsAll_marker_df = rbind(top_1vsAll_marker_df, keep_dups)
+top_1vsAll_marker_df = top_1vsAll_marker_df %>% arrange(cellType.target)
+
+top_1vsAll_marker_df %>% group_by(cellType.target) %>% summarise(n = n())
+
+
+
+
+
+#MHb1 top _markers
+genes_to_sum = top_1vsAll_marker_df |> filter(cellType.target == 'MHb.1') |> pull(gene)
 genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+genes_to_sum = genes_to_sum[!is.na(genes_to_sum )]
 plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
                                plot_title = 'MHb1 top markers', alpha_value = 0.1)
 
-genes_to_sum = c('GPR149','NEUROD1','SLC5A7','TSPAN13','PDZRN4','GSDME','NWD2')
+#MHb2 top _markers
+genes_to_sum = top_1vsAll_marker_df |> filter(cellType.target == 'MHb.2') |> pull(gene)
 genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+genes_to_sum = genes_to_sum[!is.na(genes_to_sum )]
 plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
                                plot_title = 'MHb2 top markers', alpha_value = 0.1)
 
-genes_to_sum = c('MME','RET','SSTR2','GFRA1','PDGFD','MCC', 'SYT10')
+#MHb1.2 top _markers
+genes_to_sum = top_1vsAll_marker_df |> filter(cellType.target == 'MHb.1.2') |> pull(gene)
 genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+genes_to_sum = genes_to_sum[!is.na(genes_to_sum )]
 plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
                                plot_title = 'MHb1.2 top markers', alpha_value = 0.1)
 
-genes_to_sum = c('FGF10','ADH1B','BHLHE22','EBF3','SMIM35')
+#MHb3 top _markers
+genes_to_sum = top_1vsAll_marker_df |> filter(cellType.target == 'MHb.3') |> pull(gene)
 genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+genes_to_sum = genes_to_sum[!is.na(genes_to_sum )]
 plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
                                plot_title = 'MHb3 top markers', alpha_value = 0.1)
 
@@ -666,5 +783,26 @@ plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_
 
 
 
+
+
+
+plot_marker_enrichment(spe, sample_id = all_samples[1], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
+plot_marker_enrichment(spe, sample_id = all_samples[2], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
+plot_marker_enrichment(spe, sample_id = all_samples[3], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
+plot_marker_enrichment(spe, sample_id = all_samples[4], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
+plot_marker_enrichment(spe, sample_id = all_samples[5], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
+plot_marker_enrichment(spe, sample_id = all_samples[6], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
+plot_marker_enrichment(spe, sample_id = all_samples[7], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
+plot_marker_enrichment(spe, sample_id = all_samples[8], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
+plot_marker_enrichment(spe, sample_id = all_samples[9], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
+plot_marker_enrichment(spe, sample_id = all_samples[10], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
+
+
+
+
+
+
+
 session_info()
 
+  
