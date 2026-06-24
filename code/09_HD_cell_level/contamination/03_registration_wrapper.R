@@ -83,7 +83,7 @@ stopifnot(!any(is.na(sce$banksy_cluster)))
 ################################################################################
 
 model_results = registration_wrapper(
-    spe,
+    sce,
     var_registration = 'banksy_cluster',
     var_sample_id = 'sample_id',
     gene_ensembl = 'gene_id',
