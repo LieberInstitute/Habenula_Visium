@@ -6,10 +6,15 @@ library(qs2)
 library(scater)
 library(BiocSingular)
 library(BiocParallel)
+library(rtracklayer)
 
 spe_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary',
     'spe_norm_filtered_split.rds'
+)
+spe_pb_path = here(
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
+    'pseudobulk_spe', '1_8_cell_types.rds'
 )
 cluster_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'banksy',
@@ -27,13 +32,10 @@ svg_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'nnSVG_out',
     'merged_SVGs.txt'
 )
+gtf_path = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2024-A/genes/genes.gtf.gz'
 plot_dir = here('plots', '09_HD_cell_level', 'no_secondary', 'quick_shiny')
 out_dir = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'quick_shiny'
-)
-bad_coldata_cols = c(
-    'cell_ID', 'object_id', 'labels_joint_source', 'sum_umi_capped',
-    'sum_gene_capped'
 )
 cell_type_levels = c(
     'MHb.1', 'MHb.2', 'Excit_LHb', 'LHb.2.7', 'LHb.4', 'LHb.4/Inhib_LHb_4.2',
@@ -46,16 +48,50 @@ coldata_cols = c(
     'ManualAnnotation', 'exclude_overlapping', 'sizeFactor', 'ficture_cluster',
     'banksy_cluster', 'cell_type'
 )
+coldata_pb_cols = c(
+    'key', 'sample_id', 'donor', 'tissue_piece', 'bin_count',
+    'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio', 'ManualAnnotation',
+    'exclude_overlapping', 'cell_type'
+)
 
 num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK"))
 dir.create(plot_dir, showWarnings = FALSE)
 dir.create(out_dir, showWarnings = FALSE)
 
 ################################################################################
+#   Functions
+################################################################################
+
+fix_rowRanges = function(sce, gtf_genes) {
+    existing_rd = rowData(sce)
+    rowRanges(sce) = gtf_genes[match(rownames(sce), gtf_genes$gene_id)]
+    mcols(rowRanges(sce)) = existing_rd
+    rownames(sce) = rowData(sce)$gene_id
+
+    return(sce)
+}
+
+calc_reduced_dims = function(spe, svg, plot_path) {
+    spe = runPCA(
+        spe, ncomponents = 50, subset_row = svg, BSPARAM = IrlbaParam(),
+        BPPARAM = MulticoreParam(num_cores)
+    )
+    spe = runUMAP(spe, subset_row = svg, BPPARAM = MulticoreParam(num_cores))
+
+    p = plotReducedDim(spe, dimred = "UMAP", colour_by = "cell_type", point_size = 1)
+    png(plot_path, width = 7, height = 7, units = 'in', res = 200)
+    print(p)
+    dev.off()
+  
+    return(spe)
+}
+
+################################################################################
 #   Join in cell types, banksy clusters, and (extracellular) FICTURE clusters
 ################################################################################
 
 spe = readRDS(spe_path)
+spe_pb = readRDS(spe_pb_path)
 
 anno_df = tibble(key = spe$key) |>
     left_join(read_csv(cluster_path, show_col_types = FALSE), by = 'key') |>
@@ -73,18 +109,25 @@ spe$ficture_cluster = anno_df$ficture_cluster
 stopifnot(!any(is.na(spe$cell_type)))
 
 ################################################################################
+#    Fix rowRanges and seqinfo, which for some reason is corrupt
+################################################################################
+
+gtf_genes = import(gtf_path, feature.type = "gene")
+spe = fix_rowRanges(spe, gtf_genes)
+spe_pb = fix_rowRanges(spe_pb, gtf_genes)
+
+################################################################################
 #   Clean up colData
 ################################################################################
+
+#-------------------------------------------------------------------------------
+#   Cell-level SPE
+#-------------------------------------------------------------------------------
 
 #   Clean up cell types
 spe = spe[, spe$cell_type != 'Drop']
 stopifnot(setequal(spe$cell_type, cell_type_levels))
 spe$cell_type = factor(spe$cell_type, levels = cell_type_levels)
-
-#   Remove columns we don't need
-for (this_col in bad_coldata_cols) {
-    spe[[this_col]] = NULL
-}
 
 #   Use factors where appropriate
 spe$tissue_piece = factor(spe$tissue_piece, levels = c(1, 2))
@@ -101,28 +144,61 @@ spe$banksy_cluster = factor(
 spe$donor = str_extract(spe$sample_id, '^Br[0-9]{4}')
 spe$donor = factor(spe$donor, levels = sort(unique(spe$donor)))
 
-#   Reorder sensibly
-stopifnot(setequal(coldata_cols, colnames(colData(spe))))
+#   Reorder (and subset) sensibly
+stopifnot(all(coldata_cols %in% colnames(colData(spe))))
 colData(spe) = colData(spe)[, coldata_cols]
+
+#-------------------------------------------------------------------------------
+#   Pseudobulked SPE
+#-------------------------------------------------------------------------------
+
+spe_pb$cell_type = case_when(
+    spe_pb$cell_type == 'Endo.microglia' ~ 'Endo/microglia',
+    spe_pb$cell_type == 'Excit.Thal.Inhib_LHb_4.2' ~ 'Excit.Thal/Inhib_LHb_4.2',
+    spe_pb$cell_type == 'LHb.4.Inhib_LHb_4.2' ~ 'LHb.4/Inhib_LHb_4.2',
+    TRUE ~ spe_pb$cell_type
+)
+spe_pb$key = paste(spe_pb$sample_id, spe_pb$cell_type, sep = "_")
+
+#   Recompute bin_count as sum across all cells
+bin_df = tibble(
+        cell_type = spe$cell_type, bin_count = spe$bin_count,
+        sample_id = spe$sample_id
+    ) |>
+    mutate(key = paste(sample_id, cell_type, sep = "_")) |>
+    group_by(key) |>
+    summarize(bin_count = n())
+spe_pb$bin_count = tibble(key = spe_pb$key) |>
+    left_join(bin_df, by = 'key') |>
+    pull(bin_count)
+
+spe_pb$tissue_piece = factor(spe_pb$tissue_piece, levels = c(1, 2))
+
+#   Add donor
+spe_pb$donor = str_extract(spe_pb$sample_id, '^Br[0-9]{4}')
+spe_pb$donor = factor(spe_pb$donor, levels = sort(unique(spe_pb$donor)))
+
+#   Recompute spatialLIBD metrics
+spe_pb$sum_umi = colSums(counts(spe_pb))
+spe_pb$sum_gene = colSums(counts(spe_pb) > 0)
+is_mito = which(seqnames(spe_pb) == 'chrM')
+spe_pb$expr_chrM = colSums(counts(spe_pb)[is_mito, , drop = FALSE])
+spe_pb$expr_chrM_ratio = spe_pb$expr_chrM / spe_pb$sum_umi
+spe_pb$ManualAnnotation = "NA"
+
+#   Reorder (and subset) sensibly
+stopifnot(all(coldata_pb_cols %in% colnames(colData(spe_pb))))
+colData(spe_pb) = colData(spe_pb)[, coldata_pb_cols]
 
 ################################################################################
 #   Add PCA and UMAP
 ################################################################################
 
 svg = readLines(svg_path)
-spe = runPCA(
-    spe, ncomponents = 50, subset_row = svg, BSPARAM = IrlbaParam(),
-    BPPARAM = MulticoreParam(num_cores)
+spe = calc_reduced_dims(spe, svg, file.path(plot_dir, 'UMAP_cell_type_cell.png'))
+spe_pb = calc_reduced_dims(
+    spe_pb, svg, file.path(plot_dir, 'UMAP_cell_type_pb.png')
 )
-spe = runUMAP(spe, subset_row = svg, BPPARAM = MulticoreParam(num_cores))
-
-p = plotReducedDim(spe, dimred = "UMAP", colour_by = "cell_type", point_size = 1)
-png(
-    file.path(plot_dir, 'UMAP_cell_type.png'), width = 7, height = 7,
-    units = 'in', res = 200
-)
-print(p)
-dev.off()
 
 ################################################################################
 #   Save objects
@@ -130,9 +206,12 @@ dev.off()
 
 #   For ExperimentHub/ spatialLIBD::fetch_data()
 saveRDS(spe, file.path(out_dir, 'spe_cell_habenula_atlas.rds'))
+saveRDS(spe_pb, file.path(out_dir, 'spe_pb_habenula_atlas.rds'))
 
 #   For the Shiny app
 assays(spe) = list(logcounts = logcounts(spe))
+assays(spe_pb) = list(logcounts = logcounts(spe_pb))
 qs_save(spe, file.path(out_dir, 'spe_shiny.qs2'), nthreads = num_cores)
+qs_save(spe_pb, file.path(out_dir, 'spe_pb_shiny.qs2'), nthreads = num_cores)
 
 session_info()
