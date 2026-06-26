@@ -23,18 +23,17 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 repo_dir=$(git rev-parse --show-toplevel)
-source_dir=${repo_dir}/processed-data/12_apps_and_sharing/01_prep_objects
 dest_dir=${repo_dir}/processed-data/12_apps_and_sharing/shiny_app
 
-modeling_path=${repo_dir}/processed-data/09_HD_cell_level/no_secondary/registration_banksy/modeling_results/1_8_cell_types.rds
-
+#   Using relative paths for sym links so things work with git
+cd ${dest_dir}
 for f_name in spe_shiny.qs2 spe_pb_shiny.qs2 sig_genes_shiny.qs2; do
-    rm -f ${dest_dir}/${f_name}
-    ln -s ${source_dir}/${f_name} ${dest_dir}/${f_name}
+    rm -f ${f_name}
+    ln -s ../01_prep_objects/${f_name} ${f_name}
 done
 
-rm -f ${dest_dir}/modeling_results.rds
-ln -s ${modeling_path} ${dest_dir}/modeling_results.rds
+rm -f modeling_results.rds
+ln -s ../../09_HD_cell_level/no_secondary/registration_banksy/modeling_results/1_8_cell_types.rds modeling_results.rds
 
 echo "**** Job ends ****"
 date
