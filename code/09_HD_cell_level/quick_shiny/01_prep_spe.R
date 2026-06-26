@@ -2,6 +2,7 @@ library(tidyverse)
 library(here)
 library(sessioninfo)
 library(SpatialExperiment)
+library(spatialLIBD)
 library(qs2)
 library(scater)
 library(BiocSingular)
@@ -32,6 +33,10 @@ svg_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'nnSVG_out',
     'merged_SVGs.txt'
 )
+modeling_path = here(
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
+    'modeling_results', '1_8_cell_types.rds'
+)
 gtf_path = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2024-A/genes/genes.gtf.gz'
 plot_dir = here('plots', '09_HD_cell_level', 'no_secondary', 'quick_shiny')
 out_dir = here(
@@ -53,6 +58,7 @@ coldata_pb_cols = c(
     'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio', 'ManualAnnotation',
     'exclude_overlapping', 'cell_type'
 )
+sig_genes_n = 1000
 
 num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK"))
 dir.create(plot_dir, showWarnings = FALSE)
@@ -201,6 +207,17 @@ spe_pb = calc_reduced_dims(
 )
 
 ################################################################################
+#   Prep 'sig_genes' for the Shiny app
+################################################################################
+
+spe_pb$spatialLIBD = spe_pb$cell_type
+sig_genes = sig_genes_extract_all(
+    n = min(sig_genes_n, nrow(spe_pb)),
+    modeling_results = readRDS(modeling_path), sce_layer = spe_pb
+)
+spe_pb$spatialLIBD = NULL
+
+################################################################################
 #   Save objects
 ################################################################################
 
@@ -211,7 +228,11 @@ saveRDS(spe_pb, file.path(out_dir, 'spe_pb_habenula_atlas.rds'))
 #   For the Shiny app
 assays(spe) = list(logcounts = logcounts(spe))
 assays(spe_pb) = list(logcounts = logcounts(spe_pb))
+
 qs_save(spe, file.path(out_dir, 'spe_shiny.qs2'), nthreads = num_cores)
 qs_save(spe_pb, file.path(out_dir, 'spe_pb_shiny.qs2'), nthreads = num_cores)
+qs_save(
+    sig_genes, file.path(out_dir, 'sig_genes_shiny.qs2'), nthreads = num_cores
+)
 
 session_info()
