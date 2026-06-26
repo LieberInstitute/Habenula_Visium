@@ -62,7 +62,7 @@ vis_clus_improved = function(spe, sampleid, clustervar,target_celltypes, colors,
 }
 
 
-plot_combo = function(spe, combo_name,region_name, target_celltypes, alpha_value = 1, flip = FALSE, is_pdf = FALSE) {
+plot_combo = function(spe, combo_name, region_name, target_celltypes, alpha_value = 1, flip = FALSE, is_pdf = FALSE) {
     stopifnot(!is.null(spe[[combo_name]]))
 
     spe[[combo_name]] = factor(
@@ -71,34 +71,30 @@ plot_combo = function(spe, combo_name,region_name, target_celltypes, alpha_value
 
     all_samples = unique(spe$sample_id)
 
-    p_list = list()
     for (this_sample_id in all_samples) {
-        #   Run twice to overcome a bug with different behavior on the first
-        #   plot
+        #   Run twice to overcome a bug with different behavior on the first plot
         for (i in seq_len(2)) {
-            p_list[[this_sample_id]] = vis_clus_improved(
-                    spe, sampleid = this_sample_id, clustervar = combo_name,
-                    colors = cluster_combos[[combo_name]], target_celltypes, alpha_value, flip
-
-                )
+            p = vis_clus_improved(
+                spe, sampleid = this_sample_id, clustervar = combo_name,
+                colors = cluster_combos[[combo_name]], target_celltypes, alpha_value, flip
+            )
         }
+
+        if (is_pdf) {
+            pdf(
+                file.path(plot_dir, sprintf('%s_%s_%s.pdf', combo_name, region_name, this_sample_id)),
+                width = 8, height = 8
+            )
+        } else {
+            png(
+                file.path(plot_dir, sprintf('%s_%s_%s.png', combo_name, region_name, this_sample_id)),
+                width = px_per_plot, height = px_per_plot, units = "px"
+            )
+        }
+
+        print(p)
+        dev.off()
     }
-    p = plot_grid(plotlist = p_list, nrow = 1)
-    
-    if (is_pdf) {
-        pdf(
-            file.path(plot_dir, sprintf('%s_%s.pdf', combo_name, region_name)),
-            width = 12, height = 6
-        )
-    } else {
-        png(
-            file.path(plot_dir, sprintf('%s_%s.png', combo_name, region_name)),
-            width = px_per_plot * length(all_samples) / 1, height = px_per_plot * 1
-        )
-    }
-    
-    print(p)
-    dev.off()
 }
 
 
@@ -303,8 +299,6 @@ plot_marker_enrichment = function(spe_bin, sample_id, marker_set, px_per_plot, f
             x = if (flip) max(pxl_col_in_fullres) - pxl_col_in_fullres else pxl_col_in_fullres,
             y = if (flip) pxl_row_in_fullres else max(pxl_row_in_fullres) - pxl_row_in_fullres
         )
-    
-    p_list = list()
 
     for(this_celltype in all_celltypes){
 
@@ -334,19 +328,13 @@ plot_marker_enrichment = function(spe_bin, sample_id, marker_set, px_per_plot, f
                 legend.title = element_text(size = 18)
             )
 
-        p_list[[this_celltype]] = p
-    
-        }
-
-    p = plot_grid(plotlist = p_list, nrow = 2)
-
-
-    png(
-        file.path(plot_dir, sprintf('%s_agg_markers.png', sample_id)),
-        width = px_per_plot * length(all_celltypes), height = px_per_plot * 2
-    )
-    print(p)
-    dev.off()
+        png(
+            file.path(plot_dir, sprintf('%s_%s_marker_enrichment.png', sample_id, this_celltype)),
+            width = px_per_plot, height = px_per_plot
+        )
+        print(p)
+        dev.off()
+    }
 
 }
 
@@ -368,25 +356,28 @@ stopifnot(!any(is.na(spe$banksy)))
 #-------------------------------------------------------------------------------
 other_color = '#d4d4d4'
 
-my_colors_mid = c(Excit.Thal = "#4d55b7",
-  LHb.4 = "#00607A",
-  Inhib.Thal = "#9a9fe7",
-  Astrocyte = "#532222",
-  MHb.1.2 = "#92007C",
-  LHb.1 = "#008092",
+
+my_colors_mid = c(
+  Astrocyte = "#972f2f",
   OPC = "#829454",
   Oligo =  "#384a08",
   Microglia = "#141b02",
-  LHb.2.7 = "#6C9FA9",
-  Endo = "#d95f02",
-  LHb.1.3.4 = "#A8B8BC",
-  MHb.1 = "#A86A9A",
-  MHb.2 = "#BCA6B6",
-  MHb.3 = "#56204eff",
-  LHb.1.3 = "#C6C6C6",
-  Inhib_LHb_4.1 = "#8B0000",
-  Inhib_LHb_4.2 = "#DC143C",
-  Ependymal = "#f5a105ff"
+  Endo = "#f65a45",
+  Ependymal = "#dbb369",
+  
+  Excit.Thal = "#2e6296",
+  Inhib.Thal = "#8DADCA",
+  LHb.4 = "#082844",
+  Inhib_LHb_4.1 = "#9c66c0",
+  Inhib_LHb_4.2 = "#5e0c56",
+  LHb.1.3 = "#527BAA",
+  LHb.1 = "#0C383E",
+  LHb.2.7 = "#ee9630",
+  LHb.1.3.4 = "#306171",
+  MHb.1 = "#5e0c01",
+  MHb.1.2 = "#f67104",
+  MHb.2 = "#943f02",
+  MHb.3 = "#f4d5ab"
 ) 
 
 my_colors_class <- c(
@@ -399,6 +390,7 @@ my_colors_class <- c(
 
 
 
+
 cluster_combos = list(
     MHb.1 = c(
         MHb.1 = my_colors_mid[["MHb.1"]],
@@ -406,7 +398,7 @@ cluster_combos = list(
         LHb.2.7 = my_colors_mid[["LHb.2.7"]],
         LHb.4 = my_colors_mid[["LHb.4"]],
         Excit_LHb = "#0587f9",
-        Inhib_LHb_4.2 = my_colors_mid[["Inhib_LHb_4.2"]],
+        Thalamus = my_colors_mid[['Excit.Thal']],
         Other = other_color
     ),
     MHb.2 = c(
@@ -415,7 +407,7 @@ cluster_combos = list(
         LHb.2.7 = my_colors_mid[["LHb.2.7"]],
         LHb.4 = my_colors_mid[["LHb.4"]],
         Excit_LHb = "#0587f9",
-        Inhib_LHb_4.2 = my_colors_mid[["Inhib_LHb_4.2"]],
+        Thalamus = my_colors_mid[['Excit.Thal']],
         Other = other_color
     ),
     LHb.2.7 = c(
@@ -424,7 +416,7 @@ cluster_combos = list(
         LHb.2.7 = my_colors_mid[["LHb.2.7"]],
         LHb.4 = my_colors_mid[["LHb.4"]],
         Excit_LHb = "#0587f9",
-        Inhib_LHb_4.2 = my_colors_mid[["Inhib_LHb_4.2"]],
+        Thalamus = my_colors_mid[['Excit.Thal']],
         Other = other_color
     ),
     LHb.4 = c(
@@ -433,7 +425,7 @@ cluster_combos = list(
         LHb.2.7 = my_colors_mid[["LHb.2.7"]],
         LHb.4 = my_colors_mid[["LHb.4"]],
         Excit_LHb = "#0587f9",
-        Inhib_LHb_4.2 = my_colors_mid[["Inhib_LHb_4.2"]],
+        Thalamus = my_colors_mid[['Excit.Thal']],
         Other = other_color
     ),
     Excit_LHb = c(
@@ -442,7 +434,7 @@ cluster_combos = list(
         LHb.2.7 = my_colors_mid[["LHb.2.7"]],
         LHb.4 = my_colors_mid[["LHb.4"]],
         Excit_LHb = "#0587f9",
-        Inhib_LHb_4.2 = my_colors_mid[["Inhib_LHb_4.2"]],
+        Thalamus = my_colors_mid[['Excit.Thal']],
         Other = other_color
     ),
     Inhib_LHb_4.2 = c(
@@ -451,7 +443,7 @@ cluster_combos = list(
         LHb.2.7 = my_colors_mid[["LHb.2.7"]],
         LHb.4 = my_colors_mid[["LHb.4"]],
         Excit_LHb = "#0587f9",
-        Inhib_LHb_4.2 = my_colors_mid[["Inhib_LHb_4.2"]],
+        Thalamus = my_colors_mid[['Excit.Thal']],
         Other = other_color
     ),
     summary = c(
@@ -504,9 +496,17 @@ cluster_combos = list(
         Ependymal = my_colors_mid[["Ependymal"]],
         Subependymal = "#8d9707",
         Other = other_color
-    )
-)
+    ),
+    MHb.1_only = c(MHb.1 = my_colors_mid[["MHb.1"]], Other = other_color),
+    MHb.2_only = c(MHb.2 = my_colors_mid[["MHb.2"]], Other = other_color),
+    LHb.2.7_only = c(LHb.2.7 = my_colors_mid[["LHb.2.7"]], Other = other_color),
+    LHb.4_only = c(LHb.4 = my_colors_mid[["LHb.4"]], Other = other_color),
+    Excit_LHb_only = c(Excit_LHb = "#0587f9", Other = other_color),
+    Astro_only = c(Astrocyte = my_colors_mid[["Astrocyte"]], Other = other_color),
+    OPC_only = c(OPC = my_colors_mid[["OPC"]], Other = other_color),
+    Oligo_only = c(Oligo = my_colors_mid[["Oligo"]], Other = other_color)
 
+)
 
 
 spe$MHb.1 = case_when(
@@ -515,7 +515,7 @@ spe$MHb.1 = case_when(
     spe$banksy == 19 ~ "LHb.2.7",
     spe$banksy %in% c(7, 25) ~ "LHb.4",
     spe$banksy == 23 ~ "Excit_LHb",
-    spe$banksy %in% c(5, 9) ~ "Inhib_LHb_4.2",
+    spe$banksy == 20 ~ "Thalamus",
     TRUE ~ "Other"
 )
 spe$MHb.2 = case_when(
@@ -615,6 +615,39 @@ spe$OPC = case_when(
     TRUE ~ "Other"  
 )
 
+spe$MHb.1_only = case_when(
+    spe$banksy == 8 ~ "MHb.1",
+    TRUE ~ "Other"
+)
+spe$MHb.2_only = case_when(
+    spe$banksy == 15 ~ "MHb.2",
+    TRUE ~ "Other"
+)
+spe$LHb.2.7_only = case_when(
+    spe$banksy == 19 ~ "LHb.2.7",
+    TRUE ~ "Other"
+)
+spe$LHb.4_only = case_when(
+    spe$banksy %in% c(7, 25) ~ "LHb.4",
+    TRUE ~ "Other"
+)
+spe$Excit_LHb_only = case_when(
+    spe$banksy == 23 ~ "Excit_LHb",
+    TRUE ~ "Other"
+)
+spe$Astro_only = case_when(
+    spe$banksy %in% c(6, 11, 18) ~ "Astrocyte",
+    TRUE ~ "Other"
+)
+spe$Oligo_only = case_when(
+    spe$banksy %in% c(3,4,10,27) ~ "Oligo",
+    TRUE ~ "Other"
+)
+spe$OPC_only = case_when(
+    spe$banksy == 1 ~ "OPC",
+    TRUE ~ "Other"
+)
+
 
 #-------------------------------------------------------------------------------
 #   Plot combinations
@@ -651,7 +684,7 @@ alpha_value = .005, flip = FALSE, is_pdf = FALSE)
 
 all_samples = unique(spe$sample_id)
 
-genes = c('GFAP', 'AQP4')
+genes = c('GFAP', 'AQP4', 'S100B','SLC1A2','SLC1A3','APOE','VIM','NFIA', 'NFIB')
 genes = rowData(spe)$gene_id[match(genes, rowData(spe)$gene_name)]
 plot_marker_spatial(spe, sample_id = all_samples[1], genes, px_per_plot, plot_title = 'astrocyte_markers_cells', alpha_value = .1, flip = FALSE)
 
@@ -727,66 +760,66 @@ top_1vsAll_marker_df %>% group_by(cellType.target) %>% summarise(n = n())
 
 
 
-#MHb1 top _markers
-genes_to_sum = top_1vsAll_marker_df |> filter(cellType.target == 'MHb.1') |> pull(gene)
-genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
-genes_to_sum = genes_to_sum[!is.na(genes_to_sum )]
-plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
-                               plot_title = 'MHb1 top markers', alpha_value = 0.1)
+# #MHb1 top _markers
+# genes_to_sum = top_1vsAll_marker_df |> filter(cellType.target == 'MHb.1') |> pull(gene)
+# genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+# genes_to_sum = genes_to_sum[!is.na(genes_to_sum )]
+# plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+#                                plot_title = 'MHb1 top markers', alpha_value = 0.1)
 
-#MHb2 top _markers
-genes_to_sum = top_1vsAll_marker_df |> filter(cellType.target == 'MHb.2') |> pull(gene)
-genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
-genes_to_sum = genes_to_sum[!is.na(genes_to_sum )]
-plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
-                               plot_title = 'MHb2 top markers', alpha_value = 0.1)
+# #MHb2 top _markers
+# genes_to_sum = top_1vsAll_marker_df |> filter(cellType.target == 'MHb.2') |> pull(gene)
+# genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+# genes_to_sum = genes_to_sum[!is.na(genes_to_sum )]
+# plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+#                                plot_title = 'MHb2 top markers', alpha_value = 0.1)
 
-#MHb1.2 top _markers
-genes_to_sum = top_1vsAll_marker_df |> filter(cellType.target == 'MHb.1.2') |> pull(gene)
-genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
-genes_to_sum = genes_to_sum[!is.na(genes_to_sum )]
-plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
-                               plot_title = 'MHb1.2 top markers', alpha_value = 0.1)
+# #MHb1.2 top _markers
+# genes_to_sum = top_1vsAll_marker_df |> filter(cellType.target == 'MHb.1.2') |> pull(gene)
+# genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+# genes_to_sum = genes_to_sum[!is.na(genes_to_sum )]
+# plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+#                                plot_title = 'MHb1.2 top markers', alpha_value = 0.1)
 
-#MHb3 top _markers
-genes_to_sum = top_1vsAll_marker_df |> filter(cellType.target == 'MHb.3') |> pull(gene)
-genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
-genes_to_sum = genes_to_sum[!is.na(genes_to_sum )]
-plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
-                               plot_title = 'MHb3 top markers', alpha_value = 0.1)
-
-
-genes_to_sum = c('COL25A1','GALR1','CBLN2','RFTN1','CHRM2','CALN1', 'PRKD1')
-genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
-plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
-                               plot_title = 'LHb2.7 top markers', alpha_value = 0.1)
-
-genes_to_sum = c('MMRN1','GRIK4','SEMA3D','EBF1','HTR4', 'KCNH8', 'TENM1', 'SLC35F3')
-genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
-plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
-                               plot_title = 'LHb1.3.4 top markers', alpha_value = 0.1)
-
-genes_to_sum = c('DAB1','NOVA1','GABRG3','ARPP21', 'HS3ST4', 'SEMA5A', 'GABRB1', 'CACNA2D1', 'SLIT1')
-genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
-plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
-                               plot_title = 'LHb4 top markers', alpha_value = 0.1)
-
-genes_to_sum = c('SLC32A1','PNOC','SIX3','PAX7')
-genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
-plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
-                               plot_title = 'Inhib4.2 top markers', alpha_value = 0.1)
-
-genes_to_sum = c('TFAP2B','NXPH1','NRXN3','GAD2','GRM8', 'PAX3', 'LHX1', 'EMX2', 'ADRA1A', 'GATA3')
-genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
-plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
-                               plot_title = 'Inhib4.1 top markers', alpha_value = 0.1)
+# #MHb3 top _markers
+# genes_to_sum = top_1vsAll_marker_df |> filter(cellType.target == 'MHb.3') |> pull(gene)
+# genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+# genes_to_sum = genes_to_sum[!is.na(genes_to_sum )]
+# plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+#                                plot_title = 'MHb3 top markers', alpha_value = 0.1)
 
 
+# genes_to_sum = c('COL25A1','GALR1','CBLN2','RFTN1','CHRM2','CALN1', 'PRKD1')
+# genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+# plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+#                                plot_title = 'LHb2.7 top markers', alpha_value = 0.1)
+
+# genes_to_sum = c('MMRN1','GRIK4','SEMA3D','EBF1','HTR4', 'KCNH8', 'TENM1', 'SLC35F3')
+# genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+# plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+#                                plot_title = 'LHb1.3.4 top markers', alpha_value = 0.1)
+
+# genes_to_sum = c('DAB1','NOVA1','GABRG3','ARPP21', 'HS3ST4', 'SEMA5A', 'GABRB1', 'CACNA2D1', 'SLIT1')
+# genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+# plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+#                                plot_title = 'LHb4 top markers', alpha_value = 0.1)
+
+# genes_to_sum = c('SLC32A1','PNOC','SIX3','PAX7')
+# genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+# plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+#                                plot_title = 'Inhib4.2 top markers', alpha_value = 0.1)
+
+# genes_to_sum = c('TFAP2B','NXPH1','NRXN3','GAD2','GRM8', 'PAX3', 'LHX1', 'EMX2', 'ADRA1A', 'GATA3')
+# genes_to_sum = rowData(spe)$gene_id[match(genes_to_sum, rowData(spe)$gene_name)]
+# plot_marker_signature_spatial(spe, sample_id = all_samples[3], genes_to_sum, px_per_plot, 
+#                                plot_title = 'Inhib4.1 top markers', alpha_value = 0.1)
 
 
 
 
-plot_marker_enrichment(spe, sample_id = all_samples[1], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
+
+
+plot_marker_enrichment(spe, sample_id = all_samples[1], marker_set = top_1vsAll_marker_df, px_per_plot = 600, flip = FALSE)
 plot_marker_enrichment(spe, sample_id = all_samples[2], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
 plot_marker_enrichment(spe, sample_id = all_samples[3], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
 plot_marker_enrichment(spe, sample_id = all_samples[4], marker_set = top_1vsAll_marker_df, px_per_plot, flip = FALSE)
