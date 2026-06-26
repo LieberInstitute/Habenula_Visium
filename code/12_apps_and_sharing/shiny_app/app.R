@@ -8,8 +8,7 @@ library(qs2)
 # setwd(here('code', '12_apps_and_sharing', 'shiny_app'))
 
 discrete_vars = c(
-    'sample_id', 'donor', 'tissue_piece', 'ManualAnnotation', 'ficture_cluster',
-    'banksy_cluster', 'cell_type'
+    'ManualAnnotation', 'ficture_cluster', 'banksy_cluster', 'cell_type'
 )
 continuous_vars = c(
     'bin_count', 'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio'

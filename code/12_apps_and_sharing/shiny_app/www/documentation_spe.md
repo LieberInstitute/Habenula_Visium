@@ -15,8 +15,9 @@ Before the documentation, this tab displays the [SpatialExperiment](https://bioc
 * `Samples to plot`: which sample to plot on the tabs that do not have _grid_ on their name.
 * `Discrete variable to plot`: which discrete variable (typically with the cluster labels) to visualize. We include the clusters:
   - `ManualAnnotation`: your own annotations of each cell.
-  - `banksy`: cell-level clusters found by `Banksy`.
-  - `cell_type`: cell types corresponding to the `banksy` clusters, using identitites from the [Yalcinbas 2025 paper](doi.org/10.1176/appi.ajp.20240776).
+  - `ficture_cluster`: the dominant `FICTURE` cluster present in nearby extracellular bins
+  - `banksy_cluster`: cell-level clusters found by `Banksy`.
+  - `cell_type`: cell types corresponding to the `banksy_cluster` clusters.
 * `Reduced dimensions`: which reduced dimension to visualize on the `clusters (interactive)` tab. Only the first two dimensions will be shown.
 * `Continuous variable to plot`: which gene or continuous variable to visualize in the gene tabs as well as on the `clusters (interactive)` tab. The following options exist:
   - `bin_count`: number of 2-micron bins covered by the segmented cell body.
