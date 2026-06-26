@@ -7,11 +7,6 @@ library(qs2)
 #   For interactive testing at JHPCE
 # setwd(here('code', '12_apps_and_sharing', 'shiny_app'))
 
-spe_path = 'spe_shiny.qs2'
-modeling_path = 'modeling_results.rds'
-spe_pb_path = 'spe_pb_shiny.qs2'
-sig_genes_path = 'sig_genes_shiny.qs2'
-docs_dir = 'www'
 discrete_vars = c(
     'sample_id', 'donor', 'tissue_piece', 'ManualAnnotation', 'ficture_cluster',
     'banksy_cluster', 'cell_type'
@@ -27,10 +22,10 @@ options("golem.app.prod" = TRUE)
 options(repos = BiocManager::repositories())
 
 #   Load objects
-spe = qs_read(spe_path)
-modeling_results = readRDS(modeling_path)
-spe_pb = readRDS(spe_pb_path)
-sig_genes = qs_read(sig_genes_path)
+spe = qs_read('spe_shiny.qs2')
+modeling_results = readRDS('modeling_results.rds')
+spe_pb = qs_read('spe_pb_shiny.qs2')
+sig_genes = qs_read('sig_genes_shiny.qs2')
 
 ## Deploy the website
 run_app(
@@ -42,6 +37,6 @@ run_app(
     spe_discrete_vars = discrete_vars,
     spe_continuous_vars = continuous_vars,
     default_cluster = "cell_type",
-    docs_path = docs_dir,
+    docs_path = 'www',
     is_stitched = TRUE
 )
