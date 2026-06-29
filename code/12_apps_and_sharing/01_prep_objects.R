@@ -173,7 +173,7 @@ bin_df = tibble(
     ) |>
     mutate(key = paste(sample_id, cell_type, sep = "_")) |>
     group_by(key) |>
-    summarize(bin_count = n())
+    summarize(bin_count = sum(bin_count))
 spe_pb$bin_count = tibble(key = spe_pb$key) |>
     left_join(bin_df, by = 'key') |>
     pull(bin_count)

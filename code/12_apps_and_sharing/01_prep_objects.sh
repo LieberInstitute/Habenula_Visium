@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=20G
+#SBATCH --mem=40G
 #SBATCH --job-name=01_prep_objects
 #SBATCH -c 4
 #SBATCH -t 1-0:00:00

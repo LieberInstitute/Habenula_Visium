@@ -59,7 +59,6 @@ sig_genes <- spatialLIBD::sig_genes_extract_all(
 In this panel you can visualize the cell-type-level data (`sce_pseudo`) across reduced dimensionality representations derived from the gene expression data from the cell-type-level pseudo-bulked data. Select which dimensionality reduction method to use with `Reduced Dimension` (PCA or UMAP). Then use `Color by` to choose which variable to color data by, which can be useful to identify groups of pseudo-bulked samples. The options are:
 
 * `cell_type`: the cell type with which each `Banksy` cluster was annotated.
-* `bin_count`: the total of 2μm bins covered by all cells in the pseudobulked sample.
 * `sum_umi`: total number of reads present in a pseudobulked sample.
 * `sum_gene`: total number of genes with nonzero expression in a pseudobulked sample.
 * `expr_chrM`: sum of chrM counts in a pseudobulked sample.

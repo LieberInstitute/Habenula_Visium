@@ -11,9 +11,12 @@ discrete_vars = c(
     'ManualAnnotation', 'ficture_cluster', 'banksy_cluster', 'cell_type'
 )
 continuous_vars = c(
-    'bin_count', 'ncells', 'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio'
+    'bin_count', 'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio'
 )
-all_vars_pb = c('cell_type', continuous_vars, 'sample_id', 'donor')
+all_vars_pb = c(
+    'cell_type', 'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio',
+    'ncells', 'sample_id', 'donor'
+)
 
 ## spatialLIBD uses golem
 options("golem.app.prod" = TRUE)
