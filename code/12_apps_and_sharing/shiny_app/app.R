@@ -11,7 +11,7 @@ discrete_vars = c(
     'ManualAnnotation', 'ficture_cluster', 'banksy_cluster', 'cell_type'
 )
 continuous_vars = c(
-    'bin_count', 'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio'
+    'bin_count', 'ncells', 'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio'
 )
 all_vars_pb = c('cell_type', continuous_vars, 'sample_id', 'donor')
 
@@ -24,16 +24,16 @@ options(repos = BiocManager::repositories())
 #   Load objects
 spe = qs_read('spe_shiny.qs2')
 modeling_results = readRDS('modeling_results.rds')
-spe_pb = qs_read('spe_pb_shiny.qs2')
+sce_pb = qs_read('sce_pb_shiny.qs2')
 sig_genes = qs_read('sig_genes_shiny.qs2')
 
-stopifnot(all(all_vars_pb %in% colnames(colData(spe_pb))))
-colData(spe_pb) = colData(spe_pb)[, all_vars_pb]
+stopifnot(all(all_vars_pb %in% colnames(colData(sce_pb))))
+colData(sce_pb) = colData(sce_pb)[, all_vars_pb]
 
 ## Deploy the website
 run_app(
     spe,
-    sce_layer = spe_pb,
+    sce_layer = sce_pb,
     modeling_results = modeling_results,
     sig_genes = sig_genes,
     title = "habenula_atlas_Visium_HD",

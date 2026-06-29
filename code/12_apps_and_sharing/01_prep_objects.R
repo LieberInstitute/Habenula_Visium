@@ -52,7 +52,7 @@ coldata_cols = c(
     'banksy_cluster', 'cell_type'
 )
 coldata_pb_cols = c(
-    'key', 'sample_id', 'donor', 'tissue_piece', 'bin_count',
+    'key', 'sample_id', 'donor', 'tissue_piece', 'bin_count', 'ncells',
     'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio', 'ManualAnnotation',
     'exclude_overlapping', 'cell_type'
 )
@@ -223,16 +223,18 @@ spe_pb$spatialLIBD = NULL
 #   Save objects
 ################################################################################
 
+sce_pb = as(spe_pb, "SingleCellExperiment")
+
 #   For ExperimentHub/ spatialLIBD::fetch_data()
 saveRDS(spe, file.path(out_dir, 'spe_cell_habenula_atlas.rds'))
-saveRDS(spe_pb, file.path(out_dir, 'spe_pb_habenula_atlas.rds'))
+saveRDS(sce_pb, file.path(out_dir, 'sce_pb_habenula_atlas.rds'))
 
 #   For the Shiny app
 assays(spe) = list(logcounts = logcounts(spe))
-assays(spe_pb) = list(logcounts = logcounts(spe_pb))
+assays(sce_pb) = list(logcounts = logcounts(sce_pb))
 
 qs_save(spe, file.path(out_dir, 'spe_shiny.qs2'), nthreads = num_cores)
-qs_save(spe_pb, file.path(out_dir, 'spe_pb_shiny.qs2'), nthreads = num_cores)
+qs_save(sce_pb, file.path(out_dir, 'sce_pb_shiny.qs2'), nthreads = num_cores)
 qs_save(
     sig_genes, file.path(out_dir, 'sig_genes_shiny.qs2'), nthreads = num_cores
 )
