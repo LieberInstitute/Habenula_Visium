@@ -32,8 +32,10 @@ for (i in seq_along(all_genes)) {
                 spatial = FALSE, is_stitched = TRUE, point_size = 50,
                 cap_percentile = 0.995
             ) +
-          theme_void(base_size = 50) +
-          theme(legend.key.size = unit(2, "cm"))
+            theme_void(base_size = 50) +
+            theme(
+                legend.key.size = unit(2, "cm"), legend.direction = "horizontal"
+            )
     }
   
     png(
