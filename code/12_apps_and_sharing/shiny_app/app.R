@@ -33,6 +33,10 @@ sig_genes = qs_read('sig_genes_shiny.qs2')
 stopifnot(all(all_vars_pb %in% colnames(colData(sce_pb))))
 colData(sce_pb) = colData(sce_pb)[, all_vars_pb]
 
+#   For consistency with modeling results. Because cell types go in column
+#   names there, we can't use '/'
+sce_pb$cell_type = str_replace_all(sce_pb$cell_type, '/', '.')
+
 ## Deploy the website
 run_app(
     spe,
