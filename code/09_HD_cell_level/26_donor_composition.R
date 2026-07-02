@@ -26,7 +26,7 @@ num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK"))
 duckplyr::db_exec(sprintf("SET threads = %d", num_cores))
 fallback_config(info = FALSE)
 
-composition_barplot = function(this_df, x_lab, plot_path) {
+composition_barplot = function(this_df, x_lab, y_lab, plot_path) {
     p = this_df |>
         count(cluster, donor) |>
         group_by(cluster) |>
@@ -37,7 +37,7 @@ composition_barplot = function(this_df, x_lab, plot_path) {
             geom_col() +
             scale_fill_manual(values = donor_colors) +
             scale_y_continuous(labels = scales::percent_format()) +
-            labs(x = x_lab, y = "Proportion of cells", fill = "Donor") +
+            labs(x = x_lab, y = y_lab, fill = "Donor") +
             theme_bw(base_size = 16)
 
     pdf(plot_path, width = 10, height = 4)
@@ -71,11 +71,11 @@ banksy_df = read_csv_duckdb(banksy_path, prudence = 'stingy') |>
     select(donor, cluster)
 
 composition_barplot(
-    ficture_df, "Extracellular FICTURE cluster",
+    ficture_df, "Extracellular FICTURE cluster", "Proportion of bins",
     file.path(plot_dir, 'ficture_donor_composition.pdf')
 )
 composition_barplot(
-    banksy_df, "Banksy cluster",
+    banksy_df, "Banksy cluster", "Proportion of cells",
     file.path(plot_dir, 'banksy_donor_composition.pdf')
 )
 
