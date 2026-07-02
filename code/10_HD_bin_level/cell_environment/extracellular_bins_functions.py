@@ -63,7 +63,7 @@ def export_and_plot(adata, plot_dir, sample_id, mpp, random_state = 0):
         img_key=f"{mpp}_mpp_150_buffer", basis="spatial_cropped_150_buffer"
     )
     plt.savefig(
-        os.path.join(plot_dir, f'{sample_id}_random_cells.png')
+        os.path.join(plot_dir, f'{sample_id}_random_cells.pdf')
     )
     plt.close('all')
 
