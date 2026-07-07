@@ -6,7 +6,7 @@ initial <- list()
 
 initial[["ReducedDimensionPlot1"]] <- new(
     "ReducedDimensionPlot",
-    Type = "PCA",
+    Type = "UMAP",
     XAxis = 1L,
     YAxis = 2L,
     FacetRowByColData = "cell_type",
@@ -78,16 +78,13 @@ initial[["ComplexHeatmapPlot1"]] <- new(
     "ComplexHeatmapPlot",
     Assay = "logcounts",
     CustomRows = TRUE,
-    CustomRowsText = "SNAP25\nAQP4\nGAD1\nSLC17A6\nSLC32A1\nRELN\nMBP\nGFAP",
+    CustomRowsText = "MME\nGPR149\nMMRN1\nCRYM\nANKRD18B\nMYOZ3\nIPCEF1\nPLEKHD1\nTMEM52\nECEL1\nSLC22A6\nTHBD\nZNF710\nHOXD1\nCOL20A1",
     ClusterRows = FALSE,
     ClusterRowsDistance = "spearman",
     ClusterRowsMethod = "ward.D2",
     DataBoxOpen = FALSE,
     VisualChoices = "Annotations",
-    ColumnData = c(
-        "cell_type",
-        "subject"
-    ),
+    ColumnData = "cell_type",
     RowData = character(0),
     CustomBounds = FALSE,
     LowerBound = NA_real_,
@@ -129,7 +126,7 @@ initial[["ComplexHeatmapPlot1"]] <- new(
 
 initial[["RowDataTable1"]] <- new(
     "RowDataTable",
-    Selected = "SNAP25",
+    Selected = "OPRM1",
     Search = "",
     SearchColumns = c(
         "",
@@ -169,7 +166,7 @@ initial[["FeatureAssayPlot1"]] <- new(
     XAxisFeatureName = "MBP",
     XAxisFeatureSource = "---",
     XAxisFeatureDynamicSource = FALSE,
-    YAxisFeatureName = "SNAP25",
+    YAxisFeatureName = "OPRM1",
     YAxisFeatureSource = "RowDataTable1",
     YAxisFeatureDynamicSource = TRUE,
     FacetRowByColData = "cell_type",
@@ -178,7 +175,7 @@ initial[["FeatureAssayPlot1"]] <- new(
     ColorByFeatureNameAssay = "logcounts",
     ColorBySampleNameColor = "#FF0000",
     ShapeByColumnData = "cell_type",
-    SizeByColumnData = "age",
+    # SizeByColumnData = "age",
     TooltipColumnData = character(0),
     FacetRowBy = "None",
     FacetColumnBy = "None",
