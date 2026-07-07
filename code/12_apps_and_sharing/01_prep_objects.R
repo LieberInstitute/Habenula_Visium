@@ -37,14 +37,10 @@ modeling_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'modeling_results', '1_8_cell_types.rds'
 )
+color_path = here('code', 'hd_colors.R')
 gtf_path = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2024-A/genes/genes.gtf.gz'
 plot_dir = here('plots', '12_apps_and_sharing', '01_prep_objects')
 out_dir = here('processed-data', '12_apps_and_sharing', '01_prep_objects')
-cell_type_levels = c(
-    'MHb.1', 'MHb.2', 'Excit_LHb', 'LHb.2.7', 'LHb.4', 'LHb.4/Inhib_LHb_4.2',
-    'Excit.Thal/Inhib_LHb_4.2', 'Excit.Thal', 'Astrocyte', 'Endo',
-    'Endo/microglia', 'Ependymal', 'Subependymal', 'Oligo', 'OPC'
-)
 coldata_cols = c(
     'key', 'sample_id', 'donor', 'tissue_piece', 'array_row', 'array_col',
     'bin_count', 'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio',
@@ -61,6 +57,9 @@ sig_genes_n = 1000
 num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK"))
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
+
+source(color_path)
+cell_type_levels = names(cell_type_colors)
 
 ################################################################################
 #   Functions
