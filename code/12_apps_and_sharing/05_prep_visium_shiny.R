@@ -141,10 +141,10 @@ qs_save(
 
 for (f_base_name in c('spe_shiny.qs2', 'sce_pb_shiny.qs2', 'sig_genes_shiny.qs2')) {
     with_dir(
-    app_dir,
+        app_dir,
         system(
             sprintf(
-                "ln -s ../../processed-data/12_apps_and_sharing/05_prep_visium_shiny/%s %s",
+                "ln -s ../../../processed-data/12_apps_and_sharing/05_prep_visium_shiny/%s %s",
                 f_base_name, f_base_name
             )
         )
@@ -155,7 +155,7 @@ with_dir(
     app_dir,
     system(
         sprintf(
-            "ln -s ../../processed-data/05_brain_area_differential_expression/modeling_results_BS/modeling_results_BayesSpace_k09.Rdata modeling_results.Rdata"
+            "ln -s ../../../processed-data/05_brain_area_differential_expression/modeling_results_BS/modeling_results_BayesSpace_k09.Rdata modeling_results.Rdata"
         )
     )
 )
