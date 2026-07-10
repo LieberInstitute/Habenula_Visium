@@ -23,7 +23,7 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 repo_dir=$(git rev-parse --show-toplevel)
-dest_dir=${repo_dir}/code/12_apps_and_sharing/iSEE_app
+dest_dir=${repo_dir}/code/12_apps_and_sharing/iSEE_HD_app
 f_name=sce_pb_shiny.qs2
 
 #   Using relative paths for sym links so things work with git
