@@ -2,7 +2,7 @@
 #SBATCH -p katun
 #SBATCH --mem=20G
 #SBATCH --job-name=05_prep_visium_shiny
-#SBATCH -c 1
+#SBATCH -c 2
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../processed-data/12_apps_and_sharing/logs/05_prep_visium_shiny.txt
 #SBATCH -e ../../processed-data/12_apps_and_sharing/logs/05_prep_visium_shiny.txt

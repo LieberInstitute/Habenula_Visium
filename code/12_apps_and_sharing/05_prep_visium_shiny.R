@@ -6,11 +6,12 @@ library(qs2)
 library(spatialLIBD)
 library(lobstr)
 library(withr)
+library(scran)
 
 spe_in_path = here("processed-data", "04_harmony_BayesSpace", "spe_harmony.rds")
 sce_pb_in_path = here(
     "processed-data", "05_brain_area_differential_expression",
-    "sce_pseudo_BayesSpace_k09.rds"
+    "sce_pseudo_PCA_brain_area_k09.rds"
 )
 cluster_dir = here(
     "processed-data", "04_harmony_BayesSpace", "clusters_BayesSpace"
@@ -28,6 +29,28 @@ sig_genes_n = 1000
 
 dir.create(out_dir, showWarnings = FALSE)
 dir.create(app_dir, showWarnings = FALSE)
+
+num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK"))
+
+################################################################################
+#   Functions
+################################################################################
+
+calc_reduced_dims = function(spe) {
+    dec = modelGeneVar(
+        spe, block = spe$sample_id, BPPARAM = MulticoreParam(num_cores)
+    )
+    top_genes = getTopHVGs(dec, prop = 0.1)
+
+    spe = runPCA(
+        spe, ncomponents = 50, subset_row = svg, BSPARAM = IrlbaParam(),
+        BPPARAM = MulticoreParam(num_cores)
+    )
+    spe = runUMAP(spe, subset_row = svg, BPPARAM = MulticoreParam(num_cores))
+  
+    return(spe)
+}
+
 
 ################################################################################
 #   Prep 'spe'
@@ -72,6 +95,9 @@ colnames(sce_pb) = paste(
     sce_pb$sample_id, sce_pb$BayesSpace_harmony_k09, sep = "_"
 )
 
+reducedDims(sce_pb) = list()
+sce_pb = calc_reduced_dims(sce_pb)
+
 ################################################################################
 #   Prep 'sig_genes' for the Shiny app
 ################################################################################
@@ -95,9 +121,11 @@ saveRDS(sce_pb, file.path(out_dir, 'sce_pb_visium_habenula_atlas.rds'))
 assays(spe) = list(logcounts = logcounts(spe))
 assays(sce_pb) = list(logcounts = logcounts(sce_pb))
 
-qs_save(spe, file.path(out_dir, 'spe_shiny.qs2'))
-qs_save(sce_pb, file.path(out_dir, 'sce_pb_shiny.qs2'))
-qs_save(sig_genes, file.path(out_dir, 'sig_genes_shiny.qs2'))
+qs_save(spe, file.path(out_dir, 'spe_shiny.qs2'), nthreads = num_cores)
+qs_save(sce_pb, file.path(out_dir, 'sce_pb_shiny.qs2'), nthreads = num_cores)
+qs_save(
+    sig_genes, file.path(out_dir, 'sig_genes_shiny.qs2'), nthreads = num_cores
+)
 
 for (f_base_name in c('spe_shiny.qs2', 'sce_pb_shiny.qs2', 'sig_genes_shiny.qs2')) {
     with_dir(
