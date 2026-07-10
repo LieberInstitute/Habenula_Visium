@@ -58,7 +58,7 @@ sig_genes <- spatialLIBD::sig_genes_extract_all(
 
 In this panel you can visualize the cluster-level data (`sce_pseudo`) across reduced dimensionality representations derived from the gene expression data from the cluster-level pseudo-bulked data. Select which dimensionality reduction method to use with `Reduced Dimension` (PCA or UMAP). Then use `Color by` to choose which variable to color data by, which can be useful to identify groups of pseudo-bulked samples. The options are:
 
-* `BayesSpace_k09`: clustering results using BayesSpace with 9 clusters.
+* `BayesSpace_harmony_k09`: clustering results using BayesSpace with 9 clusters.
 * `sum_umi`: total number of reads present in a pseudobulked sample.
 * `sum_gene`: total number of genes with nonzero expression in a pseudobulked sample.
 * `expr_chrM`: sum of chrM counts in a pseudobulked sample.
