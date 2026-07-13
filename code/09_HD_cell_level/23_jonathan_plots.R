@@ -692,6 +692,11 @@ genes = c('FOXJ1', 'PIFO')
 genes = rowData(spe)$gene_id[match(genes, rowData(spe)$gene_name)]
 plot_marker_spatial(spe, sample_id = all_samples[1], genes, px_per_plot, plot_title = 'ependymal_markers_cells', alpha_value = .1, flip = FALSE)
 
+genes = c('KCNJ10', 'HCN1', 'SLC12A5', 'CACNA1G', 'CACNA1I')
+genes = rowData(spe)$gene_id[match(genes, rowData(spe)$gene_name)]
+plot_marker_spatial(spe, sample_id = all_samples[5], genes, px_per_plot, plot_title = 'ephys_genes_of_interest', alpha_value = .1, flip = FALSE)
+
+
 #MHb1 - TAC3
 #MHb2 - GPR149
 #LHb2.7, maybe GALR1, 
