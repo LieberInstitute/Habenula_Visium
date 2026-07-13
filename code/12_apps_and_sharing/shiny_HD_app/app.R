@@ -5,7 +5,7 @@ library(tidyverse)
 library(qs2)
 
 #   For interactive testing at JHPCE
-# setwd(here('code', '12_apps_and_sharing', 'shiny_app'))
+# setwd(here('code', '12_apps_and_sharing', 'shiny_HD_app'))
 
 discrete_vars = c(
     'ManualAnnotation', 'ficture_cluster', 'banksy_cluster', 'cell_type'

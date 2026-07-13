@@ -5,7 +5,7 @@ library(scuttle)
 library(qs2)
 
 #   For interactive testing at JHPCE
-# setwd(here('code', '12_apps_and_sharing', 'iSEE_app'))
+# setwd(here('code', '12_apps_and_sharing', 'iSEE_HD_app'))
 
 cell_type_colors = c(
     "MHb.1" = "#5e0c01",
@@ -35,6 +35,7 @@ rownames(sce_pb) <- uniquifyFeatureNames(
 )
 
 sce_pb$cell_type_colors = cell_type_colors[as.character(sce_pb$cell_type)]
+sce_pb$cell_type = factor(sce_pb$cell_type, levels = names(cell_type_colors))
 
 ## Don't run this on app.R since we don't want to run this every single time
 # lobstr::obj_size(sce_pb)
