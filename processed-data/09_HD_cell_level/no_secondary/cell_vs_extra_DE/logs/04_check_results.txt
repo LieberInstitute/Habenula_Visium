@@ -1,8 +1,8 @@
 **** Job starts ****
-Wed Jul 15 10:19:53 AM EDT 2026
+Wed Jul 15 11:27:41 AM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 34128792
+Job id: 34129420
 Job name: 04_check_results
 Node name: compute-177
 Task id: 
@@ -32,7 +32,7 @@ guide future development. By default, data will be collected but no data will
 be uploaded.
 ℹ Automatic fallback uploading is not controlled and therefore disabled, see
   `?duckplyr::fallback()`.
-✔ Number of reports ready for upload: 1255.
+✔ Number of reports ready for upload: 1256.
 → Review with `duckplyr::fallback_review()`, upload with
   `duckplyr::fallback_upload()`.
 ℹ Configure automatic uploading with `duckplyr::fallback_config()`.
@@ -76,6 +76,42 @@ null device
           1 
 null device 
           1 
+Among markers, which are DEGs and in which direction?
+`summarise()` has grouped output by 'cell_type'. You can override using the
+`.groups` argument.
+# A tibble: 30 × 5
+   cell_type                compartment frac_up frac_down not_sig
+   <chr>                    <chr>         <dbl>     <dbl>   <dbl>
+ 1 Astrocyte                cell              0    0.124    0.876
+ 2 Astrocyte                extra             0    0.0811   0.919
+ 3 Endo                     cell              0    0.335    0.665
+ 4 Endo                     extra             0    0.29     0.71 
+ 5 Endo.microglia           cell              0    0        1    
+ 6 Endo.microglia           extra             0    0        1    
+ 7 Ependymal                cell              0    0        1    
+ 8 Ependymal                extra             0    0        1    
+ 9 Excit.Thal               cell              0    0        1    
+10 Excit.Thal               extra             0    0        1    
+11 Excit.Thal.Inhib_LHb_4.2 cell              0    0        1    
+12 Excit.Thal.Inhib_LHb_4.2 extra             0    0        1    
+13 Excit_LHb                cell              0    0        1    
+14 Excit_LHb                extra             0    0        1    
+15 LHb.2.7                  cell              0    0.0132   0.987
+16 LHb.2.7                  extra             0    0        1    
+17 LHb.4                    cell              0    0.005    0.995
+18 LHb.4                    extra             0    0.01     0.99 
+19 LHb.4.Inhib_LHb_4.2      cell              0    0        1    
+20 LHb.4.Inhib_LHb_4.2      extra             0    0        1    
+21 MHb.1                    cell              0    0        1    
+22 MHb.1                    extra             0    0        1    
+23 MHb.2                    cell              0    0        1    
+24 MHb.2                    extra             0    0        1    
+25 OPC                      cell              0    0.353    0.647
+26 OPC                      extra             0    0.323    0.677
+27 Oligo                    cell              0    0.02     0.98 
+28 Oligo                    extra             0    0.025    0.975
+29 Subependymal             cell              0    0        1    
+30 Subependymal             extra             0    0        1    
 ─ Session info ───────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.5.0 Patched (2025-05-21 r88220)
@@ -93,6 +129,8 @@ null device
 ─ Packages ───────────────────────────────────────────────────────────────────
  package        * version date (UTC) lib source
  BiocGenerics     0.54.0  2025-04-15 [1] Bioconduc~
+ bit              4.6.0   2025-03-06 [2] CRAN (R 4.5.0)
+ bit64            4.6.0-1 2025-01-16 [2] CRAN (R 4.5.0)
  cachem           1.1.0   2024-05-16 [1] CRAN (R 4.5.0)
  Cairo            1.6-2   2023-11-28 [2] CRAN (R 4.5.0)
  circlize       * 0.4.16  2024-02-20 [2] CRAN (R 4.5.0)
@@ -157,7 +195,9 @@ null device
  tidyverse      * 2.0.0   2023-02-22 [2] CRAN (R 4.5.0)
  timechange       0.3.0   2024-01-18 [2] CRAN (R 4.5.0)
  tzdb             0.5.0   2025-03-15 [2] CRAN (R 4.5.0)
+ utf8             1.2.6   2025-06-08 [1] CRAN (R 4.5.0)
  vctrs            0.6.5   2023-12-01 [1] CRAN (R 4.5.0)
+ vroom            1.6.5   2023-12-05 [2] CRAN (R 4.5.0)
  withr            3.0.2   2024-10-28 [1] CRAN (R 4.5.0)
 
  [1] /users/neagles/R/4.5
@@ -167,4 +207,4 @@ null device
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Wed Jul 15 10:20:04 AM EDT 2026
+Wed Jul 15 11:27:52 AM EDT 2026

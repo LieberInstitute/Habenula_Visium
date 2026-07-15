@@ -14,6 +14,14 @@ plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'cell_vs_extra_DE',
     'check_results'
 )
+cell_marker_path = here(
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA', 'gene_sets',
+    'fine.tsv'
+)
+extra_marker_path = here(
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
+    'extracellular', 'gene_sets', 'fine.tsv'
+)
 
 num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK"))
 duckplyr::db_exec(sprintf("SET threads = %d", num_cores))
@@ -130,5 +138,33 @@ Heatmap(
     column_names_rot = 90
 )
 dev.off()
+
+#   Interestingly, DEGs up in extracellular are never cell-type markers in
+#   either cellular (this part is not surprising) or extracellular data. We
+#   might conclude that extracellular bins are not providing additional signal
+#   for differentiating cell types on top of what the cellular bins provide
+message("Among markers, which are DEGs and in which direction?")
+rbind(
+        read_tsv(cell_marker_path, show_col_types = FALSE) |>
+            mutate(compartment = 'cell'),
+        read_tsv(extra_marker_path, show_col_types = FALSE) |>
+            mutate(compartment = 'extra')
+    ) |>
+    dplyr::rename(cell_type = set_id) |>
+    left_join(
+        de_df |>
+            filter(adj.P.Val < 0.05, abs(logFC) > 1) |>
+            mutate(cell_type = str_replace_all(cell_type, '/', '.')) |>
+            select(gene_id, cell_type, logFC),
+        by = c("cell_type", "gene_id")
+    ) |>
+    group_by(cell_type, compartment) |>
+    summarize(
+        frac_up = mean(!is.na(logFC) & (logFC > 0)),
+        frac_down = mean(!is.na(logFC) & (logFC < 0)),
+        not_sig = mean(is.na(logFC))
+    ) |>
+    ungroup() |>
+    print(n = 30)
 
 session_info()
