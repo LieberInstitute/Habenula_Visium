@@ -27,7 +27,7 @@ out_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'cell_vs_extra_DE',
     'main_results', sprintf('DE_%s.parquet', cell_type_clean)
 )
-covariates = c('compartment', 'sample_id')
+covariates = 'compartment'
 
 dir.create(dirname(out_path), showWarnings = FALSE)
 
