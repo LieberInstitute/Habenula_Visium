@@ -4,6 +4,7 @@ library(sessioninfo)
 library(duckplyr)
 library(ComplexHeatmap)
 library(circlize)
+library(ggrepel)
 
 de_dir = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'cell_vs_extra_DE',
@@ -22,56 +23,62 @@ fallback_config(info = FALSE)
 #   Functions
 ################################################################################
 
-custom_volcano <- function(data, 
-                           clus, 
-                           FDR_cut = 0.05, 
-                           p_col = "vlmf_P.Value", 
-                           fdr_col = "vlmf_adj.P.Val", 
-                           lfc_col = "vlmf_logFC", 
-                           model_name = "carrier",
-                           save = TRUE,
-                           save_size = 4,
-                           text = TRUE,
-                           highlight_genes = NULL){
+custom_volcano <- function(
+        data, FDR_cut = 0.05, FC_cut = 1, p_col = "P.Value",
+        fdr_col = "adj.P.Val", lfc_col = "logFC", text = TRUE,
+        highlight_genes = NULL
+    ){
   
-  # define colors
-  signif_colors <- c("purple", "blue", "red")
-  names(signif_colors) <- c("both", paste("FDR<", FDR_cut) , "abs(logFC)>1" )
-  
-  volcano <- data |>
-    filter(cluster == clus) |>
-    mutate(DE_class = case_when(!!sym(fdr_col) < FDR_cut & abs(vlmf_logFC) > 1  ~ "both",
-                                !!sym(fdr_col) < FDR_cut ~ paste("FDR<", FDR_cut),
-                                abs(!!sym(lfc_col)) > 1 ~ "abs(logFC)>1",
-                                TRUE ~ "None")) |>
-    ggplot(aes(x = vlmf_logFC, y = -log10(!!sym(p_col)), color = DE_class)) +
-    geom_point(alpha = 0.5, size = 0.5) +
-    scale_color_manual(values = signif_colors) +
-    labs(x = "log(FC)", y = "-log10(P value)") +
-    theme_bw() +
-    labs(title = clus) +
-    theme(legend.position = "right")
-  
-  if(!text){
-    ## dont add text
-  } else if(nrow(data) > 1000){
-    volcano <- volcano + 
-      # geom_text_repel(aes(label = ifelse(DE_class != "None", gene_name, "")), size = 1.5) 
-      geom_text_repel(aes(label = ifelse(!!sym(fdr_col) < FDR_cut, gene_name, "")), size = 1.5) 
-  } else {
-    volcano <- volcano + geom_text_repel(aes(label = gene_name), size = 1.5)
-  }
-  
-  if(!is.null(highlight_genes)){
-    volcano <- volcano + 
-      geom_text_repel(aes(label = ifelse(gene_name %in% highlight_genes, gene_name, "")), size = 1.5)
-  }
-  
-  ## Save or return
-  if(save) ggsave(volcano, filename = here(plot_dir, sprintf("Volcano_%s_%s-%s.png", datatype, model_name, clus)), 
-                  height = save_size + 0.5, 
-                  width = save_size)
-  else return(volcano)    
+    # define colors
+    signif_colors <- c("purple", "blue", "red")
+    FDR_label = paste0("FDR<", FDR_cut)
+    FC_label = paste0("abs(logFC)>", FC_cut)
+    names(signif_colors) <- c("both", FDR_label, FC_label)
+    
+    volcano <- data |>
+        mutate(
+            DE_class = case_when(
+                    !!sym(fdr_col) < FDR_cut & abs(!!sym(lfc_col)) > FC_cut ~ "both",
+                    !!sym(fdr_col) < FDR_cut ~ FDR_label,
+                    abs(!!sym(lfc_col)) > FC_cut ~ FC_label,
+                    TRUE ~ "None"
+                ) |>
+                factor(levels = c(FDR_label, FC_label, "both", "None"))
+        ) |>
+        ggplot(
+                aes(
+                    x = !!sym(lfc_col), y = -log10(!!sym(p_col)),
+                    color = DE_class
+                )
+            ) +
+            geom_point(alpha = 0.5, size = 0.3) +
+            scale_color_manual(values = signif_colors) +
+            facet_wrap(~cell_type, scales = "free") +
+            labs(x = "log(FC)", y = "-log10(P value)") +
+            theme_bw(base_size = 10) +
+            theme(legend.position = "right")
+    
+    if(text) {
+        volcano <- volcano + 
+            geom_text_repel(
+                aes(label = ifelse(!!sym(fdr_col) < FDR_cut, gene_name, "")),
+                size = 1.5
+            ) 
+    }
+    
+    if(!is.null(highlight_genes)){
+        volcano <- volcano + 
+            geom_text_repel(
+                aes(
+                    label = ifelse(
+                        gene_name %in% highlight_genes, gene_name, ""
+                    )
+                ),
+                size = 1.5
+            )
+    }
+    
+    return(volcano)
 }
 
 ################################################################################
@@ -84,17 +91,8 @@ de_df = list.files(de_dir, full.names = TRUE) |>
     map_dfr(read_parquet_duckdb, prudence = 'lavish') |>
     collect()
 
-p = de_df |>
-    mutate(neg_log10_p = -log10(adj.P.Val), is_sig = adj.P.Val < 0.05) |>
-    ggplot(aes(x = logFC, y = neg_log10_p, color = is_sig)) +
-        geom_point(size = 0.3, alpha = 0.5) +
-        scale_color_manual(
-            values = c("FALSE" = "grey70", "TRUE" = "firebrick"), guide = "none"
-        ) +
-        facet_wrap(~ cell_type, ncol = 3) +
-        labs(x = "log FC", y = expression(-log[10](adj.~p))) +
-        theme_bw(base_size = 15)
-pdf(file.path(plot_dir, 'volcano_plots.pdf'), width = 6, height = 10)
+p = custom_volcano(de_df, text = FALSE)
+pdf(file.path(plot_dir, 'volcano_plots.pdf'))
 print(p)
 dev.off()
 
