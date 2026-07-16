@@ -52,7 +52,9 @@ plot_go = function(plot_df, cell_map_df, plot_path) {
             size = "Gene Ratio"
         )
 
-    pdf(plot_path, width = 3 + length(cell_types) / 3, height = 5)
+    pdf(
+        plot_path, width = 3 + length(cell_map_df$new_cell_type) / 3, height = 5
+    )
     print(p)
     dev.off()
 }
@@ -135,7 +137,10 @@ plot_df = bind_rows(ego_df_list) |>
     mutate(
         gene_ratio = Count / as.integer(str_extract(GeneRatio, "(?<=/)[0-9]+")),
         log_fdr = -log10(p.adjust)
-    )
+    ) |>
+    group_by(cell_type) |>
+    slice_min(p.adjust, n = go_num_terms, with_ties = FALSE) |>
+    ungroup()
 
 #   Custom dot plot by cell type for each DE direction
 for (this_direction in c("up", "down")) {
