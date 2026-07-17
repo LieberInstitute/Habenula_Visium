@@ -18,7 +18,7 @@ out_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'astro_DE',
     'main_results', sprintf('DE_%d.parquet', task_id)
 )
-cont_covariates = c('sum_umi', 'expr_chrM_ratio')
+cont_covariates = c('ncells', 'expr_chrM_ratio')
 
 set.seed(task_id)
 dir.create(dirname(out_path), showWarnings = FALSE)

@@ -6,7 +6,7 @@
 #SBATCH -t 1-0:00:00
 #SBATCH -o ../../../processed-data/09_HD_cell_level/no_secondary/astro_DE/logs/03_main_DE_%a.txt
 #SBATCH -e ../../../processed-data/09_HD_cell_level/no_secondary/astro_DE/logs/03_main_DE_%a.txt
-#SBATCH --array=2-1000%20
+#SBATCH --array=0-1000%20
 
 set -e
 
