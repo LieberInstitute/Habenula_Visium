@@ -5,7 +5,7 @@ library(scuttle)
 library(qs2)
 
 #   For interactive testing at JHPCE
-# setwd(here('code', '12_apps_and_sharing', 'iSEE_HD_app'))
+# setwd(here::here('code', '12_apps_and_sharing', 'iSEE_HD_app'))
 
 cell_type_colors = c(
     MHb_A = "#5e0c01",
@@ -39,7 +39,7 @@ sce_pb$cell_type = factor(sce_pb$cell_type, levels = names(cell_type_colors))
 
 ## Don't run this on app.R since we don't want to run this every single time
 # lobstr::obj_size(sce_pb)
-# 20.83 MB
+# 20.84 MB
 
 iSEE(
     sce_pb,
