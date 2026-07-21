@@ -8,21 +8,21 @@ library(qs2)
 # setwd(here('code', '12_apps_and_sharing', 'iSEE_HD_app'))
 
 cell_type_colors = c(
-    "MHb.1" = "#5e0c01",
-    "MHb.2" = "#943f02",
-    "Excit_LHb" = "#306171",
-    "LHb.2.7" = "#ee9630",
-    "LHb.4" = "#082844",
-    "LHb.4/Inhib_LHb_4.2" = "#5e0c56",
-    "Excit.Thal/Inhib_LHb_4.2" = "#8DADCA",
-    "Excit.Thal" = "#2e6296",
-    "Ependymal" = "#dbb369",
-    "Subependymal" = "#ae9a7e",
-    "Astrocyte" = "#972f2f",
-    "Endo" = "#f65a45",
-    "Endo/microglia" = "#141b02",
-    "Oligo" =  "#384a08",
-    "OPC" = "#829454"
+    MHb_A = "#5e0c01",
+    MHb_B = "#943f02",
+    Excit_LHb = "#306171", 
+    LHb_A = "#ee9630",
+    LHb_C = "#082844",
+    `LHb_C/GABA_LHb_C.2` = "#5e0c56", 
+    `Excit.Thal/GABA_LHb_C.2` = "#8DADCA",
+    Excit.Thal = "#8DADCA",
+    Ependymal = "#dbb369",
+    Subependymal = "#ae9a7e",
+    Astrocyte = "#972f2f", 
+    Endo = "#f65a45",
+    `Endo/microglia` = "#141b02",
+    Oligo = "#384a08", 
+    OPC = "#829454"
 )
 
 source("initial.R")

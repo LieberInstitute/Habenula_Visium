@@ -37,7 +37,7 @@ modeling_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'modeling_results', '1_8_cell_types.rds'
 )
-color_path = here('code', 'hd_colors.R')
+cell_map_path = here('raw-data', 'sample_info', 'hd_cell_type_map.csv')
 gtf_path = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2024-A/genes/genes.gtf.gz'
 plot_dir = here('plots', '12_apps_and_sharing', '01_prep_objects')
 out_dir = here('processed-data', '12_apps_and_sharing', '01_prep_objects')
@@ -58,8 +58,7 @@ num_cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK"))
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
-source(color_path)
-cell_type_levels = names(cell_type_colors)
+set.seed(0)
 
 ################################################################################
 #   Functions
@@ -103,15 +102,19 @@ anno_df = tibble(key = spe$key) |>
     dplyr::rename(cluster = banksy) |>
     left_join(read_csv(ct_anno_path, show_col_types = FALSE), by = 'cluster') |>
     left_join(
+        read_csv(cell_map_path, show_col_types = FALSE),
+        by = c('fine_cell_type' = 'old_cell_type')
+    ) |>
+    left_join(
         read_csv(crawdad_in_path, show_col_types = FALSE) |>
             select(cell_key, ficture_cluster) |>
             dplyr::rename(key = cell_key),
         by = 'key'
     )
-spe$cell_type = anno_df$fine_cell_type
+spe$cell_type = anno_df$new_cell_type
 spe$banksy_cluster = anno_df$cluster
 spe$ficture_cluster = anno_df$ficture_cluster
-stopifnot(!any(is.na(spe$cell_type)))
+stopifnot(!any(is.na(spe$cell_type[anno_df$fine_cell_type != 'Drop'])))
 
 ################################################################################
 #    Fix rowRanges and seqinfo, which for some reason is corrupt
@@ -129,8 +132,10 @@ spe_pb = fix_rowRanges(spe_pb, gtf_genes)
 #   Cell-level SPE
 #-------------------------------------------------------------------------------
 
+cell_type_levels = read_csv(cell_map_path, show_col_types = FALSE)$new_cell_type
+
 #   Clean up cell types
-spe = spe[, spe$cell_type != 'Drop']
+spe = spe[, !is.na(spe$cell_type)]
 stopifnot(setequal(spe$cell_type, cell_type_levels))
 spe$cell_type = factor(spe$cell_type, levels = cell_type_levels)
 
@@ -157,11 +162,20 @@ colData(spe) = colData(spe)[, coldata_cols]
 #   Pseudobulked SPE
 #-------------------------------------------------------------------------------
 
+cluster_map = read_csv(cell_map_path, show_col_types = FALSE)
+rename_map = stats::setNames(
+    cluster_map$new_cell_type, cluster_map$old_cell_type
+)
+
 spe_pb$cell_type = case_when(
     spe_pb$cell_type == 'Endo.microglia' ~ 'Endo/microglia',
     spe_pb$cell_type == 'Excit.Thal.Inhib_LHb_4.2' ~ 'Excit.Thal/Inhib_LHb_4.2',
     spe_pb$cell_type == 'LHb.4.Inhib_LHb_4.2' ~ 'LHb.4/Inhib_LHb_4.2',
     TRUE ~ spe_pb$cell_type
+)
+spe_pb$cell_type = factor(
+    dplyr::coalesce(unname(rename_map[spe_pb$cell_type]), spe_pb$cell_type),
+    levels = cell_type_levels
 )
 spe_pb$key = paste(spe_pb$sample_id, spe_pb$cell_type, sep = "_")
 
