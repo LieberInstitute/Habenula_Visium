@@ -3,6 +3,7 @@ library(here)
 library(sessioninfo)
 library(ggrepel)
 library(clusterProfiler)
+library(rrvgo)
 library(org.Hs.eg.db)
 
 de_path = here(
@@ -112,6 +113,29 @@ plot_go = function(plot_df, plot_path) {
     dev.off()
 }
 
+#   Tree maps using semantic similarity of GO terms
+plot_treemap_go = function(go_df, plot_path) {
+    sim_matrix = calculateSimMatrix(
+        go_df$ID,
+        orgdb = "org.Hs.eg.db",
+        ont = "BP",
+        method = "Rel"
+    )
+
+    scores = -log10(go_df$p.adjust)
+    names(scores) = go_df$ID
+    reduced_terms = reduceSimMatrix(
+        sim_matrix,
+        scores,
+        threshold = 0.7,
+        orgdb="org.Hs.eg.db"
+    )
+
+    pdf(plot_path)
+    print(treemapPlot(reduced_terms))
+    dev.off()
+}
+
 ################################################################################
 #   Main
 ################################################################################
@@ -160,3 +184,15 @@ plot_df = bind_rows(ego_df_list) |>
 
 #   Custom dot plot by cell type for each DE direction
 plot_go(plot_df, file.path(plot_dir, "GO.pdf"))
+
+for (this_de_direction in c("up", "down")) {
+    this_plot_df = bind_rows(ego_df_list) |>
+        filter(de_direction == this_de_direction)
+
+    plot_treemap_go(
+        this_plot_df,
+        file.path(plot_dir, sprintf('GO_treemap_%s.pdf', this_de_direction))
+    )
+}
+
+session_info()
