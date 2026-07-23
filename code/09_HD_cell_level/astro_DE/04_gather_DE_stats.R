@@ -32,6 +32,7 @@ de_null_df = bind_rows(de_null_df_list) |>
 de_true_df = read_parquet_duckdb(
         sprintf(de_paths, 0), prudence = 'stingy'
     ) |>
+    dplyr::rename(fdr = adj.P.Val) |>
     collect()
 
 de_true_df |>
@@ -59,7 +60,7 @@ de_true_df |>
     select(gene_id, p_empirical, fdr_empirical) |>
     #   Join back with info like logFC and reorganize columns
     left_join(de_true_df, by = 'gene_id') |>
-    select(gene_id, gene_name, t, logFC, p_empirical, fdr_empirical) |>
+    select(gene_id, gene_name, t, logFC, fdr, p_empirical, fdr_empirical) |>
     write_csv(out_path)
 
 session_info()
