@@ -16,7 +16,7 @@ sce_path = here(
 )
 spe_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'contamination',
-    'spe', 'raw.qs2'
+    'spe', 'cleaned.qs2'
 )
 plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'astro_DE', 'explore_DEGs'
@@ -107,14 +107,14 @@ pdf(file.path(plot_dir, "top_2_p_boxplots.pdf"))
 print(deg_boxplots(sce_pb, mod, genes))
 dev.off()
 
+spe = qs_read(spe_path)
 for (gene in all_genes) {
     gene_name = rowData(sce_pb[gene, ])$gene_name
   
-    p = vis_clus(
-            spe, sampleid = sample_id, geneid = gene,
-            is_stitched = TRUE, point_size = 20, spatial = FALSE
-        ) +
-        guides(fill = guide_legend(override.aes = list(size = 8)))
+    p = vis_gene(
+        spe, sampleid = 'Br9090_1', geneid = gene, assay = 'counts',
+        is_stitched = TRUE, point_size = 20, spatial = FALSE
+    )
     png(
         file.path(plot_dir, sprintf('spatial_%s.png', gene_name)),
         width = 1500, height = 1500
