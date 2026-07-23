@@ -90,6 +90,13 @@ mod = model.matrix(de_formula, colData(sce_pb))
 
 de_df = read_csv(de_path, show_col_types = FALSE)
 
+message(
+    sprintf(
+        "Spearman corr between voom-lmFit FDR and empirical FDR: %.2f",
+        cor(de_df$fdr, de_df$fdr_empirical, method = 'spearman')
+    )
+)
+
 genes = de_df |>
     filter(logFC > 10) |>
     pull(gene_id)
