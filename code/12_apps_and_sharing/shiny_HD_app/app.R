@@ -8,14 +8,15 @@ library(qs2)
 # setwd(here('code', '12_apps_and_sharing', 'shiny_HD_app'))
 
 discrete_vars = c(
-    'ManualAnnotation', 'ficture_cluster', 'banksy_cluster', 'cell_type'
+    'ManualAnnotation', 'ficture_cluster', 'banksy_cluster', 'cell_type',
+    'cell_type_colors'
 )
 continuous_vars = c(
     'bin_count', 'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio'
 )
 all_vars_pb = c(
-    'cell_type', 'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio',
-    'ncells', 'sample_id', 'donor'
+    'cell_type', 'cell_type_colors', 'sum_umi', 'sum_gene', 'expr_chrM',
+    'expr_chrM_ratio', 'ncells', 'sample_id', 'donor'
 )
 
 ## spatialLIBD uses golem
@@ -32,10 +33,6 @@ sig_genes = qs_read('sig_genes_shiny.qs2')
 
 stopifnot(all(all_vars_pb %in% colnames(colData(sce_pb))))
 colData(sce_pb) = colData(sce_pb)[, all_vars_pb]
-
-#   For consistency with modeling results. Because cell types go in column
-#   names there, we can't use '/'
-sce_pb$cell_type = str_replace_all(sce_pb$cell_type, '/', '.')
 
 ## Deploy the website
 run_app(

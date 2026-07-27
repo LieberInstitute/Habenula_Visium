@@ -128,6 +128,11 @@ spe_pb = fix_rowRanges(spe_pb, gtf_genes)
 #   Clean up colData
 ################################################################################
 
+cluster_map = read_csv(cell_map_path, show_col_types = FALSE)
+rename_map = stats::setNames(
+    cluster_map$new_cell_type, cluster_map$old_cell_type
+)
+
 #-------------------------------------------------------------------------------
 #   Cell-level SPE
 #-------------------------------------------------------------------------------
@@ -138,6 +143,11 @@ cell_type_levels = read_csv(cell_map_path, show_col_types = FALSE)$new_cell_type
 spe = spe[, !is.na(spe$cell_type)]
 stopifnot(setequal(spe$cell_type, cell_type_levels))
 spe$cell_type = factor(spe$cell_type, levels = cell_type_levels)
+
+#   Add colors for the app
+spe$cell_type_colors = tibble(new_cell_type = spe$cell_type) |>
+    left_join(cluster_map, by = 'new_cell_type') |>
+    pull(color)
 
 #   Use factors where appropriate
 spe$tissue_piece = factor(spe$tissue_piece, levels = c(1, 2))
@@ -162,11 +172,6 @@ colData(spe) = colData(spe)[, coldata_cols]
 #   Pseudobulked SPE
 #-------------------------------------------------------------------------------
 
-cluster_map = read_csv(cell_map_path, show_col_types = FALSE)
-rename_map = stats::setNames(
-    cluster_map$new_cell_type, cluster_map$old_cell_type
-)
-
 spe_pb$cell_type = case_when(
     spe_pb$cell_type == 'Endo.microglia' ~ 'Endo/microglia',
     spe_pb$cell_type == 'Excit.Thal.Inhib_LHb_4.2' ~ 'Excit.Thal/Inhib_LHb_4.2',
@@ -177,6 +182,12 @@ spe_pb$cell_type = factor(
     dplyr::coalesce(unname(rename_map[spe_pb$cell_type]), spe_pb$cell_type),
     levels = cell_type_levels
 )
+
+#   Add colors for the app
+spe_pb$cell_type_colors = tibble(new_cell_type = spe_pb$cell_type) |>
+    left_join(cluster_map, by = 'new_cell_type') |>
+    pull(color)
+
 spe_pb$key = paste(spe_pb$sample_id, spe_pb$cell_type, sep = "_")
 
 #   Recompute bin_count as sum across all cells
@@ -222,13 +233,36 @@ spe_pb = calc_reduced_dims(
 )
 
 ################################################################################
-#   Prep 'sig_genes' for the Shiny app
+#   Prep modeling results and 'sig_genes' for the Shiny app
 ################################################################################
+
+modeling_results = readRDS(modeling_path)
+
+#   Rename cell-type columns from old naming convention to new.
+#   Columns encode "/" as "." (e.g. "Endo.microglia"), so build a lookup from
+#   dot-encoded old names to new names before renaming.
+suffix_rename = stats::setNames(
+    unname(rename_map),
+    gsub("/", ".", names(rename_map), fixed = TRUE)
+)
+rename_ct_cols = function(df) {
+    pattern = "^(t_stat_|p_value_|fdr_|logFC_)(.+)$"
+    new_names = colnames(df)
+    for (i in seq_along(new_names)) {
+        m = regmatches(new_names[i], regexec(pattern, new_names[i]))[[1]]
+        if (length(m) == 3) {
+            new_suffix = suffix_rename[m[3]]
+            if (!is.na(new_suffix)) new_names[i] = paste0(m[2], new_suffix)
+        }
+    }
+    stats::setNames(df, new_names)
+}
+modeling_results = lapply(modeling_results, rename_ct_cols)
 
 spe_pb$spatialLIBD = spe_pb$cell_type
 sig_genes = sig_genes_extract_all(
     n = min(sig_genes_n, nrow(spe_pb)),
-    modeling_results = readRDS(modeling_path), sce_layer = spe_pb
+    modeling_results = modeling_results, sce_layer = spe_pb
 )
 spe_pb$spatialLIBD = NULL
 
