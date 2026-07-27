@@ -22,9 +22,9 @@ dir.create(plot_dir, showWarnings = FALSE)
 ################################################################################
 
 custom_volcano <- function(
-        data, FDR_cut = 0.05, FC_cut = 1, p_col = "p_empirical",
-        fdr_col = "fdr_empirical", lfc_col = "logFC", text = FALSE,
-        highlight_genes = NULL
+        data, FDR_cut = 0.05, FC_cut = 1, p_col = "p",
+        fdr_col = "fdr", spatial_fdr_col = 'fdr_empirical', 
+        lfc_col = "logFC", text = FALSE, highlight_genes = NULL
     ){
   
     # define colors
@@ -36,8 +36,11 @@ custom_volcano <- function(
     volcano <- data |>
         mutate(
             DE_class = case_when(
-                    !!sym(fdr_col) < FDR_cut & abs(!!sym(lfc_col)) > FC_cut ~ "both",
-                    !!sym(fdr_col) < FDR_cut ~ FDR_label,
+                    (!!sym(fdr_col) < FDR_cut) & 
+                        (!!sym(spatial_fdr_col) < FDR_cut) &
+                        (abs(!!sym(lfc_col)) > FC_cut) ~ "both",
+                    (!!sym(fdr_col) < FDR_cut) & 
+                        (!!sym(spatial_fdr_col) < FDR_cut) ~ FDR_label,
                     abs(!!sym(lfc_col)) > FC_cut ~ FC_label,
                     TRUE ~ "None"
                 ) |>
@@ -152,7 +155,8 @@ for (this_de_sign in c(-1, 1)) {
 
     gene_set = de_df |>
         filter(
-            fdr_empirical < 0.05, abs(logFC) > 1, sign(logFC) == this_de_sign
+            fdr_empirical < 0.05, fdr < 0.05, abs(logFC) > 1,
+            sign(logFC) == this_de_sign
         ) |>
         pull(gene_id)
 

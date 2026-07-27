@@ -91,7 +91,7 @@ de_df = dge |>
 #   and t-stats for the permutations
 if (task_id == 0) {
     de_df |>
-        select(gene_id, gene_name, t, logFC, adj.P.Val) |>
+        select(gene_id, gene_name, t, logFC, P.Value, adj.P.Val) |>
         compute_parquet(out_path)
 
     qs_save(dge, dge_path)
