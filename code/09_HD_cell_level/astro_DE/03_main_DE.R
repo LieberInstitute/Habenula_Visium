@@ -18,6 +18,10 @@ out_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'astro_DE',
     'main_results', sprintf('DE_%d.parquet', task_id)
 )
+e_path = here(
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'astro_DE',
+    'main_results', 'E_mat.qs2'
+)
 cont_covariates = c('ncells', 'expr_chrM_ratio')
 
 set.seed(task_id)
@@ -72,11 +76,13 @@ dge = dge[filterByExpr.DGEList(dge, design = des), , keep.lib.sizes = FALSE]
 dge = calcNormFactors(dge)
 
 #   DE
-de_df = dge |>
+dge = dge |>
     voomLmFit(
         design = des, adaptive.span = TRUE, sample.weights = TRUE,
         block = dge$donor
-    ) |>
+    )
+
+de_df = dge |>
     eBayes() |>
     topTable(coef = "astro_labellateral", number = Inf) |>
     as_tibble()
@@ -87,6 +93,8 @@ if (task_id == 0) {
     de_df |>
         select(gene_id, gene_name, t, logFC, adj.P.Val) |>
         compute_parquet(out_path)
+
+    qs_save(dge$E$E, e_path)
 } else {
     de_df |>
         select(gene_id, t) |>
