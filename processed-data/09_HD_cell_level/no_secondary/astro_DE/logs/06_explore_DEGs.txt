@@ -1,10 +1,10 @@
 **** Job starts ****
-Thu Jul 23 10:46:00 AM EDT 2026
+Mon Jul 27 10:36:29 AM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 34356040
+Job id: 34471032
 Job name: 06_explore_DEGs
-Node name: compute-178
+Node name: compute-095
 Task id: 
 Unloading conda_R/4.5
 Loading conda_R/4.5
@@ -159,10 +159,21 @@ The following objects are masked from ‘package:matrixStats’:
 
     anyMissing, rowMedians
 
-2026-07-23 10:46:21.461828 make pseudobulk object
-2026-07-23 10:46:21.797411 dropping 0 pseudo-bulked samples that are below 'min_ncells'.
-2026-07-23 10:46:21.836482 drop lowly expressed genes
-2026-07-23 10:46:21.929867 normalize expression
+Loading required package: limma
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+
+Attaching package: ‘edgeR’
+
+The following object is masked from ‘package:SingleCellExperiment’:
+
+    cpm
+
 Spearman corr between voom-lmFit FDR and empirical FDR: 0.48
 null device 
           1 
@@ -178,7 +189,7 @@ null device
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2026-07-23
+ date     2026-07-27
  pandoc   3.7.0.1 @ /jhpce/shared/community/core/conda_R/4.5/bin/pandoc
  quarto   1.9.38 @ /users/neagles/.positron-server/bin/d3cdd608df5afa3378c24c9a9c81b01fe1433a87/quarto/bin/quarto
 
@@ -228,7 +239,7 @@ null device
  doParallel             1.0.17    2022-02-07 [2] CRAN (R 4.5.0)
  dplyr                * 1.1.4     2023-11-17 [1] CRAN (R 4.5.0)
  DT                     0.33      2024-04-04 [2] CRAN (R 4.5.0)
- edgeR                  4.6.2     2025-05-07 [2] Bioconductor 3.21 (R 4.5.0)
+ edgeR                * 4.6.2     2025-05-07 [2] Bioconductor 3.21 (R 4.5.0)
  ExperimentHub          2.16.0    2025-04-15 [2] Bioconductor 3.21 (R 4.5.0)
  farver                 2.1.2     2024-05-13 [1] CRAN (R 4.5.0)
  fastmap                1.2.0     2024-05-15 [1] CRAN (R 4.5.0)
@@ -270,7 +281,7 @@ null device
  lattice                0.22-7    2025-04-02 [3] CRAN (R 4.5.0)
  lazyeval               0.2.2     2019-03-15 [1] CRAN (R 4.5.0)
  lifecycle              1.0.4     2023-11-07 [1] CRAN (R 4.5.0)
- limma                  3.64.0    2025-04-15 [2] Bioconductor 3.21 (R 4.5.0)
+ limma                * 3.64.0    2025-04-15 [2] Bioconductor 3.21 (R 4.5.0)
  locfit                 1.5-9.12  2025-03-05 [2] CRAN (R 4.5.0)
  lubridate            * 1.9.4     2024-12-08 [2] CRAN (R 4.5.0)
  magick                 2.8.6     2025-03-23 [2] CRAN (R 4.5.0)
@@ -354,4 +365,4 @@ null device
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Thu Jul 23 10:46:38 AM EDT 2026
+Mon Jul 27 10:37:13 AM EDT 2026

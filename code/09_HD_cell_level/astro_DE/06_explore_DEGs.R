@@ -5,14 +5,16 @@ library(qs2)
 library(jaffelab)
 library(SpatialExperiment)
 library(spatialLIBD)
+library(edgeR)
+library(limma)
 
 de_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'astro_DE',
     'main_results', 'aggregated_DE_stats.csv.gz'
 )
-sce_path = here(
+dge_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'astro_DE',
-    'astro_sce.qs2'
+    'main_results', 'DGE.qs2'
 )
 spe_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'contamination',
@@ -30,25 +32,25 @@ dir.create(plot_dir, showWarnings = FALSE)
 #   Functions
 ################################################################################
 
-deg_boxplots = function(sce, mod, genes, clean = TRUE) {
+deg_boxplots = function(dge, genes, clean = TRUE) {
     plot_df_list = list()
     for (gene in genes) {
         if (clean) {
             gene_expr = as.numeric(
                 cleaningY(
-                    logcounts(sce)[gene, , drop = FALSE], mod = mod, P = 2
+                    dge$E$E[gene, , drop = FALSE], mod = dge$design, P = 2
                 )
             )
             y_label = "Cleaned logcounts"
         } else {
-            gene_expr = unname(logcounts(sce)[gene, ])
+            gene_expr = unname(dge$E$E[gene, ])
             y_label = "Logcounts"
         }
       
         plot_df_list[[gene]] = tibble(
-            astro_label = sce$astro_label,
-            sample_id = sce$sample_id,
-            gene_id = rowData(sce_pb[gene, ])$gene_name,
+            astro_label = str_extract(rownames(dge$design), '(lateral|medial)'),
+            sample_id = str_extract(rownames(dge$design), '^Br[0-9]{4}_[12]'),
+            gene_id = dge$genes[gene, ]$gene_name,
             expr = gene_expr
         )
     }
@@ -68,25 +70,7 @@ deg_boxplots = function(sce, mod, genes, clean = TRUE) {
 #   Main
 ################################################################################
 
-#   Recompute sce_pb as in the main DE
-sce = qs_read(sce_path)
-sce = sce[, sce$astro_label %in% c('medial', 'lateral')]
-sce_pb = registration_pseudobulk(
-    sce, var_registration = "astro_label", var_sample_id = "sample_id"
-)
-sce_pb$astro_label = factor(sce_pb$astro_label, levels = c('medial', 'lateral'))
-  sce_pb$sum_umi = unname(colSums(counts(sce_pb)))
-sce_pb$expr_chrM = colSums(
-    counts(sce_pb)[which(seqnames(sce_pb) == "chrM"), , drop = FALSE]
-)
-sce_pb$expr_chrM_ratio = sce_pb$expr_chrM / sce_pb$sum_umi
-
-#   Center and scale continuous covariates
-for (this_covariate in cont_covariates) {
-    sce_pb[[this_covariate]] = as.numeric(scale(sce_pb[[this_covariate]]))
-}
-  
-mod = model.matrix(de_formula, colData(sce_pb))
+dge = qs_read(dge_path)
 
 de_df = read_csv(de_path, show_col_types = FALSE)
 
@@ -102,7 +86,7 @@ genes = de_df |>
     pull(gene_id)
 all_genes = genes
 pdf(file.path(plot_dir, "high_logFC_boxplots.pdf"))
-print(deg_boxplots(sce_pb, mod, genes))
+print(deg_boxplots(dge, genes))
 dev.off()
 
 genes = de_df |>
@@ -111,12 +95,12 @@ genes = de_df |>
     pull(gene_id)
 all_genes = c(all_genes, genes)
 pdf(file.path(plot_dir, "top_2_p_boxplots.pdf"))
-print(deg_boxplots(sce_pb, mod, genes))
+print(deg_boxplots(dge, genes))
 dev.off()
 
 spe = qs_read(spe_path)
 for (gene in all_genes) {
-    gene_name = rowData(sce_pb[gene, ])$gene_name
+    gene_name = dge$genes[gene, ]$gene_name
   
     p = vis_gene(
         spe, sampleid = 'Br9090_1', geneid = gene, assay = 'counts',
