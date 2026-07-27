@@ -18,9 +18,9 @@ out_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'astro_DE',
     'main_results', sprintf('DE_%d.parquet', task_id)
 )
-e_path = here(
+dge_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'astro_DE',
-    'main_results', 'E_mat.qs2'
+    'main_results', 'DGE.qs2'
 )
 cont_covariates = c('ncells', 'expr_chrM_ratio')
 
@@ -94,7 +94,7 @@ if (task_id == 0) {
         select(gene_id, gene_name, t, logFC, adj.P.Val) |>
         compute_parquet(out_path)
 
-    qs_save(dge$E$E, e_path)
+    qs_save(dge, dge_path)
 } else {
     de_df |>
         select(gene_id, t) |>
