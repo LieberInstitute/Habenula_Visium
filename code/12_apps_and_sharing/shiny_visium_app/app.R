@@ -1,11 +1,9 @@
 library(spatialLIBD)
 library(markdown)
-library(here)
-library(tidyverse)
 library(qs2)
 
 #   For interactive testing at JHPCE
-# setwd(here('code', '12_apps_and_sharing', 'shiny_visium_app'))
+# setwd(here::here('code', '12_apps_and_sharing', 'shiny_visium_app'))
 
 discrete_vars = c(
     "ManualAnnotation", "brain_id", "sex", "ethnicity",
