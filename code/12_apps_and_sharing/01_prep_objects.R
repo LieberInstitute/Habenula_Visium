@@ -45,12 +45,12 @@ coldata_cols = c(
     'key', 'sample_id', 'donor', 'tissue_piece', 'array_row', 'array_col',
     'bin_count', 'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio',
     'ManualAnnotation', 'exclude_overlapping', 'sizeFactor', 'ficture_cluster',
-    'banksy_cluster', 'cell_type'
+    'banksy_cluster', 'cell_type', 'cell_type_colors'
 )
 coldata_pb_cols = c(
     'key', 'sample_id', 'donor', 'tissue_piece', 'bin_count', 'ncells',
     'sum_umi', 'sum_gene', 'expr_chrM', 'expr_chrM_ratio', 'ManualAnnotation',
-    'exclude_overlapping', 'cell_type'
+    'exclude_overlapping', 'cell_type', 'cell_type_colors'
 )
 sig_genes_n = 1000
 
@@ -273,8 +273,8 @@ spe_pb$spatialLIBD = NULL
 sce_pb = as(spe_pb, "SingleCellExperiment")
 
 #   For ExperimentHub/ spatialLIBD::fetch_data()
-saveRDS(spe, file.path(out_dir, 'spe_cell_habenula_atlas.rds'))
-saveRDS(sce_pb, file.path(out_dir, 'sce_pb_habenula_atlas.rds'))
+# saveRDS(spe, file.path(out_dir, 'spe_cell_habenula_atlas.rds'))
+# saveRDS(sce_pb, file.path(out_dir, 'sce_pb_habenula_atlas.rds'))
 
 #   For the Shiny app
 assays(spe) = list(logcounts = logcounts(spe))

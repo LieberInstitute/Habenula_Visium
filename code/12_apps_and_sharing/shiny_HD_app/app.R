@@ -27,7 +27,7 @@ options(repos = BiocManager::repositories())
 
 #   Load objects
 spe = qs_read('spe_shiny.qs2')
-modeling_results = readRDS('modeling_results.rds')
+modeling_results = qs_read('modeling_results.qs2')
 sce_pb = qs_read('sce_pb_shiny.qs2')
 sig_genes = qs_read('sig_genes_shiny.qs2')
 
