@@ -24,12 +24,8 @@ plot_dir = here(
     'plots', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'crawdad'
 )
+cell_map_path = here('raw-data', 'sample_info', 'hd_cell_type_map.csv')
 min_num_signif = 4
-cell_type_levels = c(
-    'MHb.1', 'MHb.2', 'Excit_LHb', 'LHb.2.7', 'LHb.4', 'LHb.4/Inhib_LHb_4.2',
-    'Excit.Thal/Inhib_LHb_4.2', 'Astrocyte', 'Endo', 'Endo/microglia', 'Oligo',
-    'OPC', 'Ependymal', 'Subependymal', paste0('Factor_', 0:(k - 1))
-)
 
 dir.create(plot_dir, showWarnings = FALSE)
 
@@ -87,11 +83,31 @@ z_sig = do.call(rbind, result_list) |>
     filter(sample_id == sample_ids[1]) |>
     correctZBonferroni()
 
+cell_map_df = rbind(
+    read_csv(cell_map_path, show_col_types = FALSE) |>
+        select(old_cell_type, new_cell_type),
+    tibble(
+        old_cell_type = paste0('Factor_', 0:(k - 1)),
+        new_cell_type = paste0('Factor_', 0:(k - 1))
+    )
+)
+
 result_df = do.call(rbind, result_list) |>
     filter(reference != 'Excit.Thal', neighbor != 'Excit.Thal') |>
+    #   Use latest cell-type names and order properly
     mutate(
-        reference = factor(reference, levels = cell_type_levels),
-        neighbor = factor(neighbor, levels = cell_type_levels)
+        reference = factor(
+            cell_map_df$new_cell_type[
+                match(reference, cell_map_df$old_cell_type)
+            ],
+            levels = cell_map_df$new_cell_type
+        ),
+        neighbor = factor(
+            cell_map_df$new_cell_type[
+                match(neighbor, cell_map_df$old_cell_type)
+            ],
+            levels = cell_map_df$new_cell_type
+        )
     ) |>
     #   First average Z-scores across permutations
     group_by(sample_id, neighbor, scale, reference) |>
@@ -115,5 +131,16 @@ result_df = do.call(rbind, result_list) |>
     mutate(Z = sign(Z) * pmin(abs(Z), z_sig * 2))
 
 custom_dotplot(result_df, z_sig, sprintf('dot_plot_k%d.pdf', k))
+
+#   Do a version with just Banksy-derived cell types
+if (k == 3) {
+    result_df |>
+        filter(!grepl('^Factor', reference), !grepl('^Factor', neighbor)) |>
+        mutate(
+            reference = droplevels(reference),
+            neighbor = droplevels(neighbor)
+        ) |>
+        custom_dotplot(z_sig, 'dot_plot_cell_types.pdf')
+}
 
 session_info()
