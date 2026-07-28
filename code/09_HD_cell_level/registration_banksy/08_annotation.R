@@ -26,29 +26,12 @@ out_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'cluster_annotation.csv'
 )
+cell_map_path = here('raw-data', 'sample_info', 'hd_cell_type_map.csv')
 plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
     'annotation'
 )
 demo_samples = c("Br9090_1", "Br8433_1", "Br9902_1")
-fine_colors = c(
-    OPC = '#d3c871',
-    Oligo = '#4d5802',
-    Microglia = '#222222',
-    Astrocyte = '#8d363c',
-    Endo = '#ee6c14',
-    'Endo/microglia' = '#a4511b',
-    MHb.1 = '#FF00FF',
-    MHb.2 = '#FAA0A0',
-    LHb.2.7 = '#00a900',
-    LHb.4 = '#84DCC6',
-    "LHb.4/Inhib_LHb_4.2" = '#004F2D',
-    "Excit.Thal/Inhib_LHb_4.2" = '#9faefb',
-    Excit_LHb = '#6aff00',
-    Excit.Thal = '#9e4ad1',
-    Subependymal = '#4c00ff',
-    Ependymal = '#0e005c'
-)
 broad_colors = c(
     OPC = '#d3c871',
     Oligo = '#4d5802',
@@ -223,10 +206,17 @@ spe$anno_broad = factor(
     anno_df$broad_cell_type[match(spe$banksy, anno_df$cluster)],
     levels = names(broad_colors)
 )
-spe$anno_fine = factor(
-    anno_df$fine_cell_type[match(spe$banksy, anno_df$cluster)],
-    levels = names(fine_colors)
-)
+spe$anno_fine = anno_df$fine_cell_type[match(spe$banksy, anno_df$cluster)]
+
+cell_map_df = read_csv(cell_map_path, show_col_types = FALSE)
+fine_colors = setNames(cell_map_df$color, cell_map_df$new_cell_type)
+
+#   Use latest cell-type names
+spe$anno_fine = tibble(old_cell_type = spe$anno_fine) |>
+    left_join(cell_map_df, by = 'old_cell_type') |>
+    pull(new_cell_type) |>
+    factor(levels = cell_map_df$new_cell_type)
+stopifnot(!any(is.na(spe$anno_fine)))
 
 for (sample_id in unique(spe$sample_id)) {
     vis_clus_HD(
