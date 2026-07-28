@@ -28,6 +28,12 @@ model_paths = here(
         c(sub('\\.', '_', as.character(seq_len(20) / 10)), 4, 8)
     )
 )
+cell_map_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/raw-data/cell_type_map.csv'
+hd_cell_map_path = here('raw-data', 'sample_info', 'hd_cell_type_map.csv')
+anno_path = here(
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'registration_banksy',
+    'cluster_annotation.csv'
+)
 
 #   List all paths and names for reference data
 ref_paths = c(
@@ -73,7 +79,6 @@ if (all_genes) {
     )
 }
 
-
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
 
@@ -112,6 +117,51 @@ if (all_genes) {
 #  Remove 'X' from cluster names
 for (i in seq_len(length(this_cor))) {
     rownames(this_cor[[i]]) = sub('^X', '', rownames(this_cor[[i]]))
+}
+
+#   Cell-type names were updated for multiome mid reference. Also, for the
+#   manuscript, use better names for HD clusters
+if (ref_name == 'multiome_mid') {
+    cell_map_df = read_csv(cell_map_path, show_col_types = FALSE)
+    anno_df = read_csv(anno_path, show_col_types = FALSE) |>
+        left_join(
+            read_csv(hd_cell_map_path, show_col_types = FALSE),
+            by = c('fine_cell_type' = 'old_cell_type')
+        )
+
+    this_cor_fancy = lapply(
+        this_cor,
+        function(x) {
+            colnames(x) = tibble(old_cell_type = colnames(x)) |>
+                left_join(cell_map_df, by = 'old_cell_type') |>
+                pull(new_cell_type)
+            rownames(x) = tibble(cluster = as.numeric(rownames(x))) |>
+                left_join(anno_df, by = 'cluster') |>
+                mutate(
+                    cluster_label = sprintf(
+                        '%02d ~ %s', cluster, new_cell_type
+                    )
+                ) |>
+                pull(cluster_label)
+            return(x)
+        }
+    )
+
+    #   Annotate clusters
+    annotated_clusters = lapply(
+        this_cor_fancy, annotate_registered_clusters, cutoff_merge_ratio = 0.1
+    )
+
+    #   Make heatmaps
+    pdf(file.path(plot_dir, sprintf("%s_manuscript.pdf", ref_name)))
+    for (i in seq_len(length(this_cor_fancy))) {
+        print(
+            layer_stat_cor_plot(
+                this_cor_fancy[[i]], annotation = annotated_clusters[[i]]
+            )
+        )
+    }
+    dev.off()
 }
 
 #   Annotate clusters
