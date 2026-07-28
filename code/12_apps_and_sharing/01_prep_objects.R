@@ -285,5 +285,9 @@ qs_save(sce_pb, file.path(out_dir, 'sce_pb_shiny.qs2'), nthreads = num_cores)
 qs_save(
     sig_genes, file.path(out_dir, 'sig_genes_shiny.qs2'), nthreads = num_cores
 )
+qs_save(
+    modeling_results, file.path(out_dir, 'modeling_results.qs2'),
+    nthreads = num_cores
+)
 
 session_info()

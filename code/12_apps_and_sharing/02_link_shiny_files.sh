@@ -27,13 +27,10 @@ dest_dir=${repo_dir}/code/12_apps_and_sharing/shiny_HD_app
 
 #   Using relative paths for sym links so things work with git
 cd ${dest_dir}
-for f_name in spe_shiny.qs2 sce_pb_shiny.qs2 sig_genes_shiny.qs2; do
+for f_name in spe_shiny.qs2 sce_pb_shiny.qs2 sig_genes_shiny.qs2 modeling_results.qs2; do
     rm -f ${f_name}
     ln -s ../../../processed-data/12_apps_and_sharing/01_prep_objects/${f_name} ${f_name}
 done
-
-rm -f modeling_results.rds
-ln -s ../../../processed-data/09_HD_cell_level/no_secondary/registration_banksy/modeling_results/1_8_cell_types.rds modeling_results.rds
 
 echo "**** Job ends ****"
 date
