@@ -147,7 +147,8 @@ spe$cell_type = factor(spe$cell_type, levels = cell_type_levels)
 #   Add colors for the app
 spe$cell_type_colors = tibble(new_cell_type = spe$cell_type) |>
     left_join(cluster_map, by = 'new_cell_type') |>
-    pull(color)
+    pull(color) |>
+    setNames(spe$cell_type)
 
 #   Use factors where appropriate
 spe$tissue_piece = factor(spe$tissue_piece, levels = c(1, 2))
@@ -172,6 +173,9 @@ colData(spe) = colData(spe)[, coldata_cols]
 #   Pseudobulked SPE
 #-------------------------------------------------------------------------------
 
+#   The complicated work here with cell type is necessary because we need to
+#   both rename cell types (which assumes some old names include '/') but the
+#   Shiny app needs cell types without '/' in the layer-level tab
 spe_pb$cell_type = case_when(
     spe_pb$cell_type == 'Endo.microglia' ~ 'Endo/microglia',
     spe_pb$cell_type == 'Excit.Thal.Inhib_LHb_4.2' ~ 'Excit.Thal/Inhib_LHb_4.2',
@@ -183,10 +187,14 @@ spe_pb$cell_type = factor(
     levels = cell_type_levels
 )
 
+temp = spe_pb$cell_type
+spe_pb$cell_type = gsub('/', '.', spe_pb$cell_type, fixed = TRUE)
+
 #   Add colors for the app
-spe_pb$cell_type_colors = tibble(new_cell_type = spe_pb$cell_type) |>
+spe_pb$cell_type_colors = tibble(new_cell_type = temp) |>
     left_join(cluster_map, by = 'new_cell_type') |>
-    pull(color)
+    pull(color) |>
+    setNames(spe_pb$cell_type)
 
 spe_pb$key = paste(spe_pb$sample_id, spe_pb$cell_type, sep = "_")
 
@@ -242,17 +250,26 @@ modeling_results = readRDS(modeling_path)
 #   Columns encode "/" as "." (e.g. "Endo.microglia"), so build a lookup from
 #   dot-encoded old names to new names before renaming.
 suffix_rename = stats::setNames(
-    unname(rename_map),
+    gsub("/", ".", unname(rename_map), fixed = TRUE),
     gsub("/", ".", names(rename_map), fixed = TRUE)
 )
 rename_ct_cols = function(df) {
-    pattern = "^(t_stat_|p_value_|fdr_|logFC_)(.+)$"
+    #   Handles both enrichment ("prefix_CellType") and pairwise
+    #   ("prefix_CellTypeA-CellTypeB") column name formats.
+    pattern = "^(t_stat_|p_value_|fdr_|logFC_)(.+?)(-.+)?$"
     new_names = colnames(df)
     for (i in seq_along(new_names)) {
         m = regmatches(new_names[i], regexec(pattern, new_names[i]))[[1]]
-        if (length(m) == 3) {
-            new_suffix = suffix_rename[m[3]]
-            if (!is.na(new_suffix)) new_names[i] = paste0(m[2], new_suffix)
+        if (length(m) == 4) {
+            lhs     = suffix_rename[m[3]]
+            new_lhs = if (!is.na(lhs)) lhs else m[3]
+            rhs     = m[4]  # either "" or "-CellTypeB"
+            if (nchar(rhs) > 0) {
+                rhs_name    = sub("^-", "", rhs)
+                rhs_renamed = suffix_rename[rhs_name]
+                rhs = paste0("-", if (!is.na(rhs_renamed)) rhs_renamed else rhs_name)
+            }
+            new_names[i] = paste0(m[2], new_lhs, rhs)
         }
     }
     stats::setNames(df, new_names)
@@ -273,8 +290,8 @@ spe_pb$spatialLIBD = NULL
 sce_pb = as(spe_pb, "SingleCellExperiment")
 
 #   For ExperimentHub/ spatialLIBD::fetch_data()
-# saveRDS(spe, file.path(out_dir, 'spe_cell_habenula_atlas.rds'))
-# saveRDS(sce_pb, file.path(out_dir, 'sce_pb_habenula_atlas.rds'))
+saveRDS(spe, file.path(out_dir, 'spe_cell_habenula_atlas.rds'))
+saveRDS(sce_pb, file.path(out_dir, 'sce_pb_habenula_atlas.rds'))
 
 #   For the Shiny app
 assays(spe) = list(logcounts = logcounts(spe))
