@@ -1,7 +1,6 @@
 library(spatialLIBD)
 library(markdown)
 library(here)
-library(tidyverse)
 library(qs2)
 
 #   For interactive testing at JHPCE
