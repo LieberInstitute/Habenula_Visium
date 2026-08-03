@@ -32,19 +32,27 @@ dir.create(plot_dir, showWarnings = FALSE)
 #   Functions
 ################################################################################
 
-deg_boxplots = function(dge, genes, clean = TRUE) {
+deg_boxplots = function(dge, genes, cleaningY = FALSE) {
     plot_df_list = list()
     for (gene in genes) {
-        if (clean) {
+        if (cleaningY) {
             gene_expr = as.numeric(
                 cleaningY(
                     dge$E$E[gene, , drop = FALSE], mod = dge$design, P = 2
                 )
             )
-            y_label = "Cleaned logcounts"
+            y_label = "cleaningY logcounts"
         } else {
-            gene_expr = unname(dge$E$E[gene, ])
-            y_label = "Logcounts"
+            y <- dge$EList$E[gene, ]
+            w <- dge$EList$weights[match(gene, rownames(dge$EList$E)), ]
+            X <- dge$design
+            fit <- lm.wfit(X, y, w)
+
+            #   Manually implement cleaningY with P = 2
+            nuisance_fit <- X[, -(1:2), drop = FALSE] %*%
+                fit$coefficients[-(1:2)]
+            gene_expr <- y - nuisance_fit
+            y_label = "Limma-cleaned logcounts"
         }
       
         plot_df_list[[gene]] = tibble(
