@@ -162,6 +162,43 @@ if (ref_name == 'multiome_mid') {
         )
     }
     dev.off()
+} else if (ref_name == 'multiome_fine') {
+    anno_df = read_csv(anno_path, show_col_types = FALSE) |>
+        left_join(
+            read_csv(hd_cell_map_path, show_col_types = FALSE),
+            by = c('fine_cell_type' = 'old_cell_type')
+        )
+
+    this_cor_fancy = lapply(
+        this_cor,
+        function(x) {
+            rownames(x) = tibble(cluster = as.numeric(rownames(x))) |>
+                left_join(anno_df, by = 'cluster') |>
+                mutate(
+                    cluster_label = sprintf(
+                        '%02d ~ %s', cluster, new_cell_type
+                    )
+                ) |>
+                pull(cluster_label)
+            return(x)
+        }
+    )
+
+    #   Annotate clusters
+    annotated_clusters = lapply(
+        this_cor_fancy, annotate_registered_clusters, cutoff_merge_ratio = 0.1
+    )
+
+    #   Make heatmaps
+    pdf(file.path(plot_dir, sprintf("%s_manuscript.pdf", ref_name)))
+    for (i in seq_len(length(this_cor_fancy))) {
+        print(
+            layer_stat_cor_plot(
+                this_cor_fancy[[i]], annotation = annotated_clusters[[i]]
+            )
+        )
+    }
+    dev.off()
 }
 
 #   Annotate clusters
