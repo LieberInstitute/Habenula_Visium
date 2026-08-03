@@ -190,7 +190,7 @@ if (ref_name == 'multiome_mid') {
     )
 
     #   Make heatmaps
-    pdf(file.path(plot_dir, sprintf("%s_manuscript.pdf", ref_name)))
+    pdf(file.path(plot_dir, sprintf("%s_manuscript.pdf", ref_name)), width = 9)
     for (i in seq_len(length(this_cor_fancy))) {
         print(
             layer_stat_cor_plot(
