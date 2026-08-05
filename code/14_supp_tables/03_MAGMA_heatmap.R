@@ -19,7 +19,7 @@ multiome_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/pro
 multiome_map_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/raw-data/cell_type_map.csv'
 hd_map_path = here('raw-data', 'sample_info', 'hd_cell_type_map.csv')
 gwas_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/RNA/gwas_info.csv'
-plot_dir = here('plots', '14_supp_tables', 'plots')
+plot_dir = here('plots', '14_supp_tables')
 cluster_levels = c(
     "MHb_A", "MHb_B", "MHb_C", "MHb_D", "Excit_LHb", "LHb_A", "LHb_B", "LHb_C",
     "GABA_LHb_C.1", "GABA_LHb_C.2", "Excit.Thal/GABA_LHb_C.2", "Excit.Thal",
@@ -30,13 +30,14 @@ cluster_levels = c(
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 
 hd_cell_df = read_csv(hd_cell_path, show_col_types = FALSE) |>
-    filter(
-        cell_type_group == 'fine',
-        #   Not enough genes for MAGMA to give reliable results
-        !(cell_type %in% c('Endo/microglia', 'LHb_C/GABA_LHb_C.2'))) |>
     left_join(
         read_csv(hd_map_path, show_col_types = FALSE),
         by = c('cell_type' = 'old_cell_type')
+    ) |>
+    filter(
+        cell_type_group == 'fine',
+        #   Not enough genes for MAGMA to give reliable results
+        !(new_cell_type %in% c('Endo/microglia', 'LHb_C/GABA_LHb_C.2'))
     ) |>
     select(new_cell_type, gwas_group, neg_log_p, p_label) |>
     dplyr::rename(cell_type = new_cell_type) |>
@@ -114,10 +115,10 @@ p = marker_df |>
             cell_type_category ~ gwas_category,
             scales = "free", space = "free"
         ) +
-        theme_bw(base_size = 20) +
+        theme_bw(base_size = 15) +
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
         labs(x = "GWAS Trait", y = "Cell Type", fill = "-log10(p)")
-pdf(file.path(plot_dir, 'MAGMA_heatmap.pdf'), width = 10, height = 25)
+pdf(file.path(plot_dir, 'MAGMA_heatmap.pdf'), width = 8, height = 15)
 print(p)
 dev.off()
 
