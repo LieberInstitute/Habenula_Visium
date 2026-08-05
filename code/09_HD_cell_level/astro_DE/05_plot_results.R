@@ -49,13 +49,14 @@ custom_volcano <- function(
         ggplot(
                 aes(
                     x = !!sym(lfc_col), y = -log10(!!sym(p_col)),
-                    color = DE_class
+                    color = DE_class, shape = !!sym(spatial_fdr_col) < FDR_cut
                 )
             ) +
             geom_point(alpha = 0.5, size = 0.3) +
             scale_color_manual(values = signif_colors) +
+            scale_shape_manual(values = c("FALSE" = 0, "TRUE" = 19)) +
             labs(x = "log(FC)", y = "-log10(P value)") +
-            theme_bw(base_size = 10) +
+            theme_bw(base_size = 15) +
             theme(legend.position = "right")
     
     if(text) {
