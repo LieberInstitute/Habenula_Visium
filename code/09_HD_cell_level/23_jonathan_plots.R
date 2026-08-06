@@ -368,16 +368,33 @@ my_colors_mid = c(
   Excit.Thal = "#2e6296",
   Inhib.Thal = "#8DADCA",
   LHb.4 = "#082844",
+  LHb_C = "#082844",
+
   Inhib_LHb_4.1 = "#9c66c0",
   Inhib_LHb_4.2 = "#5e0c56",
+  GABA_LHb_C.1 = "#9c66c0",
+  GABA_LHb_C.2 = "#5e0c56",
+  
   LHb.1.3 = "#527BAA",
   LHb.1 = "#0C383E",
+
   LHb.2.7 = "#ee9630",
+  LHb_A = "#ee9630",
+
   LHb.1.3.4 = "#306171",
+  LHb_B = "#306171",
+
   MHb.1 = "#5e0c01",
+  MHb_A = "#5e0c01",
+
   MHb.1.2 = "#f67104",
+  MHb_C = "#f67104",
+
   MHb.2 = "#943f02",
-  MHb.3 = "#f4d5ab"
+  MHb_B = "#943f02",
+  
+  MHb.3 = "#f4d5ab", 
+  MHb_D = "#f4d5ab"
 ) 
 
 my_colors_class <- c(
@@ -392,65 +409,71 @@ my_colors_class <- c(
 
 
 cluster_combos = list(
-    MHb.1 = c(
-        MHb.1 = my_colors_mid[["MHb.1"]],
-        MHb.2 = my_colors_mid[["MHb.2"]],
-        LHb.2.7 = my_colors_mid[["LHb.2.7"]],
-        LHb.4 = my_colors_mid[["LHb.4"]],
+    broad = c(
+        MHb = my_colors_class[["MHb"]],
+        LHb = my_colors_class[["LHb"]],
+        Thalamus = my_colors_class[["Thalamus"]]
+    ),
+    MHb_A = c(
+        MHb_A = my_colors_mid[["MHb_A"]],
+        MHb_B = my_colors_mid[["MHb_B"]],
+        LHb_A = my_colors_mid[["LHb_A"]],
+        LHb_C = my_colors_mid[["LHb_C"]],
         Excit_LHb = "#0587f9",
         Thalamus = my_colors_mid[['Excit.Thal']],
         Other = other_color
     ),
-    MHb.2 = c(
-        MHb.1 = my_colors_mid[["MHb.1"]],
-        MHb.2 = my_colors_mid[["MHb.2"]],
-        LHb.2.7 = my_colors_mid[["LHb.2.7"]],
-        LHb.4 = my_colors_mid[["LHb.4"]],
+    MHb_B = c(
+        MHb_A = my_colors_mid[["MHb_A"]],
+        MHb_B = my_colors_mid[["MHb_B"]],
+        LHb_A = my_colors_mid[["LHb_A"]],
+        LHb_C = my_colors_mid[["LHb_C"]],
         Excit_LHb = "#0587f9",
         Thalamus = my_colors_mid[['Excit.Thal']],
         Other = other_color
     ),
-    LHb.2.7 = c(
-        MHb.1 = my_colors_mid[["MHb.1"]],
-        MHb.2 = my_colors_mid[["MHb.2"]],
-        LHb.2.7 = my_colors_mid[["LHb.2.7"]],
-        LHb.4 = my_colors_mid[["LHb.4"]],
+    LHb_A = c(
+        MHb_A = my_colors_mid[["MHb_A"]],
+        MHb_B = my_colors_mid[["MHb_B"]],
+        LHb_A = my_colors_mid[["LHb_A"]],
+        LHb_C = my_colors_mid[["LHb_C"]],
         Excit_LHb = "#0587f9",
         Thalamus = my_colors_mid[['Excit.Thal']],
         Other = other_color
     ),
-    LHb.4 = c(
-        MHb.1 = my_colors_mid[["MHb.1"]],
-        MHb.2 = my_colors_mid[["MHb.2"]],
-        LHb.2.7 = my_colors_mid[["LHb.2.7"]],
-        LHb.4 = my_colors_mid[["LHb.4"]],
+    LHb_C = c(
+        MHb_A = my_colors_mid[["MHb_A"]],
+        MHb_B = my_colors_mid[["MHb_B"]],
+        LHb_A = my_colors_mid[["LHb_A"]],
+        LHb_C = my_colors_mid[["LHb_C"]],
         Excit_LHb = "#0587f9",
         Thalamus = my_colors_mid[['Excit.Thal']],
         Other = other_color
     ),
     Excit_LHb = c(
-        MHb.1 = my_colors_mid[["MHb.1"]],
-        MHb.2 = my_colors_mid[["MHb.2"]],
-        LHb.2.7 = my_colors_mid[["LHb.2.7"]],
-        LHb.4 = my_colors_mid[["LHb.4"]],
+        MHb_A = my_colors_mid[["MHb_A"]],
+        MHb_B = my_colors_mid[["MHb_B"]],
+        LHb_A = my_colors_mid[["LHb_A"]],
+        LHb_C = my_colors_mid[["LHb_C"]],
         Excit_LHb = "#0587f9",
         Thalamus = my_colors_mid[['Excit.Thal']],
         Other = other_color
     ),
-    Inhib_LHb_4.2 = c(
-        MHb.1 = my_colors_mid[["MHb.1"]],
-        MHb.2 = my_colors_mid[["MHb.2"]],
-        LHb.2.7 = my_colors_mid[["LHb.2.7"]],
-        LHb.4 = my_colors_mid[["LHb.4"]],
+    GABA_LHb_C.2 = c(
+        MHb_A = my_colors_mid[["MHb_A"]],
+        MHb_B = my_colors_mid[["MHb_B"]],
+        LHb_A = my_colors_mid[["LHb_A"]],
+        LHb_C = my_colors_mid[["LHb_C"]],
+        GABA_LHb_C.2 = my_colors_mid[["GABA_LHb_C.2"]],
         Excit_LHb = "#0587f9",
         Thalamus = my_colors_mid[['Excit.Thal']],
         Other = other_color
     ),
     summary = c(
-        MHb.1 = my_colors_mid[["MHb.1"]],
-        MHb.2 = my_colors_mid[["MHb.2"]],
-        LHb.2.7 = my_colors_mid[["LHb.2.7"]],
-        LHb.4 = my_colors_mid[["LHb.4"]],
+        MHb_A = my_colors_mid[["MHb_A"]],
+        MHb_B = my_colors_mid[["MHb_B"]],
+        LHb_A = my_colors_mid[["LHb_A"]],
+        LHb_C = my_colors_mid[["LHb_C"]],
         Excit_LHb = "#0587f9",
         Other = other_color
     ),
@@ -460,6 +483,8 @@ cluster_combos = list(
         Excit.Thal = my_colors_class[["Thalamus"]]     
     ),
     Ependymal = c(
+        LHb = my_colors_class[["LHb"]],
+        MHb = my_colors_class[["MHb"]],
         Ependymal = my_colors_mid[["Ependymal"]],
         Subependymal = "#8d9707",
         Other = other_color
@@ -467,40 +492,25 @@ cluster_combos = list(
     Astrocyte = c(
         LHb = my_colors_class[["LHb"]],
         MHb = my_colors_class[["MHb"]],
-        OPC = my_colors_mid[["OPC"]],
-        Oligo = my_colors_mid[["Oligo"]],
         Astrocyte = my_colors_mid[["Astrocyte"]],
-        Endo = my_colors_mid[["Endo"]],
-        Ependymal = my_colors_mid[["Ependymal"]],
-        Subependymal = "#8d9707",
         Other = other_color
     ),
     Oligo = c(
         LHb = my_colors_class[["LHb"]],
         MHb = my_colors_class[["MHb"]],
-        OPC = my_colors_mid[["OPC"]],
         Oligo = my_colors_mid[["Oligo"]],
-        Astrocyte = my_colors_mid[["Astrocyte"]],
-        Endo = my_colors_mid[["Endo"]],
-        Ependymal = my_colors_mid[["Ependymal"]],
-        Subependymal = "#8d9707",
         Other = other_color
     ),
     OPC = c(
         LHb = my_colors_class[["LHb"]],
         MHb = my_colors_class[["MHb"]],
         OPC = my_colors_mid[["OPC"]],
-        Oligo = my_colors_mid[["Oligo"]],
-        Astrocyte = my_colors_mid[["Astrocyte"]],
-        Endo = my_colors_mid[["Endo"]],
-        Ependymal = my_colors_mid[["Ependymal"]],
-        Subependymal = "#8d9707",
         Other = other_color
     ),
-    MHb.1_only = c(MHb.1 = my_colors_mid[["MHb.1"]], Other = other_color),
-    MHb.2_only = c(MHb.2 = my_colors_mid[["MHb.2"]], Other = other_color),
-    LHb.2.7_only = c(LHb.2.7 = my_colors_mid[["LHb.2.7"]], Other = other_color),
-    LHb.4_only = c(LHb.4 = my_colors_mid[["LHb.4"]], Other = other_color),
+    MHb_A_only = c(MHb_A = my_colors_mid[["MHb_A"]], Other = other_color),
+    MHb_B_only = c(MHb_B = my_colors_mid[["MHb_B"]], Other = other_color),
+    LHb_A_only = c(LHb_A = my_colors_mid[["LHb_A"]], Other = other_color),
+    LHb_C_only = c(LHb_C = my_colors_mid[["LHb_C"]], Other = other_color),
     Excit_LHb_only = c(Excit_LHb = "#0587f9", Other = other_color),
     Astro_only = c(Astrocyte = my_colors_mid[["Astrocyte"]], Other = other_color),
     OPC_only = c(OPC = my_colors_mid[["OPC"]], Other = other_color),
@@ -508,66 +518,71 @@ cluster_combos = list(
 
 )
 
-
-spe$MHb.1 = case_when(
-    spe$banksy == 8 ~ "MHb.1",
-    spe$banksy == 15 ~ "MHb.2",
-    spe$banksy == 19 ~ "LHb.2.7",
-    spe$banksy %in% c(7, 25) ~ "LHb.4",
+spe$broad = case_when(
+    spe$banksy %in% c(8,15) ~ "MHb",
+    spe$banksy %in% c(7, 25, 23, 19) ~ "LHb",
+    spe$banksy == 20 ~ "Thalamus",
+    TRUE ~ "Other"
+)
+spe$MHb_A = case_when(
+    spe$banksy == 8 ~ "MHb_A",
+    spe$banksy == 15 ~ "MHb_B",
+    spe$banksy == 19 ~ "LHb_A",
+    spe$banksy %in% c(7, 25) ~ "LHb_C",
     spe$banksy == 23 ~ "Excit_LHb",
     spe$banksy == 20 ~ "Thalamus",
     TRUE ~ "Other"
 )
-spe$MHb.2 = case_when(
-    spe$banksy == 8 ~ "MHb.1",
-    spe$banksy == 15 ~ "MHb.2",
-    spe$banksy == 19 ~ "LHb.2.7",
-    spe$banksy %in% c(7, 25) ~ "LHb.4",
+spe$MHb_B = case_when(
+    spe$banksy == 8 ~ "MHb_A",
+    spe$banksy == 15 ~ "MHb_B",
+    spe$banksy == 19 ~ "LHb_A",
+    spe$banksy %in% c(7, 25) ~ "LHb_C",
     spe$banksy == 23 ~ "Excit_LHb",
-    spe$banksy %in% c(5, 9) ~ "Inhib_LHb_4.2",
+    spe$banksy %in% c(5, 9) ~ "GABA_LHb_C.2",
     TRUE ~ "Other"
 )
-spe$LHb.2.7 = case_when(
-    spe$banksy == 8 ~ "MHb.1",
-    spe$banksy == 15 ~ "MHb.2",
-    spe$banksy == 19 ~ "LHb.2.7",
-    spe$banksy %in% c(7, 25) ~ "LHb.4",
+spe$LHb_A = case_when(
+    spe$banksy == 8 ~ "MHb_A",
+    spe$banksy == 15 ~ "MHb_B",
+    spe$banksy == 19 ~ "LHb_A",
+    spe$banksy %in% c(7, 25) ~ "LHb_C",
     spe$banksy == 23 ~ "Excit_LHb",
-    spe$banksy %in% c(5, 9) ~ "Inhib_LHb_4.2",
+    spe$banksy %in% c(5, 9) ~ "GABA_LHb_C.2",
     TRUE ~ "Other"
 )
-spe$LHb.4 = case_when(
-    spe$banksy == 8 ~ "MHb.1",
-    spe$banksy == 15 ~ "MHb.2",
-    spe$banksy == 19 ~ "LHb.2.7",
-    spe$banksy %in% c(7, 25) ~ "LHb.4",
+spe$LHb_C = case_when(
+    spe$banksy == 8 ~ "MHb_A",
+    spe$banksy == 15 ~ "MHb_B",
+    spe$banksy == 19 ~ "LHb_A",
+    spe$banksy %in% c(7, 25) ~ "LHb_C",
     spe$banksy == 23 ~ "Excit_LHb",
-    spe$banksy %in% c(5, 9) ~ "Inhib_LHb_4.2",
+    spe$banksy %in% c(5, 9) ~ "GABA_LHb_C.2",
     TRUE ~ "Other"
 )
 spe$Excit_LHb = case_when(
-    spe$banksy == 8 ~ "MHb.1",
-    spe$banksy == 15 ~ "MHb.2",
-    spe$banksy == 19 ~ "LHb.2.7",
-    spe$banksy %in% c(7, 25) ~ "LHb.4",
+    spe$banksy == 8 ~ "MHb_A",
+    spe$banksy == 15 ~ "MHb_B",
+    spe$banksy == 19 ~ "LHb_A",
+    spe$banksy %in% c(7, 25) ~ "LHb_C",
     spe$banksy == 23 ~ "Excit_LHb",
-    spe$banksy %in% c(5, 9) ~ "Inhib_LHb_4.2",
+    spe$banksy %in% c(5, 9) ~ "GABA_LHb_C.2",
     TRUE ~ "Other"
 )
-spe$Inhib_LHb_4.2 = case_when(
-    spe$banksy == 8 ~ "MHb.1",
-    spe$banksy == 15 ~ "MHb.2",
-    spe$banksy == 19 ~ "LHb.2.7",
-    spe$banksy %in% c(7, 25) ~ "LHb.4",
+spe$GABA_LHb_C.2 = case_when(
+    spe$banksy == 8 ~ "MHb_A",
+    spe$banksy == 15 ~ "MHb_B",
+    spe$banksy == 19 ~ "LHb_A",
+    spe$banksy %in% c(7, 25) ~ "LHb_C",
     spe$banksy == 23 ~ "Excit_LHb",
-    spe$banksy %in% c(5, 9) ~ "Inhib_LHb_4.2",
+    spe$banksy %in% c(5, 9) ~ "GABA_LHb_C.2",
     TRUE ~ "Other"
 )
 spe$summary = case_when(
-    spe$banksy == 8 ~ "MHb.1",
-    spe$banksy == 15 ~ "MHb.2",
-    spe$banksy == 19 ~ "LHb.2.7",
-    spe$banksy %in% c(7, 25) ~ "LHb.4",
+    spe$banksy == 8 ~ "MHb_A",
+    spe$banksy == 15 ~ "MHb_B",
+    spe$banksy == 19 ~ "LHb_A",
+    spe$banksy %in% c(7, 25) ~ "LHb_C",
     spe$banksy == 23 ~ "Excit_LHb",
     TRUE ~ "Other"
 )
@@ -577,6 +592,8 @@ spe$Excit.Thal = case_when(
     spe$banksy == 20 ~ "Excit.Thal"
 )
 spe$Ependymal = case_when(
+    spe$banksy %in% c(7, 25, 23, 19) ~ "LHb",
+    spe$banksy %in% c(8, 15) ~ "MHb",
     spe$banksy %in% c(12, 16, 24) ~ "Ependymal",
     spe$banksy == 13 ~ "Subependymal",
     TRUE ~ "Other"
@@ -584,51 +601,36 @@ spe$Ependymal = case_when(
 spe$Astrocyte = case_when(
     spe$banksy %in% c(7, 25, 23, 19) ~ "LHb",
     spe$banksy %in% c(8, 15) ~ "MHb",
-    spe$banksy == 1 ~ "OPC",
-    spe$banksy %in% c(3,4,10,27) ~ "Oligo",
     spe$banksy %in% c(6, 11, 18) ~ "Astrocyte",
-    spe$banksy %in% c(17, 21, 22, 26) ~ "Endo",
-    spe$banksy %in% c(12, 16, 24) ~ "Ependymal",
-    spe$banksy == 13 ~ "Subependymal",
     TRUE ~ "Other"   
 )
 spe$Oligo = case_when(
     spe$banksy %in% c(7, 25, 23, 19) ~ "LHb",
     spe$banksy %in% c(8, 15) ~ "MHb",
-    spe$banksy == 1 ~ "OPC",
     spe$banksy %in% c(3,4,10,27) ~ "Oligo",
-    spe$banksy %in% c(6, 11, 18) ~ "Astrocyte",
-    spe$banksy %in% c(17, 21, 22, 26) ~ "Endo",
-    spe$banksy %in% c(12, 16, 24) ~ "Ependymal",
-    spe$banksy == 13 ~ "Subependymal",
     TRUE ~ "Other"  
 )
 spe$OPC = case_when(
     spe$banksy %in% c(7, 25, 23, 19) ~ "LHb",
     spe$banksy %in% c(8, 15) ~ "MHb",
     spe$banksy == 1 ~ "OPC",
-    spe$banksy %in% c(3,4,10,27) ~ "Oligo",
-    spe$banksy %in% c(6, 11, 18) ~ "Astrocyte",
-    spe$banksy %in% c(17, 21, 22, 26) ~ "Endo",
-    spe$banksy %in% c(12, 16, 24) ~ "Ependymal",
-    spe$banksy == 13 ~ "Subependymal",
     TRUE ~ "Other"  
 )
 
-spe$MHb.1_only = case_when(
-    spe$banksy == 8 ~ "MHb.1",
+spe$MHb_A_only = case_when(
+    spe$banksy == 8 ~ "MHb_A",
     TRUE ~ "Other"
 )
-spe$MHb.2_only = case_when(
-    spe$banksy == 15 ~ "MHb.2",
+spe$MHb_B_only = case_when(
+    spe$banksy == 15 ~ "MHb_B",
     TRUE ~ "Other"
 )
-spe$LHb.2.7_only = case_when(
-    spe$banksy == 19 ~ "LHb.2.7",
+spe$LHb_A_only = case_when(
+    spe$banksy == 19 ~ "LHb_A",
     TRUE ~ "Other"
 )
-spe$LHb.4_only = case_when(
-    spe$banksy %in% c(7, 25) ~ "LHb.4",
+spe$LHb_C_only = case_when(
+    spe$banksy %in% c(7, 25) ~ "LHb_C",
     TRUE ~ "Other"
 )
 spe$Excit_LHb_only = case_when(
@@ -663,8 +665,13 @@ for (combo_name in names(cluster_combos)) {
     if(combo_name == 'Ependymal'){
       plot_combo(spe, combo_name,region_name = 'Habenula', target_celltypes = c('Ependymal','Subependymal'), 
       alpha_value = .005, flip = FALSE)
-    }else{
-    plot_combo(spe, combo_name,region_name = 'Habenula', target_celltypes = combo_name, alpha_value = .005, flip = FALSE)
+    }else if(combo_name == 'broad'){
+      plot_combo(spe, combo_name,region_name = 'Habenula', target_celltypes = c('MHb', 'LHb', 'Thalamus'), 
+      alpha_value = .005, flip = FALSE)
+    }
+    else{
+    plot_combo(spe, combo_name,region_name = 'Habenula', target_celltypes = combo_name, 
+      alpha_value = .005, flip = FALSE)
     }
       
       #pdfs
@@ -674,7 +681,7 @@ for (combo_name in names(cluster_combos)) {
 #And summary plots of the neurons
 
 plot_combo(spe, combo_name = 'summary', region_name = 'Habenula', 
-target_celltypes = c('MHb.1', 'MHb.2', 'LHb.2.7', 'LHb.4', 'Excit_LHb'), 
+target_celltypes = c('MHb_A', 'MHb_B', 'LHb_A', 'LHb_C', 'Excit_LHb'), 
 alpha_value = .005, flip = FALSE, is_pdf = FALSE)
 
 
