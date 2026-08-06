@@ -98,6 +98,21 @@ for (this_sample_id in sample_ids) {
         plot_path = file.path(plot_dir, paste0(this_sample_id, '_9.png')),
         colors = colors
     )
+
+    colors = c(
+        'MHb' = '#BB2908', 'Astro 11' = '#301BCB', 'Other' = '#9e9e9e'
+    )
+    spe$temp = case_when(
+            grepl('^MHb', spe$cell_type) ~ 'MHb',
+            spe$banksy == 11 ~ 'Astro 11',
+            TRUE ~ 'Other'
+        ) |>
+        factor(levels = names(colors))
+    vis_clus_hd(
+        spe, clustervar = 'temp', sample_id = this_sample_id,
+        plot_path = file.path(plot_dir, paste0(this_sample_id, '_MHb_astro.png')),
+        colors = colors
+    )
 }
 
 session_info()
