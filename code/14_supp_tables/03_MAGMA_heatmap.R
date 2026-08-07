@@ -99,11 +99,12 @@ p = marker_df |>
         cell_type_category = case_when(
                 grepl('^Factor_', cell_type) & (dataset == 'HD_FICTURE_all_bin_k8') ~ 'All-Data Factors',
                 grepl('^Factor_', cell_type) & (dataset == 'HD_FICTURE_extracellular_k17') ~ 'Extracellular Factors',
-                TRUE ~ 'Cell Types'
+                TRUE ~ 'Extracellular Cell Types'
             ) |>
             factor(
                 levels = c(
-                    'Cell Types', 'All-Data Factors', 'Extracellular Factors'
+                    'Extracellular Cell Types', 'All-Data Factors',
+                    'Extracellular Factors'
                 )
             )
     ) |>
