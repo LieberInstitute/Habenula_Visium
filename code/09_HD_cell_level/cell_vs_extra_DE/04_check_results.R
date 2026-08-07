@@ -167,4 +167,57 @@ rbind(
     ungroup() |>
     print(n = 30)
 
+marker_df = rbind(
+        read_tsv(cell_marker_path, show_col_types = FALSE) |>
+            mutate(compartment = 'cell'),
+        read_tsv(extra_marker_path, show_col_types = FALSE) |>
+            mutate(compartment = 'extra')
+    ) |>
+    dplyr::rename(cell_type = set_id) |>
+    select(cell_type, gene_id, MeanRatio)
+
+cell_df = de_df |>
+    filter(adj.P.Val < 0.05, abs(logFC) > 1) |>
+    mutate(cell_type = str_replace_all(cell_type, '/', '.')) |>
+    select(gene_id, cell_type, logFC) |>
+    left_join(
+        read_tsv(cell_marker_path, show_col_types = FALSE) |>
+            mutate(compartment = 'cell') |>
+            dplyr::rename(cell_type = set_id) |>
+            select(cell_type, gene_id, MeanRatio),
+        by = c("cell_type", "gene_id")
+    ) |>
+    group_by(sign(logFC)) |>
+    summarize(prop_markers = mean(!is.na(MeanRatio))) |>
+    mutate(marker_type = 'cell')
+extra_df = de_df |>
+    filter(adj.P.Val < 0.05, abs(logFC) > 1) |>
+    mutate(cell_type = str_replace_all(cell_type, '/', '.')) |>
+    select(gene_id, cell_type, logFC) |>
+    left_join(
+        read_tsv(extra_marker_path, show_col_types = FALSE) |>
+            mutate(compartment = 'extra') |>
+            dplyr::rename(cell_type = set_id) |>
+            select(cell_type, gene_id, MeanRatio),
+        by = c("cell_type", "gene_id")
+    ) |>
+    group_by(sign(logFC)) |>
+    summarize(prop_markers = mean(!is.na(MeanRatio))) |>
+    mutate(marker_type = 'extra')
+rbind(cell_df, extra_df) |>
+    mutate(DEG_type = ifelse(sign(logFC) > 0, 'extra', 'cell')) |>
+
+
+
+|>
+    group_by(sign(logFC)) |>
+    summarize(
+        prop_cell_markers = mean(
+            gene_id %in% marker_df$gene_id[marker_df$compartment == 'cell']
+        ),
+        prop_extra_markers = mean(
+            gene_id %in% marker_df$gene_id[marker_df$compartment == 'extra']
+        )
+    )
+
 session_info()
