@@ -5,6 +5,10 @@ library(sessioninfo)
 
 hd_cell_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
+    'heatmap_data.csv'
+)
+hd_extra_path = here(
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
     'extracellular', 'heatmap_data.csv'
 )
 k8_path = here(
@@ -29,7 +33,7 @@ cluster_levels = c(
 
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 
-hd_cell_df = read_csv(hd_cell_path, show_col_types = FALSE) |>
+hd_extra_df = read_csv(hd_extra_path, show_col_types = FALSE) |>
     left_join(
         read_csv(hd_map_path, show_col_types = FALSE),
         by = c('cell_type' = 'old_cell_type')
@@ -41,7 +45,7 @@ hd_cell_df = read_csv(hd_cell_path, show_col_types = FALSE) |>
     ) |>
     select(new_cell_type, gwas_group, neg_log_p, p_label) |>
     dplyr::rename(cell_type = new_cell_type) |>
-    mutate(dataset = 'HD_cell_types')
+    mutate(dataset = 'HD_extracellular')
 
 k8_df = read_csv(k8_path, show_col_types = FALSE) |>
     select(cell_type, gwas_group, neg_log_p, p_label) |>
@@ -67,7 +71,7 @@ multiome_df = read_csv(multiome_path, show_col_types = FALSE) |>
     dplyr::rename(cell_type = new_cell_type) |>
     mutate(dataset = 'Multiome_cell_types')
 
-marker_df = bind_rows(hd_cell_df, k8_df, k17_df, multiome_df) |>
+marker_df = bind_rows(hd_extra_df, k8_df, k17_df, multiome_df) |>
     group_by(cell_type, gwas_group) |>
     mutate(
         cell_type = ifelse(
