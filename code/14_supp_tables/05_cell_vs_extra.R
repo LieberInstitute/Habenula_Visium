@@ -17,6 +17,9 @@ extra_path = here(
     'extracellular', 'spe_norm_filtered.qs2'
 )
 plot_path = here('plots', '14_supp_tables', 'cell_vs_extra_boxplots.pdf')
+dataset_colors = c(
+    nuclear = '#931621', cell = '#28464B', extra = '#42D9C8'
+)
 
 ################################################################################
 #   Functions
@@ -55,7 +58,7 @@ metric_names = c(
     "n_genes" = "Detected Genes",
     "num_bins" = "Num 2um Bins"
 )
-p = rbind(
+plot_df = rbind(
         spe_stats(spe_nuclear, "nuclear"),
         spe_stats(spe_cell, "cell"),
         spe_stats(spe_extra, "extra")
@@ -69,10 +72,24 @@ p = rbind(
         metric = factor(
             metric_names[metric], levels = metric_names
         )
+    )
+
+#   Clip outliers per facet so they don't stretch the y-axis
+plot_df = plot_df |>
+    group_by(metric) |>
+    mutate(
+        whisker_max = quantile(value, 0.75, na.rm = TRUE) + 1.5 * IQR(value, na.rm = TRUE),
+        whisker_min = quantile(value, 0.25, na.rm = TRUE) - 1.5 * IQR(value, na.rm = TRUE)
     ) |>
+    ungroup() |>
+    filter(value >= whisker_min, value <= whisker_max) |>
+    select(-whisker_max, -whisker_min)
+
+p = plot_df |>
     ggplot(aes(x = dataset, y = value, fill = dataset)) +
         geom_boxplot(outlier.shape = NA) +
         facet_wrap(~metric, scales = "free_y") +
+        scale_fill_manual(values = dataset_colors) +
         theme_bw(base_size = 18) +
         theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
         labs(x = "Dataset", y = "Metric Value") +
