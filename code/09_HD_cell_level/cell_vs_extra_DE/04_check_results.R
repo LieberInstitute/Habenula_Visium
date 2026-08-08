@@ -204,20 +204,23 @@ extra_df = de_df |>
     group_by(sign(logFC)) |>
     summarize(prop_markers = mean(!is.na(MeanRatio))) |>
     mutate(marker_type = 'extra')
-rbind(cell_df, extra_df) |>
-    mutate(DEG_type = ifelse(sign(logFC) > 0, 'extra', 'cell')) |>
-
-
-
-|>
-    group_by(sign(logFC)) |>
-    summarize(
-        prop_cell_markers = mean(
-            gene_id %in% marker_df$gene_id[marker_df$compartment == 'cell']
-        ),
-        prop_extra_markers = mean(
-            gene_id %in% marker_df$gene_id[marker_df$compartment == 'extra']
-        )
-    )
+p = rbind(cell_df, extra_df) |>
+    mutate(
+        DEG_type = ifelse(`sign(logFC)` > 0, 'extra DEG', 'cellular DEG'),
+        prop_not_markers = 1 - prop_markers
+    ) |>
+    pivot_longer(
+        cols = c(prop_markers, prop_not_markers), names_to = "type",
+        values_to = "prop"
+    ) |>
+    mutate(type = ifelse(type == "prop_markers", "marker", "not marker")) |>
+    ggplot(aes(x = marker_type, y = prop, fill = type)) +
+        geom_bar(stat = "identity") +
+        facet_wrap(~ DEG_type) +
+        labs(x = "Marker type", y = "Proportion of DEGs that are Markers") +
+        theme_bw(base_size = 20)
+pdf(file.path(plot_dir, 'DEG_marker_barplot.pdf'))
+print(p)
+dev.off()
 
 session_info()
