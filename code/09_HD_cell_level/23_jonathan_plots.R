@@ -414,6 +414,22 @@ cluster_combos = list(
         LHb = my_colors_class[["LHb"]],
         Thalamus = my_colors_class[["Thalamus"]]
     ),
+    MHb_together = c(
+        MHb_A = my_colors_mid[["MHb_A"]],
+        MHb_B = my_colors_mid[["MHb_B"]],
+        LHb_A = my_colors_mid[["LHb_A"]],
+        LHb_C = my_colors_mid[["LHb_C"]],
+        Excit_LHb = "#0587f9",
+        Other = other_color
+    ),
+    LHb_together = c(
+        MHb_A = my_colors_mid[["MHb_A"]],
+        MHb_B = my_colors_mid[["MHb_B"]],
+        LHb_A = my_colors_mid[["LHb_A"]],
+        LHb_C = my_colors_mid[["LHb_C"]],
+        Excit_LHb = "#0587f9",
+        Other = other_color
+    ),
     MHb_A = c(
         MHb_A = my_colors_mid[["MHb_A"]],
         MHb_B = my_colors_mid[["MHb_B"]],
@@ -522,6 +538,23 @@ spe$broad = case_when(
     spe$banksy %in% c(8,15) ~ "MHb",
     spe$banksy %in% c(7, 25, 23, 19) ~ "LHb",
     spe$banksy == 20 ~ "Thalamus",
+    TRUE ~ "Other"
+)
+
+spe$MHb_together = case_when(
+    spe$banksy == 8 ~ "MHb_A",
+    spe$banksy == 15 ~ "MHb_B",
+    spe$banksy == 19 ~ "LHb_A",
+    spe$banksy %in% c(7, 25) ~ "LHb_C",
+    spe$banksy == 23 ~ "Excit_LHb",
+    TRUE ~ "Other"
+)
+spe$LHb_together = case_when(
+    spe$banksy == 8 ~ "MHb_A",
+    spe$banksy == 15 ~ "MHb_B",
+    spe$banksy == 19 ~ "LHb_A",
+    spe$banksy %in% c(7, 25) ~ "LHb_C",
+    spe$banksy == 23 ~ "Excit_LHb",
     TRUE ~ "Other"
 )
 spe$MHb_A = case_when(
@@ -669,7 +702,13 @@ for (combo_name in names(cluster_combos)) {
       plot_combo(spe, combo_name,region_name = 'Habenula', target_celltypes = c('MHb', 'LHb', 'Thalamus'), 
       alpha_value = .005, flip = FALSE)
     }
-    else{
+    else if(combo_name == 'MHb_together'){
+      plot_combo(spe, combo_name,region_name = 'Habenula', target_celltypes = c('MHb_A', 'MHb_B'), 
+      alpha_value = .005, flip = FALSE)
+    }else if(combo_name == 'LHb_together'){
+      plot_combo(spe, combo_name,region_name = 'Habenula', target_celltypes = c('LHb_A', 'LHb_C', 'Excit_LHb'), 
+      alpha_value = .005, flip = FALSE)
+    }else{
     plot_combo(spe, combo_name,region_name = 'Habenula', target_celltypes = combo_name, 
       alpha_value = .005, flip = FALSE)
     }
