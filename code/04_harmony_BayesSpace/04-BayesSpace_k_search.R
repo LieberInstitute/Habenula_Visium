@@ -36,6 +36,12 @@ spe <- readRDS(spe_in)
 metadata(spe)$BayesSpace.data <-
     list(platform = "Visium", is.enhanced = FALSE)
 
+## Note that the spatial coordinates were previously offset
+## at https://github.com/LieberInstitute/Habenula_Visium/blob/be7516326a332497fdc691d1761a0dcc4d6f2570/code/04_harmony_BayesSpace/03-preprocess_and_harmony.R#L405-L412
+## Otherwise the results from spatialCluster() would be incorrect.
+## See http://edward130603.github.io/BayesSpace/articles/joint_clustering.html#clustering-1
+## for more details.
+
 message("Running spatialCluster()")
 Sys.time()
 set.seed(20240229)
