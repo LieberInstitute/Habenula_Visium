@@ -50,6 +50,9 @@ MUNGED_DIR="${PROJECT_DIR}/03_GWAS/munged"
 
 LDSCORE_DIR="${PROJECT_DIR}/02_DAR_ldscores_hg19"
 
+# Pooled same-DAR-set background annotation
+BACKGROUND_ANNOTATION="__DAR_BACKGROUND__"
+
 
 ###############################################################################
 # S-LDSC result directory
@@ -76,8 +79,7 @@ TASK_FILE="${PROJECT_DIR}/03_GWAS/sldsc_tasks.tsv"
 # Array script
 ###############################################################################
 
-ARRAY_SCRIPT="/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/code/10_HD_bin_level/LDSC/04_run_sldsc_array.sh"
-
+ARRAY_SCRIPT="/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/code/10_HD_bin_level/LDSC/pooled_background/04_run_sldsc_array_with_pooled_background.sh"
 
 ###############################################################################
 # Log directory
@@ -490,6 +492,41 @@ while IFS=$'\t' read -r \
 
 
 done < "${DAR_ANNOTATION_FILE}"
+
+
+###############################################################################
+# Check pooled background LD-score files
+#
+# Every foreground regression will condition on the background from the same
+# DAR set, so fail early here instead of launching many jobs that would fail.
+###############################################################################
+
+echo
+echo "Checking pooled background LD-score files..."
+
+for dar_set in open closed all; do
+
+    background_prefix="${LDSCORE_DIR}/${dar_set}/${BACKGROUND_ANNOTATION}/${BACKGROUND_ANNOTATION}."
+
+    for chr in $(seq 1 22); do
+        for suffix in \
+            "l2.ldscore.gz" \
+            "l2.M" \
+            "l2.M_5_50"; do
+
+            background_file="${background_prefix}${chr}.${suffix}"
+
+            if [[ ! -s "${background_file}" ]]; then
+                echo "ERROR: Missing pooled background LD-score file:"
+                echo "${background_file}"
+                exit 1
+            fi
+        done
+    done
+
+    echo "Background complete: ${dar_set}"
+
+done
 
 
 ###############################################################################

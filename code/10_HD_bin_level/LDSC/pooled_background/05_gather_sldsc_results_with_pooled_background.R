@@ -967,14 +967,16 @@ for (i in seq_len(
     #
     # The S-LDSC command uses:
     #
-    #   --ref-ld-chr baselineLD,custom_annotation
+    #   --ref-ld-chr baselineLD,custom_annotation,pooled_background
     #
     # Therefore LDSC labels:
     #
     #   *_0 = baseline-LD annotation set
-    #   *_1 = custom DAR annotation
+    #   *_1 = custom cell-type DAR annotation (foreground)
+    #   *_2 = pooled same-DAR-set background annotation
     #
-    # The custom annotation row should therefore end in "_1".
+    # The foreground row therefore still ends in "_1". Its coefficient is
+    # conditional on both baselineLD and the pooled background.
     ###########################################################################
 
     result[

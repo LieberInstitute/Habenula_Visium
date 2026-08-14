@@ -40,6 +40,9 @@ WEIGHTS_PREFIX="/users/cliu3/Thesis/LDscoredata/weights_hm3_no_hla/weights."
 
 FRQ_PREFIX="/users/cliu3/Thesis/LDscoredata/1000G_Phase3_frq/1000G.EUR.QC."
 
+# Pooled same-DAR-set control annotation
+BACKGROUND_ANNOTATION="__DAR_BACKGROUND__"
+
 ARRAY_ID="${SLURM_ARRAY_TASK_ID:-1}"
 JOB_ID="${SLURM_JOB_ID:-manual}"
 
@@ -255,10 +258,16 @@ gzip -cd "${SUMSTATS}" |
 
 CUSTOM_PREFIX="${LDSCORE_DIR}/${DAR_SET}/${ANNOTATION}/${ANNOTATION}."
 
+BACKGROUND_PREFIX="${LDSCORE_DIR}/${DAR_SET}/${BACKGROUND_ANNOTATION}/${BACKGROUND_ANNOTATION}."
+
 
 echo
-echo "Custom LD-score prefix:"
+echo "Foreground LD-score prefix:"
 echo "${CUSTOM_PREFIX}"
+
+echo
+echo "Pooled background LD-score prefix:"
+echo "${BACKGROUND_PREFIX}"
 
 
 ###############################################################################
@@ -286,6 +295,28 @@ for chr in $(seq 1 22); do
 
             echo "ERROR: Missing custom LD-score file:"
             echo "${custom_file}"
+
+            exit 1
+        fi
+
+    done
+
+
+    ###########################################################################
+    # Pooled same-DAR-set background LD scores
+    ###########################################################################
+
+    for suffix in \
+        "l2.ldscore.gz" \
+        "l2.M" \
+        "l2.M_5_50"; do
+
+        background_file="${BACKGROUND_PREFIX}${chr}.${suffix}"
+
+        if [[ ! -s "${background_file}" ]]; then
+
+            echo "ERROR: Missing pooled background LD-score file:"
+            echo "${background_file}"
 
             exit 1
         fi
@@ -336,9 +367,17 @@ mkdir -p "${RESULT_DIR}"
 #
 # Each run contains:
 #
-# baselineLD + ONE custom annotation
+# baselineLD + ONE cell-type foreground + pooled same-DAR-set background
 #
-# Open / closed / all therefore remain three separate S-LDSC analyses.
+# IMPORTANT: foreground is listed before background so LDSC keeps the current
+# category numbering used by 05_gather_sldsc_results.R:
+#
+#   *_0 = baseline-LD
+#   *_1 = foreground cell-type DAR      <- result we gather
+#   *_2 = pooled DAR background
+#
+# The foreground coefficient is therefore conditional on both baselineLD and
+# the pooled background. Open / closed / all remain separate analyses.
 ###############################################################################
 
 CMD=(
@@ -349,7 +388,7 @@ CMD=(
     "${SUMSTATS}"
 
     --ref-ld-chr
-    "${BASELINE_PREFIX},${CUSTOM_PREFIX}"
+    "${BASELINE_PREFIX},${CUSTOM_PREFIX},${BACKGROUND_PREFIX}"
 
     --w-ld-chr
     "${WEIGHTS_PREFIX}"

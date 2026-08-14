@@ -66,6 +66,21 @@ out_dir <- paste0(
 
 
 ###############################################################################
+# Pooled DAR background annotation
+#
+# For each DAR set separately:
+#   open   -> union of open DARs across all cell types
+#   closed -> union of closed DARs across all cell types
+#   all    -> union of all DARs across all cell types
+#
+# This BED is used only as a control/background annotation in S-LDSC.
+# It is intentionally NOT added to the ordinary cell-type manifest.
+###############################################################################
+
+pooled_background_annotation <- "__DAR_BACKGROUND__"
+
+
+###############################################################################
 # Add only these cell types from the mid-resolution DAR file
 ###############################################################################
 
@@ -1321,6 +1336,136 @@ for (dar_set_name in names(dar_sets)) {
 
 
     ###########################################################################
+    # Create pooled same-DAR-set background BED
+    #
+    # This is the union of all cell-type BEDs within the CURRENT DAR set.
+    # Example for dar_set_name == "open":
+    #
+    #   background = union(open DARs from every cell type)
+    #
+    # The background is generated from the already-lifted hg19 BED files, so
+    # target and background annotations use exactly the same liftOver/QC rules.
+    ###########################################################################
+
+    if (pooled_background_annotation %chin% manifest$annotation) {
+        stop(
+            "Reserved pooled background annotation name is already used: ",
+            pooled_background_annotation
+        )
+    }
+
+    pooled_bed_parts <- lapply(
+        manifest$bed_file,
+        function(bed_file_i) {
+
+            if (!file.exists(bed_file_i) ||
+                is.na(file.info(bed_file_i)$size) ||
+                file.info(bed_file_i)$size == 0) {
+                stop(
+                    "Missing/empty cell-type BED while building pooled background: ",
+                    bed_file_i
+                )
+            }
+
+            x <- fread(
+                bed_file_i,
+                header = FALSE,
+                col.names = c("chr", "start", "end")
+            )
+
+            if (ncol(x) != 3L || nrow(x) == 0L) {
+                stop(
+                    "Invalid cell-type BED while building pooled background: ",
+                    bed_file_i
+                )
+            }
+
+            x
+        }
+    )
+
+    pooled_bed_raw <- rbindlist(
+        pooled_bed_parts,
+        use.names = TRUE,
+        fill = FALSE
+    )
+
+    pooled_gr <- GRanges(
+        seqnames = pooled_bed_raw$chr,
+        ranges = IRanges(
+            start = as.integer(pooled_bed_raw$start) + 1L,
+            end = as.integer(pooled_bed_raw$end)
+        )
+    )
+
+    pooled_gr <- reduce(
+        pooled_gr,
+        ignore.strand = TRUE
+    )
+
+    pooled_bed <- data.table(
+        chr = as.character(seqnames(pooled_gr)),
+        start = start(pooled_gr) - 1L,
+        end = end(pooled_gr)
+    )
+
+    pooled_bed[, chr_num := suppressWarnings(
+        as.integer(sub("^chr", "", chr))
+    )]
+
+    if (anyNA(pooled_bed$chr_num)) {
+        stop(
+            "Non-autosomal chromosome found in pooled background for DAR set: ",
+            dar_set_name
+        )
+    }
+
+    setorder(
+        pooled_bed,
+        chr_num,
+        start,
+        end
+    )
+
+    pooled_bed[, chr_num := NULL]
+
+    if (nrow(pooled_bed) == 0L || any(pooled_bed$start >= pooled_bed$end)) {
+        stop(
+            "Invalid pooled background generated for DAR set: ",
+            dar_set_name
+        )
+    }
+
+    pooled_background_bed <- file.path(
+        current_out_dir,
+        paste0(
+            pooled_background_annotation,
+            ".bed"
+        )
+    )
+
+    fwrite(
+        pooled_bed[, .(chr, start, end)],
+        file = pooled_background_bed,
+        sep = "\t",
+        col.names = FALSE,
+        quote = FALSE
+    )
+
+    message(
+        "Pooled background BED: ",
+        pooled_background_bed
+    )
+
+    message(
+        "Pooled background intervals: ",
+        nrow(pooled_bed),
+        "; total bp: ",
+        sum(pooled_bed$end - pooled_bed$start)
+    )
+
+
+    ###########################################################################
     # Sort manifest
     ###########################################################################
 
@@ -1526,17 +1671,21 @@ summary_table <- combined_manifest[
 ]
 
 
+summary_table[, dar_set_order := match(
+    dar_set,
+    c(
+        "open",
+        "closed",
+        "all"
+    )
+)]
+
 setorder(
     summary_table,
-    factor(
-        dar_set,
-        levels = c(
-            "open",
-            "closed",
-            "all"
-        )
-    )
+    dar_set_order
 )
+
+summary_table[, dar_set_order := NULL]
 
 
 summary_path <- file.path(
