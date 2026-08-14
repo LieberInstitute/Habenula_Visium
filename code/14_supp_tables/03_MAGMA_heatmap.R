@@ -25,105 +25,116 @@ hd_map_path = here('raw-data', 'sample_info', 'hd_cell_type_map.csv')
 gwas_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/RNA/gwas_info.csv'
 plot_dir = here('plots', '14_supp_tables')
 cluster_levels = c(
-    "MHb_A", "MHb_B", "MHb_C", "MHb_D", "Excit_LHb", "LHb_A", "LHb_B", "LHb_C",
-    "GABA_LHb_C.1", "GABA_LHb_C.2", "Excit.Thal/GABA_LHb_C.2", "Excit.Thal",
-    "Inhib.Thal", "Ependymal", "Subependymal", "Astrocyte", "Endo", "Microglia",
-    "Oligo", "OPC", sprintf("Factor_%d", 0:16)
+    "Hb", "MHb", "LHb", "MHb_A", "MHb_B", "MHb_C", "MHb_D", "Excit_LHb",
+    "LHb_A", "LHb_B", "LHb_C", "GABA_LHb_C.1", "GABA_LHb_C.2",
+    "Excit.Thal/GABA_LHb_C.2", "Excit.Thal", "Inhib.Thal", "Ependymal",
+    "Subependymal", "Astrocyte", "Endo", "Microglia", "Oligo", "OPC",
+    sprintf("Factor_%d", 0:16)
 )
+
+################################################################################
+#   Functions
+################################################################################
+
+fix_map_df = function(map_path) {
+    map_df = rbind(
+        read_csv(map_path, show_col_types = FALSE) |>
+            select(old_cell_type, new_cell_type),
+        tibble(
+            old_cell_type = c('Hb', 'MHb', 'LHb'),
+            new_cell_type = c('Hb', 'MHb', 'LHb')
+        )
+    )
+    return(map_df)
+}
+
+read_cell_df = function(cell_path, map_df) {
+    cell_df = read_csv(cell_path, show_col_types = FALSE) |>
+        left_join(map_df, by = c('cell_type' = 'old_cell_type')) |>
+        filter(
+            (cell_type_group == 'fine') | grepl('^[ML]?Hb$', cell_type)
+        ) |>
+        select(new_cell_type, gwas_group, neg_log_p, p_label) |>
+        dplyr::rename(cell_type = new_cell_type)
+    return(cell_df)
+}
+
+read_ficture_df = function(ficture_path) {
+    ficture_df = read_csv(ficture_path, show_col_types = FALSE) |>
+        select(cell_type, gwas_group, neg_log_p, p_label) |>
+        mutate(cell_type = str_replace(cell_type, '^X', 'Factor_'))
+    return(ficture_df)
+}
+
+magma_heatmap = function(magma_df) {
+    marker_df = magma_df |>
+        group_by(cell_type, dataset) |>
+        mutate(
+            neg_log_fdr = -log10(p.adjust(10^(-1 * neg_log_p), method = 'fdr'))
+        ) |>
+        ungroup() |>
+        mutate(
+            cell_type = factor(cell_type, levels = cluster_levels),
+            gwas_category = case_when(
+                grepl('^[ACOS]UD', gwas_group) ~ 'Substance Use',
+                gwas_group == 'p_factor_Grotzinger' ~ 'P-Factor',
+                TRUE ~ 'Psychiatric'
+            )
+        )
+
+    p = marker_df |>
+        ggplot(
+                aes(
+                    x = gwas_group, y = cell_type, fill = neg_log_p, label = p_label
+                )
+            ) +
+            geom_tile() +
+            geom_text(size = 6) +
+            scale_fill_viridis_c() +
+            facet_grid(dataset ~ gwas_category, scales = "free", space = "free") +
+            theme_bw(base_size = 15) +
+            theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+            labs(x = "GWAS Trait", y = "Cell Type", fill = "-log10(p)")
+    return(p)
+}
+
+################################################################################
+#   Main
+################################################################################
 
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 
-hd_extra_df = read_csv(hd_extra_path, show_col_types = FALSE) |>
-    left_join(
-        read_csv(hd_map_path, show_col_types = FALSE),
-        by = c('cell_type' = 'old_cell_type')
-    ) |>
-    filter(
-        cell_type_group == 'fine',
-        #   Not enough genes for MAGMA to give reliable results
-        !(new_cell_type %in% c('Endo/microglia', 'LHb_C/GABA_LHb_C.2'))
-    ) |>
-    select(new_cell_type, gwas_group, neg_log_p, p_label) |>
-    dplyr::rename(cell_type = new_cell_type) |>
-    mutate(dataset = 'HD_extracellular')
+hd_map_df = fix_map_df(hd_map_path)
+multiome_map_df = fix_map_df(multiome_map_path)
 
-k8_df = read_csv(k8_path, show_col_types = FALSE) |>
-    select(cell_type, gwas_group, neg_log_p, p_label) |>
-    mutate(
-        cell_type = str_replace(cell_type, '^X', 'Factor_'),
-        dataset = 'HD_FICTURE_all_bin_k8'
-    )
+hd_cell_df = read_cell_df(hd_cell_path, hd_map_df) |>
+    #   Not enough genes for MAGMA to give reliable results
+    filter(!(cell_type %in% c('Endo/microglia', 'LHb_C/GABA_LHb_C.2'))) |>
+    mutate(dataset = 'HD Cellular')
 
-k17_df = read_csv(k17_path, show_col_types = FALSE) |>
-    select(cell_type, gwas_group, neg_log_p, p_label) |>
-    mutate(
-        cell_type = str_replace(cell_type, '^X', 'Factor_'),
-        dataset = 'HD_FICTURE_extracellular_k17'
-    )
+hd_extra_df = read_cell_df(hd_extra_path, hd_map_df) |>
+    #   Not enough genes for MAGMA to give reliable results
+    filter(!(cell_type %in% c('Endo/microglia', 'LHb_C/GABA_LHb_C.2'))) |>
+    mutate(dataset = 'HD Extracellular')
 
-multiome_df = read_csv(multiome_path, show_col_types = FALSE) |>
-    filter(cell_type_group == 'fine') |>
-    left_join(
-        read_csv(multiome_map_path, show_col_types = FALSE),
-        by = c('cell_type' = 'old_cell_type')
-    ) |>
-    select(new_cell_type, gwas_group, neg_log_p, p_label) |>
-    dplyr::rename(cell_type = new_cell_type) |>
-    mutate(dataset = 'Multiome_cell_types')
+multiome_df = read_cell_df(multiome_path, multiome_map_df) |>
+    mutate(dataset = 'Multiome Cell Types')
 
-marker_df = bind_rows(hd_extra_df, k8_df, k17_df, multiome_df) |>
-    group_by(cell_type, gwas_group) |>
-    mutate(
-        cell_type = ifelse(
-            !grepl('^Factor_', cell_type) & (n() > 1),
-            sprintf(
-                '%s (%s)', cell_type, str_extract(dataset, '^(HD|Multiome)')
-            ),
-            cell_type
-        )
-    )
+p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
+    magma_heatmap()
+pdf(file.path(plot_dir, 'MAGMA_heatmap_main.pdf'), width = 8, height = 15)
+print(p)
+dev.off()
 
-cluster_levels = c(
-    t(outer(cluster_levels, c(' (HD)', ' (Multiome)', ''), FUN = paste0))
-)
-cluster_levels = cluster_levels[cluster_levels %in% marker_df$cell_type]
+k8_df = read_ficture_df(k8_path) |>
+    mutate(dataset = 'All-Bin k = 8')
 
-p = marker_df |>
-    mutate(
-        cell_type = factor(cell_type, levels = cluster_levels),
-        gwas_category = case_when(
-            grepl('^[ACOS]UD', gwas_group) ~ 'Substance Use',
-            gwas_group == 'p_factor_Grotzinger' ~ 'P-Factor',
-            TRUE ~ 'Psychiatric'
-        ),
-        cell_type_category = case_when(
-                grepl('^Factor_', cell_type) & (dataset == 'HD_FICTURE_all_bin_k8') ~ 'All-Data Factors',
-                grepl('^Factor_', cell_type) & (dataset == 'HD_FICTURE_extracellular_k17') ~ 'Extracellular Factors',
-                TRUE ~ 'Extracellular Cell Types'
-            ) |>
-            factor(
-                levels = c(
-                    'Extracellular Cell Types', 'All-Data Factors',
-                    'Extracellular Factors'
-                )
-            )
-    ) |>
-    ggplot(
-            aes(
-                x = gwas_group, y = cell_type, fill = neg_log_p, label = p_label
-            )
-        ) +
-        geom_tile() +
-        geom_text(size = 6) +
-        scale_fill_viridis_c() +
-        facet_grid(
-            cell_type_category ~ gwas_category,
-            scales = "free", space = "free"
-        ) +
-        theme_bw(base_size = 15) +
-        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-        labs(x = "GWAS Trait", y = "Cell Type", fill = "-log10(p)")
-pdf(file.path(plot_dir, 'MAGMA_heatmap.pdf'), width = 8, height = 15)
+k17_df = read_ficture_df(k17_path) |>
+    mutate(dataset = 'Extracellular k = 17')
+
+p = bind_rows(k8_df, k17_df) |>
+    magma_heatmap()
+pdf(file.path(plot_dir, 'MAGMA_heatmap_supp.pdf'), width = 8, height = 10)
 print(p)
 dev.off()
 
