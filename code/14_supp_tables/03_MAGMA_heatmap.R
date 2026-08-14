@@ -126,6 +126,28 @@ pdf(file.path(plot_dir, 'MAGMA_heatmap_main.pdf'), width = 8, height = 15)
 print(p)
 dev.off()
 
+p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
+    mutate(
+        broad_cell_type = case_when(
+            cell_type == 'Excit.Thal/GABA_LHb_C.2' ~ 'Other',
+            grepl('[ML]?Hb', cell_type) ~ 'Habenula',
+            grepl('Thal', cell_type) ~ 'Thalamus',
+            TRUE ~ 'Glia'
+        )
+    ) |>
+    group_by(broad_cell_type, gwas_group, dataset) |>
+    summarise(prop_sig = mean(neg_log_p > -log10(0.05), na.rm = TRUE)) |>
+    ungroup() |>
+    ggplot(aes(x = gwas_group, y = broad_cell_type, fill = prop_sig)) +
+        geom_col(stat = 'identity') +
+        facet_wrap(~ dataset, nrow = 3) +
+        theme_bw(base_size = 15) +
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+        labs(x = "GWAS Trait", y = "Broad Cell Type", fill = "Normalized Prop. Hits")
+pdf(file.path(plot_dir, 'MAGMA_stacked_barplot.pdf'))
+print(p)
+dev.off()
+
 k8_df = read_ficture_df(k8_path) |>
     mutate(dataset = 'All-Bin k = 8')
 
