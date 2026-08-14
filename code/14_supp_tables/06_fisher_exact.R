@@ -51,7 +51,7 @@ hd_extra_spe_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
     'extracellular', 'spe_norm_filtered.qs2'
 )
-multiome_seur_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/16_shiny_app/02_prep_cell_level/atlas_seur_minimal.qs2'
+multiome_seur_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/11_link_prep/02_rebuild_atac_assay/cell_level_seur.qs2'
 
 #-------------------------------------------------------------------------------
 #   DEGs
@@ -72,7 +72,7 @@ pilot_hb_deg_path = '/dcs04/lieber/lcolladotor/pilotHb_LIBD001/Roche_Habenula/pr
 #   Functions
 ################################################################################
 
-prep_hd_df = function(cell_path, spe, map_df) {
+prep_marker_df = function(cell_path, all_genes, map_df) {
     hd_marker_df = read_tsv(cell_path, show_col_types = FALSE) |>
         left_join(map_df, by = c('set_id' = 'old_cell_type_dot')) |>
         dplyr::rename(cluster = new_cell_type) |>
@@ -80,9 +80,11 @@ prep_hd_df = function(cell_path, spe, map_df) {
         mutate(is_marker = TRUE)
 
     gene_df = tibble(
-            cluster = rep(unique(spe$cell_type), each = nrow(spe)),
+            cluster = rep(
+                unique(hd_marker_df$cluster), each = length(all_genes)
+            ),
             gene_id = rep(
-                rowData(spe)$gene_id, each = length(unique(spe$cell_type))
+                all_genes, times = length(unique(hd_marker_df$cluster))
             )
         ) |>
         left_join(hd_marker_df, by = c('cluster', 'gene_id')) |>
@@ -111,7 +113,10 @@ hd_map_df = read_csv(hd_map_path, show_col_types = FALSE) |>
 #...............................................................................
 
 spe_hd_cell = qs_read(hd_cell_spe_path)
-hd_gene_df = prep_hd_df(hd_cell_path, spe_hd_cell, hd_map_df)
+hd_gene_df = prep_marker_df(
+    hd_cell_path, rowData(spe_hd_cell)$gene_id, hd_map_df
+)
+rm(spe_hd_cell); gc()
 
 #...............................................................................
 #   HD extracellular cell types
@@ -124,4 +129,19 @@ spe_hd_extra$cell_type = tibble(
     left_join(hd_map_df, by = c('old_cell_type')) |>
     pull(new_cell_type)
 
-hd_extra_gene_df = prep_hd_df(hd_extra_path, spe_hd_extra, hd_map_df)
+hd_extra_gene_df = prep_marker_df(
+    hd_extra_path, rowData(spe_hd_extra)$gene_id, hd_map_df
+)
+rm(spe_hd_extra); gc()
+
+#...............................................................................
+#   Multiome
+#...............................................................................
+
+multiome_map_df = read_csv(multiome_map_path, show_col_types = FALSE) |>
+    dplyr::rename(old_cell_type_dot = old_cell_type)
+
+seur = qs_read(multiome_seur_path)
+#   TODO: Ensembl IDs are not in the object (just symbols. Convert)
+multiome_gene_df = prep_marker_df(multiome_path, genes_here, multiome_map_df)
+rm(seur); gc()
