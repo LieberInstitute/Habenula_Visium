@@ -45,8 +45,7 @@ hd_map_path = here('raw-data', 'sample_info', 'hd_cell_type_map.csv')
 #-------------------------------------------------------------------------------
 
 hd_cell_spe_path = here(
-    'processed-data', '09_HD_cell_level', 'no_secondary',
-    'spe_norm_filtered_split.rds'
+    'processed-data', '12_apps_and_sharing', '01_prep_objects', 'spe_shiny.qs2'
 )
 hd_extra_spe_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
@@ -68,3 +67,61 @@ fent_hb_deg_path = '/dcs04/lieber/marmaypag/fentanylRat_LIBD4270/fentanyl_rat_hb
 fent_amyg_deg_path = '/dcs04/lieber/marmaypag/fentanylRat_LIBD4270/fentanyl_rat_hb_amy/processed-data/05_DEA/results_Substance_all_vars_amygdala.Rdata'
 
 pilot_hb_deg_path = '/dcs04/lieber/lcolladotor/pilotHb_LIBD001/Roche_Habenula/processed-data/10_DEA/04_DEA/DEA_All-gene_qc-totAGene-qSVs-Hb-Thal.tsv'
+
+################################################################################
+#   Functions
+################################################################################
+
+prep_hd_df = function(cell_path, spe, map_df) {
+    hd_marker_df = read_tsv(cell_path, show_col_types = FALSE) |>
+        left_join(map_df, by = c('set_id' = 'old_cell_type_dot')) |>
+        dplyr::rename(cluster = new_cell_type) |>
+        select(cluster, gene_id) |>
+        mutate(is_marker = TRUE)
+
+    gene_df = tibble(
+            cluster = rep(unique(spe$cell_type), each = nrow(spe)),
+            gene_id = rep(
+                rowData(spe)$gene_id, each = length(unique(spe$cell_type))
+            )
+        ) |>
+        left_join(hd_marker_df, by = c('cluster', 'gene_id')) |>
+        mutate(is_marker = coalesce(is_marker, FALSE))
+
+    return(gene_df)
+}
+
+################################################################################
+#   Main
+################################################################################
+
+#-------------------------------------------------------------------------------
+#   For each dataset, prep a tibble for Fisher's exact test
+#-------------------------------------------------------------------------------
+
+#   For each dataset we're essentially forming a tibble with columns
+#   cluster, gene_id, (is_marker or is_deg), then later testing all combinations
+#   of reference and query clusters using the intersection of gene_id
+
+hd_map_df = read_csv(hd_map_path, show_col_types = FALSE) |>
+    mutate(old_cell_type_dot = str_replace(old_cell_type, '/', '.'))
+
+#...............................................................................
+#   HD cell types
+#...............................................................................
+
+spe_hd_cell = qs_read(hd_cell_spe_path)
+hd_gene_df = prep_hd_df(hd_cell_path, spe_hd_cell, hd_map_df)
+
+#...............................................................................
+#   HD extracellular cell types
+#...............................................................................
+
+spe_hd_extra = qs_read(hd_extra_spe_path)
+spe_hd_extra$cell_type = tibble(
+        old_cell_type = as.character(spe_hd_extra$cell_type)
+    ) |>
+    left_join(hd_map_df, by = c('old_cell_type')) |>
+    pull(new_cell_type)
+
+hd_extra_gene_df = prep_hd_df(hd_extra_path, spe_hd_extra, hd_map_df)
