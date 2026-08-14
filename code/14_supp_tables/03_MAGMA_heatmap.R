@@ -118,7 +118,7 @@ hd_extra_df = read_cell_df(hd_extra_path, hd_map_df) |>
     mutate(dataset = 'HD Extracellular')
 
 multiome_df = read_cell_df(multiome_path, multiome_map_df) |>
-    mutate(dataset = 'Multiome Cell Types')
+    mutate(dataset = 'Multiome Cellular')
 
 p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
     magma_heatmap()
@@ -135,16 +135,24 @@ p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
             TRUE ~ 'Glia'
         )
     ) |>
+    filter(broad_cell_type != 'Other') |>
     group_by(broad_cell_type, gwas_group, dataset) |>
     summarise(prop_sig = mean(neg_log_p > -log10(0.05), na.rm = TRUE)) |>
     ungroup() |>
-    ggplot(aes(x = gwas_group, y = broad_cell_type, fill = prop_sig)) +
-        geom_col(stat = 'identity') +
-        facet_wrap(~ dataset, nrow = 3) +
+    mutate(
+        gwas_category = case_when(
+            grepl('^[ACOS]UD', gwas_group) ~ 'Substance Use',
+            gwas_group == 'p_factor_Grotzinger' ~ 'P-Factor',
+            TRUE ~ 'Psychiatric'
+        )
+    ) |>
+    ggplot(aes(x = gwas_group, y = prop_sig, fill = broad_cell_type)) +
+        geom_col(position = "fill") +
+        facet_grid(dataset ~ gwas_category, scales = "free", space = "free") +
         theme_bw(base_size = 15) +
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-        labs(x = "GWAS Trait", y = "Broad Cell Type", fill = "Normalized Prop. Hits")
-pdf(file.path(plot_dir, 'MAGMA_stacked_barplot.pdf'))
+        labs(x = "GWAS Trait", y = "Prop. Significant", fill = "Broad Cell Type")
+pdf(file.path(plot_dir, 'MAGMA_stacked_barplot.pdf'), height = 8)
 print(p)
 dev.off()
 
