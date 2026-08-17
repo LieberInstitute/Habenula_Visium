@@ -289,8 +289,8 @@ rm(seur); gc()
 fent_hb_gene_df = get(load(fent_hb_deg_path))[[1]] |>
     as_tibble() |>
     dplyr::rename(gene_id = ensemblID) |>
-    mutate(is_deg = adj.P.Val < 0.05, cluster = 'global') |>
-    dplyr::select(cluster, gene_id, is_deg) |>
+    mutate(is_deg = adj.P.Val < 0.05) |>
+    dplyr::select(gene_id, is_deg) |>
     rat_to_human()
 
 #...............................................................................
@@ -300,6 +300,15 @@ fent_hb_gene_df = get(load(fent_hb_deg_path))[[1]] |>
 fent_amyg_gene_df = get(load(fent_amyg_deg_path))[[1]] |>
     as_tibble() |>
     dplyr::rename(gene_id = ensemblID) |>
-    mutate(is_deg = adj.P.Val < 0.05, cluster = 'global') |>
-    dplyr::select(cluster, gene_id, is_deg) |>
+    mutate(is_deg = adj.P.Val < 0.05) |>
+    dplyr::select(gene_id, is_deg) |>
     rat_to_human()
+
+#...............................................................................
+#   Pilot habenula DEGs
+#...............................................................................
+
+pilot_hb_gene_df = read_tsv(pilot_hb_deg_path, show_col_types = FALSE) |>
+    dplyr::rename(gene_id = ensemblID) |>
+    mutate(is_deg = adj.P.Val < 0.05) |>
+    dplyr::select(gene_id, is_deg)
