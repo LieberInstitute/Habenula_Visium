@@ -68,8 +68,8 @@ multiome_seur_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiom
 #    https://github.com/LieberInstitute/fentanyl_rat_hb_amy/blob/4284ebac39e53fe23aea2a23812dc71441c14e10/code/05_DEA/01_Modeling.R#L103-L104
 # Same logic was used for the amygdala as habenula. Proof here:
 #    https://github.com/LieberInstitute/fentanyl_rat_hb_amy/blob/4284ebac39e53fe23aea2a23812dc71441c14e10/code/05_DEA/01_Modeling.R#L141-L142
-fent_hb_deg_path = '/dcs04/lieber/marmaypag/fentanylRat_LIBD4270/fentanyl_rat_hb_amy/processed-data/05_DEA/results_Substance_all_vars_habenula.Rdata'
-fent_amyg_deg_path = '/dcs04/lieber/marmaypag/fentanylRat_LIBD4270/fentanyl_rat_hb_amy/processed-data/05_DEA/results_Substance_all_vars_amygdala.Rdata'
+fent_hb_deg_path = '/dcs04/lieber/marmaypag/fentanylRat_LIBD4270/fentanyl_rat_hb_amy/processed-data/05_DEA/results_Substance_uncorr_vars_habenula.Rdata'
+fent_amyg_deg_path = '/dcs04/lieber/marmaypag/fentanylRat_LIBD4270/fentanyl_rat_hb_amy/processed-data/05_DEA/results_Substance_uncorr_vars_amygdala.Rdata'
 
 pilot_hb_deg_path = '/dcs04/lieber/lcolladotor/pilotHb_LIBD001/Roche_Habenula/processed-data/10_DEA/04_DEA/DEA_All-gene_qc-totAGene-qSVs-Hb-Thal.tsv'
 
@@ -78,6 +78,9 @@ pilot_hb_deg_path = '/dcs04/lieber/lcolladotor/pilotHb_LIBD001/Roche_Habenula/pr
 #-------------------------------------------------------------------------------
 
 gtf_path = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-cellranger-arc-GRCh38-2020-A-2.0.0/genes/genes.gtf.gz'
+plot_path = here(
+    "plots", "14_supp_tables", "fisher_enrichment_marker_deg_heatmaps.pdf"
+)
 
 ################################################################################
 #   Functions
@@ -87,7 +90,7 @@ prep_marker_df = function(cell_path, all_genes, map_df) {
     hd_marker_df = read_tsv(cell_path, show_col_types = FALSE) |>
         left_join(map_df, by = c('set_id' = 'old_cell_type_dot')) |>
         dplyr::rename(cluster = new_cell_type) |>
-        select(cluster, gene_id) |>
+        dplyr::select(cluster, gene_id) |>
         mutate(is_marker = TRUE)
 
     gene_df = tibble(
@@ -121,7 +124,7 @@ grab_multiome_genes = function(seur, gtf_path) {
         as.data.frame() |>
         as_tibble() |>
         filter(type == "gene") |>
-        select(gene_name, gene_id) |>
+        dplyr::select(gene_name, gene_id) |>
         distinct()
 
     gtf_symbols = unique(gtf$gene_name)
@@ -188,8 +191,10 @@ rat_to_human = function(gene_df) {
 
     gene_df = gene_df |>
         inner_join(map_df, by = c("gene_id" = "rat_id")) |>
-        dplyr::select(cluster, human_id, is_deg) |>
-        dplyr::rename(gene_id = human_id)
+        dplyr::select(human_id, is_deg) |>
+        dplyr::rename(gene_id = human_id) |>
+        group_by(gene_id) |>
+        summarise(is_deg = any(is_deg), .groups = "drop")
 
     return(gene_df)
 }
@@ -310,5 +315,94 @@ fent_amyg_gene_df = get(load(fent_amyg_deg_path))[[1]] |>
 
 pilot_hb_gene_df = read_tsv(pilot_hb_deg_path, show_col_types = FALSE) |>
     dplyr::rename(gene_id = ensemblID) |>
-    mutate(is_deg = adj.P.Val < 0.05) |>
+    mutate(is_deg = adj.P.Val < 0.1) |>
     dplyr::select(gene_id, is_deg)
+
+#-------------------------------------------------------------------------------
+#   Fisher's exact tests
+#-------------------------------------------------------------------------------
+
+run_marker_deg_fisher = function(marker_df, deg_df, marker_dataset, deg_dataset) {
+    marker_df |>
+        inner_join(deg_df, by = "gene_id") |>
+        group_by(cluster) |>
+        group_modify(function(.x, .y) {
+            test_table = table(
+                is_marker = factor(.x$is_marker, levels = c(TRUE, FALSE)),
+                is_deg    = factor(.x$is_deg, levels = c(TRUE, FALSE))
+            )
+            test = fisher.test(test_table, alternative = "greater")
+
+            tibble(
+                marker_dataset = marker_dataset,
+                deg_dataset    = deg_dataset,
+                n_universe     = nrow(.x),
+                n_markers      = sum(.x$is_marker),
+                n_degs         = sum(.x$is_deg),
+                n_marker_degs  = sum(.x$is_marker & .x$is_deg),
+                odds_ratio     = unname(test$estimate),
+                p_value        = test$p.value
+            )
+        }) |>
+        ungroup()
+}
+
+marker_dfs = list(
+    "HD cell"          = hd_gene_df,
+    "HD extracellular" = hd_extra_gene_df,
+    "Multiome RNA"    = multiome_gene_df
+)
+
+deg_dfs = list(
+    "Fentanyl habenula" = fent_hb_gene_df,
+    "Fentanyl amygdala" = fent_amyg_gene_df,
+    "Pilot habenula"    = pilot_hb_gene_df
+)
+
+fisher_enrichment_df = imap_dfr(marker_dfs, function(marker_df, marker_dataset) {
+        imap_dfr(deg_dfs, function(deg_df, deg_dataset) {
+            run_marker_deg_fisher(marker_df, deg_df, marker_dataset, deg_dataset)
+        })
+    }) |>
+    mutate(
+        p_value_plot  = pmax(p_value, .Machine$double.xmin),
+        neg_log10_p   = -log10(p_value_plot),
+        sig_label     = if_else(p_value < 0.05, "*", ""),
+        marker_dataset = factor(marker_dataset, levels = names(marker_dfs)),
+        deg_dataset    = factor(deg_dataset, levels = rev(names(deg_dfs)))
+    )
+
+write_tsv(
+    fisher_enrichment_df,
+    here("processed-data", "14_supp_tables", "fisher_enrichment_marker_deg.tsv")
+)
+
+#-------------------------------------------------------------------------------
+#   Heatmaps
+#-------------------------------------------------------------------------------
+
+fisher_heatmap = ggplot(
+        fisher_enrichment_df,
+        aes(x = cluster, y = deg_dataset, fill = neg_log10_p)
+    ) +
+    geom_tile(color = "white", linewidth = 0.2) +
+    geom_text(aes(label = sig_label), color = "white", size = 3, vjust = 0.75) +
+    facet_wrap(vars(marker_dataset), scales = "free_x", ncol = 1) +
+    scale_fill_viridis_c(
+        name = expression(-log[10](p)),
+        option = "viridis",
+        limits = c(0, 10),
+        oob = scales::squish
+    ) +
+    labs(x = "Cluster", y = "DEG dataset") +
+    theme_minimal(base_size = 15) +
+    theme(
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+        panel.grid = element_blank(),
+        strip.text = element_text(angle = 0),
+        legend.position = "bottom"
+    )
+
+ggsave(plot_path, fisher_heatmap, width = 10, height = 12)
+
+session_info()
