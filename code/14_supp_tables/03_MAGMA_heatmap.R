@@ -125,7 +125,7 @@ multiome_df = read_cell_df(multiome_path, multiome_map_df) |>
 p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
     filter(!grepl('^[ML]?Hb$', cell_type)) |>
     magma_heatmap()
-pdf(file.path(plot_dir, 'MAGMA_heatmap_main_fine.pdf'), width = 8, height = 15)
+pdf(file.path(plot_dir, 'MAGMA_heatmap_main_fine.pdf'), width = 8, height = 12)
 print(p)
 dev.off()
 
@@ -147,8 +147,8 @@ dev.off()
 p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
     mutate(
         broad_cell_type = case_when(
-            cell_type == 'Excit.Thal/GABA_LHb_C.2' ~ 'Other',
-            grepl('[ML]?Hb', cell_type) ~ 'Habenula',
+            cell_type == 'Excit.Thal/GABA_LHb_C.2' | grepl('^[ML]?Hb$', cell_type) ~ 'Other',
+            grepl('[ML]Hb', cell_type) ~ 'Habenula',
             grepl('Thal', cell_type) ~ 'Thalamus',
             TRUE ~ 'Glia'
         )
@@ -160,7 +160,7 @@ p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
     mutate(
         gwas_category = case_when(
             grepl('^[ACOS]UD', gwas_group) ~ 'Substance Use',
-            gwas_group == 'p_factor_Grotzinger' ~ 'P-Factor',
+            gwas_group == 'p_factor_Grotzinger' ~ 'P',
             TRUE ~ 'Psychiatric'
         )
     ) |>
