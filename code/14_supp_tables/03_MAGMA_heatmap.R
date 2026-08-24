@@ -70,14 +70,15 @@ magma_heatmap = function(magma_df) {
     marker_df = magma_df |>
         group_by(cell_type, dataset) |>
         mutate(
-            neg_log_fdr = -log10(p.adjust(10^(-1 * neg_log_p), method = 'fdr'))
+            neg_log_fdr = -log10(p.adjust(10^(-1 * neg_log_p), method = 'fdr')),
+            fdr_label = case_when(neg_log_fdr > -log10(0.05) ~ '*', TRUE ~ '')
         ) |>
         ungroup() |>
         mutate(
             cell_type = factor(cell_type, levels = cluster_levels),
             gwas_category = case_when(
                 grepl('^[ACOS]UD', gwas_group) ~ 'Substance Use',
-                gwas_group == 'p_factor_Grotzinger' ~ 'P-Factor',
+                gwas_group == 'p_factor_Grotzinger' ~ 'P',
                 TRUE ~ 'Psychiatric'
             )
         )
@@ -85,7 +86,8 @@ magma_heatmap = function(magma_df) {
     p = marker_df |>
         ggplot(
                 aes(
-                    x = gwas_group, y = cell_type, fill = neg_log_p, label = p_label
+                    x = gwas_group, y = cell_type, fill = neg_log_fdr,
+                    label = fdr_label
                 )
             ) +
             geom_tile() +
@@ -94,7 +96,7 @@ magma_heatmap = function(magma_df) {
             facet_grid(dataset ~ gwas_category, scales = "free", space = "free") +
             theme_bw(base_size = 15) +
             theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-            labs(x = "GWAS Trait", y = "Cell Type", fill = "-log10(p)")
+            labs(x = "GWAS Trait", y = "Cell Type", fill = "-log10(FDR)")
     return(p)
 }
 
@@ -121,8 +123,24 @@ multiome_df = read_cell_df(multiome_path, multiome_map_df) |>
     mutate(dataset = 'Multiome Cellular')
 
 p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
+    filter(!grepl('^[ML]?Hb$', cell_type)) |>
     magma_heatmap()
-pdf(file.path(plot_dir, 'MAGMA_heatmap_main.pdf'), width = 8, height = 15)
+pdf(file.path(plot_dir, 'MAGMA_heatmap_main_fine.pdf'), width = 8, height = 15)
+print(p)
+dev.off()
+
+p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
+    filter(grepl('^[ML]?Hb$', cell_type)) |>
+    mutate(
+        dataset = case_when(
+            dataset == 'HD Cellular' ~ 'HD Cell.',
+            dataset == 'HD Extracellular' ~ 'HD Extra.',
+            dataset == 'Multiome Cellular' ~ 'Multiome',
+            TRUE ~ dataset
+        )
+    ) |>
+    magma_heatmap()
+pdf(file.path(plot_dir, 'MAGMA_heatmap_main_broad.pdf'), width = 8, height = 6)
 print(p)
 dev.off()
 
