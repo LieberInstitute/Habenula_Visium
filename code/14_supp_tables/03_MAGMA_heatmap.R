@@ -145,6 +145,11 @@ print(p)
 dev.off()
 
 p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
+    group_by(cell_type, dataset) |>
+    mutate(
+        neg_log_fdr = -log10(p.adjust(10^(-1 * neg_log_p), method = 'fdr'))
+    ) |>
+    ungroup() |>
     mutate(
         broad_cell_type = case_when(
             cell_type == 'Excit.Thal/GABA_LHb_C.2' | grepl('^[ML]?Hb$', cell_type) ~ 'Other',
@@ -155,7 +160,10 @@ p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
     ) |>
     filter(broad_cell_type != 'Other') |>
     group_by(broad_cell_type, gwas_group, dataset) |>
-    summarise(prop_sig = mean(neg_log_p > -log10(0.05), na.rm = TRUE)) |>
+    summarise(
+        prop_sig = mean(neg_log_fdr > -log10(0.05), na.rm = TRUE),
+        n_sig = sum(neg_log_fdr > -log10(0.05), na.rm = TRUE)
+    ) |>
     ungroup() |>
     mutate(
         gwas_category = case_when(
@@ -166,6 +174,12 @@ p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
     ) |>
     ggplot(aes(x = gwas_group, y = prop_sig, fill = broad_cell_type)) +
         geom_col(position = "fill") +
+        geom_text(
+            aes(label = ifelse(n_sig == 0, NA, n_sig)),
+            position = position_fill(vjust = 0.5),
+            size = 3,
+            na.rm = TRUE
+        ) +
         facet_grid(dataset ~ gwas_category, scales = "free", space = "free") +
         theme_bw(base_size = 15) +
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
