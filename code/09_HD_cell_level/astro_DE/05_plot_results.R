@@ -13,6 +13,9 @@ de_path = here(
 plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'astro_DE', 'results'
 )
+out_dir = here(
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'astro_DE'
+)
 go_num_terms = 5
 
 dir.create(plot_dir, showWarnings = FALSE)
@@ -52,7 +55,7 @@ custom_volcano <- function(
                     color = DE_class, shape = !!sym(spatial_fdr_col) < FDR_cut
                 )
             ) +
-            geom_point(alpha = 0.5, size = 0.3) +
+            geom_point(alpha = 0.5, size = 0.4) +
             scale_color_manual(values = signif_colors) +
             scale_shape_manual(values = c("FALSE" = 0, "TRUE" = 19)) +
             labs(x = "log(FC)", y = "-log10(P value)") +
@@ -75,7 +78,7 @@ custom_volcano <- function(
                         gene_name %in% highlight_genes, gene_name, ""
                     )
                 ),
-                size = 1.5
+                size = 3, max.overlaps = 50
             )
     }
     
@@ -144,10 +147,12 @@ plot_treemap_go = function(go_df, plot_path) {
 #   Main
 ################################################################################
 
-de_df = read_csv(de_path, show_col_types = FALSE)
+de_df = read_csv(de_path, show_col_types = FALSE) |>
+    #   I was asked to show up in MHb as positive
+    mutate(logFC = -1 * logFC)
 
 pdf(file.path(plot_dir, 'volcano.pdf'))
-print(custom_volcano(de_df))
+print(custom_volcano(de_df, highlight_genes = 'SLC1A2'))
 dev.off()
 
 ego_df_list = list()
@@ -172,7 +177,7 @@ for (this_de_sign in c(-1, 1)) {
         qvalueCutoff  = 1
     )
         
-    ego_df_list[[de_sign_name]] = ego@result |>
+    ego_df_list[[de_sign_name]] = as.data.frame(ego) |>
         as_tibble() |>
         filter(p.adjust < 0.05) |>
         mutate(de_direction = de_sign_name)
@@ -199,5 +204,14 @@ for (this_de_direction in c("up", "down")) {
         file.path(plot_dir, sprintf('GO_treemap_%s.pdf', this_de_direction))
     )
 }
+
+#   Record the GO terms and associated genes for each DE direction (for a supp
+#   table)
+bind_rows(ego_df_list) |>
+    dplyr::rename(term_id = ID, term_description = Description, gene_id = geneID) |>
+    mutate(DE_higher_in = ifelse(de_direction == "up", "MHb", "LHb")) |>
+    dplyr::select(term_id, term_description, gene_id, DE_higher_in, p.adjust) |>
+    separate_rows(gene_id, sep = "/") |>
+    write_csv(file.path(out_dir, "GO_terms.csv"))
 
 session_info()

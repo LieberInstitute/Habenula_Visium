@@ -1,10 +1,10 @@
 **** Job starts ****
-Wed Aug  5 11:29:49 AM EDT 2026
+Tue Aug 25 10:36:22 AM EDT 2026
 **** JHPCE info ****
 User: neagles
-Job id: 34680312
+Job id: 35151711
 Job name: 05_plot_results
-Node name: compute-095
+Node name: compute-178
 Task id: 
 Unloading conda_R/4.5
 Loading conda_R/4.5
@@ -31,9 +31,10 @@ clusterProfiler v4.16.0 Learn more at https://yulab-smu.top/contribution-knowled
 
 Please cite:
 
-S Xu, E Hu, Y Cai, Z Xie, X Luo, L Zhan, W Tang, Q Wang, B Liu, R Wang,
-W Xie, T Wu, L Xie, G Yu. Using clusterProfiler to characterize
-multiomics data. Nature Protocols. 2024, 19(11):3292-3320
+Guangchuang Yu, Li-Gen Wang, Yanyan Han and Qing-Yu He.
+clusterProfiler: an R package for comparing biological themes among
+gene clusters. OMICS: A Journal of Integrative Biology. 2012,
+16(5):284-287
 
 Attaching package: ‘clusterProfiler’
 
@@ -156,6 +157,80 @@ null device
           1 
 null device 
           1 
+preparing gene to GO mapping data...
+preparing IC data...
+'select()' returned 1:many mapping between keys and columns
+$tm
+                                                parentTerm
+1                                      cell-cell signaling
+2                                      cell-cell signaling
+3                                      cell-cell signaling
+4                                      cell-cell signaling
+5                                      cell-cell signaling
+6                                      cell-cell signaling
+7  regulation of monoatomic cation transmembrane transport
+8  regulation of monoatomic cation transmembrane transport
+9         regulation of transmembrane transporter activity
+10        regulation of transmembrane transporter activity
+11        regulation of transmembrane transporter activity
+                                                      term    vSize vColor
+1                     anterograde trans-synaptic signaling 1.518002      1
+2                                      cell-cell signaling 1.518002      1
+3                           chemical synaptic transmission 1.518002      1
+4                                                     <NA> 7.590009      5
+5                                       synaptic signaling 1.518002      1
+6                                 trans-synaptic signaling 1.518002      1
+7                                                     <NA> 1.323579      1
+8  regulation of monoatomic cation transmembrane transport 1.323579      1
+9                                                     <NA> 2.738109      2
+10        regulation of transmembrane transporter activity 1.425001      1
+11                      regulation of transporter activity 1.313108      1
+     stdErr vColorValue level        x0        y0         w         h   color
+1  1.518002          NA     2 0.0000000 0.6454382 0.3674440 0.3545618 #DF4958
+2  1.518002          NA     2 0.3674440 0.6454382 0.3674440 0.3545618 #DF494C
+3  1.518002          NA     2 0.0000000 0.3795168 0.4899253 0.2659214 #DF5349
+4  7.590009          NA     1 0.0000000 0.1135954 0.7348879 0.8864046 #F8766D
+5  1.518002          NA     2 0.0000000 0.1135954 0.4899253 0.2659214 #DF5F49
+6  1.518002          NA     2 0.4899253 0.1135954 0.2449626 0.5318428 #DF6C49
+7  1.323579          NA     1 0.0000000 0.0000000 1.0000000 0.1135954 #00BA38
+8  1.323579          NA     2 0.0000000 0.0000000 1.0000000 0.1135954 #00BA38
+9  2.738109          NA     1 0.7348879 0.1135954 0.2651121 0.8864046 #619CFF
+10 1.425001          NA     2 0.7348879 0.5386862 0.2651121 0.4613138 #3B97E6
+11 1.313108          NA     2 0.7348879 0.1135954 0.2651121 0.4250908 #3B5EE6
+
+$type
+[1] "index"
+
+$vSize
+[1] "score"
+
+$vColor
+[1] NA
+
+$stdErr
+[1] "score"
+
+$algorithm
+[1] "pivotSize"
+
+$vpCoorX
+[1] 0.02812148 0.97187852
+
+$vpCoorY
+[1] 0.01406074 0.98593926
+
+$aspRatio
+[1] 0.9710648
+
+$range
+[1] NA
+
+$mapping
+[1] NA NA NA
+
+$draw
+[1] TRUE
+
 preparing gene to GO mapping data...
 preparing IC data...
 'select()' returned 1:many mapping between keys and columns
@@ -290,80 +365,6 @@ $mapping
 $draw
 [1] TRUE
 
-preparing gene to GO mapping data...
-preparing IC data...
-'select()' returned 1:many mapping between keys and columns
-$tm
-                                                parentTerm
-1                                      cell-cell signaling
-2                                      cell-cell signaling
-3                                      cell-cell signaling
-4                                      cell-cell signaling
-5                                      cell-cell signaling
-6                                      cell-cell signaling
-7  regulation of monoatomic cation transmembrane transport
-8  regulation of monoatomic cation transmembrane transport
-9         regulation of transmembrane transporter activity
-10        regulation of transmembrane transporter activity
-11        regulation of transmembrane transporter activity
-                                                      term    vSize vColor
-1                     anterograde trans-synaptic signaling 1.518002      1
-2                                      cell-cell signaling 1.518002      1
-3                           chemical synaptic transmission 1.518002      1
-4                                                     <NA> 7.590009      5
-5                                       synaptic signaling 1.518002      1
-6                                 trans-synaptic signaling 1.518002      1
-7                                                     <NA> 1.323579      1
-8  regulation of monoatomic cation transmembrane transport 1.323579      1
-9                                                     <NA> 2.738109      2
-10        regulation of transmembrane transporter activity 1.425001      1
-11                      regulation of transporter activity 1.313108      1
-     stdErr vColorValue level        x0        y0         w         h   color
-1  1.518002          NA     2 0.0000000 0.6454382 0.3674440 0.3545618 #DF4958
-2  1.518002          NA     2 0.3674440 0.6454382 0.3674440 0.3545618 #DF494C
-3  1.518002          NA     2 0.0000000 0.3795168 0.4899253 0.2659214 #DF5349
-4  7.590009          NA     1 0.0000000 0.1135954 0.7348879 0.8864046 #F8766D
-5  1.518002          NA     2 0.0000000 0.1135954 0.4899253 0.2659214 #DF5F49
-6  1.518002          NA     2 0.4899253 0.1135954 0.2449626 0.5318428 #DF6C49
-7  1.323579          NA     1 0.0000000 0.0000000 1.0000000 0.1135954 #00BA38
-8  1.323579          NA     2 0.0000000 0.0000000 1.0000000 0.1135954 #00BA38
-9  2.738109          NA     1 0.7348879 0.1135954 0.2651121 0.8864046 #619CFF
-10 1.425001          NA     2 0.7348879 0.5386862 0.2651121 0.4613138 #3B97E6
-11 1.313108          NA     2 0.7348879 0.1135954 0.2651121 0.4250908 #3B5EE6
-
-$type
-[1] "index"
-
-$vSize
-[1] "score"
-
-$vColor
-[1] NA
-
-$stdErr
-[1] "score"
-
-$algorithm
-[1] "pivotSize"
-
-$vpCoorX
-[1] 0.02812148 0.97187852
-
-$vpCoorY
-[1] 0.01406074 0.98593926
-
-$aspRatio
-[1] 0.9710648
-
-$range
-[1] NA
-
-$mapping
-[1] NA NA NA
-
-$draw
-[1] TRUE
-
 Warning messages:
 1: In GOSemSim::godata(orgdb, ont = ont, keytype = keytype) :
   use 'annoDb' instead of 'OrgDb'
@@ -379,9 +380,9 @@ Warning messages:
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2026-08-05
+ date     2026-08-25
  pandoc   3.7.0.1 @ /jhpce/shared/community/core/conda_R/4.5/bin/pandoc
- quarto   1.9.38 @ /users/neagles/.positron-server/bin/d3cdd608df5afa3378c24c9a9c81b01fe1433a87/quarto/bin/quarto
+ quarto   1.10.18 @ /users/neagles/.positron-server/bin/747dd536c5913adad71a568a57679bb2c5e5cd71/quarto/bin/quarto
 
 ─ Packages ───────────────────────────────────────────────────────────────────
  package          * version  date (UTC) lib source
@@ -514,4 +515,4 @@ Warning messages:
 
 ──────────────────────────────────────────────────────────────────────────────
 **** Job ends ****
-Wed Aug  5 11:34:39 AM EDT 2026
+Tue Aug 25 10:39:13 AM EDT 2026
