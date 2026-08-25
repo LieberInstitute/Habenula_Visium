@@ -366,6 +366,7 @@ fisher_enrichment_df = imap_dfr(marker_dfs, function(marker_df, marker_dataset) 
         p_value_plot  = pmax(p_value, .Machine$double.xmin),
         neg_log10_p   = -log10(p_value_plot),
         sig_label     = if_else(p_value < 0.05, "*", ""),
+        odds_label    = if_else(p_value < 0.05, sprintf("%.2f", odds_ratio), ""),
         marker_dataset = factor(marker_dataset, levels = names(marker_dfs)),
         deg_dataset    = factor(deg_dataset, levels = rev(names(deg_dfs)))
     )
@@ -386,6 +387,7 @@ fisher_heatmap = ggplot(
     geom_tile(color = "white", linewidth = 0.2) +
     geom_text(aes(label = sig_label), color = "white", size = 3, vjust = 0.75) +
     facet_wrap(vars(marker_dataset), scales = "free_x", ncol = 1) +
+    scale_x_discrete(drop = TRUE) +
     scale_fill_viridis_c(
         name = expression(-log[10](p)),
         option = "viridis",
@@ -410,8 +412,9 @@ fisher_heatmap = fisher_enrichment_df |>
     filter(deg_dataset == 'Fentanyl habenula') |>
     ggplot(aes(x = cluster, y = deg_dataset, fill = neg_log10_p)) +
         geom_tile(color = "white", linewidth = 0.2) +
-        geom_text(aes(label = sig_label), color = "white", size = 3, vjust = 0.75) +
+        geom_text(aes(label = odds_label), color = "black", size = 3, vjust = 0.75) +
         facet_wrap(vars(marker_dataset), scales = "free_x", ncol = 1) +
+        scale_x_discrete(drop = TRUE) +
         scale_fill_viridis_c(
             name = expression(-log[10](p)), option = "viridis", limits = c(0, 5),
             oob = scales::squish
@@ -419,7 +422,7 @@ fisher_heatmap = fisher_enrichment_df |>
         labs(x = "Cluster", y = "DEG dataset") +
         theme_minimal(base_size = 15) +
         theme(
-            axis.text.x = element_text(angle = 40, hjust = 1),
+            axis.text.x = element_text(angle = 45, hjust = 1),
             panel.grid = element_blank(),
             strip.text = element_text(angle = 0),
             legend.position = "bottom"
