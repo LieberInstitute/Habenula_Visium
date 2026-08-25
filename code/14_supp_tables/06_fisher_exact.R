@@ -78,9 +78,7 @@ pilot_hb_deg_path = '/dcs04/lieber/lcolladotor/pilotHb_LIBD001/Roche_Habenula/pr
 #-------------------------------------------------------------------------------
 
 gtf_path = '/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-cellranger-arc-GRCh38-2020-A-2.0.0/genes/genes.gtf.gz'
-plot_path = here(
-    "plots", "14_supp_tables", "fisher_enrichment_marker_deg_heatmaps.pdf"
-)
+plot_dir = here("plots", "14_supp_tables")
 
 ################################################################################
 #   Functions
@@ -403,6 +401,33 @@ fisher_heatmap = ggplot(
         legend.position = "bottom"
     )
 
-ggsave(plot_path, fisher_heatmap, width = 10, height = 12)
+ggsave(
+    file.path(plot_dir, "fisher_enrichment_marker_deg_heatmaps.pdf"),
+    fisher_heatmap, width = 10, height = 12
+)
+
+fisher_heatmap = fisher_enrichment_df |>
+    filter(deg_dataset == 'Fentanyl habenula') |>
+    ggplot(aes(x = cluster, y = deg_dataset, fill = neg_log10_p)) +
+        geom_tile(color = "white", linewidth = 0.2) +
+        geom_text(aes(label = sig_label), color = "white", size = 3, vjust = 0.75) +
+        facet_wrap(vars(marker_dataset), scales = "free_x", ncol = 1) +
+        scale_fill_viridis_c(
+            name = expression(-log[10](p)), option = "viridis", limits = c(0, 5),
+            oob = scales::squish
+        ) +
+        labs(x = "Cluster", y = "DEG dataset") +
+        theme_minimal(base_size = 15) +
+        theme(
+            axis.text.x = element_text(angle = 40, hjust = 1),
+            panel.grid = element_blank(),
+            strip.text = element_text(angle = 0),
+            legend.position = "bottom"
+        )
+
+ggsave(
+    file.path(plot_dir, "fisher_fentanyl_habenula.pdf"),
+    fisher_heatmap, height = 8
+)
 
 session_info()
