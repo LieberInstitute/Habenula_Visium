@@ -1,6 +1,9 @@
 library(tidyverse)
 library(here)
 library(viridis)
+library(ComplexHeatmap)
+library(circlize)
+library(grid)
 library(sessioninfo)
 
 hd_cell_path = here(
@@ -31,6 +34,8 @@ cluster_levels = c(
     "Subependymal", "Astrocyte", "Endo", "Microglia", "Oligo", "OPC",
     sprintf("Factor_%d", 0:16)
 )
+gwas_category_levels = c('P', 'Psychiatric', 'Substance Use')
+gwas_levels = read_csv(gwas_path, show_col_types = FALSE)$manuscript_name
 
 ################################################################################
 #   Functions
@@ -66,6 +71,27 @@ read_ficture_df = function(ficture_path) {
     return(ficture_df)
 }
 
+add_magma_labels = function(magma_df) {
+    magma_df |>
+        mutate(
+            broad_cell_type = case_when(
+                grepl('[ML]Hb', cell_type) ~ 'habenula',
+                grepl('Thal', cell_type) ~ 'thalamus',
+                grepl('^Factor_', cell_type) ~ 'unassigned',
+                TRUE ~ 'glia'
+            ),
+            gwas_category = factor(
+                case_when(
+                    grepl('^[ACOS]UD', gwas_group) ~ 'Substance Use',
+                    gwas_group == 'p_factor_Grotzinger' ~ 'P',
+                    TRUE ~ 'Psychiatric'
+                ),
+                levels = gwas_category_levels
+            ),
+            gwas_group = factor(gwas_group, levels = gwas_levels)
+        )
+}
+
 magma_heatmap = function(magma_df) {
     marker_df = magma_df |>
         group_by(cell_type, dataset) |>
@@ -74,14 +100,8 @@ magma_heatmap = function(magma_df) {
             fdr_label = case_when(neg_log_fdr > -log10(0.05) ~ '*', TRUE ~ '')
         ) |>
         ungroup() |>
-        mutate(
-            cell_type = factor(cell_type, levels = cluster_levels),
-            gwas_category = case_when(
-                grepl('^[ACOS]UD', gwas_group) ~ 'Substance Use',
-                gwas_group == 'p_factor_Grotzinger' ~ 'P',
-                TRUE ~ 'Psychiatric'
-            )
-        )
+        add_magma_labels() |>
+        mutate(cell_type = factor(cell_type, levels = cluster_levels))
 
     p = marker_df |>
         ggplot(
@@ -98,6 +118,94 @@ magma_heatmap = function(magma_df) {
             theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
             labs(x = "GWAS Trait", y = "Cell Type", fill = "-log10(FDR)")
     return(p)
+}
+
+magma_heatmap_complex = function(magma_df) {
+    marker_df = magma_df |>
+        group_by(cell_type, dataset) |>
+        mutate(
+            neg_log_fdr = -log10(p.adjust(10^(-1 * neg_log_p), method = 'fdr')),
+            fdr_label = case_when(neg_log_fdr > -log10(0.05) ~ '*', TRUE ~ '')
+        ) |>
+        ungroup() |>
+        add_magma_labels() |>
+        mutate(cell_type = factor(cell_type, levels = cluster_levels))
+
+    row_df = marker_df |>
+        distinct(dataset, cell_type, broad_cell_type) |>
+        mutate(row_id = paste(dataset, cell_type, sep = '::')) |>
+        arrange(dataset, cell_type) |>
+        select(row_id, dataset, cell_type, broad_cell_type)
+
+    col_df = marker_df |>
+        distinct(gwas_group, gwas_category) |>
+        arrange(gwas_category, gwas_group) |>
+        filter(!is.na(gwas_group))
+
+    heatmap_df = marker_df |>
+        mutate(row_id = paste(dataset, cell_type, sep = '::')) |>
+        select(row_id, gwas_group, neg_log_fdr) |>
+        pivot_wider(names_from = gwas_group, values_from = neg_log_fdr)
+
+    label_df = marker_df |>
+        mutate(row_id = paste(dataset, cell_type, sep = '::')) |>
+        select(row_id, gwas_group, fdr_label) |>
+        pivot_wider(names_from = gwas_group, values_from = fdr_label)
+
+    heatmap_mat = heatmap_df |>
+        column_to_rownames('row_id') |>
+        as.matrix()
+    heatmap_mat = heatmap_mat[row_df$row_id, col_df$gwas_group, drop = FALSE]
+
+    label_mat = label_df |>
+        column_to_rownames('row_id') |>
+        as.matrix()
+    label_mat = label_mat[row_df$row_id, col_df$gwas_group, drop = FALSE]
+    label_mat[is.na(label_mat)] = ''
+
+    row_annotation_colors = c(
+        habenula = '#0072B2',
+        thalamus = '#CC79A7',
+        glia = '#E69F00',
+        unassigned = '#999999'
+    )
+
+    row_ha = rowAnnotation(
+        `Broad cell type` = row_df$broad_cell_type,
+        col = list(`Broad cell type` = row_annotation_colors),
+        show_annotation_name = TRUE,
+        annotation_name_gp = gpar(fontsize = 12)
+    )
+
+    col_fun = colorRamp2(
+        seq(
+            min(heatmap_mat, na.rm = TRUE),
+            max(heatmap_mat, na.rm = TRUE),
+            length.out = 256
+        ),
+        viridis::viridis(256)
+    )
+
+    Heatmap(
+        heatmap_mat,
+        name = '-log10(FDR)',
+        col = col_fun,
+        cluster_rows = FALSE,
+        cluster_columns = FALSE,
+        row_split = row_df$dataset,
+        column_split = col_df$gwas_category,
+        left_annotation = row_ha,
+        row_labels = row_df$cell_type,
+        row_names_gp = gpar(fontsize = 12),
+        column_names_gp = gpar(fontsize = 12),
+        column_names_rot = 90,
+        cell_fun = function(j, i, x, y, width, height, fill) {
+            if (label_mat[i, j] != '') {
+                grid.text(label_mat[i, j], x, y, gp = gpar(fontsize = 12))
+            }
+        },
+        heatmap_legend_param = list(title = '-log10(FDR)')
+    )
 }
 
 ################################################################################
@@ -122,11 +230,21 @@ hd_extra_df = read_cell_df(hd_extra_path, hd_map_df) |>
 multiome_df = read_cell_df(multiome_path, multiome_map_df) |>
     mutate(dataset = 'Multiome Cellular')
 
-p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
+k17_df = read_ficture_df(k17_path) |>
+    mutate(dataset = 'Extracellular k = 17')
+
+p = bind_rows(hd_cell_df, multiome_df) |>
     filter(!grepl('^[ML]?Hb$', cell_type)) |>
-    magma_heatmap()
-pdf(file.path(plot_dir, 'MAGMA_heatmap_main_fine.pdf'), width = 8, height = 12)
-print(p)
+    magma_heatmap_complex()
+pdf(file.path(plot_dir, 'MAGMA_heatmap_main_fine_cellular.pdf'), width = 8, height = 10)
+draw(p)
+dev.off()
+
+p = bind_rows(hd_extra_df, k17_df) |>
+    filter(!grepl('^[ML]?Hb$', cell_type)) |>
+    magma_heatmap_complex()
+pdf(file.path(plot_dir, 'MAGMA_heatmap_main_fine_extracellular.pdf'), width = 8, height = 12)
+draw(p)
 dev.off()
 
 p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
@@ -144,55 +262,8 @@ pdf(file.path(plot_dir, 'MAGMA_heatmap_main_broad.pdf'), width = 8, height = 6)
 print(p)
 dev.off()
 
-p = bind_rows(hd_cell_df, hd_extra_df, multiome_df) |>
-    group_by(cell_type, dataset) |>
-    mutate(
-        neg_log_fdr = -log10(p.adjust(10^(-1 * neg_log_p), method = 'fdr'))
-    ) |>
-    ungroup() |>
-    mutate(
-        broad_cell_type = case_when(
-            cell_type == 'Excit.Thal/GABA_LHb_C.2' | grepl('^[ML]?Hb$', cell_type) ~ 'Other',
-            grepl('[ML]Hb', cell_type) ~ 'Habenula',
-            grepl('Thal', cell_type) ~ 'Thalamus',
-            TRUE ~ 'Glia'
-        )
-    ) |>
-    filter(broad_cell_type != 'Other') |>
-    group_by(broad_cell_type, gwas_group, dataset) |>
-    summarise(
-        prop_sig = mean(neg_log_fdr > -log10(0.05), na.rm = TRUE),
-        n_sig = sum(neg_log_fdr > -log10(0.05), na.rm = TRUE)
-    ) |>
-    ungroup() |>
-    mutate(
-        gwas_category = case_when(
-            grepl('^[ACOS]UD', gwas_group) ~ 'Substance Use',
-            gwas_group == 'p_factor_Grotzinger' ~ 'P',
-            TRUE ~ 'Psychiatric'
-        )
-    ) |>
-    ggplot(aes(x = gwas_group, y = prop_sig, fill = broad_cell_type)) +
-        geom_col(position = "fill") +
-        geom_text(
-            aes(label = ifelse(n_sig == 0, NA, n_sig)),
-            position = position_fill(vjust = 0.5),
-            size = 3,
-            na.rm = TRUE
-        ) +
-        facet_grid(dataset ~ gwas_category, scales = "free", space = "free") +
-        theme_bw(base_size = 15) +
-        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-        labs(x = "GWAS Trait", y = "Prop. Significant", fill = "Broad Cell Type")
-pdf(file.path(plot_dir, 'MAGMA_stacked_barplot.pdf'), height = 8)
-print(p)
-dev.off()
-
 k8_df = read_ficture_df(k8_path) |>
     mutate(dataset = 'All-Bin k = 8')
-
-k17_df = read_ficture_df(k17_path) |>
-    mutate(dataset = 'Extracellular k = 17')
 
 p = bind_rows(k8_df, k17_df) |>
     magma_heatmap()
