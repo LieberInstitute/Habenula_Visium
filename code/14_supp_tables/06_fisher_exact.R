@@ -362,11 +362,15 @@ fisher_enrichment_df = imap_dfr(marker_dfs, function(marker_df, marker_dataset) 
             run_marker_deg_fisher(marker_df, deg_df, marker_dataset, deg_dataset)
         })
     }) |>
+    #   FDR correction across cell types within each marker_dataset x deg_dataset group
+    group_by(marker_dataset, deg_dataset) |>
+    mutate(fdr = p.adjust(p_value, method = "BH")) |>
+    ungroup() |>
     mutate(
-        p_value_plot  = pmax(p_value, .Machine$double.xmin),
-        neg_log10_p   = -log10(p_value_plot),
-        sig_label     = if_else(p_value < 0.05, "*", ""),
-        odds_label    = if_else(p_value < 0.05, sprintf("%.2f", odds_ratio), ""),
+        fdr_plot      = pmax(fdr, .Machine$double.xmin),
+        neg_log10_p   = -log10(fdr_plot),
+        sig_label     = if_else(fdr < 0.05, "*", ""),
+        odds_label    = if_else(fdr < 0.05, sprintf("%.2f", odds_ratio), ""),
         marker_dataset = factor(marker_dataset, levels = names(marker_dfs)),
         deg_dataset    = factor(deg_dataset, levels = rev(names(deg_dfs)))
     )
@@ -389,9 +393,9 @@ fisher_heatmap = ggplot(
     facet_wrap(vars(marker_dataset), scales = "free_x", ncol = 1) +
     scale_x_discrete(drop = TRUE) +
     scale_fill_viridis_c(
-        name = expression(-log[10](p)),
+        name = expression(-log[10](FDR)),
         option = "viridis",
-        limits = c(0, 10),
+        limits = c(0, 5),
         oob = scales::squish
     ) +
     labs(x = "Cluster", y = "DEG dataset") +
@@ -416,7 +420,7 @@ fisher_heatmap = fisher_enrichment_df |>
         facet_wrap(vars(marker_dataset), scales = "free_x", ncol = 1) +
         scale_x_discrete(drop = TRUE) +
         scale_fill_viridis_c(
-            name = expression(-log[10](p)), option = "viridis", limits = c(0, 5),
+            name = expression(-log[10](FDR)), option = "viridis", limits = c(0, 3),
             oob = scales::squish
         ) +
         labs(x = "Cluster", y = "DEG dataset") +
