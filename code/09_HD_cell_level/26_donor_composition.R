@@ -7,9 +7,13 @@ banksy_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'banksy',
     'leiden_res1_8.csv'
 )
-ficture_path = here(
+ficture_extra_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'ficture_plotting', 'extracellular.parquet'
+)
+ficture_all_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
+    'k8_cluster_coords.parquet'
 )
 plot_dir = here(
     'plots', '09_HD_cell_level', 'no_secondary', 'misc_paper_figs'
@@ -40,12 +44,12 @@ composition_barplot = function(this_df, x_lab, y_lab, plot_path) {
             labs(x = x_lab, y = y_lab, fill = "Donor") +
             theme_bw(base_size = 16)
 
-    pdf(plot_path, width = 10, height = 4)
+    pdf(plot_path, width = 10, height = 3)
     print(p)
     dev.off()
 }
 
-ficture_df = read_parquet_duckdb(ficture_path, prudence = 'stingy') |>
+ficture_extra_df = read_parquet_duckdb(ficture_extra_path, prudence = 'stingy') |>
     dplyr::rename(cluster = k17) |>
     filter(!is.na(cluster)) |>
     select(bin_key, cluster) |>
@@ -57,7 +61,18 @@ ficture_df = read_parquet_duckdb(ficture_path, prudence = 'stingy') |>
         )
     ) |>
     select(donor, cluster)
-stopifnot(!any(is.na(ficture_df$donor)))
+stopifnot(!any(is.na(ficture_extra_df$donor)))
+
+ficture_all_df = read_parquet_duckdb(ficture_all_path, prudence = 'stingy') |>
+    collect() |>
+    mutate(
+        donor = factor(
+            paste0('Br', str_extract(sample_id, '[0-9]{4}$')),
+            levels = names(donor_colors)
+        )
+    ) |>
+    dplyr::rename(cluster = ficture_cluster) |>
+    select(donor, cluster)
 
 banksy_df = read_csv_duckdb(banksy_path, prudence = 'stingy') |>
     collect() |>
@@ -71,8 +86,12 @@ banksy_df = read_csv_duckdb(banksy_path, prudence = 'stingy') |>
     select(donor, cluster)
 
 composition_barplot(
-    ficture_df, "Extracellular FICTURE cluster", "Proportion of bins",
-    file.path(plot_dir, 'ficture_donor_composition.pdf')
+    ficture_all_df, "All-bin FICTURE cluster", "Proportion of bins",
+    file.path(plot_dir, 'ficture_all_donor_composition.pdf')
+)
+composition_barplot(
+    ficture_extra_df, "Extracellular FICTURE cluster", "Proportion of bins",
+    file.path(plot_dir, 'ficture_extra_donor_composition.pdf')
 )
 composition_barplot(
     banksy_df, "Banksy cluster", "Proportion of cells",
