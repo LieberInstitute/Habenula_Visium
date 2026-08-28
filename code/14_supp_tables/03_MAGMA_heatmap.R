@@ -243,7 +243,10 @@ dev.off()
 p = bind_rows(hd_extra_df, k17_df) |>
     filter(!grepl('^[ML]?Hb$', cell_type)) |>
     magma_heatmap_complex()
-pdf(file.path(plot_dir, 'MAGMA_heatmap_main_fine_extracellular.pdf'), width = 8, height = 12)
+pdf(
+    file.path(plot_dir, 'MAGMA_heatmap_main_fine_extracellular.pdf'),
+    width = 8, height = 10
+)
 draw(p)
 dev.off()
 
