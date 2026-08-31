@@ -42,13 +42,15 @@ spe$thal = factor(
 )
 
 for (region in c('hb', 'thal')) {
-    pdf(file.path(plot_dir, sprintf('visium_%s.pdf', region)))
-    print(
-        vis_clus(
+    #   Bug where first plot of the session looks different than all others
+    for (i in seq_len(2)) {
+        p = vis_clus(
             spe, sampleid = sample_id, clustervar = region,
             colors = get(paste0(region, '_clusters')), spatial = FALSE
         )
-    )
+    }
+    pdf(file.path(plot_dir, sprintf('visium_%s.pdf', region)))
+    print(p)
     dev.off()
 }
 
