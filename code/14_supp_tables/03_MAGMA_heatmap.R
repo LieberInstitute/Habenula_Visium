@@ -291,7 +291,7 @@ bind_rows(hd_cell_df, hd_extra_df, multiome_df, k8_df, k17_df) |>
             dataset == 'Extracellular k = 17' ~ 'HD_FICTURE_extracellular_k17',
             TRUE ~ dataset
         )
-    )
+    ) |>
     write_csv(out_path)
 
 session_info()
