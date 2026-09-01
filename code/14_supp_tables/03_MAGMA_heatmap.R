@@ -6,6 +6,7 @@ library(circlize)
 library(grid)
 library(sessioninfo)
 
+out_path = here('processed-data', '14_supp_tables', 'magma_sig_sets.csv')
 hd_cell_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
     'heatmap_data.csv'
@@ -273,5 +274,14 @@ p = bind_rows(k8_df, k17_df) |>
 pdf(file.path(plot_dir, 'MAGMA_heatmap_supp.pdf'), width = 8, height = 10)
 print(p)
 dev.off()
+
+#   Export significant sets, which makes filtering of gene-level stats easier
+#   in a different script
+bind_rows(hd_cell_df, hd_extra_df, multiome_df, k8_df, k17_df) |>
+    group_by(cell_type, dataset) |>
+    filter(p.adjust(10^(-1 * neg_log_p), method = 'fdr') < 0.05) |>
+    ungroup() |>
+    select(cell_type, gwas_group, dataset) |>
+    write_csv(out_path)
 
 session_info()
