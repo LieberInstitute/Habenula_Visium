@@ -9,6 +9,10 @@ hd_cell_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA', 'gene_sets',
     'fine.tsv'
 )
+hd_extra_path = here(
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
+    'extracellular', 'gene_sets', 'fine.tsv'
+)
 k8_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples2','ficture_harmony',
     'MAGMA', 'gene_sets', 'ficturek8.tsv'
@@ -33,6 +37,12 @@ hd_cell_df = read_tsv(hd_cell_path, show_col_types = FALSE) |>
     dplyr::rename(set_id = new_cell_type) |>
     mutate(dataset = 'HD_cell_types')
 
+hd_extra_df = read_tsv(hd_extra_path, show_col_types = FALSE) |>
+    left_join(hd_map_df, by = c('set_id' = 'old_cell_type')) |>
+    select(new_cell_type, gene_id, gene_name, MeanRatio) |>
+    dplyr::rename(set_id = new_cell_type) |>
+    mutate(dataset = 'HD_extracellular')
+
 k8_df = read_tsv(k8_path, show_col_types = FALSE) |>
     mutate(
         set_id = str_replace(set_id, '^X', 'Factor_'),
@@ -51,7 +61,7 @@ multiome_df = read_tsv(multiome_path, show_col_types = FALSE) |>
     dplyr::rename(set_id = new_cell_type, MeanRatio = mean_ratio) |>
     mutate(dataset = 'Multiome_cell_types')
 
-marker_df = bind_rows(hd_cell_df, k8_df, k17_df, multiome_df) |>
+marker_df = bind_rows(hd_cell_df, hd_extra_df, k8_df, k17_df, multiome_df) |>
     select(dataset, set_id, gene_id, gene_name, MeanRatio) |>
     dplyr::rename(mean_ratio = MeanRatio) |>
     arrange(dataset, set_id, desc(mean_ratio))

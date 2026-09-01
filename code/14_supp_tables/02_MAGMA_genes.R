@@ -9,6 +9,10 @@ hd_cell_path = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
     'top_genes.csv'
 )
+hd_extra_path = here(
+    'processed-data', '09_HD_cell_level', 'no_secondary', 'MAGMA',
+    'extracellular', 'top_genes.csv'
+)
 k8_path = here(
     'processed-data', '10_HD_bin_level', 'new_samples2', 'ficture_harmony',
     'MAGMA', 'top_genes.csv'
@@ -34,6 +38,16 @@ hd_cell_df = read_csv(hd_cell_path, show_col_types = FALSE) |>
     dplyr::rename(cell_type = new_cell_type) |>
     mutate(dataset = 'HD_cell_types')
 
+hd_extra_df = read_csv(hd_extra_path, show_col_types = FALSE) |>
+    filter(cell_type_res == 'fine') |>
+    left_join(
+        read_csv(hd_map_path, show_col_types = FALSE),
+        by = c('cell_type' = 'old_cell_type')
+    ) |>
+    select(new_cell_type, gwas, gene_id, gene_name, p) |>
+    dplyr::rename(cell_type = new_cell_type) |>
+    mutate(dataset = 'HD_extracellular')
+
 k8_df = read_csv(k8_path, show_col_types = FALSE) |>
     mutate(
         cell_type = str_replace(cell_type, '^X', 'Factor_'),
@@ -56,7 +70,7 @@ multiome_df = read_csv(multiome_path, show_col_types = FALSE) |>
     dplyr::rename(cell_type = new_cell_type) |>
     mutate(dataset = 'Multiome_cell_types')
 
-marker_df = bind_rows(hd_cell_df, k8_df, k17_df, multiome_df) |>
+marker_df = bind_rows(hd_cell_df, hd_extra_df, k8_df, k17_df, multiome_df) |>
     select(dataset, cell_type, gwas, gene_id, gene_name, p) |>
     dplyr::rename(set_id = cell_type) |>
     arrange(dataset, set_id, p)
