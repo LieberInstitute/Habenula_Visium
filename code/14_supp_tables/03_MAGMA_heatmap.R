@@ -282,6 +282,16 @@ bind_rows(hd_cell_df, hd_extra_df, multiome_df, k8_df, k17_df) |>
     filter(p.adjust(10^(-1 * neg_log_p), method = 'fdr') < 0.05) |>
     ungroup() |>
     select(cell_type, gwas_group, dataset) |>
+    mutate(
+        dataset = case_when(
+            dataset == 'HD Cellular' ~ 'HD_cell_types',
+            dataset == 'HD Extracellular' ~ 'HD_extracellular',
+            dataset == 'Multiome Cellular' ~ 'Multiome_cell_types',
+            dataset == 'All-Bin k = 8' ~ 'HD_FICTURE_all_bin_k8',
+            dataset == 'Extracellular k = 17' ~ 'HD_FICTURE_extracellular_k17',
+            TRUE ~ dataset
+        )
+    )
     write_csv(out_path)
 
 session_info()
