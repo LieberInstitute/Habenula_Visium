@@ -21,6 +21,7 @@ k17_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'MAGMA', 'top_genes_k17.csv'
 )
+sig_sets_path = here('processed-data', '14_supp_tables', 'magma_sig_sets.csv')
 multiome_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/processed-data/10_MAGMA/RNA/top_genes.csv'
 multiome_map_path = '/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome/raw-data/cell_type_map.csv'
 hd_map_path = here('raw-data', 'sample_info', 'hd_cell_type_map.csv')
@@ -72,7 +73,11 @@ multiome_df = read_csv(multiome_path, show_col_types = FALSE) |>
 
 marker_df = bind_rows(hd_cell_df, hd_extra_df, k8_df, k17_df, multiome_df) |>
     select(dataset, cell_type, gwas, gene_id, gene_name, p) |>
-    dplyr::rename(set_id = cell_type) |>
+    dplyr::rename(set_id = cell_type)
+
+marker_df = read_csv(sig_sets_path, show_col_types = FALSE) |>
+    dplyr::rename(set_id = cell_type, gwas = gwas_group) |>
+    inner_join(marker_df, by = c('set_id', 'gwas', 'dataset')) |>
     arrange(dataset, set_id, p)
 
 stopifnot(!any(is.na(marker_df)))
