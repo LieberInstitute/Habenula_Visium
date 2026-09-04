@@ -37,7 +37,9 @@ hd_cell_df = read_csv(hd_cell_path, show_col_types = FALSE) |>
     ) |>
     select(new_cell_type, gwas, gene_id, gene_name, p) |>
     dplyr::rename(cell_type = new_cell_type) |>
-    mutate(dataset = 'HD_cell_types')
+    mutate(
+        gwas = sub('Hotoum', 'Hatoum', gwas), dataset = 'HD_cell_types'
+    )
 
 hd_extra_df = read_csv(hd_extra_path, show_col_types = FALSE) |>
     filter(cell_type_res == 'fine') |>
@@ -47,17 +49,21 @@ hd_extra_df = read_csv(hd_extra_path, show_col_types = FALSE) |>
     ) |>
     select(new_cell_type, gwas, gene_id, gene_name, p) |>
     dplyr::rename(cell_type = new_cell_type) |>
-    mutate(dataset = 'HD_extracellular')
+    mutate(
+        gwas = sub('Hotoum', 'Hatoum', gwas), dataset = 'HD_extracellular'
+    )
 
 k8_df = read_csv(k8_path, show_col_types = FALSE) |>
     mutate(
         cell_type = str_replace(cell_type, '^X', 'Factor_'),
+        gwas = sub('Hotoum', 'Hatoum', gwas),
         dataset = 'HD_FICTURE_all_bin_k8'
     )
 
 k17_df = read_csv(k17_path, show_col_types = FALSE) |>
     mutate(
         cell_type = str_replace(cell_type, '^X', 'Factor_'),
+        gwas = sub('Hotoum', 'Hatoum', gwas),
         dataset = 'HD_FICTURE_extracellular_k17'
     )
 
@@ -69,7 +75,10 @@ multiome_df = read_csv(multiome_path, show_col_types = FALSE) |>
     ) |>
     select(new_cell_type, gwas, gene_id, gene_name, p) |>
     dplyr::rename(cell_type = new_cell_type) |>
-    mutate(dataset = 'Multiome_cell_types')
+    mutate(
+        gwas = sub('Hotoum', 'Hatoum', gwas),
+        dataset = 'Multiome_cell_types'
+    )
 
 marker_df = bind_rows(hd_cell_df, hd_extra_df, k8_df, k17_df, multiome_df) |>
     select(dataset, cell_type, gwas, gene_id, gene_name, p) |>

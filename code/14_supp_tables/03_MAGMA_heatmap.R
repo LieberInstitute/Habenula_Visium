@@ -221,18 +221,30 @@ multiome_map_df = fix_map_df(multiome_map_path)
 hd_cell_df = read_cell_df(hd_cell_path, hd_map_df) |>
     #   Not enough genes for MAGMA to give reliable results
     filter(!(cell_type %in% c('Endo/microglia', 'LHb_C/GABA_LHb_C.2'))) |>
-    mutate(dataset = 'HD Cellular')
+    mutate(
+        gwas_group = sub('Hotoum', 'Hatoum', gwas_group),
+        dataset = 'HD Cellular'
+    )
 
 hd_extra_df = read_cell_df(hd_extra_path, hd_map_df) |>
     #   Not enough genes for MAGMA to give reliable results
     filter(!(cell_type %in% c('Endo/microglia', 'LHb_C/GABA_LHb_C.2'))) |>
-    mutate(dataset = 'HD Extracellular')
+    mutate(
+        gwas_group = sub('Hotoum', 'Hatoum', gwas_group),
+        dataset = 'HD Extracellular'
+    )
 
 multiome_df = read_cell_df(multiome_path, multiome_map_df) |>
-    mutate(dataset = 'Multiome Cellular')
+    mutate(
+        gwas_group = sub('Hotoum', 'Hatoum', gwas_group),
+        dataset = 'Multiome Cellular'
+    )
 
 k17_df = read_ficture_df(k17_path) |>
-    mutate(dataset = 'Extracellular k = 17')
+    mutate(
+        gwas_group = sub('Hotoum', 'Hatoum', gwas_group),
+        dataset = 'Extracellular k = 17'
+    )
 
 p = bind_rows(hd_cell_df, multiome_df) |>
     filter(!grepl('^[ML]?Hb$', cell_type)) |>
@@ -267,7 +279,10 @@ print(p)
 dev.off()
 
 k8_df = read_ficture_df(k8_path) |>
-    mutate(dataset = 'All-Bin k = 8')
+    mutate(
+        gwas_group = sub('Hotoum', 'Hatoum', gwas_group),
+        dataset = 'All-Bin k = 8'
+    )
 
 p = bind_rows(k8_df, k17_df) |>
     magma_heatmap()
