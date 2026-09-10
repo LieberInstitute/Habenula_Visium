@@ -163,6 +163,7 @@ if (ref_name == 'multiome_mid') {
     }
     dev.off()
 } else if (ref_name == 'multiome_fine') {
+    cell_map_df = read_csv(cell_map_path, show_col_types = FALSE)
     anno_df = read_csv(anno_path, show_col_types = FALSE) |>
         left_join(
             read_csv(hd_cell_map_path, show_col_types = FALSE),
@@ -172,6 +173,16 @@ if (ref_name == 'multiome_mid') {
     this_cor_fancy = lapply(
         this_cor,
         function(x) {
+            colnames(x) = tibble(
+                    prefix = str_extract(colnames(x), '^C\\.[0-9]+\\.') |>
+                        coalesce(''),
+                    old_cell_type = sub('^C\\.[0-9]+\\.', '', colnames(x))
+                ) |>
+                left_join(cell_map_df, by = 'old_cell_type') |>
+                mutate(
+                    new_cell_type = sprintf('%s%s', prefix, new_cell_type)
+                ) |>
+                pull(new_cell_type)
             rownames(x) = tibble(cluster = as.numeric(rownames(x))) |>
                 left_join(anno_df, by = 'cluster') |>
                 mutate(
