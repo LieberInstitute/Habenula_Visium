@@ -16,6 +16,9 @@ sample_id_path = here('raw-data', 'sample_info', 'hd_basic_info.csv')
 plot_dir = here(
     'plots', '10_HD_bin_level', 'no_secondary', 'cell_environment', 'random_cells'
 )
+stardist_dir = here(
+    'processed-data', '09_HD_cell_level', 'new_samples2', 'stardist'
+)
 bin_out_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'cell_environment',
     'extracellular_bins.csv.gz'
@@ -55,7 +58,7 @@ for sample_id in all_samples:
     adata.obs.loc[adata.obs['labels_he'] != 0, 'cell_component'] = 'Prim. Nucleus'
 
     extracellular_df_list.append(
-        ebf.export_and_plot(adata, plot_dir, sample_id, mpp)
+        ebf.export_and_plot(adata, plot_dir, sample_id, mpp, stardist_dir = stardist_dir)
     )
 
     #   Drop intracellular bins

@@ -25,7 +25,7 @@ def find_microenvironment(adata, expansion_distance):
 
 #   Visualize cell segmentations and surrounding microenvironment. Return a 
 #   DataFrame containing just extracellular bins, ready for export
-def export_and_plot(adata, plot_dir, sample_id, mpp, random_state = 0):
+def export_and_plot(adata, plot_dir, sample_id, mpp, random_state = 0, stardist_dir = None):
     #---------------------------------------------------------------------------
     #   Form DataFrame of extracellular bins for export
     #---------------------------------------------------------------------------
@@ -66,6 +66,27 @@ def export_and_plot(adata, plot_dir, sample_id, mpp, random_state = 0):
         os.path.join(plot_dir, f'{sample_id}_random_cells.pdf')
     )
     plt.close('all')
+
+    if stardist_dir is not None:
+        #   Plot primary segmentations
+        crop = b2c.get_crop(
+            small_adata, basis="spatial", spatial_key="spatial_cropped_150_buffer",
+            mpp=mpp
+        )
+        rendered = b2c.view_labels(
+            image_path = os.path.join(
+                stardist_dir, f'he_{sample_id}.tiff'
+            ),
+            labels_npz_path = os.path.join(
+                stardist_dir, f'he_{sample_id}.npz'
+            ),  
+            crop = crop
+        )
+        plt.imshow(rendered)
+        plt.savefig(
+            os.path.join(plot_dir, f'{sample_id}_primary_segmentations.pdf')
+        )
+        plt.close('all')
 
     extracellular_df = extracellular_df[['bin_id', 'cell_key']]
 
