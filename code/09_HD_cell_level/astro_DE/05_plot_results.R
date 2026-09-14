@@ -17,6 +17,9 @@ out_dir = here(
     'processed-data', '09_HD_cell_level', 'no_secondary', 'astro_DE'
 )
 go_num_terms = 5
+highlight_genes = c(
+    'SLC6A11', 'SLC1A2', 'ENTPD2', 'LTF', 'CHRNA3', 'CALB2', 'SYT6', 'CACNA1E'
+)
 
 dir.create(plot_dir, showWarnings = FALSE)
 
@@ -29,46 +32,22 @@ custom_volcano <- function(
         fdr_col = "fdr", spatial_fdr_col = 'fdr_empirical', 
         lfc_col = "logFC", text = FALSE, highlight_genes = NULL
     ){
-  
-    # define colors
-    signif_colors <- c("purple", "blue", "red")
-    FDR_label = paste0("FDR<", FDR_cut)
-    FC_label = paste0("abs(logFC)>", FC_cut)
-    names(signif_colors) <- c("both", FDR_label, FC_label)
-    
     volcano <- data |>
-        mutate(
-            DE_class = case_when(
-                    (!!sym(fdr_col) < FDR_cut) & 
-                        (!!sym(spatial_fdr_col) < FDR_cut) &
-                        (abs(!!sym(lfc_col)) > FC_cut) ~ "both",
-                    (!!sym(fdr_col) < FDR_cut) & 
-                        (!!sym(spatial_fdr_col) < FDR_cut) ~ FDR_label,
-                    abs(!!sym(lfc_col)) > FC_cut ~ FC_label,
-                    TRUE ~ "None"
-                ) |>
-                factor(levels = c(FDR_label, FC_label, "both", "None"))
-        ) |>
+        mutate(DE_class = !!sym(fdr_col) < FDR_cut) |>
         ggplot(
                 aes(
                     x = !!sym(lfc_col), y = -log10(!!sym(p_col)),
-                    color = DE_class, shape = !!sym(spatial_fdr_col) < FDR_cut
+                    color = DE_class
                 )
             ) +
-            geom_point(alpha = 0.5, size = 0.4) +
-            scale_color_manual(values = signif_colors) +
-            scale_shape_manual(values = c("FALSE" = 0, "TRUE" = 19)) +
-            labs(x = "log(FC)", y = "-log10(P value)") +
+            geom_point(alpha = 0.5, size = 0.5) +
+            scale_color_manual(values = c('TRUE' = 'red', 'FALSE' = 'gray')) +
+            labs(
+                x = "log(FC)", y = "-log10(P value)",
+                color = sprintf("FDR < %.2f?", FDR_cut)
+            ) +
             theme_bw(base_size = 15) +
             theme(legend.position = "right")
-    
-    if(text) {
-        volcano <- volcano + 
-            geom_text_repel(
-                aes(label = ifelse(!!sym(fdr_col) < FDR_cut, gene_name, "")),
-                size = 1.5
-            ) 
-    }
     
     if(!is.null(highlight_genes)){
         volcano <- volcano + 
@@ -152,7 +131,7 @@ de_df = read_csv(de_path, show_col_types = FALSE) |>
     mutate(logFC = -1 * logFC)
 
 pdf(file.path(plot_dir, 'volcano.pdf'))
-print(custom_volcano(de_df, highlight_genes = 'SLC1A2'))
+print(custom_volcano(de_df, highlight_genes = highlight_genes))
 dev.off()
 
 ego_df_list = list()
