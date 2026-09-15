@@ -1,11 +1,12 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=10G
-#SBATCH --job-name=19_2_LIANA+_cell_LR
+#SBATCH --mem=100G
+#SBATCH --job-name=19_1_LIANA+_cell_bandwidth_extracellular
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/liana2/logs/19_2_LIANA+_cell_LR.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/liana2/logs/19_2_LIANA+_cell_LR.txt
+#SBATCH -o ../../../../processed-data/10_HD_bin_level/no_secondary/liana2/logs/19_1_LIANA+_cell_bandwidth_extracellular_%a.txt
+#SBATCH -e ../../../../processed-data/10_HD_bin_level/no_secondary/liana2/logs/19_1_LIANA+_cell_bandwidth_extracellular_%a.txt
+#SBATCH --array=1-8%8
 
 set -e
 
@@ -27,8 +28,7 @@ module list
 
 bandwidth=5000
 
-python3 '19_LIANA+_cell_multidonor_bandwidth.py' --bandwidth "$bandwidth"
-python3 '19_cell_type_LR_bandwidth.py' --bandwidth "$bandwidth"
+python3 '19_1_LIANA+_cell_bandwidth.py' --bandwidth "$bandwidth"
 
 echo "**** Job ends ****"
 date

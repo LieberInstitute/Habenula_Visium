@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=10G
-#SBATCH --job-name=19_2_LIANA+_cell_LR
+#SBATCH --mem=100G
+#SBATCH --job-name=1_preprocess
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/liana2/logs/19_2_LIANA+_cell_LR.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/liana2/logs/19_2_LIANA+_cell_LR.txt
+#SBATCH -o ../../../../processed-data/10_HD_bin_level/no_secondary/liana2/logs/1_preprocess.txt
+#SBATCH -e ../../../../processed-data/10_HD_bin_level/no_secondary/liana2/logs/1_preprocess.txt
 
 set -e
 
@@ -20,15 +20,13 @@ echo "Node name: ${HOSTNAME}"
 echo "Task id: ${SLURM_ARRAY_TASK_ID}"
 
 ## Load the R module
-module load liana_plus/1.7.1
+module load visium_hd/1.0
 
 ## List current modules for reproducibility
 module list
 
-bandwidth=5000
-
-python3 '19_LIANA+_cell_multidonor_bandwidth.py' --bandwidth "$bandwidth"
-python3 '19_cell_type_LR_bandwidth.py' --bandwidth "$bandwidth"
+python 1_preprocess.py
+python 2_LIANA+_preprocess_cell.py
 
 echo "**** Job ends ****"
 date

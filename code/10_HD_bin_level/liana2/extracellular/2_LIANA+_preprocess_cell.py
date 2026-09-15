@@ -1,4 +1,4 @@
-# This script preprocesses the cellular-level AnnData object for LIANA analysis. 
+# This script preprocesses the extracellular-level AnnData object for LIANA analysis. 
 # It ensures that gene names are properly mapped and that the data is ready for downstream ligand-receptor interaction analysis. 
 # It reads in the cell-level data, filters for habenula cells, and then maps gene IDs to gene names using a GTF file. 
 # Finally, it saves the processed AnnData object for use in LIANA.        
@@ -10,13 +10,13 @@ import os
 
 data_path = here(
     'processed-data', '10_HD_bin_level', "new_samples2",'liana','input_habenula',
-    'cellular_annotated.h5ad'
+    'extracellular_annotated.h5ad'
 )  
 
 adata = sc.read_h5ad(data_path)
 
 out_path = here(
-    'processed-data', '10_HD_bin_level', "no_secondary",'liana','adata'
+    'processed-data', '10_HD_bin_level', "no_secondary",'liana', 'adata', 'extracellular'
 )
 
 out_path.mkdir(parents=True, exist_ok=True)
@@ -79,6 +79,6 @@ if "gene_name" in adata.var.columns:
     adata.var["gene_name_orig"] = adata.var["gene_name"]
     adata.var = adata.var.drop(columns=["gene_name"])
 
-adata.write(os.path.join(out_path, f"adata_cellular_withcelltype_newcluster.h5ad"))
+adata.write(os.path.join(out_path, f"adata_extracellular_withcelltype_newcluster.h5ad"))
 
-print("✅ Saved:", os.path.join(out_path, "adata_cellular_withcelltype_newcluster.h5ad"))
+print("✅ Saved:", os.path.join(out_path, "adata_extracellular_withcelltype_newcluster.h5ad"))

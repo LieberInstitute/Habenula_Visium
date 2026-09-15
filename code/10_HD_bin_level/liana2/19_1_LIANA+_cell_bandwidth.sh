@@ -26,7 +26,7 @@ module load liana_plus/1.7.1
 ## List current modules for reproducibility
 module list
 
-bandwidth=5000
+bandwidth=7500
 
 python3 '19_1_LIANA+_cell_bandwidth.py' --bandwidth "$bandwidth"
 

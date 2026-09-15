@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p katun
-#SBATCH --mem=10G
-#SBATCH --job-name=19_2_LIANA+_cell_LR
+#SBATCH --mem=20G
+#SBATCH --job-name=20_new_figure_LR_violion_extracellular
 #SBATCH -c 1
 #SBATCH -t 1-0:00:00
-#SBATCH -o ../../../processed-data/10_HD_bin_level/no_secondary/liana2/logs/19_2_LIANA+_cell_LR.txt
-#SBATCH -e ../../../processed-data/10_HD_bin_level/no_secondary/liana2/logs/19_2_LIANA+_cell_LR.txt
+#SBATCH -o ../../../../processed-data/10_HD_bin_level/no_secondary/liana2/logs/20_new_figure_LR_violion_extracellular.txt
+#SBATCH -e ../../../../processed-data/10_HD_bin_level/no_secondary/liana2/logs/20_new_figure_LR_violion_extracellular.txt
 
 set -e
 
@@ -25,10 +25,7 @@ module load liana_plus/1.7.1
 ## List current modules for reproducibility
 module list
 
-bandwidth=5000
-
-python3 '19_LIANA+_cell_multidonor_bandwidth.py' --bandwidth "$bandwidth"
-python3 '19_cell_type_LR_bandwidth.py' --bandwidth "$bandwidth"
+python3 '20_new_figure_LR_violion.py'
 
 echo "**** Job ends ****"
 date

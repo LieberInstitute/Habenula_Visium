@@ -35,10 +35,10 @@ in_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'liana'
 )
 out_path = here(
-    'processed-data', '10_HD_bin_level', 'no_secondary', 'liana2'
+    'processed-data', '10_HD_bin_level', 'no_secondary', 'liana2','extracellular'
 )
 os.makedirs(os.path.join(out_path), exist_ok=True)
-figure_path = here("plots", "10_HD_bin_level", "no_secondary", "liana2")
+figure_path = here("plots", "10_HD_bin_level", "no_secondary", "liana2","extracellular")
 os.makedirs(figure_path, exist_ok=True)
 
 sample_info_path = here('raw-data', 'sample_info', 'hd_basic_info_split.csv')
@@ -52,7 +52,7 @@ scale_json = here(
     'scalefactors_json.json'
 )
 
-file_path = os.path.join(in_path, f"adata/adata_cellular_withcelltype_newcluster.h5ad")
+file_path = os.path.join(in_path, f"adata/adata_extracellular_withcelltype_newcluster.h5ad")
 adata = sc.read(file_path)
 adata.var.index.name = None
 
@@ -124,13 +124,12 @@ p = (
     + p9.scale_y_continuous(
         breaks=list(range(ymin, ymax + 1, step))
     )
-    + p9.coord_cartesian(xlim=(0, 10000))
 )
 
 p.save(
     filename=os.path.join(
         figure_path,
-        f"{tissue_id}_spatial_connectivity_bandwidth_{bandwidth}.pdf"
+        f"{tissue_id}_spatial_connectivity_bandwidth_{bandwidth}.png"
     ),
     dpi=300,
     width=6,
@@ -157,7 +156,7 @@ p = (
 p.save(
     filename=os.path.join(
         figure_path,
-        f"{tissue_id}_connectivity_idx{idx}_{bandwidth}.pdf"
+        f"{tissue_id}_connectivity_idx{idx}_{bandwidth}.png"
     ),
     dpi=300,
     width=6,

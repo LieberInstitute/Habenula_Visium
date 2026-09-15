@@ -12,7 +12,7 @@ library(readr)
 library(here)
 
 df <- read_csv(
-  "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana2/table/significant_interactions_across_donors_5000.0.csv",
+  "/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium/processed-data/10_HD_bin_level/no_secondary/liana2/extracellular/table/significant_interactions_across_donors_5000.0.csv",
   show_col_types = FALSE
 )
 
@@ -214,7 +214,7 @@ p <- ggplot(
     panel.grid.minor = element_blank()
   )
 
-plot_dir <- here::here("plots", "10_HD_bin_level", "no_secondary", "liana2")
+plot_dir <- here::here("plots", "10_HD_bin_level", "no_secondary", "liana2", "extracellular")
 dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 
 ggsave(

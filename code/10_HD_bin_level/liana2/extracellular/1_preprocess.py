@@ -1,4 +1,5 @@
 # add the cell type annotation to the cell-level data
+
 import scanpy as sc
 import os
 import pandas as pd
@@ -8,11 +9,11 @@ import numpy as np
 
 out_path = here(
     'processed-data', '10_HD_bin_level', "new_samples2",'liana', 'input_habenula',
-    'cellular_annotated.h5ad'
+    'extracellular_annotated.h5ad'
 )  
 anno_data_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary','cell_environment','adata',
-    'liana_ready','cellular.h5ad'
+    'liana_ready','extracellular.h5ad'
 )
 anno_data = sc.read_h5ad(anno_data_path)
 

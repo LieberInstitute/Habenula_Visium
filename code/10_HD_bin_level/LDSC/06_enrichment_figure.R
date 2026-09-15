@@ -45,12 +45,6 @@ dar_sets_to_plot <- c(
 )
 
 
-###############################################################################
-# Fisher meta-analysis row label
-###############################################################################
-
-meta_trait_label <- "Fisher meta-analysis"
-
 
 ###############################################################################
 # Minimum common SNP count for display
@@ -66,11 +60,9 @@ minimum_n_snps <- 100L
 #   color all ordinary GWAS cells by coefficient Z-score.
 #
 # TRUE:
-#   only cells showing evidence for positive enrichment are colored.
-#
-# Fisher meta row follows the same rule using Fisher meta-analytic FDR.
+#   only cells showing evidence for positive enrichment after cell-type-specific
+#   BH-FDR correction are colored.
 ###############################################################################
-
 show_only_significant <- FALSE
 
 
@@ -78,17 +70,13 @@ show_only_significant <- FALSE
 # Significance measure for ORDINARY GWAS rows
 #
 # For EACH DAR set separately (open / closed / all):
-#   all raw coefficient_p_one_sided values across ALL GWAS traits × ALL
-#   displayed annotations are adjusted together using Benjamini-Hochberg FDR.
+#   within EACH cell type / annotation, raw coefficient_p_one_sided values
+#   across all displayed GWAS traits are adjusted using Benjamini-Hochberg FDR.
 #
-# There is NO adjustment by GWAS and NO adjustment by cell type.
-#
-# Fisher meta-analysis:
-#   raw coefficient_p_one_sided -> Fisher P per annotation -> BH-FDR across
-#   annotations within the CURRENT DAR set.
+# Therefore there is NO global adjustment across cell types.
 ###############################################################################
 
-significance_column <- "coefficient_FDR_one_sided_within_dar_set"
+significance_column <- "coefficient_FDR_one_sided_within_cell_type"
 
 
 ###############################################################################
@@ -96,9 +84,6 @@ significance_column <- "coefficient_FDR_one_sided_within_dar_set"
 #
 # Ordinary rows:
 #   coefficient Z-score
-#
-# Fisher row:
-#   nonnegative normal-equivalent Z converted from Fisher FDR.
 ###############################################################################
 
 color_limit <- 4
@@ -250,7 +235,7 @@ required_columns <- c(
     "source_resolution",
     "n_snps",
 
-    # Fisher meta-analysis always uses this:
+    # Raw one-sided P value used for cell-type-specific BH-FDR:
     "coefficient_p_one_sided"
 )
 
@@ -408,17 +393,17 @@ dt[
 ###############################################################################
 # Ordinary-row FDR is intentionally NOT calculated here.
 #
-# It is calculated inside the DAR-set loop AFTER the minimum_n_snps filter,
-# so each plotted heatmap (open / closed / all) has its own FDR family:
-# all displayed GWAS × annotation S-LDSC P values in that DAR set.
+# It is calculated inside the DAR-set loop AFTER the minimum_n_snps filter.
+# Within each DAR set, BH-FDR is applied separately for each annotation/cell
+# type across all displayed GWAS traits.
 ###############################################################################
 
 
 ###############################################################################
 # Read GWAS name mapping
 #
-# Input S-LDSC "trait" is expected to match gwas_info.csv "nickname".
-# For plotting/output, replace it with "manuscript_name".
+# Current S-LDSC "trait" may use either gwas_info.csv "nickname" or
+# "manuscript_name".  The reference-figure grouping code below resolves both.
 ###############################################################################
 
 if (!file.exists(gwas_info_file)) {
@@ -511,20 +496,354 @@ gwas_name_lookup <- setNames(
 )
 
 
+###############################################################################
+# Exact GWAS grouping/order from the reference figure
+#
+# The labels below are copied exactly from the reference figure.  Importantly,
+# we do NOT assume that these labels are necessarily the same naming convention
+# used in the current S-LDSC input.  Both the reference labels and the current
+# input traits are resolved through gwas_info.csv using BOTH nickname and
+# manuscript_name.
+###############################################################################
+
+gwas_group_order <- c(
+    "P",
+    "Psychiatric",
+    "Substance Use"
+)
+
+
+# Exact left-to-right labels shown in the reference figure.
+gwas_trait_order <- c(
+
+    # Factor
+    "p_factor_Grotzinger",
+
+    # Psychiatric
+    "compulsive_F1_Grotzinger",
+    "externalizing_Linnér",
+    "internalizing_F4_Grotzinger",
+    "MDD_Howard",
+    "neurodev_F3_Grotzinger",
+    "panic_Forster",
+    "SCZ_Trubetskoy",
+    "SCZ/BPD_F2_Grotzinger",
+
+    # Substance Use
+    "AUD_Zhou",
+    "CUD_Johnson",
+    "CUD_Pasman",
+    "OUD_Deak",
+    "SUD_F5_Grotzinger",
+    "SUD_Hatoum",
+    "SUD_Polimanti"
+)
+
+
+reference_gwas <- data.table(
+    reference_label = gwas_trait_order,
+    gwas_group = c(
+        "P",
+        rep("Psychiatric", 8L),
+        rep("Substance Use", 7L)
+    ),
+    reference_order = seq_along(gwas_trait_order)
+)
+
+
+###############################################################################
+# Name lookups from gwas_info.csv
+###############################################################################
+
+# nickname -> manuscript_name
+gwas_name_lookup <- setNames(
+    gwas_info$manuscript_name,
+    gwas_info$nickname
+)
+
+
+# manuscript_name -> nickname
+gwas_nickname_from_manuscript_lookup <- setNames(
+    gwas_info$nickname,
+    gwas_info$manuscript_name
+)
+
+
+###############################################################################
+# Helper: resolve any GWAS label to canonical nickname
+#
+# A label is accepted if it matches EITHER:
+#   - gwas_info.csv nickname
+#   - gwas_info.csv manuscript_name
+###############################################################################
+
+resolve_to_nickname <- function(x) {
+
+    x <- trimws(
+        as.character(x)
+    )
+
+    out <- rep(
+        NA_character_,
+        length(x)
+    )
+
+    is_nickname <- x %chin% gwas_info$nickname
+
+    out[is_nickname] <- x[is_nickname]
+
+    is_manuscript <- (
+        !is_nickname &
+        x %chin% gwas_info$manuscript_name
+    )
+
+    out[is_manuscript] <- unname(
+        gwas_nickname_from_manuscript_lookup[
+            x[is_manuscript]
+        ]
+    )
+
+    out
+}
+
+
+###############################################################################
+# Resolve the REFERENCE-FIGURE labels through gwas_info.csv
+###############################################################################
+
+reference_gwas[
+    ,
+    trait_nickname :=
+        resolve_to_nickname(
+            reference_label
+        )
+]
+
+
+unresolved_reference_labels <- reference_gwas[
+    is.na(trait_nickname) |
+    trait_nickname == "",
+    reference_label
+]
+
+
+if (length(unresolved_reference_labels) > 0L) {
+
+    warning(
+        paste0(
+            "The following labels copied from the reference figure match neither ",
+            "nickname nor manuscript_name in the CURRENT gwas_info.csv:\n",
+            paste(
+                unresolved_reference_labels,
+                collapse = "\n"
+            )
+        ),
+        call. = FALSE
+    )
+}
+
+
+# A canonical GWAS must not map to more than one reference label.
+reference_nickname_duplicates <- reference_gwas[
+    !is.na(trait_nickname),
+    .N,
+    by = trait_nickname
+][
+    N > 1L
+]
+
+
+if (nrow(reference_nickname_duplicates) > 0L) {
+
+    stop(
+        paste0(
+            "Multiple reference-figure labels resolve to the same canonical GWAS ",
+            "nickname:\n",
+            paste(
+                capture.output(
+                    print(reference_nickname_duplicates)
+                ),
+                collapse = "\n"
+            )
+        )
+    )
+}
+
+
+###############################################################################
+# Resolve CURRENT S-LDSC input traits through the same mapping
+###############################################################################
+
+# Preserve the exact value in all_GWAS_DAR_sldsc_summary.tsv.
+dt[
+    ,
+    trait_input :=
+        trimws(
+            as.character(
+                trait
+            )
+        )
+]
+
+
 dt[
     ,
     trait_nickname :=
-        trait
+        resolve_to_nickname(
+            trait_input
+        )
 ]
+
+
+unresolved_input_traits <- sort(
+    unique(
+        dt[
+            is.na(trait_nickname) |
+            trait_nickname == "",
+            trait_input
+        ]
+    )
+)
+
+
+if (length(unresolved_input_traits) > 0L) {
+
+    warning(
+        paste0(
+            "The following current S-LDSC input trait names match neither nickname ",
+            "nor manuscript_name in gwas_info.csv and therefore cannot be matched ",
+            "to the reference figure:\n",
+            paste(
+                unresolved_input_traits,
+                collapse = "\n"
+            )
+        ),
+        call. = FALSE
+    )
+}
+
+
+###############################################################################
+# Attach exact reference-figure group and display label by canonical nickname
+###############################################################################
+
+reference_resolved <- reference_gwas[
+    !is.na(trait_nickname) &
+    trait_nickname != ""
+]
+
+
+reference_label_lookup <- setNames(
+    reference_resolved$reference_label,
+    reference_resolved$trait_nickname
+)
+
+
+reference_group_lookup <- setNames(
+    reference_resolved$gwas_group,
+    reference_resolved$trait_nickname
+)
+
+
+reference_order_lookup <- setNames(
+    reference_resolved$reference_order,
+    reference_resolved$trait_nickname
+)
 
 
 dt[
     ,
-    trait_mapped :=
-        trait_nickname %chin%
-        gwas_info$nickname
+    `:=`(
+        trait_plot =
+            unname(
+                reference_label_lookup[
+                    trait_nickname
+                ]
+            ),
+
+        gwas_group =
+            unname(
+                reference_group_lookup[
+                    trait_nickname
+                ]
+            ),
+
+        reference_order =
+            suppressWarnings(
+                as.integer(
+                    unname(
+                        reference_order_lookup[
+                            trait_nickname
+                        ]
+                    )
+                )
+            )
+    )
 ]
 
+
+###############################################################################
+# Diagnose reference GWAS that are genuinely absent from the CURRENT input
+###############################################################################
+
+available_canonical_nicknames <- unique(
+    dt[
+        !is.na(trait_nickname),
+        trait_nickname
+    ]
+)
+
+
+missing_reference_gwas <- reference_resolved[
+    !trait_nickname %chin% available_canonical_nicknames,
+    reference_label
+]
+
+
+if (length(missing_reference_gwas) > 0L) {
+
+    warning(
+        paste0(
+            "The following GWAS traits from the reference figure are genuinely ",
+            "absent from the current S-LDSC input AFTER resolving both naming ",
+            "systems through gwas_info.csv:\n",
+            paste(
+                missing_reference_gwas,
+                collapse = "\n"
+            )
+        ),
+        call. = FALSE
+    )
+}
+
+
+###############################################################################
+# Keep exactly the GWAS represented in the reference figure
+###############################################################################
+
+dt <- dt[
+    !is.na(trait_plot) &
+    trait_plot != "" &
+    !is.na(gwas_group) &
+    gwas_group != ""
+]
+
+
+if (nrow(dt) == 0L) {
+
+    stop(
+        paste0(
+            "None of the reference-figure GWAS could be matched to the current ",
+            "S-LDSC input. The script checked BOTH nickname and manuscript_name ",
+            "for BOTH the reference labels and the input trait column."
+        )
+    )
+}
+
+
+###############################################################################
+# Manuscript-friendly trait name for output tables
+###############################################################################
 
 dt[
     ,
@@ -545,42 +864,26 @@ dt[
 ]
 
 
-unmapped_gwas_traits <- sort(
-    unique(
-        dt[
-            trait_mapped == FALSE,
-            trait_nickname
-        ]
-    )
-)
+dt[
+    ,
+    trait_mapped := TRUE
+]
 
 
-if (
-    length(
-        unmapped_gwas_traits
-    ) > 0L
-) {
-
-    warning(
-        paste0(
-            "The following GWAS traits were not found in gwas_info.csv ",
-            "and retain their original names:\n",
-            paste(
-                unmapped_gwas_traits,
-                collapse = "\n"
-            )
-        ),
-        call. = FALSE
-    )
-}
-
+###############################################################################
+# GWAS naming/grouping audit
+###############################################################################
 
 gwas_name_audit <- unique(
     dt[
         ,
         .(
+            trait_input,
             trait_nickname,
             trait,
+            trait_plot,
+            gwas_group,
+            reference_order,
             trait_mapped
         )
     ]
@@ -589,7 +892,8 @@ gwas_name_audit <- unique(
 
 setorder(
     gwas_name_audit,
-    trait_nickname
+    reference_order,
+    trait_input
 )
 
 
@@ -612,8 +916,7 @@ fwrite(
 # Basic filtering
 #
 # Keep rows with a valid raw one-sided S-LDSC P value.
-# Ordinary-row BH-FDR is calculated later within each DAR set.
-# Fisher meta-analysis also uses these ORIGINAL one-sided P values.
+# BH-FDR is calculated later within each DAR set, separately for each cell type.
 ###############################################################################
 
 dt <- dt[
@@ -653,20 +956,6 @@ if (nrow(dt) == 0L) {
 }
 
 
-###############################################################################
-# Prevent collision with the artificial Fisher row
-###############################################################################
-
-if (
-    meta_trait_label %in%
-    dt$trait
-) {
-
-    stop(
-        "A real GWAS trait already has the reserved name: ",
-        meta_trait_label
-    )
-}
 
 
 ###############################################################################
@@ -757,13 +1046,8 @@ message(
 )
 
 message(
-    "Ordinary-row significance column: ",
+    "Significance column: ",
     significance_column
-)
-
-message(
-    "Fisher meta-analysis input: coefficient_p_one_sided; ",
-    "display significance: BH-FDR across annotations"
 )
 
 
@@ -1075,15 +1359,17 @@ if (
 
 custom_annotation_display_order <- c(
 
-    # Medial habenula
+    # Whole habenula regions -- standalone rows
     "MHb",
+    "LHb",
+
+    # Medial habenula subpopulations
     "MHb_A",
     "MHb_B",
     "MHb_C",
     "MHb_D",
 
-    # Lateral habenula
-    "LHb",
+    # Lateral habenula subpopulations
     "LHb_A",
     "LHb_B",
     "LHb_C",
@@ -1103,6 +1389,14 @@ custom_annotation_display_order <- c(
     "Endo"
 )
 
+# Draw a narrow white separator line below the whole-region rows (MHb and LHb)
+# without creating an extra blank y-axis label row.
+whole_hb_separator_linewidth <- 5.0
+
+# Thin black rules above and below the white gap.
+# This creates a clean grouped-panel look without boxing the entire heatmap.
+whole_hb_separator_border_linewidth <- 0.4
+
 
 ###############################################################################
 # Significance description for ordinary rows
@@ -1112,7 +1406,7 @@ significance_description <- paste0(
     "* FDR<0.05, ",
     "** FDR<0.01, ",
     "*** FDR<0.001; ",
-    "BH-FDR across all GWAS × annotations within this DAR set"
+    "BH-FDR across GWAS traits separately within each cell type"
 )
 
 
@@ -1133,7 +1427,6 @@ dar_set_titles <- c(
 
 all_plot_data <- list()
 
-all_fisher_results <- list()
 
 
 ###############################################################################
@@ -1196,39 +1489,28 @@ for (
         paste0(
             "DAR_sldsc_coefficient_z_heatmap_",
             dar_set_i,
-            "_with_Fisher_meta.pdf"
+            ".pdf"
         )
     )
-
 
     output_png <- file.path(
         dar_output_dir,
         paste0(
             "DAR_sldsc_coefficient_z_heatmap_",
             dar_set_i,
-            "_with_Fisher_meta.png"
+            ".png"
         )
     )
-
 
     output_plot_data <- file.path(
         dar_output_dir,
         paste0(
             "DAR_sldsc_heatmap_plot_data_",
             dar_set_i,
-            "_with_Fisher_meta.tsv"
-        )
-    )
-
-
-    output_fisher <- file.path(
-        dar_output_dir,
-        paste0(
-            "DAR_sldsc_Fisher_meta_",
-            dar_set_i,
             ".tsv"
         )
     )
+
 
 
     ###########################################################################
@@ -1273,41 +1555,48 @@ for (
 
 
     ###########################################################################
-    # BH-FDR for ordinary GWAS heatmap cells
+    # BH-FDR for ordinary GWAS heatmap cells, separately by cell type
     #
     # IMPORTANT:
     # The current plot_dt contains ONE DAR set only and has already passed the
-    # minimum_n_snps display filter. Therefore p.adjust() below corrects ALL
-    # displayed raw S-LDSC P values together across:
+    # minimum_n_snps display filter.
     #
-    #   all GWAS traits × all displayed annotations
-    #
-    # within THIS DAR set. There is deliberately no `by = trait` and no
-    # `by = annotation`.
+    # For EACH annotation/cell type separately, p.adjust() corrects the raw
+    # one-sided S-LDSC P values across all displayed GWAS traits for that
+    # cell type. Thus each cell type has its own FDR family within this DAR set.
     ###########################################################################
 
     plot_dt[
         ,
-        coefficient_FDR_one_sided_within_dar_set :=
+        coefficient_FDR_one_sided_within_cell_type :=
             p.adjust(
                 coefficient_p_one_sided,
                 method = "BH"
-            )
+            ),
+        by = annotation
     ]
 
 
     plot_dt[
         ,
         significance_value :=
-            coefficient_FDR_one_sided_within_dar_set
+            coefficient_FDR_one_sided_within_cell_type
     ]
 
 
-    message(
-        "[", dar_set_i, "] ordinary S-LDSC tests in FDR family: ",
-        nrow(plot_dt)
-    )
+    fdr_family_summary <- plot_dt[
+        ,
+        .(
+            n_GWAS_tests = .N
+        ),
+        by = annotation
+    ]
 
+    message(
+        "[", dar_set_i, "] FDR correction performed separately for ",
+        nrow(fdr_family_summary),
+        " cell types."
+    )
 
     ###########################################################################
     # Ensure unique ordinary heatmap cells
@@ -1561,471 +1850,51 @@ for (
 
 
     ###########################################################################
-    # Order ordinary GWAS traits
+    # Exact GWAS trait order from the reference figure
     ###########################################################################
 
-    regular_trait_order <- plot_dt[
-        ,
-        .(
-            ordering_score =
-                max(
-                    abs(
-                        coefficient_z_clipped
-                    ),
-                    na.rm = TRUE
-                )
-        ),
-        by = trait
-    ][
-        order(
-            -ordering_score,
-            trait
-        ),
-        trait
-    ]
-
-
-    ###########################################################################
-    # Fisher meta-analysis
-    #
-    # For each annotation:
-    #
-    # X^2 = -2 * sum(log(P_i))
-    #
-    # df = 2k
-    #
-    # where P_i is coefficient_p_one_sided for GWAS i.
-    #
-    # NOTE:
-    # Fisher meta-analysis uses ORIGINAL one-sided P values,
-    # never FDR-adjusted values.
-    ###########################################################################
-
-    fisher_meta <- plot_dt[
-        !is.na(
-            coefficient_p_one_sided
-        ) &
-        is.finite(
-            coefficient_p_one_sided
-        ) &
-        coefficient_p_one_sided >= 0 &
-        coefficient_p_one_sided <= 1,
-        {
-
-            ###################################################################
-            # Extract P values
-            ###################################################################
-
-            p_values <- as.numeric(
-                coefficient_p_one_sided
-            )
-
-
-            ###################################################################
-            # Numerical protection against log(0)
-            ###################################################################
-
-            p_values_safe <- pmax(
-                p_values,
-                .Machine$double.xmin
-            )
-
-
-            ###################################################################
-            # Fisher statistic
-            ###################################################################
-
-            fisher_statistic <-
-                -2 *
-                sum(
-                    log(
-                        p_values_safe
-                    )
-                )
-
-
-            ###################################################################
-            # Degrees of freedom
-            ###################################################################
-
-            fisher_n_traits <-
-                length(
-                    p_values_safe
-                )
-
-
-            fisher_df <-
-                2 *
-                fisher_n_traits
-
-
-            ###################################################################
-            # Fisher combined P
-            ###################################################################
-
-            fisher_meta_p <-
-                pchisq(
-                    fisher_statistic,
-                    df =
-                        fisher_df,
-                    lower.tail =
-                        FALSE
-                )
-
-
-            list(
-
-                fisher_meta_p =
-                    fisher_meta_p,
-
-                fisher_statistic =
-                    fisher_statistic,
-
-                fisher_df =
-                    fisher_df,
-
-                fisher_n_traits =
-                    fisher_n_traits
-            )
-        },
-        by = .(
-            dar_set,
-            annotation,
-            annotation_original,
-            annotation_display,
-            annotation_mapped,
-            source_resolution,
-            n_snps
+    regular_trait_order <- gwas_trait_order[
+        gwas_trait_order %chin%
+        unique(
+            plot_dt$trait_plot
         )
     ]
 
 
     ###########################################################################
-    # BH-FDR for Fisher meta-analysis P values
-    #
-    # Fisher itself is calculated from ORIGINAL one-sided P values.
-    # Then its combined P values are adjusted across annotations within
-    # the current DAR set.
+    # Use ordinary GWAS rows only
     ###########################################################################
 
-    fisher_meta[
-        ,
-        fisher_meta_FDR := {
-
-            fdr_values <- rep(
-                NA_real_,
-                .N
-            )
-
-            valid_meta_p <- (
-                !is.na(fisher_meta_p) &
-                is.finite(fisher_meta_p) &
-                fisher_meta_p >= 0 &
-                fisher_meta_p <= 1
-            )
-
-            fdr_values[valid_meta_p] <- p.adjust(
-                fisher_meta_p[valid_meta_p],
-                method = "BH"
-            )
-
-            fdr_values
-        }
-    ]
-
-
-    ###########################################################################
-    # Convert Fisher FDR to a nonnegative normal-equivalent visualization Z
-    ###########################################################################
-
-    fisher_meta[
-        ,
-        fisher_FDR_for_z :=
-            pmin(
-                pmax(
-                    fisher_meta_FDR,
-                    .Machine$double.xmin
-                ),
-                1 -
-                .Machine$double.eps
-            )
-    ]
-
-
-    fisher_meta[
-        ,
-        fisher_z_equivalent :=
-            pmax(
-                qnorm(
-                    fisher_FDR_for_z,
-                    lower.tail = FALSE
-                ),
-                0
-            )
-    ]
-
-
-    fisher_meta[
-        ,
-        fisher_FDR_for_z := NULL
-    ]
-
-
-    ###########################################################################
-    # Make sure every displayed annotation received a Fisher result
-    ###########################################################################
-
-    missing_fisher_annotations <- setdiff(
-        annotation_order,
-        fisher_meta$annotation
-    )
-
-
-    if (
-        length(
-            missing_fisher_annotations
-        ) > 0L
-    ) {
-
-        warning(
-            paste0(
-                "[",
-                dar_set_i,
-                "] Fisher meta-analysis could not be calculated for:\n",
-                paste(
-                    missing_fisher_annotations,
-                    collapse = "\n"
-                )
-            ),
-            call. = FALSE
-        )
-    }
-
-
-    ###########################################################################
-    # Number of ordinary GWAS traits contributing to each annotation
-    ###########################################################################
-
-    expected_trait_counts <- plot_dt[
-        ,
-        .(
-            available_GWAS_traits =
-                uniqueN(
-                    trait
-                )
-        ),
-        by = annotation
-    ]
-
-
-    fisher_meta <- merge(
-        fisher_meta,
-        expected_trait_counts,
-        by = "annotation",
-        all.x = TRUE,
-        sort = FALSE
-    )
-
-
-    fisher_meta[
-        ,
-        all_available_traits_used :=
-            fisher_n_traits ==
-            available_GWAS_traits
-    ]
-
-
-    ###########################################################################
-    # Warn if Fisher uses fewer traits due to missing P values
-    ###########################################################################
-
-    incomplete_fisher <- fisher_meta[
-        all_available_traits_used ==
-        FALSE
-    ]
-
-
-    if (
-        nrow(
-            incomplete_fisher
-        ) > 0L
-    ) {
-
-        warning(
-            paste0(
-                "[",
-                dar_set_i,
-                "] Some Fisher meta-analyses use fewer GWAS traits ",
-                "because coefficient_p_one_sided was missing:\n",
-                paste(
-                    capture.output(
-                        print(
-                            incomplete_fisher[
-                                ,
-                                .(
-                                    annotation,
-                                    fisher_n_traits,
-                                    available_GWAS_traits
-                                )
-                            ]
-                        )
-                    ),
-                    collapse = "\n"
-                )
-            ),
-            call. = FALSE
-        )
-    }
-
-
-    ###########################################################################
-    # Save exact Fisher meta-analysis table
-    ###########################################################################
-
-    setorder(
-        fisher_meta,
-        fisher_meta_FDR,
-        fisher_meta_p,
-        annotation
-    )
-
-
-    fwrite(
-        fisher_meta,
-        output_fisher,
-        sep = "\t",
-        quote = FALSE,
-        na = "NA"
-    )
-
-
-    all_fisher_results[[dar_set_i]] <- copy(
-    fisher_meta
-)
-
-
-    ###########################################################################
-    # Convert Fisher results into heatmap rows
-    ###########################################################################
-
-    fisher_plot <- copy(
-        fisher_meta
-    )
-
-
-    fisher_plot[
-        ,
-        `:=`(
-
-            trait =
-                meta_trait_label,
-
-            coefficient_z_plot =
-                fisher_z_equivalent,
-
-            significance_value =
-                fisher_meta_FDR,
-
-            positive_enrichment_significant =
-                fisher_meta_FDR < 0.05,
-
-            significance_label =
-                make_significance_stars(
-                    p =
-                        fisher_meta_FDR,
-                    require_positive =
-                        FALSE
-                ),
-
-            row_type =
-                "Fisher_meta"
-        )
-    ]
-
-
-    ###########################################################################
-    # Clip Fisher Z-equivalent
-    ###########################################################################
-
-    fisher_plot[
-        ,
-        coefficient_z_clipped :=
-            pmin(
-                fisher_z_equivalent,
-                color_limit
-            )
-    ]
-
-
-    ###########################################################################
-    # Fisher fill
-    ###########################################################################
-
-    if (
-        show_only_significant
-    ) {
-
-        fisher_plot[
-            ,
-            fill_value :=
-                fifelse(
-                    positive_enrichment_significant,
-                    coefficient_z_clipped,
-                    NA_real_
-                )
-        ]
-
-    } else {
-
-        fisher_plot[
-            ,
-            fill_value :=
-                coefficient_z_clipped
-        ]
-    }
-
-
-    ###########################################################################
-    # Combine ordinary GWAS rows + Fisher row
-    ###########################################################################
-
-    plot_dt_full <- rbindlist(
-        list(
-            plot_dt,
-            fisher_plot
-        ),
-        use.names = TRUE,
-        fill = TRUE
+    plot_dt_full <- copy(
+        plot_dt
     )
 
 
     ###########################################################################
     # Factor ordering
     #
-    # ggplot discrete Y places the FIRST factor level at the bottom.
-    #
-    # Therefore:
-    #
-    #   Fisher meta-analysis = first level = bottom row
-    #
-    # Ordinary traits remain ordered by strongest absolute signal.
+    # GWAS blocks and GWAS order are fixed to match the reference figure.
+    # Annotations are reversed so the first biological annotation appears at top.
     ###########################################################################
 
-    y_levels <- c(
-        meta_trait_label,
-        rev(
-            regular_trait_order
-        )
-    )
+    plot_dt_full[
+        ,
+        trait_plot :=
+            factor(
+                trait_plot,
+                levels =
+                    regular_trait_order
+            )
+    ]
 
 
     plot_dt_full[
         ,
-        trait :=
+        gwas_group :=
             factor(
-                trait,
+                gwas_group,
                 levels =
-                    y_levels
+                    gwas_group_order
             )
     ]
 
@@ -2036,7 +1905,9 @@ for (
             factor(
                 annotation,
                 levels =
-                    annotation_order
+                    rev(
+                        annotation_order
+                    )
             )
     ]
 
@@ -2070,12 +1941,36 @@ for (
 
 
     ###########################################################################
+    # Narrow separator position
+    #
+    # Place a single thin white line below LHb, so MHb/LHb are visually
+    # separated from the finer subpopulations without adding an extra row.
+    ###########################################################################
+
+    separator_yintercept <- NULL
+
+    lhb_y_position <- unique(
+        as.numeric(
+            plot_dt_full[
+                annotation_display == "LHb",
+                annotation
+            ]
+        )
+    )
+
+    if (length(lhb_y_position) == 1L) {
+        separator_yintercept <- lhb_y_position - 0.5
+    }
+
+
+    ###########################################################################
     # Sort plotting data
     ###########################################################################
 
     setorder(
         plot_dt_full,
-        trait,
+        gwas_group,
+        trait_plot,
         annotation
     )
 
@@ -2111,6 +2006,14 @@ for (
                 as.character(
                     trait
                 ),
+            trait_plot =
+                as.character(
+                    trait_plot
+                ),
+            gwas_group =
+                as.character(
+                    gwas_group
+                ),
             annotation =
                 as.character(
                     annotation
@@ -2127,11 +2030,9 @@ for (
     ###########################################################################
 
     subtitle_text <- paste0(
-        "GWAS rows: coefficient Z-score; ",
+        "Color: coefficient Z-score; ",
         significance_description,
-        ". Fisher row: Fisher combination of original one-sided P values, ",
-        "followed by BH-FDR across annotations; color and stars use Fisher FDR. ",
-        "Color scale clipped at ",
+        ". Color scale clipped at ",
         color_limit,
         "; n_snps ≥ ",
         format(
@@ -2139,7 +2040,6 @@ for (
             big.mark = ","
         )
     )
-
 
     if (
         show_only_significant
@@ -2157,13 +2057,11 @@ for (
     ###########################################################################
 
     caption_text <- paste0(
-        "Ordinary GWAS rows: red = positive coefficient, ",
-        "blue = negative coefficient, white = coefficient Z = 0; ",
-        "stars use BH-FDR within each DAR set across all GWAS × annotations. ",
-        "The Fisher row combines original coefficient_p_one_sided values ",
-        "across GWAS traits, then applies BH-FDR across annotations within ",
-        "each DAR set. Because Fisher's method has no effect direction, ",
-        "its FDR-derived visualization score is nonnegative."
+        "Red = positive coefficient, blue = negative coefficient, ",
+        "white = coefficient Z = 0. ",
+        "Stars indicate positive enrichment after BH-FDR correction ",
+        "across GWAS traits separately within each cell type ",
+        "and within the current DAR set."
     )
 
 
@@ -2181,15 +2079,20 @@ for (
 
     ###########################################################################
     # Draw heatmap
+    #
+    # Layout follows the reference figure:
+    #   X = GWAS traits
+    #   top facet strips = P / Psychiatric / Substance Use
+    #   Y = DAR annotations
     ###########################################################################
 
     p <- ggplot(
         plot_dt_full,
         aes(
             x =
-                annotation,
+                trait_plot,
             y =
-                trait,
+                annotation,
             fill =
                 fill_value
         )
@@ -2198,7 +2101,34 @@ for (
         geom_tile(
             color = "white",
             linewidth = 0.35
-        ) +
+        )
+
+    if (!is.null(separator_yintercept)) {
+
+        # White gap
+        p <- p +
+            geom_hline(
+                yintercept = separator_yintercept,
+                color = "white",
+                linewidth = whole_hb_separator_linewidth
+            ) +
+
+            # Thin black rule at the upper edge of the gap
+            geom_hline(
+                yintercept = separator_yintercept + 0.10,
+                color = "black",
+                linewidth = whole_hb_separator_border_linewidth
+            ) +
+
+            # Thin black rule at the lower edge of the gap
+            geom_hline(
+                yintercept = separator_yintercept - 0.10,
+                color = "black",
+                linewidth = whole_hb_separator_border_linewidth
+            )
+    }
+
+    p <- p +
 
         geom_text(
             aes(
@@ -2210,7 +2140,22 @@ for (
             na.rm = TRUE
         ) +
 
+        #######################################################################
+        # Exact three GWAS blocks from the reference figure
+        #######################################################################
+
+        facet_grid(
+            cols = vars(gwas_group),
+            scales = "free_x",
+            space = "free_x",
+            drop = TRUE
+        ) +
+
         scale_x_discrete(
+            drop = TRUE
+        ) +
+
+        scale_y_discrete(
             labels =
                 annotation_labels,
             drop = FALSE
@@ -2243,6 +2188,9 @@ for (
                 subtitle_text,
 
             x =
+                "GWAS trait",
+
+            y =
                 paste0(
                     dar_set_titles[
                         dar_set_i
@@ -2250,15 +2198,8 @@ for (
                     " annotation and number of common SNPs"
                 ),
 
-            y =
-                "GWAS trait",
-
             caption =
                 caption_text
-        ) +
-
-        coord_fixed(
-            ratio = 0.8
         ) +
 
         theme_bw(
@@ -2272,9 +2213,9 @@ for (
 
             axis.text.x =
                 element_text(
-                    angle = 45,
+                    angle = 90,
                     hjust = 1,
-                    vjust = 1,
+                    vjust = 0.5,
                     size = 9
                 ),
 
@@ -2286,6 +2227,24 @@ for (
             axis.title =
                 element_text(
                     face = "bold"
+                ),
+
+            strip.background.x =
+                element_rect(
+                    fill = "grey85",
+                    color = "grey40",
+                    linewidth = 0.7
+                ),
+
+            strip.text.x =
+                element_text(
+                    size = 11
+                ),
+
+            panel.spacing.x =
+                grid::unit(
+                    0.10,
+                    "in"
                 ),
 
             plot.title =
@@ -2317,33 +2276,28 @@ for (
     ###########################################################################
 
     n_regular_traits <- uniqueN(
-        plot_dt$trait
+        plot_dt$trait_nickname
     )
 
 
-    n_plot_rows <-
-        n_regular_traits + 1L
-
+    n_plot_rows <- n_regular_traits
 
     n_annotations <- uniqueN(
         plot_dt$annotation
     )
 
 
-    plot_width <- max(
-        10,
-        0.75 *
+    plot_width <- 
+        0.4 *
+        n_regular_traits +
+        2
+
+
+
+    plot_height <- 
+        max(7,0.36 *
         n_annotations +
-        4
-    )
-
-
-    plot_height <- max(
-        6,
-        0.36 *
-        n_plot_rows +
-        2.5
-    )
+        1.5)
 
 
     ###########################################################################
@@ -2409,10 +2363,6 @@ for (
         output_plot_data
     )
 
-    message(
-        "Fisher results:       ",
-        output_fisher
-    )
 
     message(
         "GWAS traits:          ",
@@ -2422,24 +2372,6 @@ for (
     message(
         "Annotations:          ",
         n_annotations
-    )
-
-    message(
-        "Fisher FDR < 0.05:    ",
-        fisher_meta[
-            fisher_meta_FDR <
-            0.05,
-            .N
-        ]
-    )
-
-    message(
-        "Fisher FDR < 0.01:    ",
-        fisher_meta[
-            fisher_meta_FDR <
-            0.01,
-            .N
-        ]
     )
 }
 
@@ -2497,7 +2429,7 @@ combined_plot_data[
 
 combined_plot_data_file <- file.path(
     output_dir,
-    "DAR_sldsc_heatmap_plot_data_all_sets_with_Fisher_meta.tsv"
+    "DAR_sldsc_heatmap_plot_data_all_sets.tsv"
 )
 
 
@@ -2511,17 +2443,174 @@ fwrite(
 
 
 ###############################################################################
-# Combined Fisher meta-analysis table
+# Publication-ready S-LDSC supplementary table
+#
+# IMPORTANT:
+# This table uses EXACTLY the same analysis subset and significance definition
+# as the heatmaps above:
+#
+#   1. Only GWAS traits represented in gwas_trait_order are retained.
+#   2. Only annotations with n_snps >= minimum_n_snps are retained.
+#   3. Cell-type names use annotation_display after mapping.
+#   4. Within EACH DAR set separately (open / closed / all), BH-FDR is applied
+#      separately within EACH cell type across the displayed GWAS traits.
+#   5. Significant positive enrichment is defined as:
+#
+#          coefficient_z > 0
+#          AND
+#          coefficient_FDR_one_sided_within_cell_type < 0.05
+#
+# The full supplementary table contains only the manuscript-facing columns
+# selected below.  Plotting-only and repeated analysis-metadata fields are not
+# included.
 ###############################################################################
 
-combined_fisher_results <- rbindlist(
-    all_fisher_results,
-    use.names = TRUE,
-    fill = TRUE
+
+###############################################################################
+# Required source columns for the supplementary table
+###############################################################################
+
+supp_table_source_columns <- c(
+    "trait_plot",
+    "dar_set",
+    "annotation_display",
+    "n_snps",
+    "Prop._SNPs",
+    "Prop._h2",
+    "Prop._h2_std_error",
+    "Enrichment",
+    "Enrichment_std_error",
+    "Coefficient",
+    "Coefficient_std_error",
+    "coefficient_z_plot",
+    "coefficient_p_one_sided",
+    "coefficient_FDR_one_sided_within_cell_type",
+    "positive_enrichment_significant"
 )
 
 
-combined_fisher_results[
+missing_supp_columns <- setdiff(
+    supp_table_source_columns,
+    names(combined_plot_data)
+)
+
+
+if (length(missing_supp_columns) > 0L) {
+
+    stop(
+        paste0(
+            "Cannot create the final S-LDSC supplementary table because these ",
+            "required columns are missing from combined_plot_data: ",
+            paste(
+                missing_supp_columns,
+                collapse = ", "
+            )
+        )
+    )
+}
+
+
+###############################################################################
+# Create a working table
+#
+# Keep the significance indicator temporarily so that the FDR<0.05 table can
+# be generated.  It will NOT be included in the final 14-column output.
+###############################################################################
+
+ldsc_supp_work <- copy(
+    combined_plot_data[
+        ,
+        ..supp_table_source_columns
+    ]
+)
+
+
+###############################################################################
+# Rename columns to manuscript-facing names
+###############################################################################
+
+setnames(
+    ldsc_supp_work,
+    old = c(
+        "trait_plot",
+        "annotation_display",
+        "coefficient_z_plot",
+        "coefficient_FDR_one_sided_within_cell_type"
+    ),
+    new = c(
+        "GWAS_label",
+        "cell_type",
+        "coefficient_z",
+        "coefficient_FDR"
+    )
+)
+
+
+###############################################################################
+# Explicit final column set requested for the supplementary table
+###############################################################################
+
+supp_table_columns <- c(
+    "GWAS_label",
+    "dar_set",
+    "cell_type",
+    "n_snps",
+    "Prop._SNPs",
+    "Prop._h2",
+    "Prop._h2_std_error",
+    "Enrichment",
+    "Enrichment_std_error",
+    "Coefficient",
+    "Coefficient_std_error",
+    "coefficient_z",
+    "coefficient_p_one_sided",
+    "coefficient_FDR"
+)
+
+
+###############################################################################
+# Check uniqueness before writing
+#
+# Exactly one row should exist per:
+#   GWAS × DAR set × cell type
+###############################################################################
+
+duplicate_supp_rows <- ldsc_supp_work[
+    ,
+    .N,
+    by = .(
+        GWAS_label,
+        dar_set,
+        cell_type
+    )
+][
+    N > 1L
+]
+
+
+if (nrow(duplicate_supp_rows) > 0L) {
+
+    stop(
+        paste0(
+            "Duplicate rows detected in the supplementary S-LDSC table:\n",
+            paste(
+                capture.output(
+                    print(
+                        duplicate_supp_rows
+                    )
+                ),
+                collapse = "\n"
+            )
+        )
+    )
+}
+
+
+###############################################################################
+# Add ordering variables temporarily
+###############################################################################
+
+ldsc_supp_work[
     ,
     dar_set_order :=
         match(
@@ -2531,34 +2620,137 @@ combined_fisher_results[
 ]
 
 
-setorder(
-    combined_fisher_results,
-    dar_set_order,
-    fisher_meta_FDR,
-    fisher_meta_p,
-    annotation
-)
-
-
-combined_fisher_results[
+ldsc_supp_work[
     ,
-    dar_set_order := NULL
+    gwas_order :=
+        match(
+            GWAS_label,
+            gwas_trait_order
+        )
 ]
 
 
-combined_fisher_file <- file.path(
-    output_dir,
-    "DAR_sldsc_Fisher_meta_all_sets.tsv"
+ldsc_supp_work[
+    ,
+    cell_type_order :=
+        match(
+            cell_type,
+            custom_annotation_display_order
+        )
+]
+
+
+# Put cell types not listed in custom_annotation_display_order at the end.
+ldsc_supp_work[
+    is.na(cell_type_order),
+    cell_type_order :=
+        length(
+            custom_annotation_display_order
+        ) +
+        frank(
+            cell_type,
+            ties.method = "dense"
+        )
+]
+
+
+setorder(
+    ldsc_supp_work,
+    dar_set_order,
+    gwas_order,
+    cell_type_order,
+    cell_type
 )
 
 
+###############################################################################
+# Save significant positive-enrichment rows before dropping the temporary
+# significance field.
+###############################################################################
+
+ldsc_sig_work <- copy(
+    ldsc_supp_work[
+        positive_enrichment_significant == TRUE
+    ]
+)
+
+
+###############################################################################
+# Final 14-column supplementary table
+###############################################################################
+
+ldsc_supp_table <- copy(
+    ldsc_supp_work[
+        ,
+        ..supp_table_columns
+    ]
+)
+
+
+ldsc_sig_table <- copy(
+    ldsc_sig_work[
+        ,
+        ..supp_table_columns
+    ]
+)
+
+
+###############################################################################
+# Output paths
+###############################################################################
+
+ldsc_supp_table_file <- file.path(
+    output_dir,
+    "DAR_sldsc_supplementary_table.tsv"
+)
+
+
+ldsc_sig_table_file <- file.path(
+    output_dir,
+    "DAR_sldsc_supplementary_table_FDR05.tsv"
+)
+
+
+###############################################################################
+# Write complete supplementary table
+###############################################################################
+
 fwrite(
-    combined_fisher_results,
-    combined_fisher_file,
+    ldsc_supp_table,
+    ldsc_supp_table_file,
     sep = "\t",
     quote = FALSE,
     na = "NA"
 )
+
+
+###############################################################################
+# Write significant positive-enrichment results only
+#
+# Same significance definition as heatmap stars:
+#   coefficient_z > 0 AND coefficient_FDR < 0.05
+###############################################################################
+
+fwrite(
+    ldsc_sig_table,
+    ldsc_sig_table_file,
+    sep = "\t",
+    quote = FALSE,
+    na = "NA"
+)
+
+
+###############################################################################
+# Supplementary-table summary
+###############################################################################
+
+message("")
+message("Supplementary S-LDSC table:")
+message("  All results:          ", ldsc_supp_table_file)
+message("  Significant results:  ", ldsc_sig_table_file)
+message("  Rows in full table:    ", nrow(ldsc_supp_table))
+message("  FDR < 0.05 positive:   ", nrow(ldsc_sig_table))
+message("  Columns in final table: ", paste(supp_table_columns, collapse = ", "))
 
 
 ###############################################################################
@@ -2592,8 +2784,13 @@ message(
 )
 
 message(
-    "Combined Fisher table: ",
-    combined_fisher_file
+    "Supplementary table:   ",
+    ldsc_supp_table_file
+)
+
+message(
+    "Significant table:     ",
+    ldsc_sig_table_file
 )
 
 
@@ -2608,53 +2805,6 @@ message(
     )
 )
 
-
-###############################################################################
-# Fisher summary
-###############################################################################
-
-message("")
-message(
-    "Fisher meta-analysis summary:"
-)
-
-
-print(
-    combined_fisher_results[
-        ,
-        .(
-            n_annotations =
-                .N,
-
-            fisher_FDR_lt_0_05 =
-                sum(
-                    fisher_meta_FDR <
-                    0.05,
-                    na.rm = TRUE
-                ),
-
-            fisher_FDR_lt_0_01 =
-                sum(
-                    fisher_meta_FDR <
-                    0.01,
-                    na.rm = TRUE
-                ),
-
-            fisher_FDR_lt_0_001 =
-                sum(
-                    fisher_meta_FDR <
-                    0.001,
-                    na.rm = TRUE
-                )
-        ),
-        by = dar_set
-    ][
-        match(
-            dar_set,
-            expected_dar_sets
-        )
-    ]
-)
 
 
 message("")

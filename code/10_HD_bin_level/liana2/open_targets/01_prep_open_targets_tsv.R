@@ -18,7 +18,7 @@ plot_dir = here(
 )
 out_path = here(
     'processed-data', '10_HD_bin_level', 'no_secondary', 'liana2',
-    'open_targets', 'risk_genes.csv'
+    'open_targets'
 )
 cutoff_val = 0.1 # recommended for trait association
 
@@ -61,6 +61,61 @@ risk_df |>
     filter(max_risk >= cutoff_val) |>
     dplyr::rename(gene = symbol) |>
     select(trait, gene) |>
-    write_csv(out_path)
+    write_csv(file.path(out_path, 'risk_genes.csv'))
+
+###--------------------------------------------
+### Export OpenTargets risk genes in Python-compatible format
+###--------------------------------------------
+
+# Map short trait names in the R script to disease names used in the Python code
+trait_name_map <- c(
+    MDD = "MDD",
+    substance = "Substance_dependence"
+)
+
+# Generate files for each trait
+for (this_trait in traits) {
+
+    disease_name <- trait_name_map[[this_trait]]
+
+    this_risk_df <- risk_df |>
+        filter(trait == this_trait, max_risk >= cutoff_val) |>
+        transmute(
+            gene = symbol,
+            genetic_association = max_risk
+        ) |>
+        distinct(gene, .keep_all = TRUE) |>
+        arrange(desc(genetic_association))
+
+    # 1) Similar to Python output:
+    #    Substance_dependence_risk_genes_01thr.csv
+    #    First column is gene, so Python can read it with index_col=0
+    write_csv(
+        this_risk_df,
+        file.path(
+            out_path,
+            paste0(disease_name, "_risk_genes_01thr.csv")
+        )
+    )
+
+    # 2) Similar to Python output:
+    #    Substance_dependence_risk_genes_01thr_hot1.csv
+    #    Required by downstream Python code:
+    #    tgts = pd.read_csv(...)
+    #    tgts['gene'] = tgts['genes']
+    this_hot1_df <- this_risk_df |>
+        transmute(
+            genes = gene,
+            !!disease_name := 1
+        )
+
+    write_csv(
+        this_hot1_df,
+        file.path(
+            out_path,
+            paste0(disease_name, "_risk_genes_01thr_hot1.csv")
+        )
+    )
+}
 
 session_info()
