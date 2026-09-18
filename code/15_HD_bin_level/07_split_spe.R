@@ -1,0 +1,191 @@
+#   This script has two goals:
+#       1. Break up existing capture areas into the 2 constituent tissue pieces
+#       2. Arrange constituent pieces anatomically consistently (dorsal up,
+#          medial left)
+#   Then just write a new SPE with 10 sample IDs. This set of steps is also
+#   performed for the cell-level object
+
+library(here)
+library(tidyverse)
+library(SpatialExperiment)
+library(sessioninfo)
+library(spatialLIBD)
+library(dbscan)
+
+spe_in_path = here(
+    'processed-data', '10_HD_bin_level', 'new_samples2', 'spe_norm_filtered.rds'
+)
+spe_out_path = here(
+    'processed-data', '10_HD_bin_level', 'no_secondary',
+    'spe_norm_filtered_split.rds'
+)
+plot_dir = here('plots', '10_HD_bin_level', 'no_secondary', 'split_spe')
+db_scan_eps = 300 # found through trial and error
+
+#   Will apply SpatialExperiment::rotateObject() and mirrorObject(axis = 'v'),
+#   in that order, according to the following plan by tissue piece and donor.
+#   Kelsey provided the anatomical orientations over Slack
+rotate_plan = c(
+    'Br9090_1' = 0,
+    'Br9090_2' = 0,
+    'Br3942_1' = 0,
+    'Br3942_2' = 180,
+    'Br9902_1' = 45,
+    'Br9902_2' = 230,
+    'Br8433_1' = 0,
+    'Br8433_2' = 0,
+    'Br8667_1' = 180,
+    'Br8667_2' = 0
+)
+mirror_plan = c(
+    'Br9090_1' = FALSE,
+    'Br9090_2' = FALSE,
+    'Br3942_1' = TRUE,
+    'Br3942_2' = TRUE,
+    'Br9902_1' = TRUE,
+    'Br9902_2' = TRUE,
+    'Br8433_1' = FALSE,
+    'Br8433_2' = FALSE,
+    'Br8667_1' = FALSE,
+    'Br8667_2' = FALSE
+)
+
+handle_Br9902 = function(spe_piece, this_sample_id) {
+    #   Br9902 requires rotations that are not multiples of 90 degrees, which is
+    #   not supported by rotateObject(). Since handling of the image in a
+    #   meaningful way is maybe possible but quite complex and
+    #   difficult, we won't do the image piece precisely. Rotate coords exactly
+    #   but rotate the image to the nearest multiple of 90 degrees (we probably
+    #   won't plot the background images for the manuscript)
+
+    if (rotate_plan[[this_sample_id]] %% 90 != 0) {
+        spe_piece = rotateObject(
+            spe_piece,
+            degrees = (
+                rotate_plan[[this_sample_id]] -
+                (rotate_plan[[this_sample_id]] %% 90)
+            )
+        )
+    }
+    
+    radians = rotate_plan[[this_sample_id]] %% 90 * pi / 180
+
+    #   Determine the matrix by which left-multiplication represents
+    #   rotation. Then apply rotation about the origin
+    rotation_mat <- matrix(
+        c(
+            cos(radians), sin(radians), -1 * sin(radians), cos(radians)
+        ),
+        nrow = 2
+    )
+
+    #   Get the dimensions of the midpoint of the "rectangle" containing the set
+    #   of spatialCoords within the object
+    dim_mid = dim(imgRaster(spe_piece)) / scaleFactors(spe_piece)[1] / 2
+
+    #   Rotate about the center of the image
+    trans_vec = rep(dim_mid, each = ncol(spe_piece))
+    new_coords = t(rotation_mat %*% t(spatialCoords(spe_piece) - trans_vec)) + trans_vec |>
+        round() |>
+        as.integer()
+    dimnames(new_coords) = dimnames(spatialCoords(spe_piece))
+    spatialCoords(spe_piece) = new_coords
+
+    if (mirror_plan[[this_sample_id]]) {
+        spe_piece = mirrorObject(spe_piece, axis = 'v')
+    }
+
+    return(spe_piece)
+}
+
+dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(file.path(plot_dir, 'section_identity'), showWarnings = FALSE)
+dir.create(file.path(plot_dir, 'final_orientation'), showWarnings = FALSE)
+
+spe = readRDS(spe_in_path)
+
+spe_list = list()
+for (sample_id in unique(spe$sample_id)) {
+    spe_sub = spe[, spe$sample_id == sample_id]
+    
+    #   Use DBSCAN to separate the two tissue pieces
+    spe_sub$tissue_piece = dbscan(
+        spatialCoords(spe_sub), eps = db_scan_eps
+    )$cluster
+  
+    #   In some cases, I missed during the QC process that there were tiny
+    #   islands of bins assigned to tissue pieces that didn't look legitimate.
+    #   Manually drop those here, and also relabel pieces to be consistent with
+    #   the cell-level object
+    if (sample_id == "H1-W369TJK_D1_9090") {
+        spe_sub = spe_sub[, spe_sub$tissue_piece %in% c(1, 2)]
+        spe_sub$tissue_piece = 3 - spe_sub$tissue_piece
+    } else if (sample_id == "H1-MVPY9BW_A1_8433") {
+        spe_sub = spe_sub[, spe_sub$tissue_piece %in% c(1, 2)]
+    } else if (sample_id == "H1-MVPY9BW_D1_8667") {
+        spe_sub$tissue_piece = 3 - spe_sub$tissue_piece
+    } else if (sample_id == "H1-6FX4YN3_A1_3942") {
+        spe_sub = spe_sub[, spe_sub$tissue_piece %in% c(1, 2)]
+        spe_sub$tissue_piece = 3 - spe_sub$tissue_piece
+    } else if (sample_id == "H1-6FX4YN3_D1_9902") {
+        spe_sub = spe_sub[, spe_sub$tissue_piece %in% c(1, 6)]
+        spe_sub$tissue_piece[spe_sub$tissue_piece == 1] = 2
+        spe_sub$tissue_piece[spe_sub$tissue_piece == 6] = 1
+    }
+    stopifnot(length(unique(spe_sub$tissue_piece)) == 2)
+
+    p = vis_clus(
+        spe_sub, clustervar = 'tissue_piece', point_size = 20, spatial = FALSE,
+        is_stitched = TRUE
+    )
+    png(
+        file.path(plot_dir, 'section_identity', sprintf('%s.png', sample_id)),
+        width = 1000, height = 1000
+    )
+    print(p)
+    dev.off()
+
+    for (piece in c(1, 2)) {
+        spe_piece = spe_sub[, spe_sub$tissue_piece == piece]
+        this_sample_id = sprintf(
+            'Br%s_%d', str_extract(sample_id, '[0-9]{4}$'), piece
+        )
+        spe_piece$sample_id = this_sample_id
+
+        if (grepl('^Br9902', this_sample_id)) {
+            spe_piece = handle_Br9902(spe_piece, this_sample_id)
+        } else {
+            if (rotate_plan[[this_sample_id]] != 0) {
+                spe_piece = rotateObject(
+                    spe_piece, degrees = rotate_plan[[this_sample_id]]
+                )
+            }
+            if (mirror_plan[[this_sample_id]]) {
+                spe_piece = mirrorObject(spe_piece, axis = 'v')
+            }
+        }
+
+        spe_list[[this_sample_id]] = spe_piece
+    }
+}
+
+spe_split = do.call(cbind, spe_list)
+
+#   Plot total UMI over the tissue in the split SPE
+for (sample_id in unique(spe_split$sample_id)) {
+    p = vis_gene(
+            spe_split, sampleid = sample_id, geneid = 'sum_umi_capped',
+            point_size = 20, spatial = TRUE, is_stitched = TRUE
+        ) +
+        guides(fill = guide_legend(override.aes = list(size = 8)))
+    png(
+        file.path(plot_dir, 'final_orientation', sprintf('%s.png', sample_id)),
+        width = 1000, height = 1000
+    )
+    print(p)
+    dev.off()
+}
+
+saveRDS(spe_split, spe_out_path)
+
+session_info()
