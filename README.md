@@ -1,5 +1,14 @@
-
 # Habenula_Visium
+
+Welcome to the Hb_multiome project! Here you will find all code used to analyze the data generated as part of the manuscript [Manuscript name].  
+
+[Project Website](https://research.libd.org/Hb_multiome/)
+
+There are 2 GitHub repos associated with this study.
+They are: 
+1. [Hb_Multiome](https://github.com/LieberInstitute/Hb_multiome)
+2. [Habenula_Visium](https://github.com/LieberInstitute/Habenula_Visium)
+
 
 # Internal
 
