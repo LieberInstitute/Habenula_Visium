@@ -57,7 +57,7 @@ custom_volcano <- function(
                         gene_name %in% highlight_genes, gene_name, ""
                     )
                 ),
-                size = 3, max.overlaps = 50
+                size = 4, max.overlaps = 50
             )
     }
     
