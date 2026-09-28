@@ -3148,39 +3148,39 @@ make_comparison_dotplot <- function(
 
         labs(
 
-            title =
-                comparison_name,
+            # title =
+            #     comparison_name,
 
-            subtitle =
-                paste0(
+            # subtitle =
+            #     paste0(
 
-                    "Pair-specific GO; LR enrichment >= ",
+            #         "Pair-specific GO; LR enrichment >= ",
 
-                    ENRICHMENT_CUTOFF,
+            #         ENRICHMENT_CUTOFF,
 
-                    "; all enriched LR pairs; all unique ligand/receptor genes"
-                ),
+            #         "; all enriched LR pairs; all unique ligand/receptor genes"
+            #     ),
 
             x =
                 NULL,
 
             y =
-                NULL,
+                NULL
 
-            caption =
-                paste0(
-                    "LR interactions required in >= ",
-                    MIN_SAMPLES,
-                    " samples; GO universe = ",
-                    length(background_genes),
-                    " expressed genes"
-                )
+            # caption =
+            #     paste0(
+            #         "LR interactions required in >= ",
+            #         MIN_SAMPLES,
+            #         " samples; GO universe = ",
+            #         length(background_genes),
+            #         " expressed genes"
+            #     )
         ) +
 
 
         theme_bw(
             base_size =
-                11
+                15
         ) +
 
 
@@ -3204,15 +3204,7 @@ make_comparison_dotplot <- function(
                     hjust =
                         1,
                     vjust =
-                        1,
-                    size =
-                        9
-                ),
-
-            axis.text.y =
-                element_text(
-                    size =
-                        8
+                        1
                 ),
 
             strip.background =
@@ -3226,29 +3218,17 @@ make_comparison_dotplot <- function(
             strip.text =
                 element_text(
                     face =
-                        "bold",
-                    size =
-                        10
+                        "bold"
                 ),
 
             plot.title =
                 element_text(
                     face =
-                        "bold",
-                    size =
-                        14
-                ),
-
-            plot.subtitle =
-                element_text(
-                    size =
-                        9
+                        "bold"
                 ),
 
             plot.caption =
                 element_text(
-                    size =
-                        8,
                     hjust =
                         0
                 )
@@ -3265,20 +3245,22 @@ make_comparison_dotplot <- function(
     )
 
 
-    plot_width <- max(
-        8,
-        1.2 *
-            n_pairs +
-            5
-    )
+    # plot_width <- max(
+    #     8,
+    #     1.2 *
+    #         n_pairs +
+    #         5
+    # )
+    plot_width = 8
 
 
-    plot_height <- max(
-        7,
-        0.30 *
-            n_terms +
-            3
-    )
+    # plot_height <- max(
+    #     7,
+    #     0.30 *
+    #         n_terms +
+    #         3
+    # )
+    plot_height = 7
 
 
     # -------------------------------------------------------------------------
