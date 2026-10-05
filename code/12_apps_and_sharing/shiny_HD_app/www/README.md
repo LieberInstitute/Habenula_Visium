@@ -1,4 +1,42 @@
-# Habenula Atlas Project- Visium HD
+Habenula Atlas Project
+================
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23019505.svg)](https://doi.org/10.5281/zenodo.23019505)
+
+Welcome to the Habenula Atlas project! Here you will find all code used
+to analyze the data generated as part of our manuscript, which is
+currently preprinted [here](https://doi.org/10.64898/2026.09.30.755667).
+
+In this project we studied spatially resolved transcriptomics and
+single-nucleus multiomic (ATAC + RNA) data from the habenula of
+postmortem human brain samples from a total of 13 neurotypical controls.
+We generated data from multiple assays:
+
+- [10x Genomics
+  **Visium**](https://www.10xgenomics.com/products/spatial-gene-expression)
+- [10x Genomics **Chromium** (snATAC +
+  snRNA-seq)](https://www.10xgenomics.com/platforms/chromium/product-family)
+- [10x Genomics **Visium
+  HD**](https://www.10xgenomics.com/products/hd-wt-panel-gene-expression)
+
+This work was a joint effort by the [Keri
+Martinowich](https://www.libd.org/team/keri-martinowich-phd/), [Leonardo
+Collado-Torres](http://lcolladotor.github.io/), and [Kristen
+Maynard](https://www.libd.org/team/kristen-maynard-phd/) teams at the
+[Lieber Institute for Brain Development](https://www.libd.org) as well
+as [Brion
+Maher](https://publichealth.jhu.edu/faculty/2471/brion-maher)’s group
+from [JHBSPH’s Mental Health
+Department](https://publichealth.jhu.edu/departments/mental-health).
+
+There are 2 GitHub repos associated with this study. They are:
+
+1.  [Hb_Multiome](https://github.com/LieberInstitute/Hb_multiome)
+2.  [Habenula_Visium](https://github.com/LieberInstitute/Habenula_Visium)
+
+## This App
 
 This app explores the 5 donors (10 samples) for which Visium HD was performed.
 It allows viewing of gene expression, spatial clusters, cell types, and more,
@@ -8,3 +46,189 @@ All samples are oriented with dorsal up (ventral down) and medial left
 (lateral right). Sample IDs include the donor ID (e.g. Br9090) and the tissue
 section (1 or 2), since for each of the five donors two spatially adjacent
 replicates were taken.
+
+## Study Design
+
+This app explores the 5 donors (10 samples) for which Visium HD was performed.
+It allows viewing of gene expression, spatial clusters, cell types, and more,
+overlayed with the H&E image captured for each sample.
+
+All samples are oriented with dorsal up (ventral down) and medial left 
+(lateral right). Sample IDs include the donor ID (e.g. Br9090) and the tissue
+section (1 or 2), since for each of the five donors two spatially adjacent
+replicates were taken.<img src="http://research.libd.org/Hb_multiome/img/study_overview.png" width="1000px" align="left" />
+
+**Multi-omic mapping of the human Hb**. (**A**) A schematic showing the
+cutting scheme to allow for smFISH/RNAscope, VisiumHD, and snMultiome.
+The Hb was scored out to minimize thalamic contamination (N=12). (**B**)
+snMultiome schematic showing that the assay allows for profiling of both
+the transcriptome and epigenome from the same nuclei (n=10). (**C**)
+VisiumHD schematic showcasing the subcellular resolution that can be
+achieved using this spatial transcriptomic technique (n=5). (**D**) A
+visual representation of the biological questions this study sought to
+answer. (**D.a.**) Cross talk between the medial and lateral portions of
+the Hb. (**D.b.**) Transcription factors and which genes are impacted
+(**D.c.**) Which cell types are at highest risk in disease states.
+(**D.d.**) Locating inhibitory neurons within the Hb, particularly in
+the LHb. (**D.e.**) Cell-to-cell communication within the Hb. (**D.f.**)
+Cell type distribution in the Hb. (**D.g.**) Neuron-glia interactions in
+the Hb. (**E**) Brain slab illustration that depicts the landmark
+structures used during dissection (C - caudate, SP - segmented putamen,
+LGN - lateral geniculate nucleus, SN - substantial nigra, Th - thalamus)
+and the location of the LHb and MHb and an approximation of the brain
+blocks that were dissected out. Medial (M), dorsal (D), and anterior (A)
+directions are shown by the respective arrows. (**F**) A brain block
+that contained Hb, confirmed by RNAscope. (**F.a.**) Brain block with
+the Hb demarcated in a red dashed line. (**F.b-e.**) Single channel
+images of the probe panel used to locate the Hb, TAC3, GPR151, POU4F1,
+and MBP were used together to identify, generally the Hb (POU4F1) , the
+MHb (TAC3), LHb (GPR151), and the surrounding white matter (MBP). In
+(F.e.) the boundaries of the MHb and LHb are drawn. The insets for
+(E.b-e.) are zoom-ins of the body of the Hb. (**G**) VisiumHD of the
+same donor shown in E. (**G.a.**) The small image to the left shows the
+whole 6x6 mm array, with the dashed line showing the section that is
+shown at a larger scale to the right. The right image in (G.a.) is the
+eosin staining that was completed during VisiumHD with boundaries of the
+MHb and LHb that were also in (F.e.). (**G.b-e.**) VisiumHD expression
+for the same marker genes that were used to confirm the presence of Hb
+via RNAscope in (E.b-e.). (**H**) A UMAP of the gene expression/RNA data
+achieved from snMultiome. (**I**) A UMAP of the ATAC data from
+snMultiome. (**J**) A UMAP of the integrated RNA and ATAC clusters.
+(**K**) Broad marker genes for the clusters yielded, where the intensity
+of the color and size of the spot denote the expression of the
+respective gene.
+
+## Citing Our Work
+
+Please cite our [manuscript](https://doi.org/10.64898/2026.09.30.755667)
+if you use data from this project.
+
+Below is the citation in [`BibTeX`](http://www.bibtex.org/) format.
+
+    @article {Montgomery2026.09.30.755667,
+        author = {Montgomery, Kelsey D. and Werner, Jonathan M. and Eagles, Nicholas J. and Liu, Chunyu and Cardinault, Cynthia S. and Bach, Svitlana V. and Chandra, Atharv and Zhang, Ruth and Maguire, Sarah E. and Divecha, Heena R. and Deep-Soboslay, Amy and Miller, Ryan A. and Huuki-Myers, Louise A. and Bharadwaj, Rahul A. and Kleinman, Joel E. and Hyde, Thomas M. and Maher, Brion S. and Collado-Torres, Leonardo and Maynard, Kristen R.},
+        title = {Multi-omic spatial mapping of the human habenula defines the molecular and anatomical organization of medial and lateral subregions},
+        elocation-id = {2026.09.30.755667},
+        year = {2026},
+        doi = {10.64898/2026.09.30.755667},
+        publisher = {Cold Spring Harbor Laboratory},
+        URL = {https://www.biorxiv.org/content/early/2026/10/02/2026.09.30.755667},
+        eprint = {https://www.biorxiv.org/content/early/2026/10/02/2026.09.30.755667.full.pdf},
+        journal = {bioRxiv}
+    }
+
+## Interactive Websites
+
+All of these interactive websites are powered by open source software,
+namely:
+
+- 🔭 [`spatialLIBD`](https://doi.org/10.1186/s12864-022-08601-w)
+- 👀 [`iSEE`](https://doi.org/10.12688%2Ff1000research.14966.1)
+- 🔍 [`R/Shiny`](https://shiny.posit.co/)
+
+We provide the following interactive websites, organized by dataset with
+software labeled by emojis:
+
+- 🔍 [snMultiome](https://interactive.libd.org/Habenula_multiome/). Here
+  you can explore the cell-level multiome data, visualize
+  peak-gene-transcription-factor trios computed with a metacell-level
+  object (metacells and trios computed by `TRIPOD`), and view
+  differentially accessible regions (DARs) computed from the snATAC-seq
+  data.
+- 🔭 [Visium H&E](https://interactive.libd.org/Habenula_Visium/). Here
+  you can explore the spot-level Visium data, as well as view markers +
+  enrichment statistics for data pseudobulked by preliminary `k = 9`
+  clusters computed with `PRECAST`.
+- 👀 [Visium HD pseudobulked by cell
+  type](https://interactive.libd.org/Habenula_Visium_HD_pb/). This app
+  is better suited for quickly exploring how genes globally vary across
+  cell types from the manuscript.
+- 🔭 [Visium HD:
+  cell-level](https://interactive.libd.org/Habenula_Visium_HD_Shiny/).
+  This app allows you to spatially explore the cell-level Visium HD data
+  including clusters + cell types, QC variables, and more.
+
+## Data Access
+
+The Zenodo Archive for this project can be found
+[here](https://doi.org/10.5281/zenodo.23019505). Project data was also
+uploaded to the [NeMO](https://nemoarchive.org/) and can be found here
+(TODO).
+
+The major R objects for each analysis are also available through
+`spatialLIBD::fetch_data()` as of `spatialLIBD` version `1.25.5`. We
+provide access to the following R objects, named by the `type` argument
+provided to `spatialLIBD::fetch_data()`:
+
+- **`habenula_atlas_HD_spe_cell`**: The Visium HD cell-level data as a
+  `SpatialExperiment`.
+- **`habenula_atlas_HD_spe_cell_pseudobulk`**: The same data
+  pseudobulked by cell type.
+- **`habenula_atlas_visium_spe`**: The Visium H&E spot-level data as a
+  `SpatialExperiment`.
+- **`habenula_atlas_visium_spe_pseudobulk`**: The same data pseudobulked
+  by `k = 9` cluster.
+- **`habenula_atlas_snMultiome_seurat_cell`**: The snMultiome cell-level
+  data as a `Seurat` object.
+- **`habenula_atlas_snMultiome_seurat_metacell`**: The snMultiome
+  metacell-level data as a `Seurat` object.
+
+For example, let’s check out the Visium HD cell-level data:
+
+``` r
+## Check that you have a recent version of spatialLIBD installed
+stopifnot(packageVersion("spatialLIBD") >= "1.25.5")
+
+#   Retrieve the SpatialExperiment object
+spe <- spatialLIBD::fetch_data(type = "habenula_atlas_HD_spe_cell")
+
+#   This is a SpatialExperiment object
+print(spe)
+#> class: SpatialExperiment 
+#> dim: 17708 287325 
+#> metadata(0):
+#> assays(2): counts logcounts
+#> rownames(17708): ENSG00000187634 ENSG00000188976 ... ENSG00000198695 ENSG00000198727
+#> rowData names(7): source type ... gene_type gene_search
+#> colnames(287325): 1_H1-W369TJK_D1_9090 2_H1-W369TJK_D1_9090 ... 65739_H1-6FX4YN3_D1_9902
+#>   65740_H1-6FX4YN3_D1_9902
+#> colData names(18): key sample_id ... cell_type cell_type_colors
+#> reducedDimNames(2): PCA UMAP
+#> mainExpName: NULL
+#> altExpNames(0):
+#> spatialCoords names(2) : pxl_col_in_fullres pxl_row_in_fullres
+#> imgData names(4): sample_id image_id data scaleFactor
+
+#   Plot the cell types spatially
+spatialLIBD::vis_clus(
+        spe, sampleid = 'Br9090_1', clustervar = 'cell_type',
+        is_stitched = TRUE, spatial = FALSE
+    ) +
+    #   Make points in legend more visible
+    guides(fill = guide_legend(override.aes = list(size = 5)))
+```
+
+<a href="https://interactive.libd.org/Habenula_Visium_HD_Shiny/"><img src="http://research.libd.org/Hb_multiome/img/fetch_hd-1.png" width="800px" align="center" /></a>
+
+## Contact
+
+We value public questions, as they allow other users to learn from the
+answers. If you have any questions, please ask them at
+[LieberInstitute/Hb_multiome/issues](https://github.com/LieberInstitute/Hb_multiome/issues)
+and refrain from emailing us. Thank you again for your interest in our
+work!
+
+## Internal
+
+- JHPCE locations:
+  - `/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Hb_multiome`
+  - `/dcs04/lieber/lcolladotor/Habenula_R01_LIBD4270/Habenula_Visium`
+- Slack channel:
+  [`libd_hb_atlas_paper`](https://jhu-genomics.slack.com/archives/C0AN2UT38G4).
+
+Both GitHub repositories are organized along the
+[*R/Bioconductor-powered Team Data Science* group
+guidelines](https://lcolladotor.github.io/bioc_team_ds/organizing-your-work.html#.Yaf9fPHMIdk).
+They aim to follow the
+[LieberInstitute/template_project](https://github.com/LieberInstitute/template_project)
+structure.
