@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23019473.svg)](https://doi.org/10.5281/zenodo.23019473)
+
 # Habenula_Visium
 
 This GitHub repository is part of the Habenula Atlas project and is documented
