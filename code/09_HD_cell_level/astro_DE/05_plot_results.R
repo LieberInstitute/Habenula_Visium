@@ -18,7 +18,8 @@ out_dir = here(
 )
 go_num_terms = 5
 highlight_genes = c(
-    'SLC6A11', 'SLC1A2', 'ENTPD2', 'LTF', 'CHRNA3', 'CALB2', 'SYT6', 'CACNA1E'
+    'SLC6A11', 'SLC1A2', 'ENTPD2', 'LTF', 'CHRNA3', 'CALB2', 'SYT6', 'CACNA1E',
+    'GRIA1', 'GRIA4', 'GRIN1', 'GRIN2C', 'GRIK5', 'KCNJ10'
 )
 
 dir.create(plot_dir, showWarnings = FALSE)
@@ -42,9 +43,12 @@ custom_volcano <- function(
             ) +
             geom_point(alpha = 0.5, size = 0.5) +
             scale_color_manual(values = c('TRUE' = 'red', 'FALSE' = 'gray')) +
+            guides(
+                color = guide_legend(override.aes = list(size = 2, alpha = 1))
+            ) +
             labs(
                 x = "log(FC)", y = "-log10(P value)",
-                color = sprintf("FDR < %.2f?", FDR_cut)
+                color = sprintf("FDR < %.2f", FDR_cut)
             ) +
             theme_bw(base_size = 15) +
             theme(legend.position = "right")
@@ -54,10 +58,11 @@ custom_volcano <- function(
             geom_text_repel(
                 aes(
                     label = ifelse(
-                        gene_name %in% highlight_genes, gene_name, ""
+                        gene_name %in% highlight_genes, gene_name, NA
                     )
                 ),
-                size = 4, max.overlaps = 50
+                color = "black", na.rm = TRUE, size = 4, max.overlaps = 50,
+                min.segment.length = 0, segment.color = "black"
             )
     }
     
